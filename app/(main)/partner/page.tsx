@@ -1,0 +1,1 @@
+export default function PartnerPage() { return <div className='pt-32 pb-16 px-[10%]'><h1 className='text-5xl font-tradeGothic uppercase tracking-tighter mb-4'>Partnerships</h1><p className='text-white/60 font-sans'>Institutional collaboration and cinematic distribution frameworks.</p></div> }

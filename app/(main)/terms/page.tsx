@@ -1,0 +1,1 @@
+export default function TermsPage() { return <div className='pt-32 pb-16 px-[10%]'><h1 className='text-5xl font-tradeGothic uppercase tracking-tighter mb-4'>Terms of Service</h1><p className='text-white/60 font-sans'>Platform access rules and digital asset licensing metrics.</p></div> }

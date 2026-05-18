@@ -10,46 +10,29 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        // Core Google Fonts routed through root variables
+        sans: ["var(--font-sans)", "sans-serif"],
+        mono: ["var(--font-mono)", "monospace"],
+        
+        // 🎯 ADOBE FONTS DESIGN TOKENS DEFINED RIGHT HERE:
+        // Note: The double quotes nested inside the single quotes are required 
+        // to prevent the browser from misinterpreting hyphens in font names.
+        futura: ['"futura-pt-condensed"', "sans-serif"],
+        tradeGothic: ['"trade-gothic-next-compressed"', "sans-serif"],
+      },
       colors: {
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
-        card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
+        dark: {
+          "01": "var(--dark-01)",
+          "02": "var(--dark-02)",
+          "03": "var(--dark-03)",
+          "04": "var(--dark-04)",
         },
-        popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
-        },
-        primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
-        },
-        secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
-        },
-        muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
-        },
-        accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
-        },
-        destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
-        },
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        chart: {
-          "1": "hsl(var(--chart-1))",
-          "2": "hsl(var(--chart-2))",
-          "3": "hsl(var(--chart-3))",
-          "4": "hsl(var(--chart-4))",
-          "5": "hsl(var(--chart-5))",
+        light: {
+          "01": "var(--light-01)",
+          "02": "var(--light-02)",
+          "03": "var(--light-03)",
+          "04": "var(--light-04)",
         },
       },
       borderRadius: {

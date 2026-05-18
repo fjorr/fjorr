@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
-import { ThemeProvider } from "next-themes";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
 const defaultUrl = process.env.VERCEL_URL
@@ -9,32 +8,44 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Next.js and Supabase Starter Kit",
-  description: "The fastest way to build apps with Next.js and Supabase",
+  title: "Fjorr",
+  description: "Built piece-by-piece from precise designs.",
 };
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  display: "swap",
+const inter = Inter({
   subsets: ["latin"],
+  variable: "--font-sans",
+  weight: ['300', '400', '500', '700', '800'],
 });
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+  weight: ['300', '400', '500', '700', '800'],
+});
+
+const fontVariables = `${inter.variable} ${jetbrainsMono.variable}`;
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
+  console.log("--- 🕵️‍♂️ ENV KEY DEBUGGER ---");
+  console.log("All environment keys found:", Object.keys(process.env));
+  console.log("--------------------------");
+
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.className} antialiased`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-        </ThemeProvider>
+    <html lang="en" className={`${fontVariables} dark`}>
+      <head>
+        <link rel="stylesheet" href="https://use.typekit.net/xyf8acw.css" />
+      </head>
+      {/* 🎯 THE FIX: Removed 'bg-dark-01' from the body tag completely.
+          This leaves the canvas background clear so that your local layout folders 
+          can render their own solid background colors with zero clipping! */}
+      <body className="font-sans antialiased text-light-01 min-h-screen">
+        {children}
       </body>
     </html>
   );

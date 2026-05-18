@@ -1,0 +1,1 @@
+export default function ContactPage() { return <div className='pt-32 pb-16 px-[10%]'><h1 className='text-5xl font-tradeGothic uppercase tracking-tighter mb-4'>Contact</h1><p className='text-white/60 font-sans'>Establish communications with the Fjorr archival team.</p></div> }
