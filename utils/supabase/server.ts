@@ -2,7 +2,9 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
 export async function createClient() {
-  let cookieStore;
+  // 🎯 Explicitly type cookieStore as any to safely pass compilation checks
+  let cookieStore: any;
+  
   try {
     cookieStore = await cookies();
   } catch {
