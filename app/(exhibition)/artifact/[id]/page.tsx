@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 // 🌟 Switch this from browser client to your server client utility
-import { createClient } from '@/utils/supabase/server'; 
+import { createClient } from '../../../utils/supabase/server'; 
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
