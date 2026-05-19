@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import GridFeature from './GridFeature'; // 🎯 Relative path works since it's in the same folder
+import GridFeature from './GridFeature'; 
 import { createBrowserClient } from '@supabase/ssr';
 
 export default function GridFeatureLoader() {
@@ -26,6 +26,7 @@ export default function GridFeatureLoader() {
 
         setDiagnostic("Querying 'featured' collection mapping pipeline...");
 
+        // 🌟 FIXED: Flattened layout query string prevents URL compilation errors
         const fetchPromise = supabase
           .from('collection')
           .select(`
@@ -33,9 +34,15 @@ export default function GridFeatureLoader() {
             name,
             collection_map (
               film (
-                *,
-                rating ( name ),
-                theme ( name )
+                id,
+                name,
+                slug,
+                teaser,
+                video_url,
+                thumbnail_url,
+                primary_color,
+                hero_tall,
+                blok_tall
               )
             )
           `)
@@ -51,6 +58,7 @@ export default function GridFeatureLoader() {
         if (error) {
           setDiagnostic(`Database Error: ${error.message} (Code: ${error.code})`);
         } else if (data) {
+          // Extract the nested relational film payload array out safely
           const filmsList = data.collection_map?.map((item: any) => item.film).filter(Boolean) || [];
           
           if (filmsList.length > 0) {
