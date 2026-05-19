@@ -1,35 +1,21 @@
-import React, { Suspense } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/server'; 
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
+// 🌟 FORCE BYPASS: This tells Next.js to completely skip pre-rendering during builds
+export const dynamic = 'force-dynamic';
+export const dynamicParams = true;
+
 interface ArtifactPageProps {
   params: Promise<{ id: string }>;
 }
 
-// =========================================================================
-// 1. 🎯 THE MASTER LAYOUT SHELL (Isolates global components from Root Layout)
-// =========================================================================
 export default async function DynamicArtifactPage({ params }: ArtifactPageProps) {
   const { id } = await params;
 
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-[#0B0B0C] flex items-center justify-center font-mono text-xs text-white/40 tracking-widest uppercase">
-        [ Syncing System Node... ]
-      </div>
-    }>
-      <ArtifactContent id={id} />
-    </Suspense>
-  );
-}
-
-// =========================================================================
-// 2. 🚀 THE REAL CONTENT ENGINE (Handles database pipelines safely)
-// =========================================================================
-async function ArtifactContent({ id }: { id: string }) {
-  // Initialize your server-safe client setup
+  // Initialize your server client safely
   const supabase = await createClient();
 
   const { data: artifact } = await supabase
@@ -41,7 +27,6 @@ async function ArtifactContent({ id }: { id: string }) {
   const customBg = artifact?.primary_color || '#0B0B0C';
   const isDarkBg = artifact?.is_dark_bg ?? true;
 
-  // Set up text contrast themes dynamically based on your database configuration
   const textClass = isDarkBg ? 'text-white' : 'text-black';
   const subTextClass = isDarkBg ? 'text-white/60' : 'text-black/60';
   const mutedTextClass = isDarkBg ? 'text-white/40' : 'text-black/40';
@@ -52,14 +37,12 @@ async function ArtifactContent({ id }: { id: string }) {
       style={{ backgroundColor: customBg }}
       className={`w-full min-h-screen flex flex-col justify-between transition-colors duration-500 ease-out ${textClass}`}
     >
-      {/* 🛡️ Protected safely inside the suspense bubble container */}
       <Navbar variant={isDarkBg ? 'light' : 'dark'} />
 
-      {/* Main Grid Content Tree */}
       <main className="w-full flex-grow pt-36 pb-16 px-[10%] flex items-center">
         <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 w-full">
           
-          {/* Left Feature Column: Media Canvas Asset */}
+          {/* Left Media Column */}
           <div className="md:col-span-1">
             <div className={`w-full aspect-[2/3] rounded-lg border flex items-center justify-center relative overflow-hidden shadow-2xl ${borderClass} ${isDarkBg ? 'bg-zinc-900/40' : 'bg-zinc-100/40'}`}>
               {artifact?.hero_tall ? (
@@ -72,7 +55,7 @@ async function ArtifactContent({ id }: { id: string }) {
             </div>
           </div>
 
-          {/* Right Feature Column: Text Layout Blocks */}
+          {/* Right Text Column */}
           <div className="md:col-span-2 flex flex-col justify-start gap-6 text-left">
             <div className={`font-sans text-xs tracking-widest uppercase ${mutedTextClass}`}>
               <Link href="/" className="hover:opacity-80 transition-opacity">Archive</Link> 
@@ -99,7 +82,6 @@ async function ArtifactContent({ id }: { id: string }) {
         </div>
       </main>
 
-      {/* 🛡️ Protected safely inside the suspense bubble container */}
       <Footer variant={isDarkBg ? 'light' : 'dark'} />
     </div>
   );
