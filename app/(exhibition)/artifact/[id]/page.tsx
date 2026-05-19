@@ -1,9 +1,12 @@
 import React from 'react';
 import Link from 'next/link';
-import { createBrowserClient } from '@supabase/ssr';
-// 🎯 IMPORTING YOUR COMPONENTS DIRECTLY INTO THE SANDBOX
+// 🌟 Switch this from browser client to your server client utility
+import { createClient } from '@/utils/supabase/server'; 
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+
+// 🎯 Force Next.js to render this page dynamically on demand
+export const dynamic = 'force-dynamic';
 
 interface ArtifactPageProps {
   params: Promise<{ id: string }>;
@@ -12,10 +15,8 @@ interface ArtifactPageProps {
 export default async function DynamicArtifactPage({ params }: ArtifactPageProps) {
   const { id } = await params;
 
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  // 🌟 Initialize the server-safe client instead
+  const supabase = await createClient();
 
   const { data: artifact } = await supabase
     .from('artifact')
