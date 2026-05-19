@@ -1,21 +1,22 @@
 import React from 'react';
 import Link from 'next/link';
-// 🌟 Switch this from browser client to your server client utility
-import { createClient } from '../../../utils/supabase/server'; 
+import { headers } from 'next/headers'; // 🌟 Importing headers forces dynamic rendering natively!
+// 🌟 Fixed: Added an extra '../' to navigate 4 layers up to the root utils folder
+import { createClient } from '../../../../utils/supabase/server'; 
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-
-// 🎯 Force Next.js to render this page dynamically on demand
-export const dynamic = 'force-dynamic';
 
 interface ArtifactPageProps {
   params: Promise<{ id: string }>;
 }
 
 export default async function DynamicArtifactPage({ params }: ArtifactPageProps) {
+  // 🎯 Calling headers() tells Next.js this route cannot be pre-built as static HTML
+  await headers(); 
+
   const { id } = await params;
 
-  // 🌟 Initialize the server-safe client instead
+  // Initialize the server-safe client safely
   const supabase = await createClient();
 
   const { data: artifact } = await supabase
