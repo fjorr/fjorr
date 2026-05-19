@@ -1,20 +1,18 @@
 import React from 'react';
-import { createClient } from '@supabase/supabase-js';
+// 🌟 Swap this out for your unified, server-safe client utility
+import { createClient } from '@/utils/supabase/server'; 
 import FilmRail from './FilmRail';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 
 interface FilmRailLoaderProps {
   title: string;
 }
 
 export default async function FilmRailLoader({ title }: FilmRailLoaderProps) {
+  // 🌟 Initialize the server connection cleanly inside the function body
+  const supabase = await createClient();
   const currentIsoString = new Date().toISOString();
   
-  // 🎯 SELECT EXPLICITLY: Ensure these matching strings are queried
+  // 🎯 SELECT EXPLICITLY: Ensure these matching strings are queried safely
   let query = supabase
     .from('film')
     .select('id, name, slug, blok_tall, release_date');
@@ -38,7 +36,6 @@ export default async function FilmRailLoader({ title }: FilmRailLoaderProps) {
 
   // 🎯 THE SERIALIZATION SHIELD: 
   // We map the database records into a fresh, clean array on the server.
-  // This strips out complex database metadata and guarantees 'slug' exists as a top-level string.
   const serializedFilms = rawFilms.map((film) => ({
     id: film.id,
     name: film.name,

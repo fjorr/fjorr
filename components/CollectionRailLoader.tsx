@@ -14,21 +14,35 @@ export default function CollectionRailLoader({ collectionName, displayTitle }: C
 
   useEffect(() => {
     async function loadCollection() {
-      const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!, 
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
       
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('collection')
         .select(`
           name,
           collection_map (
-            film ( id, name, hero_tall )
+            film ( 
+              id, 
+              name, 
+              slug, 
+              blok_tall, 
+              hero_tall 
+            )
           )
         `)
         .eq('name', collectionName)
         .maybeSingle();
 
+      if (error) {
+        console.error(`Collection query execution failure [${collectionName}]:`, error);
+        return;
+      }
+
       if (data?.collection_map) {
-        // Flatten the data out from your pivot table mapping
+        // Flatten the data out from your pivot table mapping cleanly
         const extractedFilms = data.collection_map
           .map((item: any) => item.film)
           .filter(Boolean);
