@@ -1,7 +1,5 @@
 import React, { Suspense } from 'react';
 import Link from 'next/link';
-import { headers } from 'next/headers'; 
-// 🎯 Native root alias mapping
 import { createClient } from '@/utils/supabase/server'; 
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -11,17 +9,15 @@ interface ArtifactPageProps {
 }
 
 // =========================================================================
-// 1. 🎯 THE LAYOUT WRAPPER (This satisfies Next.js build requirements)
+// 1. 🎯 THE MASTER LAYOUT SHELL (Isolates global components from Root Layout)
 // =========================================================================
 export default async function DynamicArtifactPage({ params }: ArtifactPageProps) {
-  // Invoking headers guarantees Next.js treats this entire layout node dynamically
-  await headers(); 
   const { id } = await params;
 
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#0B0B0C] flex items-center justify-center font-mono text-xs text-white/40 tracking-widest uppercase animate-pulse">
-        [ Loading Secure Asset Node... ]
+      <div className="min-h-screen bg-[#0B0B0C] flex items-center justify-center font-mono text-xs text-white/40 tracking-widest uppercase">
+        [ Syncing System Node... ]
       </div>
     }>
       <ArtifactContent id={id} />
@@ -30,10 +26,10 @@ export default async function DynamicArtifactPage({ params }: ArtifactPageProps)
 }
 
 // =========================================================================
-// 2. 🚀 THE CONTENT ENGINE (This handles database calls and template rendering)
+// 2. 🚀 THE REAL CONTENT ENGINE (Handles database pipelines safely)
 // =========================================================================
 async function ArtifactContent({ id }: { id: string }) {
-  // Initialize the server-safe backend connection utility
+  // Initialize your server-safe client setup
   const supabase = await createClient();
 
   const { data: artifact } = await supabase
@@ -45,7 +41,7 @@ async function ArtifactContent({ id }: { id: string }) {
   const customBg = artifact?.primary_color || '#0B0B0C';
   const isDarkBg = artifact?.is_dark_bg ?? true;
 
-  // Set up text contrast themes dynamically based on your database row configuration
+  // Set up text contrast themes dynamically based on your database configuration
   const textClass = isDarkBg ? 'text-white' : 'text-black';
   const subTextClass = isDarkBg ? 'text-white/60' : 'text-black/60';
   const mutedTextClass = isDarkBg ? 'text-white/40' : 'text-black/40';
@@ -56,14 +52,14 @@ async function ArtifactContent({ id }: { id: string }) {
       style={{ backgroundColor: customBg }}
       className={`w-full min-h-screen flex flex-col justify-between transition-colors duration-500 ease-out ${textClass}`}
     >
-      {/* Floating Header UI */}
+      {/* 🛡️ Protected safely inside the suspense bubble container */}
       <Navbar variant={isDarkBg ? 'light' : 'dark'} />
 
-      {/* Main Structural Layout Grid */}
+      {/* Main Grid Content Tree */}
       <main className="w-full flex-grow pt-36 pb-16 px-[10%] flex items-center">
         <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 w-full">
           
-          {/* Left Feature Column: Media Card asset container */}
+          {/* Left Feature Column: Media Canvas Asset */}
           <div className="md:col-span-1">
             <div className={`w-full aspect-[2/3] rounded-lg border flex items-center justify-center relative overflow-hidden shadow-2xl ${borderClass} ${isDarkBg ? 'bg-zinc-900/40' : 'bg-zinc-100/40'}`}>
               {artifact?.hero_tall ? (
@@ -76,7 +72,7 @@ async function ArtifactContent({ id }: { id: string }) {
             </div>
           </div>
 
-          {/* Right Feature Column: Editorial copy container */}
+          {/* Right Feature Column: Text Layout Blocks */}
           <div className="md:col-span-2 flex flex-col justify-start gap-6 text-left">
             <div className={`font-sans text-xs tracking-widest uppercase ${mutedTextClass}`}>
               <Link href="/" className="hover:opacity-80 transition-opacity">Archive</Link> 
@@ -103,7 +99,7 @@ async function ArtifactContent({ id }: { id: string }) {
         </div>
       </main>
 
-      {/* Footer UI */}
+      {/* 🛡️ Protected safely inside the suspense bubble container */}
       <Footer variant={isDarkBg ? 'light' : 'dark'} />
     </div>
   );
