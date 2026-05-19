@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import Link from 'next/link';
 import { headers } from 'next/headers'; 
-// 🎯 Using your project's native @/ root alias map
+// 🎯 Native root alias mapping
 import { createClient } from '@/utils/supabase/server'; 
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -10,13 +10,30 @@ interface ArtifactPageProps {
   params: Promise<{ id: string }>;
 }
 
+// =========================================================================
+// 1. 🎯 THE LAYOUT WRAPPER (This satisfies Next.js build requirements)
+// =========================================================================
 export default async function DynamicArtifactPage({ params }: ArtifactPageProps) {
-  // Tells the Turbopack builder this route handles dynamic content safely
+  // Invoking headers guarantees Next.js treats this entire layout node dynamically
   await headers(); 
-
   const { id } = await params;
 
-  // Initialize the server-safe client cleanly
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#0B0B0C] flex items-center justify-center font-mono text-xs text-white/40 tracking-widest uppercase animate-pulse">
+        [ Loading Secure Asset Node... ]
+      </div>
+    }>
+      <ArtifactContent id={id} />
+    </Suspense>
+  );
+}
+
+// =========================================================================
+// 2. 🚀 THE CONTENT ENGINE (This handles database calls and template rendering)
+// =========================================================================
+async function ArtifactContent({ id }: { id: string }) {
+  // Initialize the server-safe backend connection utility
   const supabase = await createClient();
 
   const { data: artifact } = await supabase
@@ -39,15 +56,14 @@ export default async function DynamicArtifactPage({ params }: ArtifactPageProps)
       style={{ backgroundColor: customBg }}
       className={`w-full min-h-screen flex flex-col justify-between transition-colors duration-500 ease-out ${textClass}`}
     >
-      {/* 🎯 THE NAVBAR: Floating perfectly right over your database background color! 
-          It automatically flips to 'dark' typography if your background color is light. */}
+      {/* Floating Header UI */}
       <Navbar variant={isDarkBg ? 'light' : 'dark'} />
 
-      {/* Main Column Grid Layout Container */}
+      {/* Main Structural Layout Grid */}
       <main className="w-full flex-grow pt-36 pb-16 px-[10%] flex items-center">
         <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 w-full">
           
-          {/* Left Media Column: Image Card */}
+          {/* Left Feature Column: Media Card asset container */}
           <div className="md:col-span-1">
             <div className={`w-full aspect-[2/3] rounded-lg border flex items-center justify-center relative overflow-hidden shadow-2xl ${borderClass} ${isDarkBg ? 'bg-zinc-900/40' : 'bg-zinc-100/40'}`}>
               {artifact?.hero_tall ? (
@@ -60,7 +76,7 @@ export default async function DynamicArtifactPage({ params }: ArtifactPageProps)
             </div>
           </div>
 
-          {/* Right Column: Editorial Text space */}
+          {/* Right Feature Column: Editorial copy container */}
           <div className="md:col-span-2 flex flex-col justify-start gap-6 text-left">
             <div className={`font-sans text-xs tracking-widest uppercase ${mutedTextClass}`}>
               <Link href="/" className="hover:opacity-80 transition-opacity">Archive</Link> 
@@ -87,7 +103,7 @@ export default async function DynamicArtifactPage({ params }: ArtifactPageProps)
         </div>
       </main>
 
-      {/* 🎯 THE FOOTER: Perfectly inheriting the page background color canvas edge-to-edge */}
+      {/* Footer UI */}
       <Footer variant={isDarkBg ? 'light' : 'dark'} />
     </div>
   );
