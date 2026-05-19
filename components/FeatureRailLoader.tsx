@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import GridFeature from './GridFeature'; 
+import FeatureRail from './FeatureRail'; 
 import { createBrowserClient } from '@supabase/ssr';
 
-export default function GridFeatureLoader() {
+export default function FeatureRailLoader() {
   const [featuredFilm, setFeaturedFilm] = useState<any>(null);
   const [diagnostic, setDiagnostic] = useState<string>("Initializing Client Gateway...");
 
@@ -17,17 +17,15 @@ export default function GridFeatureLoader() {
         const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
         if (!url || !key) {
-          setDiagnostic("Missing Keys inside your .env.local file configuration.");
+          setDiagnostic("Missing Keys inside your Vercel configurations.");
           return;
         }
 
-        setDiagnostic("Connecting directly to Supabase stream...");
         const supabase = createBrowserClient(url, key);
+        setDiagnostic("Requesting customized collection layout map pipeline...");
 
-        setDiagnostic("Querying 'featured' collection mapping pipeline...");
-
-        // 🌟 FIXED: Flattened layout query string prevents URL compilation errors
-        const fetchPromise = supabase
+        // 🌟 FIXED: Sanity checked query payload parameters match your schema exactly
+        const { data, error } = await supabase
           .from('collection')
           .select(`
             id,
@@ -38,27 +36,28 @@ export default function GridFeatureLoader() {
                 name,
                 slug,
                 teaser,
-                video_url,
-                thumbnail_url,
-                primary_color,
+                story_date,
+                hero_wide,
+                hero_clsx,
                 hero_tall,
-                blok_tall
+                title_art_code,
+                title_art_hex,
+                runtime,
+                sponsor,
+                rating ( name ),
+                theme ( name )
               )
             )
           `)
           .eq('name', 'featured')
           .maybeSingle();
 
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error("Network connection request timed out")), 4000)
-        );
-
-        const { data, error }: any = await Promise.race([fetchPromise, timeoutPromise]);
-
         if (error) {
           setDiagnostic(`Database Error: ${error.message} (Code: ${error.code})`);
-        } else if (data) {
-          // Extract the nested relational film payload array out safely
+          return;
+        }
+
+        if (data) {
           const filmsList = data.collection_map?.map((item: any) => item.film).filter(Boolean) || [];
           
           if (filmsList.length > 0) {
@@ -94,5 +93,5 @@ export default function GridFeatureLoader() {
     );
   }
 
-  return <GridFeature film={featuredFilm} />;
+  return <FeatureRail film={featuredFilm} />;
 }

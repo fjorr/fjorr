@@ -1,6 +1,6 @@
 import React from 'react';
 import HeroHome from '@/components/HeroHome';
-import GridFeatureLoader from '@/components/GridFeatureLoader';
+import GridFeatureLoader from '@/components/FeatureRailLoader';
 import FilmRailLoader from '@/components/FilmRailLoader';
 import ArtifactRailLoader from '@/components/ArtifactRailLoader';
 import PromoSplit from '@/components/PromoSplit';
@@ -12,7 +12,7 @@ export default function Home() {
       <HeroHome />
 
       {/* 2. Isolated Dynamic Stream Container */}
-      <GridFeatureLoader />
+      <FeatureRailLoader />
 
       {/* 🎬 FILM RAILS TRACK STACK (Latest & Upcoming Only) */}
       <div className="w-full flex flex-col gap-2 md:gap-4 mt-6 md:mt-10">
