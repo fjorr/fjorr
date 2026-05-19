@@ -1,8 +1,8 @@
 import React from 'react';
 import Link from 'next/link';
-import { headers } from 'next/headers'; // 🌟 Importing headers forces dynamic rendering natively!
-// 🌟 Fixed: Added an extra '../' to navigate 4 layers up to the root utils folder
-import { createClient } from '../../../../utils/supabase/server'; 
+import { headers } from 'next/headers'; // 🌟 Forces dynamic rendering safely to avoid config conflicts
+// 🎯 Perfect 3-level jump out of [id] -> artifact -> (exhibition) to find your root utils
+import { createClient } from '../../../utils/supabase/server'; 
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -11,12 +11,12 @@ interface ArtifactPageProps {
 }
 
 export default async function DynamicArtifactPage({ params }: ArtifactPageProps) {
-  // 🎯 Calling headers() tells Next.js this route cannot be pre-built as static HTML
+  // 🎯 Tells the Turbopack builder this route handles dynamic content
   await headers(); 
 
   const { id } = await params;
 
-  // Initialize the server-safe client safely
+  // Initialize the server-safe client cleanly
   const supabase = await createClient();
 
   const { data: artifact } = await supabase
