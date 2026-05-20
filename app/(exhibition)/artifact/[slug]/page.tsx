@@ -65,7 +65,14 @@ export default async function DynamicArtifactPage({ params }: ArtifactPageProps)
   const borderClass = isDarkBg ? 'border-white/10' : 'border-black/10';
 
   const releaseYear = artifact.release_date ? new Date(artifact.release_date).getFullYear() : null;
-  const creatorName = artifact.creator_map?.[0]?.creator?.name || '';
+
+  // 🎯 FIXED TYPE COMPILATION STRIP
+  // Safely extracts the creator array data map out to its first nested array entry block
+  const rawCreatorData = artifact.creator_map?.[0]?.creator;
+  const creatorName = Array.isArray(rawCreatorData)
+    ? rawCreatorData[0]?.name || ''
+    : (rawCreatorData as any)?.name || '';
+
   const filmConnections = artifact.film || [];
 
   return (
