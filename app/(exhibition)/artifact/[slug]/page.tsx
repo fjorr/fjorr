@@ -1,40 +1,72 @@
 import React from 'react';
-import Link from 'next/link';
 import { createClient } from '@/utils/supabase/server'; 
+import { notFound } from 'next/navigation';
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { ArtifactSidebar } from '@/components/ArtifactSidebar';
 
 export const dynamic = 'force-dynamic';
 export const dynamicParams = true;
 
-// 🌟 FIXED: Expect 'slug' instead of 'id' to perfectly match your renamed folder!
 interface ArtifactPageProps {
   params: Promise<{ slug: string }>;
 }
 
 export default async function DynamicArtifactPage({ params }: ArtifactPageProps) {
-  // 🌟 FIXED: Destructure 'slug' from your URL parameters
   const { slug } = await params;
-
   const supabase = await createClient();
 
-  // Fetch the target artifact via its clean URL text slug string
-  const { data: artifact } = await supabase
+  // 🛰️ DEEP GRAPH FETCH
+  const { data: artifact, error } = await supabase
     .from('artifact')
-    .select('name, slug, teaser, description, primary_color, is_dark_bg, hero_tall')
+    .select(`
+      id,
+      name,
+      slug,
+      label,
+      description,
+      teaser,
+      quote,
+      primary_color,
+      is_dark_bg,
+      hero_clsx,
+      hero_tall,
+      link_cta,
+      link,
+      release_date,
+      creator_map (
+        role,
+        creator (name)
+      ),
+      film!film_artifact (
+        name,
+        slug,
+        runtime
+      )
+    `)
     .eq('slug', slug)
-    .maybeSingle(); // 🛡️ Safe check prevents unhandled single-record panics
+    .maybeSingle();
 
-  const customBg = artifact?.primary_color || '#0B0B0C';
-  const isDarkBg = artifact?.is_dark_bg ?? true;
+  if (error || !artifact) {
+    console.log("\n------------------ 🛰️ FJORR DEBUG ENGINE ------------------");
+    console.log("🎯 URL SLUG:", slug);
+    console.log("❌ ERROR PAYLOAD:", error?.message || "None");
+    console.log("-----------------------------------------------------------\n");
+    notFound();
+  }
+
+  // 🎨 CONTRAST LAYOUT CONFIGURATION
+  const customBg = artifact.primary_color || '#0B0B0C';
+  const isDarkBg = artifact.is_dark_bg ?? true;
 
   const textClass = isDarkBg ? 'text-white' : 'text-black';
   const subTextClass = isDarkBg ? 'text-white/60' : 'text-black/60';
   const mutedTextClass = isDarkBg ? 'text-white/40' : 'text-black/40';
   const borderClass = isDarkBg ? 'border-white/10' : 'border-black/10';
 
-  // Fallback clean display string if the database name is missing or query fails
-  const displayName = artifact?.name || slug.replace(/-/g, ' ');
+  const releaseYear = artifact.release_date ? new Date(artifact.release_date).getFullYear() : null;
+  const creatorName = artifact.creator_map?.[0]?.creator?.name || '';
+  const filmConnections = artifact.film || [];
 
   return (
     <div 
@@ -43,48 +75,42 @@ export default async function DynamicArtifactPage({ params }: ArtifactPageProps)
     >
       <Navbar variant={isDarkBg ? 'light' : 'dark'} />
 
-      <main className="w-full flex-grow pt-36 pb-16 px-[10%] flex items-center">
-        <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 w-full">
-          
-          {/* Left Media Column */}
-          <div className="md:col-span-1">
-            <div className={`w-full aspect-[2/3] rounded-lg border flex items-center justify-center relative overflow-hidden shadow-2xl ${borderClass} ${isDarkBg ? 'bg-zinc-900/40' : 'bg-zinc-100/40'}`}>
-              {artifact?.hero_tall ? (
-                <img src={artifact.hero_tall} alt={displayName} className="w-full h-full object-cover" />
-              ) : (
-                <span className={`font-mono text-[10px] tracking-widest uppercase p-4 text-center ${mutedTextClass}`}>
-                  [ No Image Asset ]
-                </span>
-              )}
-            </div>
-          </div>
-
-          {/* Right Text Column */}
-          <div className="md:col-span-2 flex flex-col justify-start gap-6 text-left">
-            <div className={`font-sans text-xs tracking-widest uppercase ${mutedTextClass}`}>
-              <Link href="/" className="hover:opacity-80 transition-opacity">Archive</Link> 
-              <span className="mx-2">/</span> 
-              <span className="opacity-80">Historical Record</span>
-            </div>
-
-            {/* 🌟 FIXED: Uses the sanitized displayName text wrapper to guarantee it never crashes */}
-            <h1 className="font-tradeGothic text-4xl md:text-6xl uppercase tracking-tighter leading-none font-black">
-              {displayName}
-            </h1>
-
-            <hr className={`w-full ${borderClass}`} />
-
-            <div className="flex flex-col gap-4">
-              <span className={`font-mono text-xs tracking-widest uppercase ${isDarkBg ? 'text-emerald-400' : 'text-emerald-700'}`}>
-                ✓ Verified Node: {artifact?.slug || slug}
-              </span>
-              <p className={`font-sans text-base leading-relaxed ${subTextClass}`}>
-                {artifact?.description || artifact?.teaser || "No description configured."}
-              </p>
-            </div>
-          </div>
-
+      {/* 🚀 ASYMMETRIC MAIN WORKSPACE STAGE */}
+      <main className="w-full lg:h-screen flex-grow flex flex-col lg:flex-row items-stretch lg:items-center">
+        
+        {/* 🎬 LEFT MEDIA CANVAS COLUMN */}
+        <div className="w-full lg:w-[calc(100%-350px)] h-auto lg:h-full flex items-center justify-center p-0 lg:p-12 relative">
+          <picture className="w-full max-w-4xl h-auto max-h-full flex items-center justify-center transform lg:-translate-y-[35px]">
+            <source media="(min-width: 768px)" srcSet={artifact.hero_clsx || artifact.hero_tall || ''} />
+            <img 
+              src={artifact.hero_tall || artifact.hero_clsx || ''} 
+              alt={artifact.name || 'Fjorr Artifact Screen'} 
+              className="w-full h-auto max-h-full object-contain block mx-auto drop-shadow-2xl animate-fadeIn"
+            />
+          </picture>
         </div>
+
+        {/* 📊 RIGHT METADATA PANEL CONTAINER */}
+        <div className="w-full lg:w-[350px] lg:h-full shrink-0 flex">
+          <ArtifactSidebar 
+            name={artifact.name || slug.replace(/-/g, ' ')}
+            label={artifact.label}
+            creatorName={creatorName}
+            releaseYear={releaseYear}
+            description={artifact.description || artifact.teaser}
+            quote={artifact.quote}
+            filmConnections={filmConnections}
+            linkCta={artifact.link_cta}
+            link={artifact.link}
+            isDarkBg={isDarkBg}
+            customBg={customBg}
+            textClass={textClass}
+            subTextClass={subTextClass}
+            mutedTextClass={mutedTextClass}
+            borderClass={borderClass}
+          />
+        </div>
+
       </main>
 
       <Footer variant={isDarkBg ? 'light' : 'dark'} />

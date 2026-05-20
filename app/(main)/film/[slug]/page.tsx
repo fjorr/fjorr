@@ -120,6 +120,12 @@ async function DeferredPageContent({ urlSlug }: { urlSlug: string }) {
     ? mappedTags 
     : filmData.theme?.name ? [filmData.theme.name] : [];
 
+  // 🎯 FUTURE RELEASE SHIELD (COMING SOON)
+  // Evaluates whether the timestamp in the database represents a future date
+  const isComingSoon = filmData.release_date 
+    ? new Date(filmData.release_date).getTime() > Date.now() 
+    : false;
+
   return (
     <>
       <FilmHero film={filmData} />
@@ -134,18 +140,23 @@ async function DeferredPageContent({ urlSlug }: { urlSlug: string }) {
           <FilmRail title="More Short Films" films={recommendedFilms} />
         )}
 
-        <hr className="border-white/10 mx-[10%] my-4" />
-        
-        <FilmSpecs 
-          film={{
-            ...filmData,
-            location: displayLocation
-          }}
-          audioLanguages={['English']}
-          subtitles={subtitlesData}
-          themes={finalThemesList}
-          transcripts={transcripts}
-        />
+        {/* 🎯 CONDITIONAL SPECS DISPLAY */}
+        {/* If the film is coming soon, both the horizontal rule divider and specs component are hidden */}
+        {!isComingSoon && (
+          <>
+            <hr className="border-white/10 mx-[10%] my-4" />
+            <FilmSpecs 
+              film={{
+                ...filmData,
+                location: displayLocation
+              }}
+              audioLanguages={['English']}
+              subtitles={subtitlesData}
+              themes={finalThemesList}
+              transcripts={transcripts}
+            />
+          </>
+        )}
         
       </div>
     </>

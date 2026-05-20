@@ -87,7 +87,7 @@ export function IntelForm({ variant, isCustomVariant = true }: IntelFormProps) {
 
       {/* System Response Output Messages (Success or Error) */}
       {state.message && (
-        <p className={`text-[12px] font-sans font-medium animate-fadeIn transition-colors text-center ${
+        <p className={`text-[14px] font-sans font-semibold animate-fadeIn transition-colors text-center ${
           state.status === 'success' 
             ? `py-3 ${isCustomVariant ? (isDarkBg ? 'text-blue-400' : 'text-blue-600') : 'text-blue-500'}` 
             : 'mt-3 text-red-500'
