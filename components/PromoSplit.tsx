@@ -11,17 +11,21 @@ export default function PromoSplit() {
         {/* THE RESPONSIVE CORE: flex-col on mobile, md:flex-row on desktop */}
         <div className="w-full flex flex-col md:flex-row gap-4 items-stretch">
           
-          {/* LEFT CONTAINER (The Text Overlay Frame) */}
-          <div className="w-full md:w-1/2 aspect-[4/3] md:aspect-square rounded-[8px] bg-transparent overflow-hidden relative">
+          {/* LEFT CONTAINER (The Text Overlay Frame) 
+              🎯 FIXED: Added tight, subtle drop shadow. Removed overflow-hidden so the shadow doesn't clip.
+          */}
+          <div className="w-full md:w-1/2 aspect-[4/3] md:aspect-square bg-transparent relative drop-shadow-[0_10px_20px_rgba(0,0,0,0.4)]">
             {/* CLOUDFLARE ASSET: Left Dark Texture Backing */}
             <img 
               src="https://media.fjorr.com/assets/fjorr-partner-promo-crowd-f1v04.avif" 
               alt="Partnerships Background"
-              className="w-full h-full object-cover opacity-40 mix-blend-luminosity pointer-events-none"
+              /* 🎯 ROUNDING FIX: Moved rounded-[8px] here so the image corners stay masked */
+              className="w-full h-full object-cover opacity-40 mix-blend-luminosity pointer-events-none rounded-[8px]"
             />
             
             {/* ABSOLUTE COPY OVERLAY CONTAINER */}
-            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center p-8 md:p-12">
+            {/* 🎯 ROUNDING FIX: Added rounded-[8px] here as well so the overlay boundaries fit perfectly */}
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center p-8 md:p-12 rounded-[8px]">
               <span className="font-sans font-bold text-[11px] uppercase tracking-[0.25em] text-white/50 mb-4">
                 Partnerships
               </span>
@@ -45,13 +49,16 @@ export default function PromoSplit() {
             </div>
           </div>
 
-          {/* RIGHT CONTAINER (The Crowd Portrait Frame) */}
-          <div className="w-full md:w-1/2 aspect-[4/3] md:aspect-square rounded-[8px] overflow-hidden bg-transparent">
+          {/* RIGHT CONTAINER (The Crowd Portrait Frame)
+              🎯 FIXED: Added tight, subtle drop shadow. Removed overflow-hidden to let shadow show.
+          */}
+          <div className="w-full md:w-1/2 aspect-[4/3] md:aspect-square bg-transparent drop-shadow-[0_10px_20px_rgba(0,0,0,0.4)]">
             {/* CLOUDFLARE ASSET: Right Portrait Photo */}
             <img 
               src="https://media.fjorr.com/assets/fjorr-partner-promo-crowd-f2v04.avif" 
               alt="Crowd Feeling Stories"
-              className="w-full h-full object-cover filter grayscale"
+              /* 🎯 ROUNDING FIX: Kept corners perfectly masked on the image asset itself */
+              className="w-full h-full object-cover filter grayscale rounded-[8px]"
               loading="lazy"
             />
           </div>

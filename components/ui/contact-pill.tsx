@@ -45,15 +45,15 @@ export const ContactPill: React.FC<ContactPillProps> = ({
         >
           {/* 🌌 THE ELECTRIC-BLUE DOT MATRIX BG LAYER */}
           <div 
-            className="absolute inset-0 opacity-25 pointer-events-none"
+            className="absolute inset-0 opacity-30 pointer-events-none"
             style={{
               backgroundImage: 'radial-gradient(#73ACE9 1px, transparent 1px)',
-              backgroundSize: '4px 4px',
+              backgroundSize: '5px 5px',
             }}
           />
 
           {/* THE TEXT PRESENTER LAYER */}
-          <span className="relative z-10 tracking-wide text-[#73ACE9] select-none">
+          <span className="relative z-10 tracking-wide text-[#b1d1f4] select-none">
             Email copied. Fire away.
           </span>
         </div>

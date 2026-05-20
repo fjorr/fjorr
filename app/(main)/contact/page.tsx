@@ -46,8 +46,14 @@ export default function ContactPage() {
   }, []);
 
   return (
-    /* 🎯 DYNAMIC LAYOUT DECK: Carving out the 100px navbar heights to keep the viewport scroll-free and perfectly centered */
-    <div className="w-full min-h-[calc(100vh-100px)] bg-dark-01 text-[#F5F5F7] flex flex-col items-center justify-center px-6 relative overflow-hidden font-sans select-none">
+    /* 🎯 DYNAMIC VIEWPORT CALCULATOR:
+       - On Mobile: Subtracts ~160px (Navbar + small mobile footer baseline)
+       - On Desktop (md:): Subtracts ~500px (Navbar + massive link-directory footer block)
+       
+       This forces the container to cleanly occupy the exact empty space between components, 
+       keeping the footer locked to the bottom while centering your hero typography perfectly.
+    */
+    <div className="w-full min-h-[calc(100vh-160px)] md:min-h-[calc(100vh-500px)] flex flex-col items-center justify-center px-6 relative overflow-hidden font-sans select-none py-12">
       
       {/* COMPACT CENTER MARKETING HERO LAYER */}
       <div className="max-w-xl text-center flex flex-col items-center gap-4 z-10">
@@ -64,9 +70,9 @@ export default function ContactPage() {
           <span className="absolute inset-y-0 left-0 flex items-center justify-start whitespace-nowrap">
             {displayedText}
             
-            {/* THE TERMINAL NEEDLE */}
+            {/* THE TERMINAL NEEDLE: Now hooked perfectly into your global stylesheet rule */}
             {startCursorBlink && (
-              <span className="inline-block h-[42px] md:h-[72px] w-[4px] md:w-[6px] bg-white ml-2 animate-pulse [animation-duration:0.6s]" />
+              <span className="inline-block h-[42px] md:h-[72px] w-[4px] md:w-[6px] bg-white ml-2 cursor-system" />
             )}
           </span>
         </h1>
