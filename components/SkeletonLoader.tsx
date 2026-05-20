@@ -14,19 +14,19 @@ export default function SkeletonLoader({ variant = 'feature' }: SkeletonLoaderPr
   return (
     <div className="w-full h-full bg-transparent flex items-center justify-center">
       
-      {/* 1. MASTER EXTERIOR CONTAINER FRAME: Set to solid #1D1D1F */}
-      <div className="w-full h-full border border-[#FF5A5F]/15 rounded-2xl bg-[#1D1D1F] flex items-center justify-center overflow-hidden relative">
+      {/* 1. MASTER EXTERIOR CONTAINER FRAME: Updated border to a technical steel-grey/blue */}
+      <div className="w-full h-full border border-blue-400/10 rounded-2xl bg-[#1D1D1F] flex items-center justify-center overflow-hidden relative">
         
-        {/* 2. SOLID INTERIOR GREY FRAME: Matches exact #1D1D1F requirement */}
+        {/* 2. SOLID INTERIOR GREY FRAME */}
         <div className={`w-full h-full bg-[#1D1D1F] relative flex items-center justify-center ${paddingStyle}`}>
           
-          {/* 3. CLAMPED MATRIX CANVAS: 
-              Clamps the fine 1px dots cleanly inside the 30px or 12px frame walls.
+          {/* 3. CLAMPED MATRIX CANVAS:
+              Updated from Airbnb pink to high-visibility, crisp steel-blue dots 
           */}
           <div 
-            className={`absolute ${marginStyle} opacity-40`}
+            className={`absolute ${marginStyle} opacity-30`}
             style={{
-              backgroundImage: 'radial-gradient(rgba(255, 90, 95, 1.0) 1px, transparent 1px)',
+              backgroundImage: 'radial-gradient(rgba(147, 197, 253, 1.0) 1px, transparent 1px)',
               backgroundSize: '20px 20px',
               backgroundPosition: 'center', // Symmetrical distribution from center axis outward
             }}
