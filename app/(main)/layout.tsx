@@ -13,7 +13,6 @@ export default function LayoutClientWrapper({ children }: { children: React.Reac
   // 🎯 ROUTE GUARD: Safely maps the body layer background without causing global bleeding leaks
   useEffect(() => {
     if (isArtifactPage) {
-      // Pull the variable from the active DOM leaf element
       const dbColor = getComputedStyle(document.documentElement)
         .getPropertyValue('--page-bg-color').trim();
       
@@ -23,7 +22,6 @@ export default function LayoutClientWrapper({ children }: { children: React.Reac
         document.body.style.setProperty('background-color', 'var(--page-bg-color)', 'important');
       }
     } else {
-      // 🎯 THE CLEANUP: Completely wipes the dynamic color when you navigate anywhere else!
       document.body.style.removeProperty('background-color');
     }
   }, [pathname, isArtifactPage]);
@@ -31,11 +29,18 @@ export default function LayoutClientWrapper({ children }: { children: React.Reac
   return (
     <div 
       style={isArtifactPage ? { backgroundColor: 'var(--page-bg-color)' } : undefined}
-      className="relative flex flex-col min-h-screen justify-between transition-colors duration-500"
+      className="relative flex flex-col min-h-screen justify-between transition-colors duration-500 bg-[#1F1F1F]"
     >
+      {/* Navbar sits safely fixed here over the main panel frame */}
       {!isWatchPage && <Navbar variant="light" />}
       
-      <main className="flex-grow w-full flex flex-col">{children}</main>
+      {/* 🎯 THE CENTERING ENGINE: 
+          Added 'justify-center items-center' so short pages center perfectly out of the box 
+          without needing manual tracking values or calculations.
+      */}
+      <main className="flex-grow w-full flex flex-col justify-center items-center relative">
+        {children}
+      </main>
       
       {!isWatchPage && <Footer variant="light" />}
     </div>

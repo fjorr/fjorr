@@ -4,12 +4,12 @@ import React, { useState, useEffect } from 'react';
 import { ContactPill } from '@/components/ui/contact-pill';
 
 export default function ContactPage() {
-  const targetText = "Thinking?";
+  const targetText = "THINKING";
   const [displayedText, setDisplayedText] = useState("");
-  const [startCursorBlink, setStartCursorBlink] = useState(true);
   
-  // Controls the grand entrance of the subhead and pill button
-  const [showDetails, setShowDetails] = useState(false);
+  // Staggered gates to handle the crisp visual timing sequence
+  const [showSubhead, setShowSubhead] = useState(false);
+  const [showButton, setShowButton] = useState(false);
 
   useEffect(() => {
     let currentIdx = 0;
@@ -20,24 +20,22 @@ export default function ContactPage() {
         setDisplayedText(targetText.slice(0, currentIdx));
         currentIdx++;
 
-        // Natural human cadence random speed generator (45ms to 180ms)
-        const randomDelay = Math.random() * (180 - 45) + 45;
-        const finalDelay = currentIdx === targetText.length ? 300 : randomDelay; 
-
-        timeoutId = setTimeout(typeNextCharacter, finalDelay);
+        // Fast, perfectly even typing flow (exactly 70ms per stroke)
+        timeoutId = setTimeout(typeNextCharacter, 70);
       } else {
-        // 🏁 THE TYPING FINISH LINE:
-        // Trigger the subhead and button animations instantly when the word completes
-        setShowDetails(true);
+        // Headline finishes -> Wait 200ms -> Fade in Subhead
+        setTimeout(() => {
+          setShowSubhead(true);
+        }, 200);
 
-        // Melt the cursor line away shortly after
-        timeoutId = setTimeout(() => {
-          setStartCursorBlink(false);
-        }, 400);
+        // Subhead finishes -> Wait 350ms -> Fade in Contact Pill Button
+        setTimeout(() => {
+          setShowButton(true);
+        }, 550);
       }
     }
 
-    // 🎯 FAST TRACK: Fire the typing function immediately on mount!
+    // Fire immediately on mount
     typeNextCharacter();
 
     return () => {
@@ -46,20 +44,17 @@ export default function ContactPage() {
   }, []);
 
   return (
-    /* 🎯 DYNAMIC VIEWPORT CALCULATOR:
-       - On Mobile: Subtracts ~160px (Navbar + small mobile footer baseline)
-       - On Desktop (md:): Subtracts ~500px (Navbar + massive link-directory footer block)
-       
-       This forces the container to cleanly occupy the exact empty space between components, 
-       keeping the footer locked to the bottom while centering your hero typography perfectly.
+    /* 🎯 PERFECT IMMERSIVE CANVAS: 
+       - 'h-dvh' scales smoothly with shifting mobile browser chrome address bars.
+       - 'flex items-center justify-center' forces your marketing block dead center.
     */
-    <div className="w-full min-h-[calc(100vh-160px)] md:min-h-[calc(100vh-500px)] flex flex-col items-center justify-center px-6 relative overflow-hidden font-sans select-none py-12">
+    <div className="w-full h-dvh flex flex-col items-center justify-center px-6 relative font-sans select-none">
       
-      {/* COMPACT CENTER MARKETING HERO LAYER */}
+      {/* COMPACT CENTER PANEL GRID */}
       <div className="max-w-xl text-center flex flex-col items-center gap-4 z-10">
         
         {/* HERO TITLE BLOCK */}
-        <h1 className="text-[60px] md:text-[100px] font-extrabold uppercase tracking-tighter text-white leading-[0.9] font-futura relative max-w-fit mx-auto select-none mb-4">
+        <h1 className="text-[52px] sm:text-[75px] md:text-[95px] font-extrabold uppercase tracking-tighter text-white leading-[0.9] font-futura relative max-w-fit mx-auto select-none mb-3">
           
           {/* THE JUMP-PROOF INVISIBLE FOOTPRINT */}
           <span className="opacity-0 pointer-events-none select-none" aria-hidden="true">
@@ -67,20 +62,18 @@ export default function ContactPage() {
           </span>
 
           {/* THE VISIBLE TYPING TRACK */}
-          <span className="absolute inset-y-0 left-0 flex items-center justify-start whitespace-nowrap">
+          <span className="absolute inset-y-0 left-0 flex items-center justify-start whitespace-nowrap text-white">
             {displayedText}
             
-            {/* THE TERMINAL NEEDLE: Now hooked perfectly into your global stylesheet rule */}
-            {startCursorBlink && (
-              <span className="inline-block h-[42px] md:h-[72px] w-[4px] md:w-[6px] bg-white ml-2 cursor-system" />
-            )}
+            {/* CURSOR ACCENT */}
+            <span className="inline-block h-[38px] sm:h-[55px] md:h-[70px] w-[4px] md:w-[6px] bg-[#73ACE9] ml-2 animate-terminal-blink" />
           </span>
         </h1>
         
         {/* 🎬 STAGGER SELECTION 1: THE EDITORIAL DECK BLURB */}
         <p 
-          className={`text-[15px] md:text-[16px] font-medium font-inter text-zinc-400 max-w-xs tracking-relaxed leading-relaxed mb-6 transform-gpu transition-all ease-out duration-700 ${
-            showDetails ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+          className={`text-[15px] md:text-[16px] font-medium font-inter text-zinc-400 max-w-xs tracking-relaxed leading-relaxed mb-5 transform-gpu transition-all ease-out duration-700 ${
+            showSubhead ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'
           }`}
         >
           Ideas, partnerships, or something worth making. We&apos;re here for it.
@@ -89,15 +82,25 @@ export default function ContactPage() {
         {/* 🎬 STAGGER SELECTION 2: THE BOT-PROOF COPY TO CLIPBOARD PILL */}
         <div
           className={`transform-gpu transition-all ease-out duration-700 ${
-            showDetails ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+            showButton ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'
           }`}
-          style={{ transitionDelay: showDetails ? '200ms' : '0ms' }}
         >
           <ContactPill />
         </div>
         
       </div>
 
+      {/* INFINITE BLINK TIMING SYSTEM */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes cursorPulse {
+          0%, 49% { opacity: 1; }
+          50%, 100% { opacity: 0; }
+        }
+        
+        .animate-terminal-blink {
+          animation: cursorPulse 950ms steps(2, start) infinite;
+        }
+      `}} />
     </div>
   );
 }
