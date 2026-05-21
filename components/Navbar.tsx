@@ -13,10 +13,16 @@ function Navbar({ variant = 'light' }: NavbarProps) {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    // 1. SIGNAL MOUNT COMPLETION
+    // 1. THE BLOW-OUT CACHE CURE: 
+    // Forces the browser to completely drop history scroll caching properties on layout mount.
+    if (typeof window !== 'undefined' && 'scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
+
+    // 2. SIGNAL MOUNT COMPLETION
     setIsMounted(true);
 
-    // 2. DUAL-CHECK ENGINE: Scan coordinates on client load
+    // 3. DUAL-CHECK ENGINE: Instantly scan true real-time coordinates
     const checkScrollPosition = () => {
       if (window.scrollY > 10) {
         setIsScrolling(true);
@@ -25,7 +31,7 @@ function Navbar({ variant = 'light' }: NavbarProps) {
       }
     };
 
-    // Run immediately to capture position if browser auto-scrolled or restored cache
+    // Run right away to capture position context cleanly
     checkScrollPosition();
 
     window.addEventListener('scroll', checkScrollPosition, { passive: true });
@@ -36,21 +42,21 @@ function Navbar({ variant = 'light' }: NavbarProps) {
   const subTextColor = variant === 'light' ? 'text-white/40' : 'text-black/40';
 
   return (
-    /* 🎯 FIXED OVERLAY TRACKING STRUCTURE */
+    /* 🎯 OVERLAY TRACKING STRUCTURE */
     <header className="fixed top-0 left-0 z-50 w-full h-[70px] pt-[20px] px-4 flex justify-center pointer-events-none">
       
       {/* Floating Center Container */}
       <div
         className="inline-flex h-[50px] px-[30px] rounded-[10px] items-center gap-[20px] pointer-events-auto transition-all duration-300"
         style={{
-          /* 🛠️ HYDRATION GAP FIX: 
-             If the component hasn't fully mounted on the client side yet, we clamp its opacity 
-             or background dynamically so it smoothly fades into existence rather than snapping.
-          */
           opacity: isMounted ? 1 : 0,
-          backgroundColor: isScrolling ? 'rgba(120, 120, 120, 0.15)' : 'rgba(120, 120, 120, 0)',
-          backdropFilter: isScrolling ? 'blur(12px)' : 'none',
-          WebkitBackdropFilter: isScrolling ? 'blur(12px)' : 'none',
+          /* 🛠️ HARDENED STYLE CONDITIONAL: 
+             If the client layer hasn't processed mounting variables yet, we keep it fully 
+             transparent to prevent any quick glass flashes before calculations conclude.
+          */
+          backgroundColor: isMounted && isScrolling ? 'rgba(120, 120, 120, 0.15)' : 'rgba(120, 120, 120, 0)',
+          backdropFilter: isMounted && isScrolling ? 'blur(12px)' : 'none',
+          WebkitBackdropFilter: isMounted && isScrolling ? 'blur(12px)' : 'none',
         }}
       >
         {/* Left: Official Fjorr Logo Box */}

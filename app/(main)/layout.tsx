@@ -27,17 +27,20 @@ export default function LayoutClientWrapper({ children }: { children: React.Reac
   }, [pathname, isArtifactPage]);
 
   return (
+    /* 🛠️ FIXED MAIN STRUCTURAL ROOT:
+       Removed 'transition-colors duration-500'. Forcing a global multi-element transition on a root 
+       layout container creates calculation lag that causes sticky/fixed components to miscalculate layout heights on boot.
+    */
     <div 
-      style={isArtifactPage ? { backgroundColor: 'var(--page-bg-color)' } : undefined}
-      className="relative flex flex-col min-h-screen justify-between transition-colors duration-500 bg-[#1F1F1F]"
+      style={isArtifactPage ? { 
+        backgroundColor: 'var(--page-bg-color)',
+        transition: 'background-color 500ms cubic-bezier(0.25, 1, 0.5, 1)' // Isolated fade safely restricted away from navbar variables
+      } : undefined}
+      className="relative flex flex-col min-h-screen justify-between bg-[#1F1F1F]"
     >
       {/* Navbar sits safely fixed here over the main panel frame */}
       {!isWatchPage && <Navbar variant="light" />}
       
-      {/* 🛠️ FIXED MAIN WRAPPER:
-          Removed 'flex flex-col justify-center items-center'. Leaving this as a standard block 
-          element ensures the document layout flows naturally, letting window.scrollY read at zero on clean loads.
-      */}
       <main className="flex-grow w-full relative">
         {children}
       </main>
