@@ -5,13 +5,16 @@ import { ContactPill } from '@/components/ui/contact-pill';
 
 export default function PartnerPage() {
   return (
-    /* 🎯 UNIFIED CANVAS WORKSPACE */
-    <div className="w-full min-h-[calc(100vh-160px)] md:min-h-[calc(100vh-500px)] bg-[#1F1F1F] text-[#F5F5F7] flex items-center justify-center font-sans select-none pt-2 pb-12">
+    /* 🎯 UNIFIED CANVAS WORKSPACE 
+       - Removed 'pt-2' spacing override to align seamlessly with the sticky header bounds.
+    */
+    <div className="w-full min-h-[calc(100vh-160px)] md:min-h-[calc(100vh-500px)] bg-[#1F1F1F] text-[#F5F5F7] flex items-center justify-center font-sans select-none pb-12">
       
       {/* 🎬 SEAMLESS SLIDE ANCHOR FIELD 
-          🎯 FIXED: Drops the background asset and overlays down safely together below the absolute navbar.
+          🎯 FIXED: Stripped away mt-16 and md:mt-[90px] layout blocks since the 
+          sticky navbar now automatically handles baseline structural padding!
       */}
-      <div className="w-full max-w-[1240px] px-6 sm:px-10 md:px-16 mt-16 md:mt-[90px] relative flex flex-col items-center justify-center">
+      <div className="w-full max-w-[1240px] px-6 sm:px-10 md:px-16 relative flex flex-col items-center justify-center">
         
         {/* --- THE PICTURE SYSTEM --- */}
         <picture className="w-full h-auto select-none pointer-events-none z-0 block opacity-0 animate-fade-in drop-shadow-[0_15px_25px_rgba(0,0,0,0.45)]">
@@ -35,7 +38,6 @@ export default function PartnerPage() {
           
           {/* 🎬 STEP 2: THE REVEALING HEADLINE */}
           <h1 
-            /* 🎯 UNTOUCHED: Restored your exact responsive leading clamp values and formatting */
             className="text-6xl sm:text-7xl md:text-8xl font-extrabold uppercase tracking-tighter text-light-01 leading-[52px] sm:leading-[64px] md:leading-[76px] font-futura mb-1.5 opacity-0 animate-slide-up whitespace-pre-line"
             style={{ animationDelay: '400ms' }}
           >
@@ -43,16 +45,13 @@ export default function PartnerPage() {
             &apos;Em Feel.
           </h1>
           
-        {/* 🎬 STEP 3: EDITORIAL DECK BLURB */}
-<p 
-  /* 🛠️ FIXED: Changed max-w-sm to max-w-[280px] sm:max-w-sm 
-     This acts as a clean layout cushion, forcing bigger margins on mobile screens!
-  */
-  className="text-base font-medium font-inter text-light-02 max-w-[260px] sm:max-w-sm leading-relaxed mb-4 md:mb-6 drop-shadow-xl opacity-0 animate-slide-up"
-  style={{ animationDelay: '700ms' }}
->
-  We work with brands, studios, and individuals who believe stories shape people. From original films to cultural partnerships, we collaborate to bring meaningful ideas to life.
-</p>
+          {/* 🎬 STEP 3: EDITORIAL DECK BLURB */}
+          <p 
+            className="text-base font-medium font-inter text-light-02 max-w-[260px] sm:max-w-sm leading-relaxed mb-4 md:mb-6 drop-shadow-xl opacity-0 animate-slide-up"
+            style={{ animationDelay: '700ms' }}
+          >
+            We work with brands, studios, and individuals who believe stories shape people. From original films to cultural partnerships, we collaborate to bring meaningful ideas to life.
+          </p>
 
           {/* 🎬 STEP 4: DYNAMIC CLIPBOARD INTERACTION PILL */}
           <div

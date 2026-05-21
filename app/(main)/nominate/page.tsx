@@ -89,16 +89,21 @@ export default function NominatePage() {
 
   return (
     /* 🎯 ROOT CONTAINER */
-    <div className="w-full min-h-screen bg-[#1F1F1F] pt-[90px] pb-24 flex flex-col items-center">
+    <div className="w-full min-h-screen bg-[#1F1F1F] pt-5 pb-24 flex flex-col items-center overflow-x-hidden">
       
       {/* =========================================================================
-          HEADER MARQUEE GRID STRIP (The 4-Photo Narrative Film Stack)
+          HEADER MARQUEE STRIP (The 4-Photo Narrative Film Stack with Metadata)
           ========================================================================= */}
-      <div className="w-full h-auto grid grid-cols-3 md:grid-cols-4 gap-0.5 mb-16 sm:mb-24 overflow-hidden">
+      {/* 🛠️ HARDENED BREAKPOINT LAYOUT:
+          - Keeps 'gap-10' ($40\text{px}$) completely locked down without extra spatial padding.
+          - Added horizontal bounds for smaller viewports ('px-6 sm:px-10').
+      */}
+      <div className="flex mx-auto justify-center items-center gap-10 mb-16 sm:mb-24 px-6 sm:px-10 select-none">
         
         {/* PHOTO 1: BREAKDANCING */}
+        {/* 🛠️ ADDED 'flex items-center' - This natively locks absolute text elements to the image vertical center axis */}
         <div 
-          className="bg-zinc-900 relative w-full opacity-0 animate-sweep-right"
+          className="relative w-[140px] xs:w-[160px] sm:w-[180px] md:w-[220px] flex items-center shrink-0 opacity-0 animate-sweep-right"
           style={{ animationDelay: '100ms' }}
         >
           <img 
@@ -106,11 +111,22 @@ export default function NominatePage() {
             className="w-full h-auto object-contain block opacity-80 hover:opacity-100 transition-all duration-700" 
             alt="Breakdancing narrative frame"
           />
+          
+          {/* 🎯 NESTED METADATA 1: 
+              - Swapped out positioning transforms for a clean absolute right offset.
+              - Hidden on tiny screens, pops into layout perfectly starting at 'xs' (475px+).
+          */}
+          <div 
+            className="film-metadata-vertical absolute -right-[24px] text-[9px] text-white/20 tracking-[0.25em] font-mono uppercase opacity-0 animate-sweep-right font-medium whitespace-nowrap hidden xs:block"
+            style={{ animationDelay: '180ms' }}
+          >
+            NOMINATION 143
+          </div>
         </div>
         
         {/* PHOTO 2: NAISMITH */}
         <div 
-          className="bg-zinc-900 relative w-full opacity-0 animate-sweep-right"
+          className="relative w-[140px] xs:w-[160px] sm:w-[180px] md:w-[220px] flex items-center shrink-0 opacity-0 animate-sweep-right"
           style={{ animationDelay: '250ms' }}
         >
           <img 
@@ -118,11 +134,20 @@ export default function NominatePage() {
             className="w-full h-auto object-contain block opacity-80 hover:opacity-100 transition-all duration-700" 
             alt="Naismith basketball narrative frame"
           />
+
+          {/* 🎯 NESTED METADATA 2 */}
+          <div 
+            className="film-metadata-vertical absolute -right-[24px] text-[9px] text-white/20 tracking-[0.25em] font-mono uppercase opacity-0 animate-sweep-right font-medium whitespace-nowrap hidden sm:block"
+            style={{ animationDelay: '320ms' }}
+          >
+            NOMINATION 144
+          </div>
         </div>
         
         {/* PHOTO 3: WW2 */}
+        {/* 🛠️ RESPONSIVE STEP: Hidden on layout boot, displays seamlessly as the 3rd column at 'sm' breakpoint (640px+) */}
         <div 
-          className="bg-zinc-900 relative w-full opacity-0 animate-sweep-right"
+          className="relative w-[180px] md:w-[220px] flex items-center shrink-0 opacity-0 animate-sweep-right hidden sm:flex"
           style={{ animationDelay: '400ms' }}
         >
           <img 
@@ -130,15 +155,20 @@ export default function NominatePage() {
             className="w-full h-auto object-contain block opacity-80 hover:opacity-100 transition-all duration-700" 
             alt="WWII historical narrative frame"
           />
+
+          {/* 🎯 NESTED METADATA 3 */}
+          <div 
+            className="film-metadata-vertical absolute -right-[24px] text-[9px] text-white/20 tracking-[0.25em] font-mono uppercase opacity-0 animate-sweep-right font-medium whitespace-nowrap hidden md:block"
+            style={{ animationDelay: '480ms' }}
+          >
+            NOMINATION 145
+          </div>
         </div>
         
-        {/* PHOTO 4: YETI 
-            🎯 FIXED ANIMATION CRASH: Changed 'hidden md:block animate-sweep-right' 
-            to 'max-md:hidden opacity-0 animate-sweep-right'. This handles the DOM removal 
-            safely on mobile layout drops so it compiles cleanly on desktop grids!
-        */}
+        {/* PHOTO 4: YETI */}
+        {/* 🛠️ RESPONSIVE STEP: Hidden on smaller viewports, pops into the grid as the 4th frame at 'md' breakpoint (768px+) */}
         <div 
-          className="bg-zinc-900 relative w-full max-md:hidden opacity-0 animate-sweep-right"
+          className="relative w-[220px] flex items-center shrink-0 opacity-0 animate-sweep-right hidden md:flex"
           style={{ animationDelay: '550ms' }}
         >
           <img 
@@ -163,7 +193,7 @@ export default function NominatePage() {
             {/* MAIN SHOWCASE TITLE HERO HEADER */}
             <h1 
               className="text-6xl sm:text-7xl md:text-8xl font-extrabold uppercase tracking-tighter text-light-01 leading-[52px] sm:leading-[64px] md:leading-[76px] font-futura mb-6 opacity-0 animate-slide-up whitespace-pre-line select-none"
-              style={{ animationDelay: '750ms' }}
+              style={{ animationDelay: '700ms' }}
             >
               Nominate.
             </h1>
@@ -171,7 +201,7 @@ export default function NominatePage() {
             {/* SUMMARY PLATFORM PARAGRAPH BLOCKS */}
             <p 
               className="font-sans font-medium text-[15px] sm:text-[16px] leading-[1.6em] text-white/60 max-w-[280px] sm:max-w-md tracking-tight text-center mb-10 opacity-0 animate-slide-up"
-              style={{ animationDelay: '950ms' }}
+              style={{ animationDelay: '850ms' }}
             >
               Know a story the world needs to hear? A piece of history. A fictional adventure. A forgotten legend. Nominate it. Your name goes on the film. Bragging rights included.
             </p>
@@ -181,7 +211,7 @@ export default function NominatePage() {
               onSubmit={handleSubmit} 
               noValidate 
               className="w-full flex flex-col text-left opacity-0 animate-slide-up"
-              style={{ animationDelay: '1150ms' }}
+              style={{ animationDelay: '1000ms' }}
             >
               
               {/* FIELD AREA 1: LONG FORM DATA CONTENT FIELD */}
@@ -249,6 +279,18 @@ export default function NominatePage() {
 
       {/* CINEMATIC TIMING ENGINE LOCAL COMPILER SCOPE */}
       <style dangerouslySetInnerHTML={{ __html: `
+        .film-metadata-vertical {
+          writing-mode: vertical-lr;
+          text-orientation: mixed;
+          font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+          
+          /* 🎯 CENTER ALIGNMENT CURE:
+             Rotates the string clean 180deg on its side. By using a single X-axis transform translate shift,
+             the browser keeps the text centered on the poster image height box.
+          */
+          transform: rotate(180deg) translateX(50%); 
+        }
+
         @keyframes imageSweepRight {
           from {
             opacity: 0;
