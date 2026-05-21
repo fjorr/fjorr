@@ -3,7 +3,6 @@
 import React from 'react';
 import { Icon } from './ui/Icons';
 import Link from 'next/link';
-// 🎯 1. IMPORT PLACEMENT: Pulling in the clean, modular component
 import { IntelForm } from './IntelForm';
 
 interface FooterProps {
@@ -14,7 +13,6 @@ export default function Footer({ variant }: FooterProps) {
   const isCustomVariant = variant === 'light' || variant === 'dark';
 
   // 🎯 THE CONTRAST ENGINE: Determine explicit text colors based on your database setting
-  // If no variant is passed, fallback gracefully to your standard site styles
   const isDarkBg = variant === 'light'; // variant="light" means use white text for dark backgrounds
   
   const textColor = isCustomVariant 
@@ -45,7 +43,22 @@ export default function Footer({ variant }: FooterProps) {
           className={`w-6 h-6 mx-auto block hover:opacity-70 transition-opacity cursor-pointer ${textColor}`}
           aria-label="Go to homepage"
         >
-          <Icon name="logo" className="w-full h-full" />
+          {/* 🎯 INLINED RAW CLEAN LOGO SVG */}
+          <svg 
+            viewBox="0 0 146 146" 
+            fill="none" 
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-full h-full"
+          >
+            <path 
+              d="M124.53 103.73V113.76H105.63C103.42 113.76 101.63 111.97 101.63 109.76V60.37C101.63 58.16 103.42 56.37 105.63 56.37H136.2L136.14 103.72C136.14 103.72 124.37 103.74 124.54 103.74L124.53 103.73Z" 
+              fill="currentColor"
+            />
+            <path 
+              d="M141.18 44.49C143.61 44.49 145.59 42.52 145.59 40.08V4.63C145.59 2.07 143.52 0 140.96 0H45.12C20.2 0 0 20.2 0 45.12V140.96C0 143.52 2.07 145.59 4.63 145.59H140.95C143.51 145.59 145.58 143.52 145.58 140.96V130.15C145.58 127.66 143.56 125.64 141.07 125.64H105.62C96.85 125.64 89.74 118.53 89.74 109.76V60.37C89.74 51.6 96.85 44.49 105.62 44.49H141.18Z" 
+              fill="currentColor"
+            />
+          </svg>
         </Link>
       </div>
 
@@ -76,7 +89,6 @@ export default function Footer({ variant }: FooterProps) {
 
       {/* 3. THE NEWSLETTER INPUT WRAPPER BLOCK */}
       <div className="w-full max-w-64 mb-6">
-        {/* 🎯 2. COMPONENT PLACEMENT: Replaced the old manual form setup entirely */}
         <IntelForm variant={variant} isCustomVariant={isCustomVariant} />
       </div>
 

@@ -31,14 +31,16 @@ export default function FeatureRail({ films, activeIndex, onSlideChange }: Featu
   const fallbackBg = 'linear-gradient(to bottom, #4C7A57, #36593E)';
   
   const [isPlaying, setIsPlaying] = useState(true);
-  /* 🎯 FINE-TUNED TIMER ENGINE: Split 5000ms into 100ms precise visual ticking ticks */
   const [progress, setProgress] = useState(0); 
   const AUTOPLAY_DELAY = 5000;
   const TICK_RATE = 100;
 
-  /* 🎯 MATHEMATICAL SVG GEOMETRY CONFIG */
+  // Touch Swipe State Refs
+  const touchStartX = useRef<number | null>(null);
+  const touchEndX = useRef<number | null>(null);
+
   const RADIUS = 14;
-  const CIRCUMFERENCE = 2 * Math.PI * RADIUS; // Formula: 2πr (~87.96)
+  const CIRCUMFERENCE = 2 * Math.PI * RADIUS; 
   const strokeDashoffset = CIRCUMFERENCE - (progress / 100) * CIRCUMFERENCE;
 
   if (!films || films.length === 0) return null;
@@ -46,14 +48,12 @@ export default function FeatureRail({ films, activeIndex, onSlideChange }: Featu
   const currentFilm = films[activeIndex] || films[0];
   if (!currentFilm) return null;
 
-  /* 🎯 THE TICK TIMER EFFECT: Drives the circular timeline loader */
   useEffect(() => {
     if (!isPlaying) return;
 
     const timer = setInterval(() => {
       setProgress((prevProgress) => {
         if (prevProgress >= 100) {
-          // Progress complete: Advance slide smoothly and reset timeline loop
           const nextTarget = activeIndex === films.length - 1 ? 0 : activeIndex + 1;
           onSlideChange(nextTarget);
           return 0;
@@ -65,7 +65,6 @@ export default function FeatureRail({ films, activeIndex, onSlideChange }: Featu
     return () => clearInterval(timer);
   }, [isPlaying, activeIndex, films.length, onSlideChange]);
 
-  /* 🎯 RESET VISUAL TRACK ON MANUAL SLIDE INTERACTIONS */
   useEffect(() => {
     setProgress(0);
   }, [activeIndex]);
@@ -76,28 +75,61 @@ export default function FeatureRail({ films, activeIndex, onSlideChange }: Featu
     setIsPlaying(!isPlaying);
   };
 
-  const handlePrev = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const navigatePrev = () => {
     const nextTarget = activeIndex === 0 ? films.length - 1 : activeIndex - 1;
     onSlideChange(nextTarget);
   };
 
-  const handleNext = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const navigateNext = () => {
     const nextTarget = activeIndex === films.length - 1 ? 0 : activeIndex + 1;
     onSlideChange(nextTarget);
+  };
+
+  /* 🎯 MOBILE SWIPE DETECTOR LOGIC */
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStartX.current || !touchEndX.current) return;
+    
+    const totalSwipeDistance = touchStartX.current - touchEndX.current;
+    const swipeThreshold = 50; // Minimum sliding travel distance in pixels required to confirm intent
+
+    if (totalSwipeDistance > swipeThreshold) {
+      // Swiped Left -> Reveal Next Slide
+      navigateNext();
+    } else if (totalSwipeDistance < -swipeThreshold) {
+      // Swiped Right -> Reveal Previous Slide
+      navigatePrev();
+    }
+
+    // Reset touch trackers back to null coordinate values
+    touchStartX.current = null;
+    touchEndX.current = null;
+  };
+
+  const getRuntimeDisplay = () => {
+    const rawSeconds = currentFilm.runtime || 0;
+    const finalValue = Math.ceil(rawSeconds / 60);
+    return finalValue === 0 ? "1m" : `${finalValue}m`;
   };
 
   return (
     <section className="w-full flex justify-center bg-[#1F1F1F]">
       <div className="w-full max-w-[1440px] relative group/rail overflow-hidden rounded-none min-[1440px]:rounded-xl">
         
-        {/* CAROUSEL IMAGE BODY ANCHOR */}
+        {/* CAROUSEL IMAGE BODY ANCHOR (With added Mobile Touch Event Handlers) */}
         <Link 
           href={`/film/${currentFilm.slug || ''}`}
-          className="w-full intent-card block aspect-[1/1.618] md:aspect-[4/3] lg:aspect-[16/9] flex flex-col justify-end px-8 md:px-12 pb-14 md:pb-16 pt-16 md:pt-32 relative bg-cover bg-center transition-all duration-500 rounded-none min-[1440px]:rounded-xl cursor-pointer"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          className="w-full intent-card block aspect-[1/1.618] md:aspect-[4/3] lg:aspect-[16/9] flex flex-col justify-end px-8 md:px-12 pb-14 md:pb-16 pt-16 md:pt-32 relative bg-cover bg-center transition-all duration-500 rounded-none min-[1440px]:rounded-xl cursor-pointer select-none"
           style={{
             backgroundImage: `linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0) 100%)`
           }}
@@ -148,6 +180,7 @@ export default function FeatureRail({ films, activeIndex, onSlideChange }: Featu
               )
             )}
 
+            {/* METADATA ROW */}
             <div className="flex items-center justify-center md:justify-start gap-2.5 font-mono text-[14px] text-white/60 tracking-tight mb-2">
               {(() => {
                 const ratingVal = typeof currentFilm.rating === 'object' ? currentFilm.rating?.name : currentFilm.rating;
@@ -168,29 +201,33 @@ export default function FeatureRail({ films, activeIndex, onSlideChange }: Featu
                   </span>
                 );
               })()}
-
-              <span className="font-semibold text-white/70">
-                {(() => {
-                  const rawSeconds = currentFilm.runtime || 0;
-                  const finalValue = Math.ceil(rawSeconds / 60);
-                  return finalValue === 0 ? "1m" : `${finalValue}m`;
-                })()}
-              </span>
             </div>
 
-            <p className="font-sans font-medium text-[16px] leading-[1.4em] text-white/80 max-w-xs md:max-w-xs tracking-normal">
+            <p className="font-sans font-medium text-[16px] leading-[1.4em] text-white/80 max-w-xs md:max-w-xs tracking-normal mb-6">
               {currentFilm.teaser}
             </p>
+
+            {/* 🎯 WATCH BUTTON (Removed dot icon separator details entirely) */}
+            <Link
+              href={`/watch/${currentFilm.slug || ''}`}
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+              className="h-10 px-6 inline-flex items-center justify-center gap-2 bg-white hover:bg-white/90 text-black font-sans font-bold text-sm tracking-normal rounded-full transition-all active:scale-[0.98] duration-150 shadow-lg pointer-events-auto cursor-pointer"
+            >
+              <Play size={14} className="fill-current stroke-current" />
+              <span>Play {getRuntimeDisplay()}</span>
+            </Link>
           </div>
         </Link>
 
         {/* =========================================================================
            🎬 CAROUSEL NAVIGATION TRACKS
            ========================================================================= */}
-        <div className="absolute inset-x-0 bottom-8 z-30 flex items-center justify-center pointer-events-none px-8 md:px-12">
+        <div className="absolute inset-x-0 bottom-8 z-30 flex items-center justify-between pointer-events-none px-8 md:px-12">
           
-          {/* CENTER INDICATOR DOT TRACK */}
-          <div className="flex items-center justify-center gap-2 pointer-events-auto">
+          {/* CENTER INDICATOR DOT TRACK (Centered dynamically on mobile layouts via auto margins) */}
+          <div className="flex items-center justify-center gap-2 pointer-events-auto mx-auto md:mx-0">
             {films.map((_, index) => (
               <button
                 key={index}
@@ -209,15 +246,13 @@ export default function FeatureRail({ films, activeIndex, onSlideChange }: Featu
           {/* RIGHT DIRECTIONAL CONTROLS */}
           <div className="hidden md:flex absolute right-6 items-center gap-2.5 pointer-events-auto">
             
-            {/* 🎯 THE OVERHAULED CYLINDRICAL COUNTDOWN TIMELINE BUTTON */}
+            {/* THE OVERHAULED CYLINDRICAL COUNTDOWN TIMELINE BUTTON */}
             <button 
               onClick={handleTogglePlay}
               className="w-8 h-8 relative rounded-full flex items-center justify-center backdrop-blur-sm transition-all duration-200 active:scale-95 bg-white/10 hover:bg-white/15"
               aria-label={isPlaying ? "Pause autoplay loop" : "Start autoplay loop"}
             >
-              {/* VECTORS FOR PROGRESS RING TRACKS */}
               <svg className="absolute inset-0 w-full h-full transform -rotate-90">
-                {/* Underlying muted base canvas track circle */}
                 <circle
                   cx="16"
                   cy="16"
@@ -226,7 +261,6 @@ export default function FeatureRail({ films, activeIndex, onSlideChange }: Featu
                   stroke="rgba(255, 255, 255, 0.25)"
                   strokeWidth="2"
                 />
-                {/* Active vector path tracking real-time playback state updates */}
                 <circle
                   cx="16"
                   cy="16"
@@ -241,7 +275,6 @@ export default function FeatureRail({ films, activeIndex, onSlideChange }: Featu
                 />
               </svg>
 
-              {/* DYNAMIC PLAYER ICON OVERLAYS */}
               <div className="relative z-10 text-white flex items-center justify-center">
                 {isPlaying ? (
                   <Pause size={12} fill="currentColor" />
@@ -253,7 +286,7 @@ export default function FeatureRail({ films, activeIndex, onSlideChange }: Featu
 
             {/* Prev Button */}
             <button 
-              onClick={handlePrev}
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigatePrev(); }}
               className="w-8 h-8 rounded-full bg-white/10 text-white flex items-center justify-center backdrop-blur-sm hover:bg-white/20 active:scale-95 transition-all duration-200"
             >
               <ChevronRight size={16} className="rotate-180" />
@@ -261,7 +294,7 @@ export default function FeatureRail({ films, activeIndex, onSlideChange }: Featu
             
             {/* Next Button */}
             <button 
-              onClick={handleNext}
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigateNext(); }}
               className="w-8 h-8 rounded-full bg-white/10 text-white flex items-center justify-center backdrop-blur-sm hover:bg-white/20 active:scale-95 transition-all duration-200"
             >
               <ChevronRight size={16} />

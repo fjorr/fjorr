@@ -5,13 +5,14 @@ import Link from 'next/link';
 
 export default function SearchNadaView() {
   return (
-    <div className="w-full py-12 flex flex-col items-center justify-center text-center max-w-xl animate-in fade-in duration-500">
+    <div className="w-full py-6 flex flex-col items-center justify-center text-center max-w-xl animate-in fade-in duration-500">
       
-      {/* 🎯 BULLETPROOF CSS SCALE KEYFRAMES */}
+      {/* 🎯 UPDATED COLOR SHIFT SCALE KEYFRAMES */}
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes popCircleStroke {
           0% {
             transform: scale(0);
+            border-color: #EF4444; /* Start vibrant red */
             opacity: 0;
           }
           1% {
@@ -19,6 +20,7 @@ export default function SearchNadaView() {
           }
           100% {
             transform: scale(1);
+            border-color: #FFFFFF; /* End clean white */
             opacity: 1;
           }
         }
@@ -28,9 +30,9 @@ export default function SearchNadaView() {
       `}} />
       
       {/* 🎯 PERFECT HOLLOW STROKE CIRCLE
-          Grows fluidly from a tiny invisible center point to its full scale, preserving the 40px outline */}
+          Grows fluidly from a tiny invisible center point while transitioning color from red to white */}
       <div 
-        className="w-48 h-48 rounded-full border-[50px] border-white bg-transparent mb-12 select-none shadow-2xl animate-stroke-pop"
+        className="w-48 h-48 rounded-full border-[50px] bg-transparent mb-12 select-none shadow-2xl animate-stroke-pop"
         style={{ transform: 'scale(0)', opacity: 0 }}
       />
       
