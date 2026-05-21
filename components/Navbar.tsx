@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { Search } from 'lucide-react';
 
@@ -9,55 +9,16 @@ interface NavbarProps {
 }
 
 function Navbar({ variant = 'light' }: NavbarProps) {
-  const [isScrolling, setIsScrolling] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    // 1. THE BLOW-OUT CACHE CURE: 
-    // Forces the browser to completely drop history scroll caching properties on layout mount.
-    if (typeof window !== 'undefined' && 'scrollRestoration' in window.history) {
-      window.history.scrollRestoration = 'manual';
-    }
-
-    // 2. SIGNAL MOUNT COMPLETION
-    setIsMounted(true);
-
-    // 3. DUAL-CHECK ENGINE: Instantly scan true real-time coordinates
-    const checkScrollPosition = () => {
-      if (window.scrollY > 10) {
-        setIsScrolling(true);
-      } else {
-        setIsScrolling(false);
-      }
-    };
-
-    // Run right away to capture position context cleanly
-    checkScrollPosition();
-
-    window.addEventListener('scroll', checkScrollPosition, { passive: true });
-    return () => window.removeEventListener('scroll', checkScrollPosition);
-  }, []);
-
   const textColor = variant === 'light' ? 'text-white' : 'text-black';
   const subTextColor = variant === 'light' ? 'text-white/40' : 'text-black/40';
 
   return (
-    /* 🎯 OVERLAY TRACKING STRUCTURE */
-    <header className="fixed top-0 left-0 z-50 w-full h-[70px] pt-[20px] px-4 flex justify-center pointer-events-none">
+    /* 🎯 THE STICKY BASELINE FRAME */
+    <header className="sticky top-0 z-50 w-full h-[70px] pt-[20px] px-4 flex justify-center pointer-events-none">
       
       {/* Floating Center Container */}
       <div
-        className="inline-flex h-[50px] px-[30px] rounded-[10px] items-center gap-[20px] pointer-events-auto transition-all duration-300"
-        style={{
-          opacity: isMounted ? 1 : 0,
-          /* 🛠️ HARDENED STYLE CONDITIONAL: 
-             If the client layer hasn't processed mounting variables yet, we keep it fully 
-             transparent to prevent any quick glass flashes before calculations conclude.
-          */
-          backgroundColor: isMounted && isScrolling ? 'rgba(120, 120, 120, 0.15)' : 'rgba(120, 120, 120, 0)',
-          backdropFilter: isMounted && isScrolling ? 'blur(12px)' : 'none',
-          WebkitBackdropFilter: isMounted && isScrolling ? 'blur(12px)' : 'none',
-        }}
+        className="inline-flex h-[50px] px-[30px] rounded-[10px] items-center gap-[20px] pointer-events-auto border border-white/0 animate-nav-glass"
       >
         {/* Left: Official Fjorr Logo Box */}
         <Link href="/" className={`w-[50px] flex items-center cursor-pointer shrink-0 ${textColor}`}>
@@ -83,6 +44,37 @@ function Navbar({ variant = 'light' }: NavbarProps) {
         </Link>
 
       </div>
+
+      {/* 🎯 THE ADJUSTED SCROLL TIMELINE DRIVER */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes revealGlass {
+          from {
+            background-color: rgba(120, 120, 120, 0);
+            border-color: rgba(255, 255, 255, 0);
+            backdrop-filter: blur(0px);
+            -webkit-backdrop-filter: blur(0px);
+          }
+          to {
+            background-color: rgba(120, 120, 120, 0.15);
+            border-color: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+          }
+        }
+
+        .animate-nav-glass {
+          animation: revealGlass linear both;
+          animation-timeline: scroll(root);
+          
+          /* 🛠️ THE FIXED MOBILE SPACING BUFFER:
+             Instead of starting the animation right at 0px, we set the trigger window to 
+             start at 60px down and finalize at 100px down. 
+             This absorbs all sub-pixel browser chrome padding shifts completely!
+          */
+          animation-range: 60px 100px; 
+        }
+      `}} />
+
     </header>
   );
 }
