@@ -12,7 +12,8 @@ function Navbar({ variant = 'light' }: NavbarProps) {
   const [isScrolling, setIsScrolling] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => {
+    // 1. DUAL-CHECK ENGINE: Instantly scan current coordinates on mount
+    const checkScrollPosition = () => {
       if (window.scrollY > 10) {
         setIsScrolling(true);
       } else {
@@ -20,17 +21,19 @@ function Navbar({ variant = 'light' }: NavbarProps) {
       }
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    // Run immediately to capture initial state if browser auto-scrolled or restored cache
+    checkScrollPosition();
+
+    // 2. CONTINUE CONTINUOUS EVENT CAPTURE
+    window.addEventListener('scroll', checkScrollPosition, { passive: true });
+    return () => window.removeEventListener('scroll', checkScrollPosition);
   }, []);
 
   const textColor = variant === 'light' ? 'text-white' : 'text-black';
   const subTextColor = variant === 'light' ? 'text-white/40' : 'text-black/40';
 
   return (
-    /* 🎯 THE OVERLAY FIX: Changed 'sticky' to 'fixed'. 
-       This completely frees your main pages from vertical layout collisions.
-    */
+    /* 🎯 OVERLAY TRACKING STRUCTURE */
     <header className="fixed top-0 left-0 z-50 w-full h-[70px] pt-[20px] px-4 flex justify-center pointer-events-none">
       
       {/* Floating Center Container */}
