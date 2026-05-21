@@ -88,56 +88,101 @@ export default function NominatePage() {
   };
 
   return (
-    <div className="w-full min-h-screen pt-36 pb-24 px-[10%] flex flex-col items-center">
-      <div className="w-full max-w-4xl flex flex-col items-center text-center">
+    /* 🎯 ROOT CONTAINER */
+    <div className="w-full min-h-screen bg-[#1F1F1F] pt-[90px] pb-24 flex flex-col items-center">
+      
+      {/* =========================================================================
+          HEADER MARQUEE GRID STRIP (The 4-Photo Narrative Film Stack)
+          ========================================================================= */}
+      <div className="w-full h-auto grid grid-cols-3 md:grid-cols-4 gap-0.5 mb-16 sm:mb-24 overflow-hidden">
         
-        {/* =========================================================================
-            HEADER MARQUEE GRID STRIP (The 4-Photo Narrative Film Stack)
-            ========================================================================= */}
-        <div className="w-full grid grid-cols-4 gap-1 border-b border-white/5 pb-16 mb-16 overflow-hidden">
-          {/* PHOTO 1 */}
-          <div className="aspect-[3/4] bg-zinc-900 overflow-hidden relative">
-            <img src="https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=600&auto=format&fit=crop" alt="Historical Frame reference" className="w-full h-full object-cover opacity-60 grayscale hover:grayscale-0 transition-all duration-700" />
-          </div>
-          {/* PHOTO 2 */}
-          <div className="aspect-[3/4] bg-zinc-900 overflow-hidden relative">
-            <img src="https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=600&auto=format&fit=crop" alt="Historical Frame reference" className="w-full h-full object-cover opacity-60 grayscale hover:grayscale-0 transition-all duration-700" />
-          </div>
-          {/* PHOTO 3 */}
-          <div className="aspect-[3/4] bg-zinc-900 overflow-hidden relative">
-            <img src="https://images.unsplash.com/photo-1505686994434-e3cc5abf1330?q=80&w=600&auto=format&fit=crop" alt="Historical Frame reference" className="w-full h-full object-cover opacity-60 grayscale hover:grayscale-0 transition-all duration-700" />
-          </div>
-          {/* PHOTO 4 */}
-          <div className="aspect-[3/4] bg-zinc-900 overflow-hidden relative">
-            <img src="https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=600&auto=format&fit=crop" alt="Historical Frame reference" className="w-full h-full object-cover opacity-60 grayscale hover:grayscale-0 transition-all duration-700" />
-          </div>
+        {/* PHOTO 1: BREAKDANCING */}
+        <div 
+          className="bg-zinc-900 relative w-full opacity-0 animate-sweep-right"
+          style={{ animationDelay: '100ms' }}
+        >
+          <img 
+            src="https://media.fjorr.com/assets/fjorr-nominate-poster-breakdancing.avif" 
+            className="w-full h-auto object-contain block opacity-80 hover:opacity-100 transition-all duration-700" 
+            alt="Breakdancing narrative frame"
+          />
         </div>
+        
+        {/* PHOTO 2: NAISMITH */}
+        <div 
+          className="bg-zinc-900 relative w-full opacity-0 animate-sweep-right"
+          style={{ animationDelay: '250ms' }}
+        >
+          <img 
+            src="https://media.fjorr.com/assets/fjorr-nominate-poster-naismith.avif" 
+            className="w-full h-auto object-contain block opacity-80 hover:opacity-100 transition-all duration-700" 
+            alt="Naismith basketball narrative frame"
+          />
+        </div>
+        
+        {/* PHOTO 3: WW2 */}
+        <div 
+          className="bg-zinc-900 relative w-full opacity-0 animate-sweep-right"
+          style={{ animationDelay: '400ms' }}
+        >
+          <img 
+            src="https://media.fjorr.com/assets/fjorr-nominate-poster-ww2.avif" 
+            className="w-full h-auto object-contain block opacity-80 hover:opacity-100 transition-all duration-700" 
+            alt="WWII historical narrative frame"
+          />
+        </div>
+        
+        {/* PHOTO 4: YETI 
+            🎯 FIXED ANIMATION CRASH: Changed 'hidden md:block animate-sweep-right' 
+            to 'max-md:hidden opacity-0 animate-sweep-right'. This handles the DOM removal 
+            safely on mobile layout drops so it compiles cleanly on desktop grids!
+        */}
+        <div 
+          className="bg-zinc-900 relative w-full max-md:hidden opacity-0 animate-sweep-right"
+          style={{ animationDelay: '550ms' }}
+        >
+          <img 
+            src="https://media.fjorr.com/assets/fjorr-nominate-poster-yeti.avif" 
+            className="w-full h-auto object-contain block opacity-80 hover:opacity-100 transition-all duration-700" 
+            alt="Yeti legend narrative frame"
+          />
+        </div>
+        
+      </div>
 
-        {/* =========================================================================
-            LOGICAL INTERFACE VIEW SWITCHBOARD PANEL 
-            ========================================================================= */}
+      {/* =========================================================================
+          LOGICAL INTERFACE CONTENT AREA 
+          ========================================================================= */}
+      <div className="w-full max-w-4xl px-[10%] flex flex-col items-center text-center">
+        
         {submittedSuccess ? (
           <NominateSuccessView onReset={handleResetForm} />
         ) : (
           <div className="w-full max-w-xl flex flex-col items-center">
             
-            {/* SUB-HEADER COMPONENT LABEL TRACK */}
-            <span className="font-mono text-[11px] tracking-[0.25em] text-white/40 uppercase mb-4 font-bold block select-none">
-              Nominate
-            </span>
-
-            {/* MAIN SHOWCASE TITLE HERO HEADER (Trade Gothic Display Type) */}
-            <h1 className="font-tradeGothic text-6xl md:text-[80px] font-black uppercase tracking-tight leading-none text-white mb-6 select-none">
-              Tell It.
+            {/* MAIN SHOWCASE TITLE HERO HEADER */}
+            <h1 
+              className="text-6xl sm:text-7xl md:text-8xl font-extrabold uppercase tracking-tighter text-light-01 leading-[52px] sm:leading-[64px] md:leading-[76px] font-futura mb-6 opacity-0 animate-slide-up whitespace-pre-line select-none"
+              style={{ animationDelay: '750ms' }}
+            >
+              Nominate.
             </h1>
 
             {/* SUMMARY PLATFORM PARAGRAPH BLOCKS */}
-            <p className="font-sans font-medium text-[15px] sm:text-[16px] leading-[1.6em] text-white/60 max-w-md tracking-tight text-center mb-10">
+            <p 
+              className="font-sans font-medium text-[15px] sm:text-[16px] leading-[1.6em] text-white/60 max-w-[280px] sm:max-w-md tracking-tight text-center mb-10 opacity-0 animate-slide-up"
+              style={{ animationDelay: '950ms' }}
+            >
               Know a story the world needs to hear? A piece of history. A fictional adventure. A forgotten legend. Nominate it. Your name goes on the film. Bragging rights included.
             </p>
 
             {/* INPUT COLLECTION DATA FORM FRAME */}
-            <form onSubmit={handleSubmit} noValidate className="w-full flex flex-col text-left">
+            <form 
+              onSubmit={handleSubmit} 
+              noValidate 
+              className="w-full flex flex-col text-left opacity-0 animate-slide-up"
+              style={{ animationDelay: '1150ms' }}
+            >
               
               {/* FIELD AREA 1: LONG FORM DATA CONTENT FIELD */}
               <div className="w-full flex flex-col mb-4">
@@ -165,7 +210,7 @@ export default function NominatePage() {
                   type="email"
                   value={email}
                   onChange={handleEmailChange}
-                  placeholder="Enter you email."
+                  placeholder="Enter your email."
                   className={`w-full h-14 px-6 rounded-xl bg-white/5 font-sans font-semibold text-[15px] text-white placeholder-white/30 border focus:outline-none transition-all duration-300
                     ${errors.contributor_email 
                       ? 'border-red-500/50 focus:border-red-500' 
@@ -181,7 +226,7 @@ export default function NominatePage() {
               </div>
 
               {/* COMPLIANCE WARNING BANNER AREA TEXT */}
-              <p className="font-sans font-medium text-[12px] leading-[1.5em] text-white/40 tracking-tight text-center max-w-sm mx-auto mb-8 select-none">
+              <p className="font-sans font-medium text-xs leading-[1.5em] text-white/40 tracking-relaxed text-center max-w-xs mx-auto mb-8 select-none">
                 We review everything in good faith. Nominations are simply pointers—we may already be developing similar ideas. They don't create ownership or compensation, but we take every submission seriously.
               </p>
 
@@ -201,6 +246,39 @@ export default function NominatePage() {
         )}
 
       </div>
+
+      {/* CINEMATIC TIMING ENGINE LOCAL COMPILER SCOPE */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes imageSweepRight {
+          from {
+            opacity: 0;
+            transform: translateX(-12px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+
+        @keyframes layoutSlideUp {
+          from {
+            opacity: 0;
+            transform: translateY(14px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .animate-sweep-right {
+          animation: imageSweepRight 950ms cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+
+        .animate-slide-up {
+          animation: layoutSlideUp 850ms cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+      `}} />
     </div>
   );
 }

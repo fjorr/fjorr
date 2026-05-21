@@ -8,39 +8,69 @@ interface SuccessProps {
 
 export default function NominateSuccessView({ onReset }: SuccessProps) {
   return (
-    <div className="w-full max-w-md mx-auto aspect-[1/1] sm:aspect-[4/3.5] bg-gradient-to-b from-zinc-900/40 to-zinc-950/60 rounded-2xl border border-white/5 relative p-8 flex flex-col items-center justify-center text-center shadow-2xl transition-all duration-500 overflow-hidden group">
+    /* 🎯 UNIFIED MASTER EXTERIOR VIEWPORT CARRIER */
+    <div className="w-full max-w-md mx-auto aspect-[1/1] sm:aspect-[4/3.5] bg-transparent flex items-center justify-center transition-all duration-500">
       
-      {/* THE GLOW RADIAL AMBIENT BACKGROUND LAYER */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.08)_0%,rgba(0,0,0,0)_70%)] pointer-events-none" />
-      <div className="absolute -inset-px rounded-2xl bg-gradient-to-b from-indigo-500/10 to-transparent opacity-60 pointer-events-none" />
+      {/* 1. MASTER EXTERIOR CONTAINER FRAME WITH A 10% WHITE BORDER */}
+      <div className="w-full h-full border border-[#FFFFFF]/10 rounded-2xl bg-[#1F1F1F] flex items-center justify-center overflow-hidden relative group">
+        
+        {/* 2. SOLID INTERIOR CANVAS FRAME LAYER WITH THE 30px PADDING SPEC */}
+        <div className="w-full h-full bg-[#1F1F1F] p-[30px] relative flex flex-col items-center justify-center text-center">
+          
+          {/* 3. CLAMPED INDENTED DOT MATRIX CANVAS LAYER (30px offset padding margins) */}
+          <div 
+            className="absolute top-[30px] bottom-[30px] left-[30px] right-[30px] opacity-[0.15] pointer-events-none"
+            style={{
+              backgroundImage: 'radial-gradient(#FFFFFF 1px, transparent 1px)',
+              backgroundSize: '20px 20px',
+              backgroundPosition: 'center',
+            }}
+          />
 
-      {/* ICON SPEC INSTANCE */}
-      <div className="mb-4 text-white/90 animate-pulse">
-        <svg className="w-10 h-10 stroke-current" fill="none" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
-        </svg>
+          {/* =========================================================================
+              INTERFACE FOREGROUND CONTENT DECK
+              ========================================================================= */}
+          {/* 🎯 FIXED: Wrapped foreground layout elements in the exact same timing sequence 
+              as your nominate page ('opacity-0 animate-slide-up') so it gracefully transitions when showing up.
+          */}
+          <div 
+            className="relative z-10 flex flex-col items-center justify-center opacity-0 animate-slide-up"
+            style={{ animationDelay: '150ms' }}
+          >
+            
+            {/* ICON SPEC INSTANCE */}
+            <div className="mb-4 text-white/90">
+              <svg className="w-10 h-10 stroke-current" fill="none" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+              </svg>
+            </div>
+
+            {/* TYPOGRAPHY HEADINGS HEADER */}
+            <h2 className="text-5xl sm:text-6xl font-extrabold uppercase tracking-tighter text-light-01 leading-[46px] sm:leading-[54px] font-futura mb-4 select-none">
+              Logged.
+            </h2>
+
+            {/* SUMMARY PLATFORM PARAGRAPH BLOCKS */}
+            <p className="font-sans font-medium text-base leading-relaxed text-white/60 max-w-[200px] sm:max-w-[250px] mb-8 tracking-tight">
+            Thank you for sending this story our way. We’ll review it with care. If it feels like a fit, we’ll be in touch.
+            </p>
+
+            {/* RESET ACTION CTA CONTROL */}
+            <button
+              onClick={onReset}
+              className="px-10 h-14 bg-white text-black font-sans font-bold text-[15px] tracking-tight rounded-full hover:bg-white/90 active:scale-95 transition-all duration-150 inline-flex items-center justify-center gap-1.5 group/btn"
+            >
+              <span>Submit more</span>
+              <svg className="w-4 h-4 group-hover/btn:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+              </svg>
+            </button>
+
+          </div>
+
+        </div>
       </div>
-
-      {/* TYPOGRAPHY HEADINGS HEADER (Trade Gothic Scale) */}
-      <h2 className="font-tradeGothic text-[44px] sm:text-[54px] font-black uppercase tracking-tight leading-none text-white mb-4 select-none">
-        Told.
-      </h2>
-
-      <p className="font-sans font-medium text-[14px] leading-relaxed text-white/50 max-w-xs mb-8 tracking-tight">
-        Thank you for the nomination. Now, we review. If the story is a fit, we'll be in touch.
-      </p>
-
-      {/* RESET ACTION COMPONENT HUB */}
-      <button
-        onClick={onReset}
-        className="px-8 h-11 inline-flex items-center justify-center gap-1.5 font-sans font-bold text-[13px] tracking-tight bg-white text-black hover:bg-white/90 rounded-full transition-all shadow-xl active:scale-95 duration-150 group/btn"
-      >
-        <span>Go again</span>
-        <svg className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-        </svg>
-      </button>
-
+      
     </div>
   );
 }
