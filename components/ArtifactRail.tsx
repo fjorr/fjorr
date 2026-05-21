@@ -9,10 +9,14 @@ interface ArtifactRailProps {
 }
 
 export default function ArtifactRail({ title, artifacts: rawArtifacts }: ArtifactRailProps) {
+  const containerRef = useRef<HTMLDivElement>(null); // Parent container boundaries stage reference
   const railRef = useRef<HTMLDivElement>(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(6);
   const [isMobile, setIsMobile] = useState(false);
+  
+  /* 🎬 SCROLL INTERSECTION TRACKING STATE */
+  const [hasEnteredScreen, setHasEnteredScreen] = useState(false);
 
   // Filter out any broken elements missing an active slug property
   const filteredArtifacts = (rawArtifacts || []).filter((item) => {
@@ -24,6 +28,29 @@ export default function ArtifactRail({ title, artifacts: rawArtifacts }: Artifac
   const activeArtifacts = filteredArtifacts.length > 0 
     ? Array.from({ length: 18 }, (_, i) => filteredArtifacts[i % filteredArtifacts.length]) 
     : [];
+
+  /* 🌟 THE VISIBILITY OBSERVATION ENGINE */
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setHasEnteredScreen(true);
+          // Disconnect once tracked so layouts lock permanently during horizontal navigation passes
+          if (containerRef.current) observer.unobserve(containerRef.current);
+        }
+      },
+      { 
+        threshold: 0.1, // Fires when 10% of the rail canvas appears inside the viewport view frame
+        rootMargin: '0px 0px -40px 0px' // Optical offset to guarantee the scroll looks fully intentional
+      }
+    );
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   // Handle items per page and mobile viewport detection state updates
   useEffect(() => {
@@ -52,7 +79,6 @@ export default function ArtifactRail({ title, artifacts: rawArtifacts }: Artifac
       const { scrollLeft, scrollWidth, clientWidth } = railRef.current;
       
       if (scrollWidth > clientWidth) {
-        {/* 🎯 ADJUSTMENT 1: Updated tracking gap calculations to balance your new layout values */}
         const currentGap = window.innerWidth >= 1024 ? 24 : window.innerWidth >= 768 ? 20 : 16;
         const itemWidth = (scrollWidth + currentGap) / activeArtifacts.length;
         
@@ -87,7 +113,8 @@ export default function ArtifactRail({ title, artifacts: rawArtifacts }: Artifac
   const formatIndex = (num: number) => String(num).padStart(2, '0');
 
   return (
-    <section className="w-full pb-12 relative group/rail select-none z-20 px-8 md:px-16">
+    /* 🎯 PARENT CONTAINER INTERSECTION BOUNDARY: Linked with containerRef to intercept screen viewport entry */
+    <section ref={containerRef} className="w-full pb-12 relative group/rail select-none z-20 px-8 md:px-16">
       
       {/* Scrollbar hidden styling core structure element */}
       <style dangerouslySetInnerHTML={{__html: `
@@ -98,8 +125,14 @@ export default function ArtifactRail({ title, artifacts: rawArtifacts }: Artifac
 
       <div className="w-full max-w-[1440px] mx-auto relative">
         
-        {/* HEADER TRACK COMPONENT ROW */}
-        <div className="w-full flex items-center justify-between mb-4">
+        {/* HEADER TRACK COMPONENT ROW 
+            🎯 REVEAL INJECTION: Transitions gracefully upward from vertical baseline shifts upon viewport intersection 
+        */}
+        <div className={`w-full flex items-center justify-between mb-4 transition-all duration-800 ease-out transform ${
+          hasEnteredScreen 
+            ? 'opacity-100 translate-y-0' 
+            : 'opacity-0 translate-y-4'
+        }`}>
           <h3 className="font-sans font-bold text-[18px] text-white/90 tracking-tight capitalize whitespace-nowrap">
             {title}
           </h3>
@@ -135,13 +168,6 @@ export default function ArtifactRail({ title, artifacts: rawArtifacts }: Artifac
 
         {/* ARTIFACT CAROUSEL WINDOW PANELS */}
         <div className="w-full overflow-hidden rounded-[8px]">
-          {/* 🎯 ADJUSTMENTS 2 & 3: 
-              - Updated grid padding rules: 'gap-4 md:gap-5 lg:gap-6'
-              - Updated math widths to subtract out extra space so cards align perfectly with headers:
-                Mobile auto-cols: minus 2rem
-                Tablet auto-cols: minus 3.75rem
-                Desktop auto-cols: minus 7.5rem (120px space for 6 columns)
-          */}
           <div 
             ref={railRef} 
             onScroll={handleScroll}
@@ -151,11 +177,20 @@ export default function ArtifactRail({ title, artifacts: rawArtifacts }: Artifac
             {activeArtifacts.map((item, index) => {
               const artifact = item?.artifact ? item.artifact : item;
 
+              /* 🎯 STAGGER ENGINE: Builds cascading entry transitions using increments based on index locations */
+              const cardDelay = `${150 + index * 75}ms`;
+
               return (
                 <Link 
                   key={index} 
                   href={`/artifact/${artifact.slug}`}
-                  className="w-full shrink-0 snap-start group/card cursor-pointer block"
+                  className={`w-full shrink-0 snap-start group/card cursor-pointer block transition-all duration-700 ease-out transform ${
+                    hasEnteredScreen 
+                      ? 'opacity-100 translate-y-0 scale-100' 
+                      : 'opacity-0 translate-y-6 scale-[0.98]'
+                  }`}
+                  /* Safely injects the transitionDelay parameter string to create the visual trailing wave */
+                  style={{ transitionDelay: hasEnteredScreen ? cardDelay : '0ms' }}
                 >
                   <div className="w-full aspect-[2/3] rounded-[8px] bg-zinc-900/40 border border-white/5 overflow-hidden relative transition-all duration-300 group-hover/card:scale-[1.02] shadow-xl flex items-center justify-center">
                     {artifact.blok_tall ? (

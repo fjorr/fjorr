@@ -39,9 +39,8 @@ export const ContactPill: React.FC<ContactPillProps> = ({
       ) : (
         /* 🎯 THE EXPANDED MATRIX FEEDBACK PILL */
         <div 
-          // 🎯 CHANGED: Replaced py-2.5 with py-3.5 to physically give the dark capsule more height and presence on screen
-          className="relative px-7 py-3.5 rounded-full font-semibold text-[14px] text-[#73ACE9] flex items-center justify-center gap-2 font-inter overflow-hidden animate-in zoom-in-95 fade-in duration-200 shadow-2xl"
-          style={{ backgroundColor: '#1F1F1F' }} 
+          // 🎯 CHANGED: Swapped solid dark fill background for 'bg-transparent' and removed the custom inline style block completely
+          className="relative px-7 py-3.5 rounded-full font-semibold text-[14px] text-[#589fde] flex items-center justify-center gap-2 font-inter overflow-hidden animate-in zoom-in-95 fade-in duration-200 shadow-2xl bg-transparent"
         >
           {/* 🌌 THE ELECTRIC-BLUE DOT MATRIX BG LAYER */}
           <div 
@@ -53,7 +52,7 @@ export const ContactPill: React.FC<ContactPillProps> = ({
           />
 
           {/* THE TEXT PRESENTER LAYER */}
-          <span className="relative z-10 tracking-wide text-[#b1d1f4] select-none">
+          <span className="relative z-10 tracking-wide text-[#6db7f8] select-none">
             Email copied. Fire away.
           </span>
         </div>

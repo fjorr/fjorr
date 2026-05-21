@@ -9,12 +9,39 @@ interface FilmRailProps {
 }
 
 export default function FilmRail({ title, films: rawFilms }: FilmRailProps) {
+  const containerRef = useRef<HTMLDivElement>(null); // Track the component cross section visibility
   const railRef = useRef<HTMLDivElement>(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(6);
   const [isMobile, setIsMobile] = useState(false);
+  
+  /* 🎬 SCROLL INTERSECTION TRACKING STATE */
+  const [hasEnteredScreen, setHasEnteredScreen] = useState(false);
 
   const activeFilms = rawFilms || [];
+
+  useEffect(() => {
+    /* 🌟 THE VISIBILITY OBSERVATION ENGINE */
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setHasEnteredScreen(true);
+          // Once triggered, disconnect the observer loop to lock in layout frames permanently
+          if (containerRef.current) observer.unobserve(containerRef.current);
+        }
+      },
+      { 
+        threshold: 0.1, // Fire the stagger sequence when 10% of the rail canvas enters screen view 
+        rootMargin: '0px 0px -40px 0px' // Offset edge firing slightly to guarantee a smooth scroll-in read
+      }
+    );
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const handleResize = () => {
@@ -38,7 +65,6 @@ export default function FilmRail({ title, films: rawFilms }: FilmRailProps) {
     if (railRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = railRef.current;
       if (scrollWidth > clientWidth) {
-        {/* 🎯 ADJUSTMENT 1: Updated math wrapper '+ 16' to '+ 24' to balance your new 24px desktop gaps */}
         const currentGap = window.innerWidth >= 1024 ? 24 : window.innerWidth >= 768 ? 20 : 16;
         const itemWidth = (scrollWidth + currentGap) / activeFilms.length;
         const calculatedPage = Math.round(scrollLeft / (itemWidth * itemsPerPage));
@@ -63,13 +89,21 @@ export default function FilmRail({ title, films: rawFilms }: FilmRailProps) {
   const formatIndex = (num: number) => String(num).padStart(2, '0');
 
   return (
-    <section className="w-full pb-12 relative group/rail select-none z-20 px-8 md:px-16">
+    /* 🎯 PARENT CONTAINER INTERSECTION BOUNDARY: Assigned containerRef here to watch scroll coordinates */
+    <section ref={containerRef} className="w-full pb-12 relative group/rail select-none z-20 px-8 md:px-16">
       <style dangerouslySetInnerHTML={{__html: `.no-scrollbar::-webkit-scrollbar { display: none !important; }`}} />
 
       <div className="w-full max-w-[1440px] mx-auto relative">
         
-        {/* HEADER */}
-        <div className="w-full flex items-center justify-between mb-4">
+        {/* HEADER 
+            🎯 REVEAL INJECTION: Clamped with conditional styling framework. 
+            Starts invisible and slides up gracefully for 800ms when the container becomes active.
+        */}
+        <div className={`w-full flex items-center justify-between mb-4 transition-all duration-800 ease-out transform ${
+          hasEnteredScreen 
+            ? 'opacity-100 translate-y-0' 
+            : 'opacity-0 translate-y-4'
+        }`}>
           <h3 className="font-sans font-bold text-[18px] text-white/90 tracking-tight capitalize whitespace-nowrap">
             {title}
           </h3>
@@ -104,13 +138,6 @@ export default function FilmRail({ title, films: rawFilms }: FilmRailProps) {
 
         {/* HORIZONTAL CAROUSEL */}
         <div className="w-full overflow-hidden rounded-[8px]">
-          {/* 🎯 ADJUSTMENTS 2 & 3: 
-              - Updated grid padding rules: 'gap-4 md:gap-5 lg:gap-6'
-              - Updated math widths to account for gaps: 
-                Mobile: minus 2rem (32px total gaps for 3 columns)
-                Tablet: minus 3.75rem (60px total gaps for 4 columns)
-                Desktop: minus 7.5rem (120px total gaps for 6 columns)
-          */}
           <div 
             ref={railRef} 
             onScroll={handleScroll}
@@ -119,8 +146,22 @@ export default function FilmRail({ title, films: rawFilms }: FilmRailProps) {
           >
             {activeFilms.map((film, index) => {
               const filmUrlParam = film.slug || film.id;
+              
+              /* 🎯 STAGGER CALCULATION: Compiles incremental delay layers based on the poster item card index position */
+              const posterDelay = `${150 + index * 75}ms`;
+
               return (
-                <Link key={index} href={`/film/${filmUrlParam}`} className="w-full shrink-0 snap-start group/card block">
+                <Link 
+                  key={index} 
+                  href={`/film/${filmUrlParam}`} 
+                  className={`w-full shrink-0 snap-start group/card block transition-all duration-700 ease-out transform ${
+                    hasEnteredScreen 
+                      ? 'opacity-100 translate-y-0 scale-100' 
+                      : 'opacity-0 translate-y-6 scale-[0.98]'
+                  }`}
+                  /* Passes the custom offset duration calculation rule safely directly to the canvas loop node */
+                  style={{ transitionDelay: hasEnteredScreen ? posterDelay : '0ms' }}
+                >
                   <div className="w-full aspect-[2/3] rounded-[8px] bg-zinc-900/40 border border-white/5 overflow-hidden relative transition-all duration-300 group-hover/card:scale-[1.02] shadow-xl flex items-center justify-center">
                     {film.blok_tall ? (
                       <img src={film.blok_tall} alt={film.name || "Movie Poster"} className="w-full h-full object-cover pointer-events-none" loading="lazy" />

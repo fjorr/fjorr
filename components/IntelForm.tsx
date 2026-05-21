@@ -57,8 +57,8 @@ export function IntelForm({ variant, isCustomVariant = true }: IntelFormProps) {
               ${isCustomVariant 
                 ? `${textColor} focus:border-current/30 ${
                     variant === 'light'
-                      ? 'bg-white/10 placeholder-white/40 border border-white/10' 
-                      : 'bg-black/5 placeholder-black/40 border border-black/10'
+                      ? 'bg-white/10 placeholder-white/40' 
+                      : 'bg-black/5 placeholder-black/40'
                   }` 
                 : 'bg-black/5 dark:bg-white/5 text-black dark:text-white placeholder-black/40 dark:placeholder-white/60 border border-transparent focus:border-black/20 dark:focus:border-white/20'
               }
