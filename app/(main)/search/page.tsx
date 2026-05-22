@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react'; // 🎯 Added Suspense
 import { useSearchParams, useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 
@@ -25,12 +25,11 @@ interface SearchItem {
   creator?: string;
 }
 
-export default function SearchPage() {
-  // 🛰️ NEXT.JS NAV ROUTER TRACKING ENGINE
+// 📦 1. MOVED THE LIVE LOGIC INTO AN INNER PARSER COMPONENT
+function SearchContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   
-  // Instantly extract the existing saved 'q' parameter from the URL on load
   const initialQuery = searchParams.get('q') || '';
 
   const [query, setQuery] = useState(initialQuery);
@@ -46,11 +45,9 @@ export default function SearchPage() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
-  // Idle View Feed Fetch
   useEffect(() => {
     async function fetchLatest() {
       const currentIsoString = new Date().toISOString();
-
       const { data } = await supabase
         .from('search')
         .select('*')
@@ -64,7 +61,6 @@ export default function SearchPage() {
     if (inputRef.current) inputRef.current.focus();
   }, []);
 
-  // SMART RANKED LIVE SEARCH EFFECT ENGINE
   useEffect(() => {
     if (!query.trim()) {
       setRawResults([]);
@@ -82,11 +78,9 @@ export default function SearchPage() {
 
       if (!error && data) {
         const cleanQuery = query.toLowerCase().trim();
-
         const rankedResults = (data as SearchItem[]).sort((a, b) => {
           let scoreA = 0;
           let scoreB = 0;
-
           const nameA = (a.name || '').toLowerCase();
           const nameB = (b.name || '').toLowerCase();
           const teaserA = (a.teaser || '').toLowerCase();
@@ -96,15 +90,12 @@ export default function SearchPage() {
 
           if (nameA === cleanQuery) scoreA += 100;
           if (nameB === cleanQuery) scoreB += 100;
-
           if (nameA.startsWith(cleanQuery)) scoreA += 60;
           if (nameB.startsWith(cleanQuery)) scoreB += 60;
           if (nameA.includes(cleanQuery)) scoreA += 30;
           if (nameB.includes(cleanQuery)) scoreB += 30;
-
           if (teaserA.includes(cleanQuery)) scoreA += 15;
           if (teaserB.includes(cleanQuery)) scoreB += 15;
-
           if (contentA.includes(cleanQuery)) scoreA += 5;
           if (contentB.includes(cleanQuery)) scoreB += 5;
 
@@ -113,7 +104,6 @@ export default function SearchPage() {
             const timeB = b.release_date ? new Date(b.release_date).getTime() : 0;
             return timeB - timeA; 
           }
-
           return scoreB - scoreA;
         });
 
@@ -135,12 +125,10 @@ export default function SearchPage() {
     }
   }, [rawResults, activeTab]);
 
-  // INPUT INTERCEPTION HANDLER
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setQuery(val);
     
-    // 🎯 URL SYNCHRONIZER: Pushes input state changes into Next.js router parameters
     const params = new URLSearchParams(window.location.search);
     if (val.trim()) {
       params.set('q', val);
@@ -149,11 +137,9 @@ export default function SearchPage() {
       params.delete('q');
       setLoading(false);
     }
-    // 'replace' updates URL query parameters seamlessly without creating an unmanageable back-button cycle history stack
     router.replace(`?${params.toString()}`);
   };
 
-  // CLEAR SEARCH HANDLER
   const handleClearSearch = () => {
     setQuery('');
     setActiveTab('all');
@@ -164,75 +150,82 @@ export default function SearchPage() {
   };
 
   return (
-    <div className="w-full min-h-screen pt-6 pb-24 px-[10%] flex flex-col items-center">
-      <div className="w-full max-w-4xl flex flex-col items-center gap-8">
-        
-        {/* INPUT STAGE WRAPPER CONTAINER */}
-        <div className="w-full max-w-sm relative group animate-in fade-in slide-in-from-top-3 duration-500 fill-mode-both [transform:translateZ(0)] [backface-visibility:hidden]">
-          <span className="absolute left-5 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none transition-colors group-focus-within:text-white/80">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+    <div className="w-full max-w-4xl flex flex-col items-center gap-8">
+      {/* Search Input field code block */}
+      <div className="w-full max-w-sm relative group animate-in fade-in slide-in-from-top-3 duration-500 fill-mode-both [transform:translateZ(0)] [backface-visibility:hidden]">
+        <span className="absolute left-5 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none transition-colors group-focus-within:text-white/80">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </span>
+        <input
+          ref={inputRef}
+          type="text"
+          value={query}
+          onChange={handleInputChange}
+          placeholder="Search"
+          className="w-full bg-white/5 rounded-[10px] h-14 pl-14 pr-12 font-sans font-medium text-[16px] text-white placeholder-white/30 focus:bg-white/10 focus:outline-none focus:ring-0 focus:ring-offset-0 transition-all duration-300 shadow-2xl"
+        />
+        {query && (
+          <button 
+            onClick={handleClearSearch} 
+            className="absolute right-5 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
-          </span>
-          <input
-            ref={inputRef}
-            type="text"
-            value={query}
-            onChange={handleInputChange}
-            placeholder="Search"
-            className="w-full bg-white/5 rounded-[10px] h-14 pl-14 pr-12 font-sans font-medium text-[16px] text-white placeholder-white/30 focus:bg-white/10 focus:outline-none focus:ring-0 focus:ring-offset-0 transition-all duration-300 shadow-2xl"
-          />
-          {query && (
-            <button 
-              onClick={handleClearSearch} 
-              className="absolute right-5 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          )}
-        </div>
-
-        {/* CAPSULE FILTERS BAR */}
-        {query.trim().length > 0 && !loading && (
-          <div className="flex items-center gap-1 select-none animate-in fade-in zoom-in-95 duration-200">
-            <div className="pl-1 pr-1.5 text-white/30 flex items-center justify-center">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
-                <path d="M15.6 2.7a10 10 0 1 0 5.7 5.7"/>
-                <circle cx="12" cy="12" r="2"/>
-                <path d="M13.4 10.6 19 5"/>
-              </svg>
-            </div>
-
-            <button onClick={() => setActiveTab('all')} className={`font-sans font-semibold text-sm px-3.5 py-1.5 rounded-[6px] transition-all duration-200 cursor-pointer ${activeTab === 'all' ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white/70'}`}>All</button>
-            <button onClick={() => setActiveTab('film')} className={`font-sans font-semibold text-sm px-3.5 py-1.5 rounded-[6px] transition-all duration-200 cursor-pointer ${activeTab === 'film' ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white/70'}`}>Films</button>
-            <button onClick={() => setActiveTab('artifact')} className={`font-sans font-semibold text-sm px-3.5 py-1.5 rounded-[6px] transition-all duration-200 cursor-pointer ${activeTab === 'artifact' ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white/70'}`}>Artifacts</button>
-          </div>
+          </button>
         )}
-
-        {/* DYNAMIC COMPONENT INJECTOR ROUTER BOARD */}
-        <div className="w-full mt-6 flex flex-col items-center">
-          {loading ? (
-            <div className="w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-6 gap-y-10 animate-pulse">
-              {[1, 2, 3, 4].map((n) => (
-                <div key={n} className="flex flex-col gap-3">
-                  <div className="w-full aspect-[2/3] bg-white/5 rounded-[8px]" />
-                  <div className="h-4 bg-white/10 rounded w-2/3" />
-                  <div className="h-3 bg-white/5 rounded w-full" />
-                </div>
-              ))}
-            </div>
-          ) : !query.trim() ? (
-            <SearchIdleView latestItems={latestItems} />
-          ) : filteredResults.length > 0 ? (
-            <SearchResultsGrid results={filteredResults} />
-          ) : (
-            <SearchNadaView />
-          )}
-        </div>
-
       </div>
+
+      {/* Capsule filters display */}
+      {query.trim().length > 0 && !loading && (
+        <div className="flex items-center gap-1 select-none animate-in fade-in zoom-in-95 duration-200">
+          <div className="pl-1 pr-1.5 text-white/30 flex items-center justify-center">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+              <path d="M15.6 2.7a10 10 0 1 0 5.7 5.7"/>
+              <circle cx="12" cy="12" r="2"/>
+              <path d="M13.4 10.6 19 5"/>
+            </svg>
+          </div>
+          <button onClick={() => setActiveTab('all')} className={`font-sans font-semibold text-sm px-3.5 py-1.5 rounded-[6px] transition-all duration-200 cursor-pointer ${activeTab === 'all' ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white/70'}`}>All</button>
+          <button onClick={() => setActiveTab('film')} className={`font-sans font-semibold text-sm px-3.5 py-1.5 rounded-[6px] transition-all duration-200 cursor-pointer ${activeTab === 'film' ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white/70'}`}>Films</button>
+          <button onClick={() => setActiveTab('artifact')} className={`font-sans font-semibold text-sm px-3.5 py-1.5 rounded-[6px] transition-all duration-200 cursor-pointer ${activeTab === 'artifact' ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white/70'}`}>Artifacts</button>
+        </div>
+      )}
+
+      {/* Results Injector Row */}
+      <div className="w-full mt-6 flex flex-col items-center">
+        {loading ? (
+          <div className="w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-6 gap-y-10 animate-pulse">
+            {[1, 2, 3, 4].map((n) => (
+              <div key={n} className="flex flex-col gap-3">
+                <div className="w-full aspect-[2/3] bg-white/5 rounded-[8px]" />
+                <div className="h-4 bg-white/10 rounded w-2/3" />
+                <div className="h-3 bg-white/5 rounded w-full" />
+              </div>
+            ))}
+          </div>
+        ) : !query.trim() ? (
+          <SearchIdleView latestItems={latestItems} />
+        ) : filteredResults.length > 0 ? (
+          <SearchResultsGrid results={filteredResults} />
+        ) : (
+          <SearchNadaView />
+        )}
+      </div>
+    </div>
+  );
+}
+
+// 📦 2. EXPORT THE BASE ROOT WITH A SUSPENSE BARRIER
+export default function SearchPage() {
+  return (
+    <div className="w-full min-h-screen pt-6 pb-24 px-[10%] flex flex-col items-center">
+      {/* 🎯 NEXT.JS BUILD INSURANCE: Wraps parameters hook calls cleanly */}
+      <Suspense fallback={<div className="text-white/20 font-sans text-sm mt-12 animate-pulse">Loading search platform...</div>}>
+        <SearchContent />
+      </Suspense>
     </div>
   );
 }
