@@ -98,17 +98,14 @@ export default function FeatureRail({ films, activeIndex, onSlideChange }: Featu
     if (!touchStartX.current || !touchEndX.current) return;
     
     const totalSwipeDistance = touchStartX.current - touchEndX.current;
-    const swipeThreshold = 50; // Minimum sliding travel distance in pixels required to confirm intent
+    const swipeThreshold = 50; 
 
     if (totalSwipeDistance > swipeThreshold) {
-      // Swiped Left -> Reveal Next Slide
       navigateNext();
     } else if (totalSwipeDistance < -swipeThreshold) {
-      // Swiped Right -> Reveal Previous Slide
       navigatePrev();
     }
 
-    // Reset touch trackers back to null coordinate values
     touchStartX.current = null;
     touchEndX.current = null;
   };
@@ -123,7 +120,7 @@ export default function FeatureRail({ films, activeIndex, onSlideChange }: Featu
     <section className="w-full flex justify-center bg-[#1F1F1F]">
       <div className="w-full max-w-[1440px] relative group/rail overflow-hidden rounded-none min-[1440px]:rounded-xl">
         
-        {/* CAROUSEL IMAGE BODY ANCHOR (With added Mobile Touch Event Handlers) */}
+        {/* CAROUSEL IMAGE BODY ANCHOR */}
         <Link 
           href={`/film/${currentFilm.slug || ''}`}
           onTouchStart={handleTouchStart}
@@ -207,9 +204,7 @@ export default function FeatureRail({ films, activeIndex, onSlideChange }: Featu
               {currentFilm.teaser}
             </p>
 
-            {/* 🎯 WATCH BUTTON (Removed dot icon separator details entirely) */}
-            <Link
-              href={`/watch/${currentFilm.slug || ''}`}
+            <button
               onClick={(e) => {
                 e.stopPropagation();
               }}
@@ -217,17 +212,19 @@ export default function FeatureRail({ films, activeIndex, onSlideChange }: Featu
             >
               <Play size={14} className="fill-current stroke-current" />
               <span>Play {getRuntimeDisplay()}</span>
-            </Link>
+            </button>
           </div>
         </Link>
 
         {/* =========================================================================
            🎬 CAROUSEL NAVIGATION TRACKS
            ========================================================================= */}
-        <div className="absolute inset-x-0 bottom-8 z-30 flex items-center justify-between pointer-events-none px-8 md:px-12">
+        {/* 🎯 ADJUSTMENT: Combined md:justify-center to keep row content anchored perfectly in the center stage */}
+        <div className="absolute inset-x-0 bottom-8 z-30 flex items-center justify-center md:justify-center pointer-events-none px-8 md:px-12">
           
-          {/* CENTER INDICATOR DOT TRACK (Centered dynamically on mobile layouts via auto margins) */}
-          <div className="flex items-center justify-center gap-2 pointer-events-auto mx-auto md:mx-0">
+          {/* CENTER INDICATOR DOT TRACK 
+              🎯 ADJUSTMENT: Swapped 'md:mx-0' to global 'mx-auto' so it remains locked to center layout coordinates */}
+          <div className="flex items-center justify-center gap-2 pointer-events-auto mx-auto">
             {films.map((_, index) => (
               <button
                 key={index}
@@ -246,7 +243,7 @@ export default function FeatureRail({ films, activeIndex, onSlideChange }: Featu
           {/* RIGHT DIRECTIONAL CONTROLS */}
           <div className="hidden md:flex absolute right-6 items-center gap-2.5 pointer-events-auto">
             
-            {/* THE OVERHAULED CYLINDRICAL COUNTDOWN TIMELINE BUTTON */}
+            {/* AUTOPLAY PROGRESS TOGGLE */}
             <button 
               onClick={handleTogglePlay}
               className="w-8 h-8 relative rounded-full flex items-center justify-center backdrop-blur-sm transition-all duration-200 active:scale-95 bg-white/10 hover:bg-white/15"

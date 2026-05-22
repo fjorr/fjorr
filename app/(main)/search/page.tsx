@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 
 import SearchIdleView from '@/components/SearchIdleView';
@@ -25,7 +26,14 @@ interface SearchItem {
 }
 
 export default function SearchPage() {
-  const [query, setQuery] = useState('');
+  // 🛰️ NEXT.JS NAV ROUTER TRACKING ENGINE
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  
+  // Instantly extract the existing saved 'q' parameter from the URL on load
+  const initialQuery = searchParams.get('q') || '';
+
+  const [query, setQuery] = useState(initialQuery);
   const [activeTab, setActiveTab] = useState<'all' | 'film' | 'artifact'>('all');
   const [rawResults, setRawResults] = useState<SearchItem[]>([]);
   const [filteredResults, setFilteredResults] = useState<SearchItem[]>([]);
@@ -132,18 +140,34 @@ export default function SearchPage() {
     const val = e.target.value;
     setQuery(val);
     
-    if (val.trim().length > 0) {
-      setLoading(true); 
+    // 🎯 URL SYNCHRONIZER: Pushes input state changes into Next.js router parameters
+    const params = new URLSearchParams(window.location.search);
+    if (val.trim()) {
+      params.set('q', val);
+      setLoading(true);
     } else {
+      params.delete('q');
       setLoading(false);
     }
+    // 'replace' updates URL query parameters seamlessly without creating an unmanageable back-button cycle history stack
+    router.replace(`?${params.toString()}`);
+  };
+
+  // CLEAR SEARCH HANDLER
+  const handleClearSearch = () => {
+    setQuery('');
+    setActiveTab('all');
+    setLoading(false);
+    const params = new URLSearchParams(window.location.search);
+    params.delete('q');
+    router.replace(`?${params.toString()}`);
   };
 
   return (
     <div className="w-full min-h-screen pt-6 pb-24 px-[10%] flex flex-col items-center">
       <div className="w-full max-w-4xl flex flex-col items-center gap-8">
         
-        {/* 🎯 FIXED: CONTAINER WRAPPER WITH SUB-PIXEL COMPOSITING PROTECTION */}
+        {/* INPUT STAGE WRAPPER CONTAINER */}
         <div className="w-full max-w-sm relative group animate-in fade-in slide-in-from-top-3 duration-500 fill-mode-both [transform:translateZ(0)] [backface-visibility:hidden]">
           <span className="absolute left-5 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none transition-colors group-focus-within:text-white/80">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
@@ -160,7 +184,7 @@ export default function SearchPage() {
           />
           {query && (
             <button 
-              onClick={() => { setQuery(''); setActiveTab('all'); setLoading(false); }} 
+              onClick={handleClearSearch} 
               className="absolute right-5 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">

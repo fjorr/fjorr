@@ -10,12 +10,10 @@ interface NavbarProps {
 
 function Navbar({ variant = 'light' }: NavbarProps) {
   const textColor = variant === 'light' ? 'text-white' : 'text-black';
-  const subTextColor = variant === 'light' ? 'text-white/60' : 'text-black/60';
+  const subTextColor = variant === 'light' ? 'text-white/40' : 'text-black/40';
 
   return (
-    /* 🎯 THE APPLE/NIKE SPECIFICATION: 
-       Sticky alignment keeps the element locked to the window frame natively.
-    */
+    /* 🎯 THE STICKY BASELINE FRAME */
     <header className="sticky top-0 z-50 w-full h-[70px] pt-[20px] px-4 flex justify-center pointer-events-none">
       
       {/* Floating Center Container */}
@@ -47,7 +45,7 @@ function Navbar({ variant = 'light' }: NavbarProps) {
 
       </div>
 
-      {/* 🎯 DRIVER STYLE BLOCK */}
+      {/* 🎯 THE ADJUSTED SCROLL TIMELINE DRIVER */}
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes revealGlass {
           from {
@@ -68,7 +66,11 @@ function Navbar({ variant = 'light' }: NavbarProps) {
           animation: revealGlass linear both;
           animation-timeline: scroll(root);
           
-          /* 🛠️ MOBILE ACCIDENTAL TRIGGER SAFE BUFFER */
+          /* 🛠️ THE FIXED MOBILE SPACING BUFFER:
+             Instead of starting the animation right at 0px, we set the trigger window to 
+             start at 60px down and finalize at 100px down. 
+             This absorbs all sub-pixel browser chrome padding shifts completely!
+          */
           animation-range: 60px 100px; 
         }
       `}} />

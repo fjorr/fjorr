@@ -69,11 +69,11 @@ export function ArtifactSidebar({
         {name}
       </h1>
 
-{/* METADATA SLAT */}
-<div className={`flex items-center gap-x-2 text-base font-sans font-medium tracking-tight mb-6 ${subTextClass}`}>
-  {creatorName && <span>{creatorName}</span>}
-  {label && <span>{label}</span>}
-  {releaseYear && <span>{releaseYear}</span>}
+{/* METADATA SLAT (Stacked Vertically - Identical Font Specs) */}
+<div className={`flex flex-col items-start gap-y-0.5 mb-5 ${subTextClass}`}>
+  {creatorName && <span className="font-sans text-sm font-medium leading-tight capitalize">{creatorName}</span>}
+  {label && <span className="font-sans text-sm font-medium leading-tight capitalize">{label}</span>}
+  {releaseYear && <span className="font-sans text-sm font-medium leading-tight capitalize">{releaseYear}</span>}
 </div>
 
 {/* QUOTE SECTION */}
@@ -101,8 +101,8 @@ export function ArtifactSidebar({
         <>
           {(description || quote) && <hr className={`w-full my-2 ${borderClass}`} />}
           <div className="flex flex-col gap-0">
-            <span className={`text-sm capitalize font-sans tracking-normal font-bold ${mutedTextClass}`}>
-              Films
+            <span className={`text-sm capitalize font-sans tracking-normal font-medium ${mutedTextClass}`}>
+              Related Films
             </span>
             <div className="flex flex-col gap-2">
               {filmConnections.map((movie, idx) => {
@@ -154,7 +154,7 @@ export function ArtifactSidebar({
             href={formatExternalUrl(link)}
             target="_blank"
             rel="noopener noreferrer"
-            className={`inline-flex items-center gap-1.5 text-sm font-medium font-sans tracking-tight capitalize hover:opacity-70 transition-opacity mt-0 group w-max cursor-pointer ${textClass}`}
+            className={`inline-flex items-center gap-1.5 text-sm font-medium font-sans tracking-normal capitalize hover:opacity-70 transition-opacity mt-0 group w-max cursor-pointer ${textClass}`}
           >
             <span>{linkCta}</span>
             <svg 
