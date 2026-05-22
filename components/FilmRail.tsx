@@ -90,7 +90,7 @@ export default function FilmRail({ title, films: rawFilms }: FilmRailProps) {
 
   return (
     /* 🎯 PARENT CONTAINER INTERSECTION BOUNDARY: Assigned containerRef here to watch scroll coordinates */
-    <section ref={containerRef} className="w-full pb-12 relative group/rail select-none z-20 px-8 md:px-16">
+    <section ref={containerRef} className="w-full pb-0 relative group/rail select-none z-20 px-8 md:px-16">
       <style dangerouslySetInnerHTML={{__html: `.no-scrollbar::-webkit-scrollbar { display: none !important; }`}} />
 
       <div className="w-full max-w-[1440px] mx-auto relative">

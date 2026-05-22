@@ -147,39 +147,43 @@ async function DeferredPageContent({ urlSlug }: { urlSlug: string }) {
     ? new Date(filmData.release_date).getTime() > Date.now() 
     : false;
 
-  return (
-    <>
-      <FilmHero film={filmData} />
-      
-      <div className="w-full bg-[#1F1F1F] pt-12 pb-24 flex flex-col items-center gap-12">
+    return (
+      <>
+        <FilmHero film={filmData} />
         
-        {relatedArtifacts.length > 0 && (
-          <ArtifactRail title="Related Artifacts" artifacts={relatedArtifacts} />
-        )}
-        
-        {recommendedFilms.length > 0 && (
-          <FilmRail title="More Short Films" films={recommendedFilms} />
-        )}
-
-        {/* 🎯 CONDITIONAL SPECS DISPLAY */}
-        {!isComingSoon && (
-          <>
-            <hr className="border-white/0 w-full max-w-[1440px] px-8 md:px-12 my-4" />
-            <FilmSpecs 
-              film={{
-                ...filmData,
-                location: displayLocation
-              }}
-              audioLanguages={['English']}
-              subtitles={subtitlesData}
-              themes={finalThemesList}
-              transcripts={transcripts}
-              creators={creatorRows} // 🎯 PASSED: Seamlessly feeding the crew data right down the line
-            />
-          </>
-        )}
-        
-      </div>
-    </>
-  );
-}
+        {/* 🎯 FIXED: Changed gap-12 to gap-0 and pt-12 to pt-8 to tighten up the global background container */}
+        <div className="w-full bg-[#1F1F1F] pt-8 pb-24 flex flex-col items-center gap-0">
+          
+          {/* 🚂 THE RAILS CONTAINER: Controlled separation gap solely for the slider systems */}
+          <div className="w-full flex flex-col space-y-6">
+            {relatedArtifacts.length > 0 && (
+              <ArtifactRail title="Related Artifacts" artifacts={relatedArtifacts} />
+            )}
+            
+            {recommendedFilms.length > 0 && (
+              <FilmRail title="More Short Films" films={recommendedFilms} />
+            )}
+          </div>
+  
+          {/* 🎯 CONDITIONAL SPECS DISPLAY */}
+          {!isComingSoon && (
+            /* Wrapped in a small layout-dedicated class to push the text exactly where you want it */
+            <div className="w-full mt-16">
+              <FilmSpecs 
+                film={{
+                  ...filmData,
+                  location: displayLocation
+                }}
+                audioLanguages={['English']}
+                subtitles={subtitlesData}
+                themes={finalThemesList}
+                transcripts={transcripts}
+                creators={creatorRows} 
+              />
+            </div>
+          )}
+          
+        </div>
+      </>
+    );
+  }

@@ -114,7 +114,7 @@ export default function ArtifactRail({ title, artifacts: rawArtifacts }: Artifac
 
   return (
     /* 🎯 PARENT CONTAINER INTERSECTION BOUNDARY: Linked with containerRef to intercept screen viewport entry */
-    <section ref={containerRef} className="w-full pb-12 relative group/rail select-none z-20 px-8 md:px-16">
+    <section ref={containerRef} className="w-full pb-0 relative group/rail select-none z-20 px-8 md:px-16">
       
       {/* Scrollbar hidden styling core structure element */}
       <style dangerouslySetInnerHTML={{__html: `

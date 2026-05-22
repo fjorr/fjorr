@@ -120,43 +120,49 @@ export default function FeatureRail({ films, activeIndex, onSlideChange }: Featu
     <section className="w-full flex justify-center bg-[#1F1F1F]">
       <div className="w-full max-w-[1440px] relative group/rail overflow-hidden rounded-none min-[1440px]:rounded-xl">
         
-        {/* CAROUSEL IMAGE BODY ANCHOR */}
-        <Link 
-          href={`/film/${currentFilm.slug || ''}`}
+        {/* 🎯 FIXED: Wrapper container handles relative touch nodes instead of the absolute navigation shell */}
+        <div 
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
-          className="w-full intent-card block aspect-[1/1.618] md:aspect-[4/3] lg:aspect-[16/9] flex flex-col justify-end px-8 md:px-12 pb-14 md:pb-16 pt-16 md:pt-32 relative bg-cover bg-center transition-all duration-500 rounded-none min-[1440px]:rounded-xl cursor-pointer select-none"
-          style={{
-            backgroundImage: `linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0) 100%)`
-          }}
+          className="w-full relative aspect-[1/1.618] md:aspect-[4/3] lg:aspect-[16/9] overflow-hidden rounded-none min-[1440px]:rounded-xl select-none"
         >
-          {/* RESPONSIVE PICTURE ENGINE */}
-          <picture key={currentFilm.id} className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none group-hover/rail:scale-[1.01] transition-transform duration-700 animate-slide-fade">
-            <source media="(min-width: 1024px)" srcSet={currentFilm.hero_wide} />
-            <source media="(min-width: 768px)" srcSet={currentFilm.hero_clsx || currentFilm.hero_wide} />
-            <img 
-              src={currentFilm.hero_tall || currentFilm.hero_clsx || currentFilm.hero_wide} 
-              alt={currentFilm.name || "Featured Film Asset"} 
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-                if (e.currentTarget.parentElement?.parentElement) {
-                  e.currentTarget.parentElement.style.background = fallbackBg;
-                }
+          {/* 🎬 MAIN POSTER BACKDROP LINK: Navigates cleanly to the specific Info Profile Detail page */}
+          <Link 
+            href={`/film/${currentFilm.slug || ''}`}
+            className="absolute inset-0 w-full h-full block z-0 cursor-pointer"
+            style={{
+              background: 'linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0) 100%)'
+            }}
+          >
+            {/* RESPONSIVE PICTURE ENGINE */}
+            <picture key={currentFilm.id} className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none group-hover/rail:scale-[1.01] transition-transform duration-700 animate-slide-fade">
+              <source media="(min-width: 1024px)" srcSet={currentFilm.hero_wide} />
+              <source media="(min-width: 768px)" srcSet={currentFilm.hero_clsx || currentFilm.hero_wide} />
+              <img 
+                src={currentFilm.hero_tall || currentFilm.hero_clsx || currentFilm.hero_wide} 
+                alt={currentFilm.name || "Featured Film Asset"} 
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  if (e.currentTarget.parentElement?.parentElement) {
+                    e.currentTarget.parentElement.style.background = fallbackBg;
+                  }
+                }}
+              />
+            </picture>
+
+            <div 
+              className="absolute inset-x-0 bottom-0 h-1/2 z-10 pointer-events-none"
+              style={{
+                background: 'linear-gradient(to top, #000000BF 0%, #00000000 100%)'
               }}
             />
-          </picture>
+          </Link>
 
-          <div 
-            className="absolute inset-x-0 bottom-0 h-1/2 z-10 pointer-events-none"
-            style={{
-              background: 'linear-gradient(to top, #000000BF 0%, #00000000 100%)'
-            }}
-          />
-
-          {/* CONTENT DISCOVERY TEXT BLOCK */}
-          <div className="relative z-20 max-w-2xl w-full flex flex-col text-center md:text-left items-center md:items-start mx-auto md:mx-0">
+          {/* CONTENT DISCOVERY TEXT BLOCK & WATCH PLAYER TRIGGER CONTAINER */}
+          {/* pointer-events-none lets mouse clicks bleed straight back down onto the main profile link layer */}
+          <div className="absolute inset-x-0 bottom-0 px-8 md:px-12 pb-14 md:pb-16 pt-16 md:pt-32 z-20 max-w-2xl w-full flex flex-col text-center md:text-left items-center md:items-start mx-auto md:mx-0 pointer-events-none">
             {currentFilm.sponsor && (
               <div className="w-full font-sans font-bold text-[13px] text-white/90 tracking-wide mb-2.5 antialiased">
                 {currentFilm.sponsor} <span className="text-white/50">presents</span>
@@ -204,26 +210,22 @@ export default function FeatureRail({ films, activeIndex, onSlideChange }: Featu
               {currentFilm.teaser}
             </p>
 
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-              }}
+            {/* 🎯 FIXED: Replaced raw button wrapper with explicit standalone link routing directly to watch player scene */}
+            <Link
+              href={`/watch/${currentFilm.slug || ''}`}
               className="h-10 px-6 inline-flex items-center justify-center gap-2 bg-white hover:bg-white/90 text-black font-sans font-bold text-sm tracking-normal rounded-full transition-all active:scale-[0.98] duration-150 shadow-lg pointer-events-auto cursor-pointer"
             >
               <Play size={14} className="fill-current stroke-current" />
               <span>Play {getRuntimeDisplay()}</span>
-            </button>
+            </Link>
           </div>
-        </Link>
+        </div>
 
         {/* =========================================================================
            🎬 CAROUSEL NAVIGATION TRACKS
            ========================================================================= */}
-        {/* 🎯 ADJUSTMENT: Combined md:justify-center to keep row content anchored perfectly in the center stage */}
         <div className="absolute inset-x-0 bottom-8 z-30 flex items-center justify-center md:justify-center pointer-events-none px-8 md:px-12">
           
-          {/* CENTER INDICATOR DOT TRACK 
-              🎯 ADJUSTMENT: Swapped 'md:mx-0' to global 'mx-auto' so it remains locked to center layout coordinates */}
           <div className="flex items-center justify-center gap-2 pointer-events-auto mx-auto">
             {films.map((_, index) => (
               <button
