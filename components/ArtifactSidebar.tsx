@@ -60,56 +60,49 @@ export function ArtifactSidebar({
     >
       
       {/* STATIC TOP CAP */}
-      <span className={`text-[10px] uppercase font-mono tracking-[0.2em] font-bold mb-2 ${mutedTextClass}`}>
+      <span className={`text-[11px] uppercase font-mono tracking-[0.2em] font-bold mb-2 ${mutedTextClass}`}>
         Film Artifact
       </span>
 
       {/* ARTIFACT NAME */}
-      <h1 className="font-tradeGothic text-4xl uppercase tracking-tighter leading-none font-black mb-4">
+      <h1 className="font-sans text-2xl Capitilize tracking-tighter leading-none font-black mb-2">
         {name}
       </h1>
 
-      {/* METADATA SLAT */}
-      <div className={`flex items-center gap-1.5 text-[13px] font-sans font-semibold tracking-tight mb-6 ${subTextClass}`}>
-        {creatorName && (
-          <>
-            <span>{creatorName}</span>
-            <span className={mutedTextClass}>•</span>
-          </>
-        )}
-        {label && <span>{label}</span>}
-        {releaseYear && (
-          <>
-            <span className={mutedTextClass}>•</span>
-            <span>{releaseYear}</span>
-          </>
-        )}
-      </div>
+{/* METADATA SLAT */}
+<div className={`flex items-center gap-x-2 text-base font-sans font-medium tracking-tight mb-6 ${subTextClass}`}>
+  {creatorName && <span>{creatorName}</span>}
+  {label && <span>{label}</span>}
+  {releaseYear && <span>{releaseYear}</span>}
+</div>
 
-      {/* EDITORIAL DESCRIPTION */}
-      {description && (
-        <p className={`font-sans text-[14px] font-light leading-relaxed tracking-tight ${subTextClass}`}>
-          {description}
-        </p>
-      )}
+{/* QUOTE SECTION */}
+{quote && (
+  <>
+    {description && <hr className={`w-full my-0 ${borderClass}`} />}
+    {/* 🎯 NORMAL PARAGRAPH TEXT - ONLY ITALICS APPLIED */}
+    <p className="italic font-semibold font-sans text-base leading-snug tracking-normal">
+      {quote}
+    </p>
+  </>
+)}
 
-      {/* QUOTE SECTION */}
-      {quote && (
-        <>
-          {description && <hr className={`w-full my-5 ${borderClass}`} />}
-          <blockquote className="italic font-normal font-sans text-[14px] leading-relaxed tracking-wide pl-3 border-l-2 border-current/30">
-            &ldquo;{quote}&rdquo;
-          </blockquote>
-        </>
-      )}
+  {/* EDITORIAL DESCRIPTION */}
+{description && (
+  <p className={`my-4 font-sans text-base font-normal leading-snug tracking-normal max-w-lg ${subTextClass}`}>
+    {description}
+  </p>
+)}
+
+      
 
       {/* FILM CONNECTIONS REPEATER */}
       {filmConnections.length > 0 && (
         <>
-          {(description || quote) && <hr className={`w-full my-5 ${borderClass}`} />}
-          <div className="flex flex-col gap-3">
-            <span className={`text-[10px] uppercase font-mono tracking-[0.15em] font-bold ${mutedTextClass}`}>
-              Film Connections
+          {(description || quote) && <hr className={`w-full my-2 ${borderClass}`} />}
+          <div className="flex flex-col gap-0">
+            <span className={`text-sm capitalize font-sans tracking-normal font-bold ${mutedTextClass}`}>
+              Films
             </span>
             <div className="flex flex-col gap-2">
               {filmConnections.map((movie, idx) => {
@@ -127,19 +120,19 @@ export function ArtifactSidebar({
                 const internalSlug = movie.slug || movie.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || '';
 
                 return (
-                  <div key={idx} className="flex items-baseline justify-between gap-4 py-0.5">
+                  <div key={idx} className="flex items-baseline gap-2 py-0.5">
                     {internalSlug ? (
                       <Link href={`/film/${internalSlug}`} className="group cursor-pointer">
-                        <span className="text-[14px] font-semibold tracking-tight uppercase leading-tight font-sans cursor-pointer hover:underline decoration-1 underline-offset-4 block transition-all duration-200">
+                        <span className="text-base font-semibold tracking-normal capitalize leading-normal font-sans cursor-pointer hover:underline decoration-1 underline-offset-4 block transition-all duration-200">
                           {displayTitle}
                         </span>
                       </Link>
                     ) : (
-                      <span className="text-[14px] font-semibold tracking-tight uppercase leading-tight font-sans">
+                      <span className="text-[14px] font-semibold tracking-tight capitalize leading-tight font-sans">
                         {displayTitle}
                       </span>
                     )}
-                    <span className={`text-[11px] font-mono whitespace-nowrap ${mutedTextClass}`}>
+                    <span className={`text-sm font-mono font-semibold whitespace-nowrap ${mutedTextClass}`}>
                       {displayRuntime}
                     </span>
                   </div>
@@ -154,14 +147,14 @@ export function ArtifactSidebar({
       {linkCta && (
         <>
           {(description || quote || filmConnections.length > 0) && (
-            <hr className={`w-full my-6 ${borderClass}`} />
+            <hr className={`w-full my-2 ${borderClass}`} />
           )}
           {/* 🎯 FIXED: Runs external destination string through formatting safety layer */}
           <a 
             href={formatExternalUrl(link)}
             target="_blank"
             rel="noopener noreferrer"
-            className={`inline-flex items-center gap-1.5 text-[13px] font-bold font-sans tracking-tight uppercase hover:opacity-70 transition-opacity mt-1 group w-max cursor-pointer ${textClass}`}
+            className={`inline-flex items-center gap-1.5 text-sm font-medium font-sans tracking-tight capitalize hover:opacity-70 transition-opacity mt-0 group w-max cursor-pointer ${textClass}`}
           >
             <span>{linkCta}</span>
             <svg 

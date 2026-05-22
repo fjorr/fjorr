@@ -62,12 +62,11 @@ export default async function DynamicArtifactPage({ params }: ArtifactPageProps)
   const textClass = isDarkBg ? 'text-white' : 'text-black';
   const subTextClass = isDarkBg ? 'text-white/60' : 'text-black/60';
   const mutedTextClass = isDarkBg ? 'text-white/40' : 'text-black/40';
-  const borderClass = isDarkBg ? 'border-white/10' : 'border-black/10';
+  const borderClass = 'border-transparent';
 
   const releaseYear = artifact.release_date ? new Date(artifact.release_date).getFullYear() : null;
 
   // 🎯 FIXED TYPE COMPILATION STRIP
-  // Safely extracts the creator array data map out to its first nested array entry block
   const rawCreatorData = artifact.creator_map?.[0]?.creator;
   const creatorName = Array.isArray(rawCreatorData)
     ? rawCreatorData[0]?.name || ''
@@ -85,20 +84,22 @@ export default async function DynamicArtifactPage({ params }: ArtifactPageProps)
       {/* 🚀 ASYMMETRIC MAIN WORKSPACE STAGE */}
       <main className="w-full lg:h-screen flex-grow flex flex-col lg:flex-row items-stretch lg:items-center">
         
-        {/* 🎬 LEFT MEDIA CANVAS COLUMN */}
-        <div className="w-full lg:w-[calc(100%-350px)] h-auto lg:h-full flex items-center justify-center p-0 lg:p-12 relative">
+        {/* 🎬 LEFT MEDIA CANVAS COLUMN 
+            🎯 Updated width offset calculation from 350px to 400px to accommodate the roomier sidebar layout */}
+        <div className="w-full lg:w-[calc(100%-400px)] h-auto lg:h-full flex items-center justify-center p-0 lg:p-12 relative">
           <picture className="w-full max-w-4xl h-auto max-h-full flex items-center justify-center transform lg:-translate-y-[35px]">
             <source media="(min-width: 768px)" srcSet={artifact.hero_clsx || artifact.hero_tall || ''} />
             <img 
               src={artifact.hero_tall || artifact.hero_clsx || ''} 
               alt={artifact.name || 'Fjorr Artifact Screen'} 
-              className="w-full h-auto max-h-full object-contain block mx-auto drop-shadow-2xl animate-fadeIn"
+              className="w-full h-auto max-h-full object-contain block mx-auto animate-fadeIn"
             />
           </picture>
         </div>
 
-        {/* 📊 RIGHT METADATA PANEL CONTAINER */}
-        <div className="w-full lg:w-[350px] lg:h-full shrink-0 flex">
+        {/* 📊 RIGHT METADATA PANEL CONTAINER 
+            🎯 Upgraded layout structure allocation from 350px to 400px to maximize internal padding breathing room */}
+        <div className="w-full lg:w-[400px] lg:h-full shrink-0 flex">
           <ArtifactSidebar 
             name={artifact.name || slug.replace(/-/g, ' ')}
             label={artifact.label}
