@@ -18,11 +18,7 @@ export default async function FilmDetailPage({ params }: PageProps) {
   const { slug: urlSlug } = await params;
 
   return (
-    /* 🎯 THE PERFECT RESPONSIVE TRICK:
-       pt-6: Gives you that clean breathing room below the navbar on mobile, tablets, and laptops.
-       min-[1440px]:pt-0: Nullifies the top padding completely on massive monitors so it stays tightly anchored.
-    */
-    <div className="w-full min-h-screen text-white flex flex-col items-center pt-6 min-[1440px]:pt-0 relative z-0">
+    <div className="w-full min-h-screen bg-black text-white flex flex-col items-center pt-0 -mt-[70px] relative z-0">
       
       <Suspense 
         fallback={
@@ -42,6 +38,7 @@ async function DeferredPageContent({ urlSlug }: { urlSlug: string }) {
   const supabase = await createClient();
   const currentIsoString = new Date().toISOString();
 
+  // 1. 🎯 FIXED QUERY: Safely requests relation strings based on your actual column setup
   const { data: filmData, error: filmError } = await supabase
     .from('film')
     .select(`
@@ -57,6 +54,7 @@ async function DeferredPageContent({ urlSlug }: { urlSlug: string }) {
     notFound();
   }
 
+  // 2. 🛡️ CONCURRENT SHIELD: Wrap secondary rows inside a safe container block
   let relatedArtifacts: any[] = [];
   let recommendedFilms: any[] = [];
   let transcripts: any[] = [];
@@ -96,6 +94,7 @@ async function DeferredPageContent({ urlSlug }: { urlSlug: string }) {
     console.warn("⚠️ Secondary relational tracks failed to load, falling back gracefully:", err);
   }
 
+  // Parse location text strings safely
   const displayLocation = Array.isArray(filmData.location) && filmData.location.length > 0 
     ? filmData.location[0] 
     : filmData.location || '';
@@ -121,6 +120,8 @@ async function DeferredPageContent({ urlSlug }: { urlSlug: string }) {
     ? mappedTags 
     : filmData.theme?.name ? [filmData.theme.name] : [];
 
+  // 🎯 FUTURE RELEASE SHIELD (COMING SOON)
+  // Evaluates whether the timestamp in the database represents a future date
   const isComingSoon = filmData.release_date 
     ? new Date(filmData.release_date).getTime() > Date.now() 
     : false;
@@ -139,6 +140,8 @@ async function DeferredPageContent({ urlSlug }: { urlSlug: string }) {
           <FilmRail title="More Short Films" films={recommendedFilms} />
         )}
 
+        {/* 🎯 CONDITIONAL SPECS DISPLAY */}
+        {/* If the film is coming soon, both the horizontal rule divider and specs component are hidden */}
         {!isComingSoon && (
           <>
             <hr className="border-white/10 mx-[10%] my-4" />
