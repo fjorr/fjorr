@@ -103,7 +103,7 @@ export default function FilmTranscript({ subtitles, transcripts }: FilmTranscrip
 
           {/* Dropdown Options (Purely displays language filters now) */}
           {isDropdownOpen && (
-            <div className="absolute left-0 mt-2 w-48 bg-[#2C2C2E] rounded-[8px] shadow-2xl overflow-hidden z-50 py-1">
+            <div className="absolute left-0 mt-2 w-48 bg-[#2a2a2a] rounded-[8px] shadow-2xl overflow-hidden z-50 px-1 py-1">
               {subtitles.map((sub, idx) => (
                 <button
                   key={idx}
@@ -112,7 +112,7 @@ export default function FilmTranscript({ subtitles, transcripts }: FilmTranscrip
                     setIsAccordionOpen(true);
                     setIsDropdownOpen(false);
                   }}
-                  className={`w-full text-left px-5 py-2.5 text-sm font-sans font-semibold tracking-normal transition-colors hover:bg-white/5 ${
+                  className={`w-full text-left px-5 py-2.5 text-sm font-sans font-semibold tracking-normal transition-colors rounded-[6px] hover:bg-white/5 ${
                     isAccordionOpen && activeLanguage === sub.code 
                       ? 'text-[#76c3ff] font-bold bg-white/[0.02]' 
                       : 'text-white/80'
