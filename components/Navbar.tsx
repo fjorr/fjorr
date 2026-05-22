@@ -10,7 +10,7 @@ interface NavbarProps {
 
 function Navbar({ variant = 'light' }: NavbarProps) {
   const textColor = variant === 'light' ? 'text-white' : 'text-black';
-  const subTextColor = variant === 'light' ? 'text-white/40' : 'text-black/40';
+  const subTextColor = variant === 'light' ? 'text-white/80' : 'text-black/80';
 
   return (
     /* 🎯 THE STICKY BASELINE FRAME */
@@ -33,7 +33,7 @@ function Navbar({ variant = 'light' }: NavbarProps) {
 
         {/* Center: Slogan Display */}
         <Link href="/about" className="flex items-center shrink-0 cursor-pointer transition-opacity hover:opacity-80">
-          <span className={`font-sans text-[12px] font-medium tracking-normal select-none whitespace-nowrap ${subTextColor}`}>
+          <span className={`font-sans text-xs font-medium tracking-normal select-none whitespace-nowrap ${subTextColor}`}>
             Short films of the greatest stories
           </span>
         </Link>

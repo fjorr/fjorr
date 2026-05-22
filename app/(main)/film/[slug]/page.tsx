@@ -22,8 +22,21 @@ export default async function FilmDetailPage({ params }: PageProps) {
       
       <Suspense 
         fallback={
-          <div className="w-full min-h-screen bg-black text-center text-white/30 text-[14px] font-mono tracking-widest flex items-center justify-center animate-pulse">
-            LOADING EXPERIENCE...
+          /* 🎯 CUSTOM HIGH-END FALLBACK SCREEN */
+          /* Matches #1F1F1F background tone with a custom 20x20px inline CSS radial dot grid */
+          <div 
+            className="w-full min-h-screen text-center text-white/30 text-[14px] font-mono tracking-widest flex flex-col gap-3 items-center justify-center relative select-none animate-pulse"
+            style={{
+              backgroundColor: '#1F1F1F',
+              backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px)',
+              backgroundSize: '20px 20px',
+              backgroundPosition: 'center center'
+            }}
+          >
+            {/* Ambient indicator glowing in the middle of the grid */}
+            <span className="tracking-normal font-sans font-bold text-xs text-white/40">
+              Loading film.
+            </span>
           </div>
         }
       >
@@ -38,7 +51,7 @@ async function DeferredPageContent({ urlSlug }: { urlSlug: string }) {
   const supabase = await createClient();
   const currentIsoString = new Date().toISOString();
 
-  // 1. 🎯 FIXED QUERY: Safely requests relation strings based on your actual column setup
+  // 1. Primary Film Profile Fetch
   const { data: filmData, error: filmError } = await supabase
     .from('film')
     .select(`
@@ -54,14 +67,16 @@ async function DeferredPageContent({ urlSlug }: { urlSlug: string }) {
     notFound();
   }
 
-  // 2. 🛡️ CONCURRENT SHIELD: Wrap secondary rows inside a safe container block
+  // 2. Relational Track Safe Placeholders
   let relatedArtifacts: any[] = [];
   let recommendedFilms: any[] = [];
   let transcripts: any[] = [];
   let tagRows: any[] = [];
+  let creatorRows: any[] = []; // 🎯 ADDED: Safe placeholder array for creators join
 
   try {
-    const [junctionRows, allFilmsResponse, transcriptRows, tagsResponse] = await Promise.all([
+    // 🎯 UPDATED: Added creator_map relational fetch query right inside the concurrent execution grid block
+    const [junctionRows, allFilmsResponse, transcriptRows, tagsResponse, creatorsResponse] = await Promise.all([
       supabase
         .from('film_artifact')
         .select('sort_order, artifact:artifact_id (id, slug, name, blok_tall)')
@@ -83,13 +98,21 @@ async function DeferredPageContent({ urlSlug }: { urlSlug: string }) {
       supabase
         .from('tag_map')
         .select('tag:tag_id ( name )')
+        .eq('film_id', filmData.id),
+
+      // 🎯 NEW RELATION QUERY: Grabs sorting index order, inline roles, and foreign creator tables cleanly
+      supabase
+        .from('creator_map')
+        .select('role, creator:creator_id ( name )')
         .eq('film_id', filmData.id)
+        .order('sort_order', { ascending: true })
     ]);
 
     relatedArtifacts = junctionRows.data || [];
     recommendedFilms = allFilmsResponse.data || [];
     transcripts = transcriptRows.data || [];
     tagRows = tagsResponse.data || [];
+    creatorRows = creatorsResponse.data || []; // 🎯 ASSIGNED: Loaded rows safely mapped to fallback trackers
   } catch (err) {
     console.warn("⚠️ Secondary relational tracks failed to load, falling back gracefully:", err);
   }
@@ -120,8 +143,6 @@ async function DeferredPageContent({ urlSlug }: { urlSlug: string }) {
     ? mappedTags 
     : filmData.theme?.name ? [filmData.theme.name] : [];
 
-  // 🎯 FUTURE RELEASE SHIELD (COMING SOON)
-  // Evaluates whether the timestamp in the database represents a future date
   const isComingSoon = filmData.release_date 
     ? new Date(filmData.release_date).getTime() > Date.now() 
     : false;
@@ -130,7 +151,7 @@ async function DeferredPageContent({ urlSlug }: { urlSlug: string }) {
     <>
       <FilmHero film={filmData} />
       
-      <div className="w-full bg-[#1F1F1F] pt-12 pb-24 flex flex-col gap-12">
+      <div className="w-full bg-[#1F1F1F] pt-12 pb-24 flex flex-col items-center gap-12">
         
         {relatedArtifacts.length > 0 && (
           <ArtifactRail title="Related Artifacts" artifacts={relatedArtifacts} />
@@ -141,10 +162,9 @@ async function DeferredPageContent({ urlSlug }: { urlSlug: string }) {
         )}
 
         {/* 🎯 CONDITIONAL SPECS DISPLAY */}
-        {/* If the film is coming soon, both the horizontal rule divider and specs component are hidden */}
         {!isComingSoon && (
           <>
-            <hr className="border-white/10 mx-[10%] my-4" />
+            <hr className="border-white/0 w-full max-w-[1440px] px-8 md:px-12 my-4" />
             <FilmSpecs 
               film={{
                 ...filmData,
@@ -154,6 +174,7 @@ async function DeferredPageContent({ urlSlug }: { urlSlug: string }) {
               subtitles={subtitlesData}
               themes={finalThemesList}
               transcripts={transcripts}
+              creators={creatorRows} // 🎯 PASSED: Seamlessly feeding the crew data right down the line
             />
           </>
         )}
