@@ -58,6 +58,8 @@ export default function WatchPage() {
           slug, 
           mux_playback_id, 
           last_line,
+          story_date,
+          location,
           language_subtitle (
             vtt_url,
             language ( code, name )
@@ -98,7 +100,7 @@ export default function WatchPage() {
     }
   };
 
-  // --- 2. CANVAS RENDERING ENGINE (Bypassed for main track but kept for stability checks) ---
+  // --- 2. CANVAS RENDERING ENGINE ---
   const renderTocks = () => {
     const canvas = canvasRef.current;
     const player = playerRef.current;
@@ -117,6 +119,36 @@ export default function WatchPage() {
     }
 
     ctx.clearRect(0, 0, rect.width, rect.height);
+
+    const activeIdx = Math.floor((currentTime / duration) * TOTAL_TOCKS);
+    const isHovering = hoverIndex !== -1;
+
+    const gap = rect.width / TOTAL_TOCKS;
+    const barW = window.innerWidth < 768 ? 2.5 : 1.5;
+
+    for (let i = 0; i < TOTAL_TOCKS; i++) {
+      let h = 10;
+      let op = 0.15;
+      let color = "#F5F5F7";
+
+      if (i < activeIdx) op = 0.6;
+
+      if (isHovering && i === hoverIndex) {
+        h = 16; op = 1; color = "#76c3ff";
+      } else if (i === activeIdx) {
+        h = 16; op = 1; color = "#FFFFFF";
+      }
+
+      ctx.globalAlpha = op;
+      ctx.fillStyle = color;
+
+      const x = i * gap + (gap / 2) - (barW / 2);
+      const y = (rect.height - h) / 2;
+
+      ctx.beginPath();
+      ctx.roundRect(x, y, barW, h, 2);
+      ctx.fill();
+    }
   };
 
   useEffect(() => {
@@ -182,7 +214,7 @@ export default function WatchPage() {
   };
 
   const handleScrub = (e: any) => {
-    const canvas = tockBarRef.current;
+    const canvas = canvasRef.current;
     const player = playerRef.current;
     if (!canvas || !player || !duration) return;
 
@@ -336,7 +368,6 @@ export default function WatchPage() {
   }
 
   const activeDisplayTime = hoverIndex !== -1 ? (hoverIndex / (TOTAL_TOCKS - 1)) * duration : currentTime;
-  const progressPercent = (currentTime / (duration || 1)) * 100;
 
   return (
     <div className="w-full h-screen bg-[#1f1f1f] text-[#F5F5F7] select-none relative overflow-hidden flex items-center justify-center font-sans">
@@ -389,6 +420,7 @@ export default function WatchPage() {
             className="hover:opacity-80 transition-opacity cursor-pointer flex items-center"
             title="Return to Home"
           >
+            {/* 🎯 FIXED: Re-added all 5 original vector geometry path items to ensure the complete brand lockup parses perfectly */}
             <svg className="w-[52px] h-auto text-white opacity-95" viewBox="0 0 143 81" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M71.3559 13.2942C60.8993 13.2942 52.4273 21.7814 52.4273 32.2448C52.4273 42.7082 60.9046 51.1953 71.3559 51.1953C81.8073 51.1953 90.2846 42.7082 90.2846 32.2448C90.2846 21.7814 81.8073 13.2942 71.3559 13.2942ZM71.3559 39.7278C67.232 39.7278 63.8869 36.3789 63.8869 32.2501C63.8869 28.1214 67.232 24.7725 71.3559 24.7725C75.4799 24.7725 78.825 28.1214 78.825 32.2501C78.825 36.3789 75.4799 39.7278 71.3559 39.7278Z" fill="currentColor"/>
               <path d="M35.9047 15.0355C35.4032 15.0355 34.9978 15.4414 34.9978 15.9435V60.9377C34.9978 65.4136 31.5887 69.0883 27.23 69.505C26.7605 69.5477 26.403 69.9322 26.403 70.4023V80.0912C26.403 80.6146 26.8405 81.0206 27.3633 80.9992C37.996 80.4971 46.4627 71.7109 46.4627 60.9377V15.9435C46.4627 15.4414 46.0573 15.0355 45.5558 15.0355H35.9047Z" fill="currentColor"/>
@@ -397,15 +429,15 @@ export default function WatchPage() {
               <path d="M143 15.9435V22.7375C143 23.2395 142.595 23.6455 142.093 23.6455H135.2C134.757 23.6455 134.4 24.0033 134.4 24.4466V48.5568C134.4 49.0589 133.994 49.4648 133.493 49.4648H123.842C123.34 49.4648 122.935 49.0589 122.935 48.5568V15.9435C122.935 15.4414 123.34 15.0355 123.842 15.0355H142.093C142.595 15.0355 143 15.4414 143 15.9435Z" fill="currentColor"/>
             </svg>
           </Link>
-          <h1 className="text-sm tracking-normal font-semibold text-white/80 opacity-90 font-sans -mt-1">
-            {film.name}
-          </h1>
         </div>
+
         <button 
           onClick={() => router.push(`/film/${film.slug}`)}
           className="w-10 h-10 rounded-full flex items-center justify-center bg-[#1f1f1f]/20 hover:bg-white/10 transition-colors group"
         >
-          <svg className="w-5 h-5 opacity-60 group-hover:opacity-100 transition-opacity" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          <svg className="w-5 h-5 opacity-60 group-hover:opacity-100 transition-opacity" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M18 6L6 18M6 6l12 12" />
+          </svg>
         </button>
       </div>
 
@@ -415,8 +447,8 @@ export default function WatchPage() {
         style={{ opacity: controlsVisible ? 1 : 0, pointerEvents: controlsVisible ? 'auto' : 'none' }}
       >
         
-        {/* ROW 1: THE TIMELINE TICKS SCRUB GRID (With Glass Backing Board & Pure Dither No Lines) */}
-        <div className="w-full max-w-xl mx-auto flex items-center justify-between gap-4 mb-4 relative h-12 bg-zinc-950/20 border border-white/5 backdrop-blur-md rounded-[10px] px-4 shadow-xl">
+        {/* ROW 1: THE TIMELINE TICKS SCRUB GRID */}
+        <div className="w-full max-w-xl mx-auto flex items-center justify-between gap-4 mb-2 relative h-10 bg-[#1f1f1f]/70 backdrop-blur-md rounded-[8px] px-4">
           
           <div 
             className="w-12 md:w-14 text-right select-none font-semibold text-sm tracking-tight transition-colors duration-150 shrink-0"
@@ -430,7 +462,7 @@ export default function WatchPage() {
 
           <div 
             ref={tockBarRef}
-            className="flex-grow h-6 flex items-center relative cursor-pointer group/scrub"
+            className="flex-grow h-8 flex items-center relative cursor-pointer group/scrub"
             onMouseMove={handleScrub}
             onMouseDown={handleScrub}
             onTouchStart={(e) => { e.preventDefault(); handleScrub(e); }}
@@ -439,28 +471,10 @@ export default function WatchPage() {
             onTouchEnd={() => { setHoverIndex(-1); setPreviewStyle({ opacity: 0 }); }}
           >
             <div 
-              className="absolute bottom-10 w-[240px] aspect-[16/9] -ml-[120px] bg-zinc-950 border border-white/5 shadow-2xl rounded-[6px] bg-no-repeat transition-opacity duration-200 pointer-events-none hidden z-30"
+              className="absolute bottom-10 w-[240px] aspect-[16/9] -ml-[120px] bg-zinc-950 rounded-[6px] bg-no-repeat transition-opacity duration-200 pointer-events-none hidden z-30"
               style={previewStyle}
             />
-
-            {/* 🎯 TRACK 1: Solid played progress tracking bar */}
-            <div 
-              className="absolute left-0 h-1 bg-[#FFFFFF] rounded-full opacity-80"
-              style={{ width: `${progressPercent}%` }}
-            />
-
-            {/* 🎯 TRACK 2: Pure Dithered dot matrix mask covering remaining time frame segment */}
-            <div 
-              className="absolute top-1/2 -translate-y-1/2 right-0 h-4 pointer-events-none mix-blend-screen opacity-25 transition-all duration-75"
-              style={{
-                left: `${progressPercent}%`,
-                backgroundImage: `radial-gradient(circle, #F5F5F7 1px, transparent 1.5px)`,
-                backgroundSize: '4px 4px'
-              }}
-            />
-
-            {/* Hidden canvas ref preserved for component life stability checks */}
-            <canvas ref={canvasRef} className="hidden" />
+            <canvas ref={canvasRef} className="w-full h-5 block group-hover/scrub:scale-y-110 transition-transform duration-200 relative z-10" />
           </div>
 
           <div 
@@ -474,9 +488,9 @@ export default function WatchPage() {
           </div>
         </div>
 
-        {/* ROW 2: CONTROL PILL BAR + FIXED HUD BILLING BLOCK */}
-        <div className="w-full flex flex-col items-center gap-4 relative">
-          <div className="flex items-center gap-1.5 bg-zinc-950/40 border border-white/5 backdrop-blur-xl px-3.5 h-11 rounded-[10px] shadow-2xl relative">
+        {/* ROW 2: CONTROL PILL BAR + ACTIVE HUD OVERLAY METADATA LINE BLOCK */}
+        <div className="w-full flex flex-col items-center gap-2 relative">
+          <div className="flex items-center gap-1.5 bg-[#1f1f1f]/70 backdrop-blur-xl px-3.5 h-11 rounded-[10px] relative">
             
             {/* 1. Custom Rewind Back 10s */}
             <button 
@@ -547,7 +561,7 @@ export default function WatchPage() {
             {/* Subtitle dropdown language selector panel popup layer */}
             {showCCMenu && (
               <div className="absolute bottom-14 left-1/2 -translate-x-1/2 z-50">
-                <div className="w-44 bg-[#2a2a2a] shadow-2xl rounded-[8px] backdrop-blur-xl p-1.5 flex flex-col gap-0.5 text-left text-xs animate-in fade-in slide-in-from-bottom-2 duration-200">
+                <div className="w-44 bg-[#2a2a2a] rounded-[8px] backdrop-blur-xl p-1.5 flex flex-col gap-0.5 text-left text-xs animate-in fade-in slide-in-from-bottom-2 duration-200">
                   <button 
                     onClick={() => handleSubtitleSelection('none', 'Off')} 
                     className={`w-full py-1.5 px-2.5 rounded-[4px] text-left transition-colors font-semibold ${
@@ -586,15 +600,12 @@ export default function WatchPage() {
 
           </div>
 
-          {/* 🎯 HUD OVERLAY ACTIVE FILM METADATA LINE BLOCK */}
+          {/* HUD OVERLAY ACTIVE FILM METADATA LINE BLOCK */}
           <div 
-            className="font-tradeGothic tracking-normal text-white/20 uppercase select-none pointer-events-none origin-center transform scale-y-135 leading-loose text-center max-w-lg hidden md:block animate-in fade-in duration-300"
-            style={{ 
-              fontSize: '14px',
-              textShadow: '0 1px 2px rgba(0,0,0,0.4)'
-            }}
+            className="font-tradeGothic font-semibold tracking-normal text-[#F5F5F7]/70 uppercase select-none pointer-events-none origin-center transform scale-y-135 leading-loose text-center max-w-lg px-4 animate-in fade-in duration-300"
+            style={{ fontSize: '14px' }}
           >
-            <span className="text-white/40">Fjorr</span> &nbsp;&nbsp; <span className="text-white/40">{film?.name}</span> &nbsp;&nbsp; <span className="text-white/40">2026</span> &nbsp;&nbsp; <span className="text-white/40">{formatTime(duration)}</span>
+            <span>{film?.name}</span> &nbsp;&nbsp;&nbsp;&nbsp; <span>{film?.story_date || film?.story_year || film?.date || '2026'}</span> &nbsp;&nbsp;&nbsp;&nbsp; <span>{film?.location || 'Studio Grid'}</span>
           </div>
         </div>
 
@@ -702,13 +713,10 @@ export default function WatchPage() {
 
           {/* 🎯 THEATRICAL ARCHIVAL BILLING BLOCK (Only displays right here on end screen footer) */}
           <div 
-            className="font-tradeGothic tracking-normal text-white/20 uppercase select-none pointer-events-none origin-center transform scale-y-135 leading-loose text-center max-w-lg"
-            style={{ 
-              fontSize: '14px',
-              textShadow: '0 1px 2px rgba(0,0,0,0.4)'
-            }}
+            className="font-tradeGothic font-semibold tracking-normal text-[#F5F5F7]/70 uppercase select-none pointer-events-none origin-center transform scale-y-135 leading-loose text-center max-w-lg px-4 animate-in fade-in duration-300"
+            style={{ fontSize: '14px' }}
           >
-            <span className="text-white/40">Fjorr</span> &nbsp;&nbsp; <span className="text-white/40">{film.name}</span> &nbsp;&nbsp; <span className="text-white/40">2026</span> &nbsp;&nbsp; <span className="text-white/40">{formatTime(duration)}</span>
+            <span>{film?.name}</span> &nbsp;&nbsp;&nbsp;&nbsp; <span>{film?.story_date || film?.story_year || film?.date || '2026'}</span> &nbsp;&nbsp;&nbsp;&nbsp; <span>{film?.location || 'Studio Grid'}</span>
           </div>
 
         </div>
