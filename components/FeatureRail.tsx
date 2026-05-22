@@ -164,8 +164,8 @@ export default function FeatureRail({ films, activeIndex, onSlideChange }: Featu
           {/* pointer-events-none lets mouse clicks bleed straight back down onto the main profile link layer */}
           <div className="absolute inset-x-0 bottom-0 px-8 md:px-12 pb-14 md:pb-16 pt-16 md:pt-32 z-20 max-w-2xl w-full flex flex-col text-center md:text-left items-center md:items-start mx-auto md:mx-0 pointer-events-none">
             {currentFilm.sponsor && (
-              <div className="w-full font-sans font-bold text-[13px] text-white/90 tracking-wide mb-2.5 antialiased">
-                {currentFilm.sponsor} <span className="text-white/50">presents</span>
+              <div className="w-full font-sans font-bold text-sm text-white/100 tracking-wide mb-2.5 antialiased">
+                {currentFilm.sponsor} <span className="font-medium text-white/70">presents</span>
               </div>
             )}
 
@@ -184,7 +184,7 @@ export default function FeatureRail({ films, activeIndex, onSlideChange }: Featu
             )}
 
             {/* METADATA ROW */}
-            <div className="flex items-center justify-center md:justify-start gap-2.5 font-mono text-[14px] text-white/60 tracking-tight mb-2">
+            <div className="flex items-center justify-center md:justify-start gap-2.5 font-mono text-sm text-white/60 tracking-tight mb-2">
               {(() => {
                 const ratingVal = typeof currentFilm.rating === 'object' ? currentFilm.rating?.name : currentFilm.rating;
                 if (!ratingVal) return null;
@@ -206,7 +206,7 @@ export default function FeatureRail({ films, activeIndex, onSlideChange }: Featu
               })()}
             </div>
 
-            <p className="font-sans font-medium text-[16px] leading-[1.4em] text-white/80 max-w-xs md:max-w-xs tracking-normal mb-6">
+            <p className="font-sans font-medium text-sm leading-[1.4em] text-white/80 max-w-xs md:max-w-xs tracking-normal mb-6">
               {currentFilm.teaser}
             </p>
 

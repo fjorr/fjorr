@@ -28,7 +28,7 @@ export default async function FilmDetailPage({ params }: PageProps) {
             className="w-full min-h-screen text-center text-white/30 text-[14px] font-mono tracking-widest flex flex-col gap-3 items-center justify-center relative select-none animate-pulse"
             style={{
               backgroundColor: '#1F1F1F',
-              backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px)',
+              backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 1px)',
               backgroundSize: '20px 20px',
               backgroundPosition: 'center center'
             }}

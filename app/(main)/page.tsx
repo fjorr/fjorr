@@ -21,7 +21,9 @@ export default function Home() {
       </div>
 
       {/* 🎬 3. FILM & ARTIFACT LOADER TRACK STACK */}
-      <div className="w-full flex flex-col gap-2 md:gap-4 mt-6 md:mt-10">
+      {/* 🎯 FIXED: Increased gap-2 to gap-6 (mobile) and md:gap-4 to md:gap-10 (desktop) 
+          to add clean padding between the freshly flattened rail layers */}
+      <div className="w-full flex flex-col gap-6 md:gap-10 mt-6 md:mt-10">
         {/* Latest Releases Rail */}
         <FilmRailLoader title="Latest" />
         

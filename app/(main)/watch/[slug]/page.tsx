@@ -98,7 +98,7 @@ export default function WatchPage() {
     }
   };
 
-  // --- 2. CANVAS RENDERING ENGINE ---
+  // --- 2. CANVAS RENDERING ENGINE (Bypassed for main track but kept for stability checks) ---
   const renderTocks = () => {
     const canvas = canvasRef.current;
     const player = playerRef.current;
@@ -117,36 +117,6 @@ export default function WatchPage() {
     }
 
     ctx.clearRect(0, 0, rect.width, rect.height);
-
-    const activeIdx = Math.floor((currentTime / duration) * TOTAL_TOCKS);
-    const isHovering = hoverIndex !== -1;
-
-    const gap = rect.width / TOTAL_TOCKS;
-    const barW = window.innerWidth < 768 ? 2.5 : 1.5;
-
-    for (let i = 0; i < TOTAL_TOCKS; i++) {
-      let h = 10;
-      let op = 0.15;
-      let color = "#F5F5F7";
-
-      if (i < activeIdx) op = 0.6;
-
-      if (isHovering && i === hoverIndex) {
-        h = 16; op = 1; color = "#FF69B4";
-      } else if (i === activeIdx) {
-        h = 16; op = 1; color = "#FFFFFF";
-      }
-
-      ctx.globalAlpha = op;
-      ctx.fillStyle = color;
-
-      const x = i * gap + (gap / 2) - (barW / 2);
-      const y = (rect.height - h) / 2;
-
-      ctx.beginPath();
-      ctx.roundRect(x, y, barW, h, 2);
-      ctx.fill();
-    }
   };
 
   useEffect(() => {
@@ -212,7 +182,7 @@ export default function WatchPage() {
   };
 
   const handleScrub = (e: any) => {
-    const canvas = canvasRef.current;
+    const canvas = tockBarRef.current;
     const player = playerRef.current;
     if (!canvas || !player || !duration) return;
 
@@ -359,22 +329,23 @@ export default function WatchPage() {
 
   if (!film) {
     return (
-      <div className="w-full h-screen bg-black flex items-center justify-center font-mono text-xs tracking-widest text-white/30 animate-pulse">
+      <div className="w-full h-screen bg-[#1f1f1f] flex items-center justify-center font-mono text-xs tracking-widest text-white/30 animate-pulse">
         CONNECTING BROADCAST STREAM...
       </div>
     );
   }
 
   const activeDisplayTime = hoverIndex !== -1 ? (hoverIndex / (TOTAL_TOCKS - 1)) * duration : currentTime;
+  const progressPercent = (currentTime / (duration || 1)) * 100;
 
   return (
-    <div className="w-full h-screen bg-black text-[#F5F5F7] select-none relative overflow-hidden flex items-center justify-center font-sans">
+    <div className="w-full h-screen bg-[#1f1f1f] text-[#F5F5F7] select-none relative overflow-hidden flex items-center justify-center font-sans">
       
       {/* 📹 WIDESCREEN BOUNDED FILM CONTAINER FRAME */}
       <div className={`w-full mx-auto aspect-video relative flex items-center justify-center overflow-hidden transition-all duration-500 z-10 ${
         isFullscreen 
           ? 'max-w-none px-0 h-screen rounded-0 border-0' 
-          : 'max-w-[1440px] px-0 md:px-10 rounded-0 md:rounded-[12px] border-0 md:border border-white/5 bg-zinc-950/20'
+          : 'max-w-[1200px] px-0 rounded-0 xl:rounded-[12px] bg-[#1f1f1f]'
       }`}>
         
         <video
@@ -400,7 +371,7 @@ export default function WatchPage() {
         )}
 
         {isLoading && (
-          <div className="absolute inset-0 bg-black/40 flex items-center justify-center font-mono text-xs text-white/20 tracking-widest z-30 backdrop-blur-sm">
+          <div className="absolute inset-0 bg-[#1f1f1f] flex items-center justify-center font-mono text-xs text-white/20 tracking-widest z-30 backdrop-blur-sm">
             BUFFERING STREAM CODES...
           </div>
         )}
@@ -409,40 +380,49 @@ export default function WatchPage() {
 
       {/* 🌌 FULL WIDTH TOP NAVIGATION LAYER */}
       <div 
-        className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-black/80 to-transparent flex items-start justify-between px-8 pt-8 transition-opacity duration-500 z-30"
+        className="absolute top-0 inset-x-0 h-32 flex items-start justify-between px-8 pt-8 transition-opacity duration-500 z-30"
         style={{ opacity: controlsVisible ? 1 : 0, pointerEvents: controlsVisible ? 'auto' : 'none' }}
       >
         <div className="flex items-center gap-4 text-left select-none">
-          <svg className="w-[60px] h-auto text-white opacity-95" viewBox="0 0 143 81" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M71.3559 13.2942C60.8993 13.2942 52.4273 21.7814 52.4273 32.2448C52.4273 42.7082 60.9046 51.1953 71.3559 51.1953C81.8073 51.1953 90.2846 42.7082 90.2846 32.2448C90.2846 21.7814 81.8073 13.2942 71.3559 13.2942ZM71.3559 39.7278C67.232 39.7278 63.8869 36.3789 63.8869 32.2501C63.8869 28.1214 67.232 24.7725 71.3559 24.7725C75.4799 24.7725 78.825 28.1214 78.825 32.2501C78.825 36.3789 75.4799 39.7278 71.3559 39.7278Z" fill="currentColor"/>
-            <path d="M35.9047 15.0355C35.4032 15.0355 34.9978 15.4414 34.9978 15.9435V60.9377C34.9978 65.4136 31.5887 69.0883 27.23 69.505C26.7605 69.5477 26.403 69.9322 26.403 70.4023V80.0912C26.403 80.6146 26.8405 81.0206 27.3633 80.9992C37.996 80.4971 46.4627 71.7109 46.4627 60.9377V15.9435C46.4627 15.4414 46.0573 15.0355 45.5558 15.0355H35.9047Z" fill="currentColor"/>
-            <path d="M0 0.908003V48.498C0 49.0001 0.405462 49.406 0.906954 49.406H11.9931C12.4946 49.406 12.9001 49.0001 12.9001 48.498V35.1397C12.9001 34.6376 13.3055 34.2317 13.807 34.2317H26.0616C26.5631 34.2317 26.9685 33.8258 26.9685 33.3237V23.6615C26.9685 23.1594 26.5631 22.7535 26.0616 22.7535H13.807C13.3055 22.7535 12.9001 22.3476 12.9001 21.8455V12.3755C12.9001 11.8735 13.3055 11.4675 13.807 11.4675H27.4967C27.9982 11.4675 28.4037 11.0616 28.4037 10.5595V0.908003C28.4037 0.405931 27.9982 0 27.4967 0H0.906954C0.405462 0 0 0.405931 0 0.908003Z" fill="currentColor"/>
-            <path d="M116.309 15.9435V22.7375C116.309 23.2395 115.903 23.6455 115.402 23.6455H108.509C108.066 23.6455 107.709 24.0033 107.709 24.4466V48.5568C107.709 49.0589 107.303 49.4648 106.802 49.4648H97.1508C96.6493 49.4648 96.2438 49.0589 96.2438 48.5568V15.9435C96.2438 15.4414 96.6493 15.0355 97.1508 15.0355H115.402C115.903 15.0355 116.309 15.4414 116.309 15.9435Z" fill="currentColor"/>
-            <path d="M143 15.9435V22.7375C143 23.2395 142.595 23.6455 142.093 23.6455H135.2C134.757 23.6455 134.4 24.0033 134.4 24.4466V48.5568C134.4 49.0589 133.994 49.4648 133.493 49.4648H123.842C123.34 49.4648 122.935 49.0589 122.935 48.5568V15.9435C122.935 15.4414 123.34 15.0355 123.842 15.0355H142.093C142.595 15.0355 143 15.4414 143 15.9435Z" fill="currentColor"/>
-          </svg>
-          <h1 className="text-[16px] tracking-tight font-medium opacity-90 font-inter mt-0.5">{film.name}</h1>
+          <Link 
+            href="/" 
+            className="hover:opacity-80 transition-opacity cursor-pointer flex items-center"
+            title="Return to Home"
+          >
+            <svg className="w-[52px] h-auto text-white opacity-95" viewBox="0 0 143 81" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M71.3559 13.2942C60.8993 13.2942 52.4273 21.7814 52.4273 32.2448C52.4273 42.7082 60.9046 51.1953 71.3559 51.1953C81.8073 51.1953 90.2846 42.7082 90.2846 32.2448C90.2846 21.7814 81.8073 13.2942 71.3559 13.2942ZM71.3559 39.7278C67.232 39.7278 63.8869 36.3789 63.8869 32.2501C63.8869 28.1214 67.232 24.7725 71.3559 24.7725C75.4799 24.7725 78.825 28.1214 78.825 32.2501C78.825 36.3789 75.4799 39.7278 71.3559 39.7278Z" fill="currentColor"/>
+              <path d="M35.9047 15.0355C35.4032 15.0355 34.9978 15.4414 34.9978 15.9435V60.9377C34.9978 65.4136 31.5887 69.0883 27.23 69.505C26.7605 69.5477 26.403 69.9322 26.403 70.4023V80.0912C26.403 80.6146 26.8405 81.0206 27.3633 80.9992C37.996 80.4971 46.4627 71.7109 46.4627 60.9377V15.9435C46.4627 15.4414 46.0573 15.0355 45.5558 15.0355H35.9047Z" fill="currentColor"/>
+              <path d="M0 0.908003V48.498C0 49.0001 0.405462 49.406 0.906954 49.406H11.9931C12.4946 49.406 12.9001 49.0001 12.9001 48.498V35.1397C12.9001 34.6376 13.3055 34.2317 13.807 34.2317H26.0616C26.5631 34.2317 26.9685 33.8258 26.9685 33.3237V23.6615C26.9685 23.1594 26.5631 22.7535 26.0616 22.7535H13.807C13.3055 22.7535 12.9001 22.3476 12.9001 21.8455V12.3755C12.9001 11.8735 13.3055 11.4675 13.807 11.4675H27.4967C27.9982 11.4675 28.4037 11.0616 28.4037 10.5595V0.908003C28.4037 0.405931 27.9982 0 27.4967 0H0.906954C0.405462 0 0 0.405931 0 0.908003Z" fill="currentColor"/>
+              <path d="M116.309 15.9435V22.7375C116.309 23.2395 115.903 23.6455 115.402 23.6455H108.509C108.066 23.6455 107.709 24.0033 107.709 24.4466V48.5568C107.709 49.0589 107.303 49.4648 106.802 49.4648H97.1508C96.6493 49.4648 96.2438 49.0589 96.2438 48.5568V15.9435C96.2438 15.4414 96.6493 15.0355 97.1508 15.0355H115.402C115.903 15.0355 116.309 15.4414 116.309 15.9435Z" fill="currentColor"/>
+              <path d="M143 15.9435V22.7375C143 23.2395 142.595 23.6455 142.093 23.6455H135.2C134.757 23.6455 134.4 24.0033 134.4 24.4466V48.5568C134.4 49.0589 133.994 49.4648 133.493 49.4648H123.842C123.34 49.4648 122.935 49.0589 122.935 48.5568V15.9435C122.935 15.4414 123.34 15.0355 123.842 15.0355H142.093C142.595 15.0355 143 15.4414 143 15.9435Z" fill="currentColor"/>
+            </svg>
+          </Link>
+          <h1 className="text-sm tracking-normal font-semibold text-white/80 opacity-90 font-sans -mt-1">
+            {film.name}
+          </h1>
         </div>
         <button 
           onClick={() => router.push(`/film/${film.slug}`)}
-          className="w-10 h-10 border border-white/10 rounded-full flex items-center justify-center bg-black/20 hover:bg-white/10 transition-colors group"
+          className="w-10 h-10 rounded-full flex items-center justify-center bg-[#1f1f1f]/20 hover:bg-white/10 transition-colors group"
         >
-          <svg className="w-4 h-4 opacity-60 group-hover:opacity-100 transition-opacity" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          <svg className="w-5 h-5 opacity-60 group-hover:opacity-100 transition-opacity" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </div>
 
       {/* 🎛️ FULL WIDTH CONTROLS HUD OVERLAY BAR */}
       <div 
-        className="absolute bottom-0 inset-x-0 h-48 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col justify-end px-12 pb-8 transition-opacity duration-500 z-30 select-none"
+        className="absolute bottom-0 inset-x-0 h-56 flex flex-col justify-end px-6 md:px-12 pb-6 transition-opacity duration-500 z-30 select-none"
         style={{ opacity: controlsVisible ? 1 : 0, pointerEvents: controlsVisible ? 'auto' : 'none' }}
       >
         
-        {/* ROW 1: THE TIMELINE TICKS SCRUB GRID */}
-        <div className="w-full max-w-[200px] md:max-w-[400px] mx-auto flex items-center justify-between gap-4 mb-4 relative h-8">
+        {/* ROW 1: THE TIMELINE TICKS SCRUB GRID (With Glass Backing Board & Pure Dither No Lines) */}
+        <div className="w-full max-w-xl mx-auto flex items-center justify-between gap-4 mb-4 relative h-12 bg-zinc-950/20 border border-white/5 backdrop-blur-md rounded-[10px] px-4 shadow-xl">
+          
           <div 
-            className="w-14 text-left select-none font-semibold text-[14px] tracking-tight transition-colors duration-150"
+            className="w-12 md:w-14 text-right select-none font-semibold text-sm tracking-tight transition-colors duration-150 shrink-0"
             style={{ 
               fontFamily: "JetBrains Mono, Menlo, Monaco, Consolas, monospace",
-              color: hoverIndex !== -1 ? '#FF69B4' : '#F5F5F7'
+              color: hoverIndex !== -1 ? '#76c3ff' : '#F5F5F7'
             }}
           >
             {formatTime(activeDisplayTime)}
@@ -450,7 +430,7 @@ export default function WatchPage() {
 
           <div 
             ref={tockBarRef}
-            className="flex-grow h-8 flex items-center relative cursor-pointer group/scrub"
+            className="flex-grow h-6 flex items-center relative cursor-pointer group/scrub"
             onMouseMove={handleScrub}
             onMouseDown={handleScrub}
             onTouchStart={(e) => { e.preventDefault(); handleScrub(e); }}
@@ -459,25 +439,43 @@ export default function WatchPage() {
             onTouchEnd={() => { setHoverIndex(-1); setPreviewStyle({ opacity: 0 }); }}
           >
             <div 
-              className="absolute bottom-10 w-[240px] aspect-[16/9] -ml-[120px] bg-zinc-950 border border-white/5 shadow-2xl rounded-[6px] bg-no-repeat transition-opacity duration-200 pointer-events-none hidden"
+              className="absolute bottom-10 w-[240px] aspect-[16/9] -ml-[120px] bg-zinc-950 border border-white/5 shadow-2xl rounded-[6px] bg-no-repeat transition-opacity duration-200 pointer-events-none hidden z-30"
               style={previewStyle}
             />
-            <canvas ref={canvasRef} className="w-full h-5 block group-hover/scrub:scale-y-110 transition-transform duration-200" />
+
+            {/* 🎯 TRACK 1: Solid played progress tracking bar */}
+            <div 
+              className="absolute left-0 h-1 bg-[#FFFFFF] rounded-full opacity-80"
+              style={{ width: `${progressPercent}%` }}
+            />
+
+            {/* 🎯 TRACK 2: Pure Dithered dot matrix mask covering remaining time frame segment */}
+            <div 
+              className="absolute top-1/2 -translate-y-1/2 right-0 h-4 pointer-events-none mix-blend-screen opacity-25 transition-all duration-75"
+              style={{
+                left: `${progressPercent}%`,
+                backgroundImage: `radial-gradient(circle, #F5F5F7 1px, transparent 1.5px)`,
+                backgroundSize: '4px 4px'
+              }}
+            />
+
+            {/* Hidden canvas ref preserved for component life stability checks */}
+            <canvas ref={canvasRef} className="hidden" />
           </div>
 
           <div 
-            className="w-16 text-right select-none font-semibold text-[14px] tracking-tight transition-colors duration-150"
+            className="w-14 md:w-16 text-left select-none font-semibold text-[13px] md:text-[14px] tracking-tight transition-colors duration-150 shrink-0"
             style={{ 
               fontFamily: "JetBrains Mono, Menlo, Monaco, Consolas, monospace",
-              color: hoverIndex !== -1 ? '#FF69B4' : '#F5F5F7'
+              color: hoverIndex !== -1 ? '#76c3ff' : '#F5F5F7'
             }}
           >
             -{formatTime(duration - activeDisplayTime)}
           </div>
         </div>
 
-        {/* ROW 2: CONTROL PILL BAR */}
-        <div className="w-full flex justify-center items-center h-11 relative">
+        {/* ROW 2: CONTROL PILL BAR + FIXED HUD BILLING BLOCK */}
+        <div className="w-full flex flex-col items-center gap-4 relative">
           <div className="flex items-center gap-1.5 bg-zinc-950/40 border border-white/5 backdrop-blur-xl px-3.5 h-11 rounded-[10px] shadow-2xl relative">
             
             {/* 1. Custom Rewind Back 10s */}
@@ -545,46 +543,58 @@ export default function WatchPage() {
                 <img src="/icons/volume.svg" className="w-6 h-6 invert" alt="Mute Audio Feed" />
               )}
             </button>
-
+            
             {/* Subtitle dropdown language selector panel popup layer */}
             {showCCMenu && (
-              <div className="absolute bottom-14 left-1/2 -translate-x-1/2 w-42 bg-zinc-950/95 border border-white/5 shadow-2xl rounded-[8px] backdrop-blur-xl p-1.5 flex flex-col gap-0.5 text-left text-[11px] z-50 animate-in fade-in slide-in-from-bottom-2 duration-200">
-                <button 
-                  onClick={() => handleSubtitleSelection('none', 'Off')} 
-                  className={`w-full py-1.5 px-2.5 rounded-[4px] text-left transition-colors font-medium ${
-                    selectedLangCode === 'none' ? 'text-[#54ffb5] bg-white/5' : 'text-white/40 hover:bg-white/5'
-                  }`}
-                >
-                  Captions Off {selectedLangCode === 'none' && ' ✓'}
-                </button>
+              <div className="absolute bottom-14 left-1/2 -translate-x-1/2 z-50">
+                <div className="w-44 bg-[#2a2a2a] shadow-2xl rounded-[8px] backdrop-blur-xl p-1.5 flex flex-col gap-0.5 text-left text-xs animate-in fade-in slide-in-from-bottom-2 duration-200">
+                  <button 
+                    onClick={() => handleSubtitleSelection('none', 'Off')} 
+                    className={`w-full py-1.5 px-2.5 rounded-[4px] text-left transition-colors font-semibold ${
+                      selectedLangCode === 'none' ? 'text-[#f5f5f7] bg-white/5' : 'text-white/40 hover:bg-white/5'
+                    }`}
+                  >
+                    Captions Off
+                  </button>
 
-                <div className="w-full h-[1px] bg-white/5 my-1" />
+                  <div className="w-full h-[1px] bg-white/5 my-1" />
 
-                {Array.isArray(film?.language_subtitle) && film.language_subtitle.map((item: any) => {
-                  const code = item?.language?.code || '';
-                  const fullLanguageName = item?.language?.name || code.toUpperCase();
-                  if (!code) return null;
+                  {Array.isArray(film?.language_subtitle) && film.language_subtitle.map((item: any) => {
+                    const code = item?.language?.code || '';
+                    const fullLanguageName = item?.language?.name || code.toUpperCase();
+                    if (!code) return null;
 
-                  const isCurrentActive = selectedLangCode?.toLowerCase().trim() === code.toLowerCase().trim();
+                    const isCurrentActive = selectedLangCode?.toLowerCase().trim() === code.toLowerCase().trim();
 
-                  return (
-                    <button 
-                      key={code} 
-                      onClick={() => handleSubtitleSelection(code.trim(), fullLanguageName.trim())} 
-                      className={`w-full py-1.5 px-2.5 rounded-[4px] text-left transition-colors capitalize flex items-center justify-between font-medium ${
-                        isCurrentActive 
-                          ? 'text-[#54ffb5] bg-white/5' 
-                          : 'text-white/80 hover:bg-white/5'
-                      }`}
-                    >
-                      <span>{fullLanguageName}</span>
-                      {isCurrentActive && <span className="text-[10px] opacity-90">✓</span>}
-                    </button>
-                  );
-                })}
+                    return (
+                      <button 
+                        key={code} 
+                        onClick={() => handleSubtitleSelection(code.trim(), fullLanguageName.trim())} 
+                        className={`w-full py-1.5 px-2.5 rounded-[4px] text-left transition-colors capitalize flex items-center justify-between font-semibold ${
+                          isCurrentActive 
+                            ? 'text-[#46ceff] bg-white/5' 
+                            : 'text-white/80 hover:bg-white/5'
+                        }`}
+                      >
+                        <span>{fullLanguageName}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             )}
 
+          </div>
+
+          {/* 🎯 HUD OVERLAY ACTIVE FILM METADATA LINE BLOCK */}
+          <div 
+            className="font-tradeGothic tracking-normal text-white/20 uppercase select-none pointer-events-none origin-center transform scale-y-135 leading-loose text-center max-w-lg hidden md:block animate-in fade-in duration-300"
+            style={{ 
+              fontSize: '14px',
+              textShadow: '0 1px 2px rgba(0,0,0,0.4)'
+            }}
+          >
+            <span className="text-white/40">Fjorr</span> &nbsp;&nbsp; <span className="text-white/40">{film?.name}</span> &nbsp;&nbsp; <span className="text-white/40">2026</span> &nbsp;&nbsp; <span className="text-white/40">{formatTime(duration)}</span>
           </div>
         </div>
 
@@ -593,33 +603,114 @@ export default function WatchPage() {
       {/* REPLAY FILM END SCREEN OVERLAY */}
       <div 
         id="end-screen"
-        className="absolute inset-0 bg-black/95 backdrop-blur-md flex flex-col items-center justify-center transition-all duration-1000 ease-in-out z-40"
+        className="absolute inset-0 bg-[#1f1f1f] backdrop-blur-md flex flex-col items-center justify-center transition-all duration-1000 ease-in-out z-40"
         style={{ 
           opacity: isEnded ? 1 : 0, 
           pointerEvents: isEnded ? 'auto' : 'none',
           transform: isEnded ? 'scale(1)' : 'scale(1.03)' 
         }}
       >
-        <div className="max-w-2xl text-center flex flex-col items-center gap-12 px-6">
-          <p className="font-sans text-xl md:text-3xl font-light italic text-[#F5F5F7]/90 leading-relaxed max-w-xl">
-            "{film.last_line || 'The credits fade to black.'}"
-          </p>
+        <div className="max-w-2xl text-center flex flex-col items-center gap-8 px-6 relative">
           
-          <div className="flex items-center gap-12 font-mono text-[12px] tracking-widest text-white/50 uppercase">
+          {/* Last Line Quote Block */}
+          <p className="font-sans text-lg md:text-lg font-semibold text-[#F5F5F7]/90 leading-relaxed max-w-xl">
+            {film.last_line || 'The credits fade to black.'}
+          </p>
+
+          {/* Action Buttons Row (Replay, Share, Onward) */}
+          <div className="flex items-center gap-6 text-white/50 tracking-wider font-sans text-sm">
+            
+            {/* 1. Replay Button Hook */}
             <button 
               onClick={handleReplay}
-              className="flex items-center gap-2 hover:text-[#54ffb5] transition-colors group cursor-pointer"
+              className="flex items-center gap-2 hover:text-[#f5f5f7] transition-colors group cursor-pointer normal-case"
             >
-              <span className="group-hover:-rotate-45 transition-transform duration-300">↺</span> Replay Film
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                className="w-4 h-4 group-hover:-rotate-45 transition-transform duration-300"
+              >
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                <path d="M3 3v5h5" />
+              </svg>
+              Replay
             </button>
-            <span className="w-1 h-1 rounded-full bg-white/20" />
+
+            {/* 2. Share Button Hook */}
+            <button 
+              onClick={() => {
+                const shareData = {
+                  title: film.name,
+                  url: `${window.location.origin}/film/${film.slug}`
+                };
+                
+                if (navigator.share) {
+                  navigator.share(shareData).catch(() => {});
+                } else {
+                  navigator.clipboard.writeText(shareData.url);
+                  alert('Link copied to clipboard');
+                }
+              }}
+              className="flex items-center gap-2 hover:text-[#f5f5f7] transition-colors group cursor-pointer normal-case"
+            >
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                className="w-4 h-4 transition-transform duration-200"
+              >
+                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+                <g className="group-hover:-translate-y-0.5 transition-transform duration-200">
+                  <polyline points="16 6 12 2 8 6" />
+                  <line x1="12" y1="2" x2="12" y2="15" />
+                </g>
+              </svg>
+              Share
+            </button>
+
+            {/* 3. Onward Link Hook */}
             <Link 
               href={`/film/${film.slug}`}
-              className="flex items-center gap-2 hover:text-[#54ffb5] transition-colors group"
+              className="flex items-center gap-2 hover:text-[#f5f5f7] transition-colors group normal-case"
             >
-              Onward <span className="group-translate-x-1 transition-transform">→</span>
+              Onward 
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                className="w-4 h-4 group-translate-x-1 transition-transform"
+              >
+                <path d="M5 12h14" />
+                <path d="m12 5 7 7-7 7" />
+              </svg>
             </Link>
+
           </div>
+
+          {/* 🎯 THEATRICAL ARCHIVAL BILLING BLOCK (Only displays right here on end screen footer) */}
+          <div 
+            className="font-tradeGothic tracking-normal text-white/20 uppercase select-none pointer-events-none origin-center transform scale-y-135 leading-loose text-center max-w-lg"
+            style={{ 
+              fontSize: '14px',
+              textShadow: '0 1px 2px rgba(0,0,0,0.4)'
+            }}
+          >
+            <span className="text-white/40">Fjorr</span> &nbsp;&nbsp; <span className="text-white/40">{film.name}</span> &nbsp;&nbsp; <span className="text-white/40">2026</span> &nbsp;&nbsp; <span className="text-white/40">{formatTime(duration)}</span>
+          </div>
+
         </div>
       </div>
 
