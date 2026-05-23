@@ -370,10 +370,41 @@ export default function WatchPage() {
   const activeDisplayTime = hoverIndex !== -1 ? (hoverIndex / (TOTAL_TOCKS - 1)) * duration : currentTime;
 
   return (
-    <div className="w-full h-screen bg-[#1f1f1f] text-[#F5F5F7] select-none relative overflow-hidden flex items-center justify-center font-sans">
+    <div className="w-full h-[svh] md:h-screen bg-[#1f1f1f] text-[#F5F5F7] select-none relative overflow-hidden flex flex-col justify-between items-center font-sans">
       
-      {/* 📹 WIDESCREEN BOUNDED FILM CONTAINER FRAME */}
-      <div className={`w-full mx-auto aspect-video relative flex items-center justify-center overflow-hidden transition-all duration-500 z-10 ${
+      {/* 🌌 LAYER 1: FULL WIDTH TOP NAVIGATION LAYER */}
+      <div 
+        className="w-full h-24 flex items-center justify-between px-8 transition-opacity duration-500 z-30"
+        style={{ opacity: controlsVisible ? 1 : 0, pointerEvents: controlsVisible ? 'auto' : 'none' }}
+      >
+        <div className="flex items-center gap-4 text-left select-none">
+          <Link 
+            href="/" 
+            className="hover:opacity-80 transition-opacity cursor-pointer flex items-center"
+            title="Return to Home"
+          >
+            <svg className="w-[52px] h-auto text-white opacity-95" viewBox="0 0 143 81" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M71.3559 13.2942C60.8993 13.2942 52.4273 21.7814 52.4273 32.2448C52.4273 42.7082 60.9046 51.1953 71.3559 51.1953C81.8073 51.1953 90.2846 42.7082 90.2846 32.2448C90.2846 21.7814 81.8073 13.2942 71.3559 13.2942ZM71.3559 39.7278C67.232 39.7278 63.8869 36.3789 63.8869 32.2501C63.8869 28.1214 67.232 24.7725 71.3559 24.7725C75.4799 24.7725 78.825 28.1214 78.825 32.2501C78.825 36.3789 75.4799 39.7278 71.3559 39.7278Z" fill="currentColor"/>
+              <path d="M35.9047 15.0355C35.4032 15.0355 34.9978 15.4414 34.9978 15.9435V60.9377C34.9978 65.4136 31.5887 69.0883 27.23 69.505C26.7605 69.5477 26.403 69.9322 26.403 70.4023V80.0912C26.403 80.6146 26.8405 81.0206 27.3633 80.9992C37.996 80.4971 46.4627 71.7109 46.4627 60.9377V15.9435C46.4627 15.4414 46.0573 15.0355H35.9047Z" fill="currentColor"/>
+              <path d="M0 0.908003V48.498C0 49.0001 0.405462 49.406 0.906954 49.406H11.9931C12.4946 49.406 12.9001 49.0001 12.9001 48.498V35.1397C12.9001 34.6376 13.3055 34.2317H26.0616C26.5631 34.2317 26.9685 33.8258 26.9685 33.3237V23.6615C26.9685 23.1594 26.5631 22.7535 26.0616 22.7535H13.807C13.3055 22.7535 12.9001 21.8455V12.3755C12.9001 11.8735 13.3055 11.4675 13.807 11.4675H27.4967C27.9982 11.4675 28.4037 11.0616 28.4037 10.5595V0.908003C28.4037 0.405931 27.9982 0 27.4967 0H0.906954C0.405462 0 0 0.405931 0 0.908003Z" fill="currentColor"/>
+              <path d="M116.309 15.9435V22.7375C116.309 23.2395 115.903 23.6455 115.402 23.6455H108.509C108.066 23.6455 107.709 24.0033 107.709 24.4466V48.5568C107.709 49.0589 107.303 49.4648 106.802 49.4648H97.1508C96.6493 49.4648 96.2438 49.0589 96.2438 48.5568V15.9435C96.2438 15.4414 96.6493 15.0355 97.1508 15.0355H115.402C115.903 15.0355 116.309 15.4414 116.309 15.9435Z" fill="currentColor"/>
+              <path d="M143 15.9435V22.7375C143 23.2395 142.595 23.6455 142.093 23.6455H135.2C134.757 23.6455 134.4 24.0033 134.4 24.4466V48.5568C134.4 49.0589 133.994 49.4648 133.493 49.4648H123.842C123.34 49.4648 122.935 49.0589 122.935 48.5568V15.9435C122.935 15.4414 123.34 15.0355 123.842 15.0355H142.093C142.595 15.0355 143 15.4414 143 15.9435Z" fill="currentColor"/>
+            </svg>
+          </Link>
+        </div>
+
+        <button 
+          onClick={() => router.push(`/film/${film.slug}`)}
+          className="w-10 h-10 rounded-full flex items-center justify-center bg-[#1f1f1f]/20 hover:bg-white/10 transition-colors group"
+        >
+          <svg className="w-5 h-5 opacity-60 group-hover:opacity-100 transition-opacity" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M18 6L6 18M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      {/* 📹 LAYER 2: WIDESCREEN BOUNDED FILM CONTAINER FRAME */}
+      <div className={`w-full mx-auto aspect-video relative flex-1 flex items-center justify-center overflow-hidden transition-all duration-500 z-10 ${
         isFullscreen 
           ? 'max-w-none px-0 h-screen rounded-0 border-0' 
           : 'max-w-[1200px] px-0 rounded-0 xl:rounded-[12px] bg-[#1f1f1f]'
@@ -409,41 +440,10 @@ export default function WatchPage() {
 
       </div>
 
-      {/* 🌌 FULL WIDTH TOP NAVIGATION LAYER */}
+      {/* 🎛️ LAYER 3: FULL WIDTH CONTROLS HUD OVERLAY BAR */}
+      {/* 🎯 FIXED: Injected 'pb-12 md:pb-8' spacing setup parameters so that mobile layouts shift safely upward away from browser boundaries */}
       <div 
-        className="absolute top-0 inset-x-0 h-32 flex items-start justify-between px-8 pt-8 transition-opacity duration-500 z-30"
-        style={{ opacity: controlsVisible ? 1 : 0, pointerEvents: controlsVisible ? 'auto' : 'none' }}
-      >
-        <div className="flex items-center gap-4 text-left select-none">
-          <Link 
-            href="/" 
-            className="hover:opacity-80 transition-opacity cursor-pointer flex items-center"
-            title="Return to Home"
-          >
-            {/* 🎯 FIXED: Re-added all 5 original vector geometry path items to ensure the complete brand lockup parses perfectly */}
-            <svg className="w-[52px] h-auto text-white opacity-95" viewBox="0 0 143 81" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M71.3559 13.2942C60.8993 13.2942 52.4273 21.7814 52.4273 32.2448C52.4273 42.7082 60.9046 51.1953 71.3559 51.1953C81.8073 51.1953 90.2846 42.7082 90.2846 32.2448C90.2846 21.7814 81.8073 13.2942 71.3559 13.2942ZM71.3559 39.7278C67.232 39.7278 63.8869 36.3789 63.8869 32.2501C63.8869 28.1214 67.232 24.7725 71.3559 24.7725C75.4799 24.7725 78.825 28.1214 78.825 32.2501C78.825 36.3789 75.4799 39.7278 71.3559 39.7278Z" fill="currentColor"/>
-              <path d="M35.9047 15.0355C35.4032 15.0355 34.9978 15.4414 34.9978 15.9435V60.9377C34.9978 65.4136 31.5887 69.0883 27.23 69.505C26.7605 69.5477 26.403 69.9322 26.403 70.4023V80.0912C26.403 80.6146 26.8405 81.0206 27.3633 80.9992C37.996 80.4971 46.4627 71.7109 46.4627 60.9377V15.9435C46.4627 15.4414 46.0573 15.0355 45.5558 15.0355H35.9047Z" fill="currentColor"/>
-              <path d="M0 0.908003V48.498C0 49.0001 0.405462 49.406 0.906954 49.406H11.9931C12.4946 49.406 12.9001 49.0001 12.9001 48.498V35.1397C12.9001 34.6376 13.3055 34.2317 13.807 34.2317H26.0616C26.5631 34.2317 26.9685 33.8258 26.9685 33.3237V23.6615C26.9685 23.1594 26.5631 22.7535 26.0616 22.7535H13.807C13.3055 22.7535 12.9001 22.3476 12.9001 21.8455V12.3755C12.9001 11.8735 13.3055 11.4675 13.807 11.4675H27.4967C27.9982 11.4675 28.4037 11.0616 28.4037 10.5595V0.908003C28.4037 0.405931 27.9982 0 27.4967 0H0.906954C0.405462 0 0 0.405931 0 0.908003Z" fill="currentColor"/>
-              <path d="M116.309 15.9435V22.7375C116.309 23.2395 115.903 23.6455 115.402 23.6455H108.509C108.066 23.6455 107.709 24.0033 107.709 24.4466V48.5568C107.709 49.0589 107.303 49.4648 106.802 49.4648H97.1508C96.6493 49.4648 96.2438 49.0589 96.2438 48.5568V15.9435C96.2438 15.4414 96.6493 15.0355 97.1508 15.0355H115.402C115.903 15.0355 116.309 15.4414 116.309 15.9435Z" fill="currentColor"/>
-              <path d="M143 15.9435V22.7375C143 23.2395 142.595 23.6455 142.093 23.6455H135.2C134.757 23.6455 134.4 24.0033 134.4 24.4466V48.5568C134.4 49.0589 133.994 49.4648 133.493 49.4648H123.842C123.34 49.4648 122.935 49.0589 122.935 48.5568V15.9435C122.935 15.4414 123.34 15.0355 123.842 15.0355H142.093C142.595 15.0355 143 15.4414 143 15.9435Z" fill="currentColor"/>
-            </svg>
-          </Link>
-        </div>
-
-        <button 
-          onClick={() => router.push(`/film/${film.slug}`)}
-          className="w-10 h-10 rounded-full flex items-center justify-center bg-[#1f1f1f]/20 hover:bg-white/10 transition-colors group"
-        >
-          <svg className="w-5 h-5 opacity-60 group-hover:opacity-100 transition-opacity" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M18 6L6 18M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
-
-      {/* 🎛️ FULL WIDTH CONTROLS HUD OVERLAY BAR */}
-      <div 
-        className="absolute bottom-0 inset-x-0 h-56 flex flex-col justify-end px-6 md:px-12 pb-6 transition-opacity duration-500 z-30 select-none"
+        className="w-full flex flex-col justify-end px-6 md:px-12 pb-12 md:pb-8 z-30 select-none transition-opacity duration-500"
         style={{ opacity: controlsVisible ? 1 : 0, pointerEvents: controlsVisible ? 'auto' : 'none' }}
       >
         
@@ -489,7 +489,7 @@ export default function WatchPage() {
         </div>
 
         {/* ROW 2: CONTROL PILL BAR + ACTIVE HUD OVERLAY METADATA LINE BLOCK */}
-        <div className="w-full flex flex-col items-center gap-2 relative">
+        <div className="w-full flex flex-col items-center gap-1 relative">
           <div className="flex items-center gap-1.5 bg-[#1f1f1f]/70 backdrop-blur-xl px-3.5 h-11 rounded-[10px] relative">
             
             {/* 1. Custom Rewind Back 10s */}
@@ -602,10 +602,10 @@ export default function WatchPage() {
 
           {/* HUD OVERLAY ACTIVE FILM METADATA LINE BLOCK */}
           <div 
-            className="font-tradeGothic font-semibold tracking-normal text-[#F5F5F7]/70 uppercase select-none pointer-events-none origin-center transform scale-y-135 leading-loose text-center max-w-lg px-4 animate-in fade-in duration-300"
+            className="font-tradeGothic tracking-normal text-[#F5F5F7]/70 uppercase select-none pointer-events-none origin-center transform scale-y-135 leading-loose text-center max-w-lg px-4 animate-in fade-in duration-300"
             style={{ fontSize: '14px' }}
           >
-            <span>{film?.name}</span> &nbsp;&nbsp;&nbsp;&nbsp; <span>{film?.story_date || film?.story_year || film?.date || '2026'}</span> &nbsp;&nbsp;&nbsp;&nbsp; <span>{film?.location || 'Studio Grid'}</span>
+            <span>{film?.name}</span> &nbsp;&nbsp;&nbsp;&nbsp; <span>{film?.story_date || film?.story_year || film?.date || '2026'}</span> &nbsp;&nbsp;&nbsp;&nbsp; <span>{film?.location}</span>
           </div>
         </div>
 
@@ -625,7 +625,7 @@ export default function WatchPage() {
           
           {/* Last Line Quote Block */}
           <p className="font-sans text-lg md:text-lg font-semibold text-[#F5F5F7]/90 leading-relaxed max-w-xl">
-            {film.last_line || 'The credits fade to black.'}
+            {film?.last_line || 'The credits fade to black.'}
           </p>
 
           {/* Action Buttons Row (Replay, Share, Onward) */}
@@ -656,8 +656,8 @@ export default function WatchPage() {
             <button 
               onClick={() => {
                 const shareData = {
-                  title: film.name,
-                  url: `${window.location.origin}/film/${film.slug}`
+                  title: film?.name,
+                  url: `${window.location.origin}/film/${film?.slug}`
                 };
                 
                 if (navigator.share) {
@@ -690,7 +690,7 @@ export default function WatchPage() {
 
             {/* 3. Onward Link Hook */}
             <Link 
-              href={`/film/${film.slug}`}
+              href={`/film/${film?.slug}`}
               className="flex items-center gap-2 hover:text-[#f5f5f7] transition-colors group normal-case"
             >
               Onward 
@@ -713,7 +713,7 @@ export default function WatchPage() {
 
           {/* 🎯 THEATRICAL ARCHIVAL BILLING BLOCK (Only displays right here on end screen footer) */}
           <div 
-            className="font-tradeGothic font-semibold tracking-normal text-[#F5F5F7]/70 uppercase select-none pointer-events-none origin-center transform scale-y-135 leading-loose text-center max-w-lg px-4 animate-in fade-in duration-300"
+            className="font-tradeGothic tracking-normal text-[#F5F5F7]/70 uppercase select-none pointer-events-none origin-center transform scale-y-135 leading-loose text-center max-w-xl"
             style={{ fontSize: '14px' }}
           >
             <span>{film?.name}</span> &nbsp;&nbsp;&nbsp;&nbsp; <span>{film?.story_date || film?.story_year || film?.date || '2026'}</span> &nbsp;&nbsp;&nbsp;&nbsp; <span>{film?.location || 'Studio Grid'}</span>
