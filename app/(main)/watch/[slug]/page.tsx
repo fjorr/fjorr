@@ -310,19 +310,18 @@ export default function WatchPage() {
   return (
     <div className="fixed inset-0 w-full h-[100svh] bg-[#1f1f1f] text-[#F5F5F7] select-none overflow-hidden flex flex-col justify-between font-sans">
       
-      {/* 🎯 ABSOLUTE SCREEN-WIDE TOP NAVIGATION BAR */}
-      {/* Decoupled completely from the player block frame to guarantee clean placement right at the browser window borders */}
+      {/* 🎬 ABSOLUTE SCREEN-WIDE TOP NAVIGATION BAR */}
+      {/* 🎯 ADJUSTED: Removed the backdrop shadow gradient string and increased logo scale parameters to h-5 cleanly */}
       <header 
-        className="absolute top-0 inset-x-0 w-full h-20 px-8 flex items-center justify-between z-40 transition-opacity duration-500 bg-gradient-to-b from-black/50 to-transparent"
+        className="absolute top-0 inset-x-0 w-full h-20 px-8 flex items-center justify-between z-40 transition-opacity duration-500"
         style={{ opacity: controlsVisible ? 1 : 0, pointerEvents: controlsVisible ? 'auto' : 'none' }}
       >
-        {/* Upper Left Brand Token Slot */}
         <div className="flex items-center justify-start">
           <svg 
             viewBox="0 0 143 81" 
             fill="none" 
             xmlns="http://www.w3.org/2000/svg"
-            className="h-4 w-auto text-white/90"
+            className="h-7 w-auto text-white/70"
           >
             <path d="M71.3559 13.2942C60.8993 13.2942 52.4273 21.7814 52.4273 32.2448C52.4273 42.7082 60.9046 51.1953 71.3559 51.1953C81.8073 51.1953 90.2846 42.7082 90.2846 32.2448C90.2846 21.7814 81.8073 13.2942 71.3559 13.2942ZM71.3559 39.7278C67.232 39.7278 63.8869 36.3789 63.8869 32.2501C63.8869 28.1214 67.232 24.7725 71.3559 24.7725C75.4799 24.7725 78.825 28.1214 78.825 32.2501C78.825 36.3789 75.4799 39.7278 71.3559 39.7278Z" fill="currentColor"/>
             <path d="M35.9047 15.0355C35.4032 15.0355 34.9978 15.4414 34.9978 15.9435V60.9377C34.9978 65.4136 31.5887 69.0883 27.23 69.505C26.7605 69.5477 26.403 69.9322 26.403 70.4023V80.0912C26.403 80.6146 26.8405 81.0206 27.3633 80.9992C37.996 80.4971 46.4627 71.7109 46.4627 60.9377V15.9435C46.4627 15.4414 46.0573 15.0355 45.5558 15.0355H35.9047Z" fill="currentColor"/>
@@ -332,7 +331,6 @@ export default function WatchPage() {
           </svg>
         </div>
 
-        {/* Upper Right Back/Close Routing Target Slot */}
         <button
           onClick={() => router.push(`/film/${film?.slug}`)}
           className="p-2 text-white/60 hover:text-white transition-colors cursor-pointer"
@@ -355,13 +353,11 @@ export default function WatchPage() {
       </header>
 
       {/* 🎯 MIDDLE VIEWPORT WRAPPER GRID LAYER */}
-      {/* Acts as an independent screen-wide structural buffer grid layer that keeps the theatrical aspect 
-          player block positioned strictly dead-center across all custom desktop monitor layout boundaries */}
-      <div className="flex-grow w-full flex items-center justify-center p-6">
+      <div className="flex-grow w-full flex items-center justify-center">
         
         {/* 🎬 MAIN CONTAINER BOX */}
         <div className={`relative w-full max-w-[1200px] aspect-video overflow-hidden transition-all duration-500 z-10 flex flex-col justify-end p-6 ${
-          isFullscreen ? 'max-w-none h-screen rounded-0 border-0 p-8' : 'xl:rounded-[12px]'
+          isFullscreen ? 'max-w-none h-screen rounded-none border-0 p-8' : 'xl:rounded-[12px]'
         }`}>
           
           {/* 📹 VIDEO ELEMENT */}
@@ -450,6 +446,7 @@ export default function WatchPage() {
             {/* STACK POSITION C: BUTTON ACTIONS CONTROL PANEL ROW */}
             <div className="flex items-center gap-2 h-13 relative">
               
+              {/* Play / Pause Toggle Button */}
               {/* Play / Pause Toggle Button */}
               <button 
                 onClick={togglePlay} 
