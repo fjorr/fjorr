@@ -147,8 +147,6 @@ export default function WatchPage() {
     }
   };
 
-  // 🎯 FIXED SIGNATURE: Swapped to a standard React.SyntheticEvent type wrapper block 
-  // to cleanly accept any mouse, touch, or field mutations without build worker error rejections
   const handleScrubEnd = (e: React.SyntheticEvent<HTMLInputElement>) => {
     setIsScrubbing(false);
     const player = playerRef.current;
@@ -176,8 +174,9 @@ export default function WatchPage() {
 
   // --- 5. NATIVE JAVASCRIPT WEBVTT PARSING ---
   const handleSubtitleSelection = async (langCode: string, langName: string) => {
-    setShowCCMenu(false);
     setSelectedLangCode(langCode);
+    // 🎯 FIXED: Instantly toggle the horizontal menu tray closed on click selection
+    setShowCCMenu(false);
 
     if (langCode === 'none') {
       setParsedCues([]);
@@ -283,12 +282,12 @@ export default function WatchPage() {
   return (
     <div className="fixed inset-0 w-full h-[100svh] bg-[#1f1f1f] text-[#F5F5F7] select-none overflow-hidden flex flex-col items-center justify-center font-sans">
       
-      {/* 🎬 MAIN THEATRICAL WIDGET CONTAINER BOX */}
+      {/* 🎬 MAIN CONTAINER BOX */}
       <div className={`relative w-full max-w-[1200px] aspect-video overflow-hidden transition-all duration-500 z-10 flex flex-col justify-end p-6 ${
         isFullscreen ? 'max-w-none h-screen rounded-0 border-0 p-8' : 'xl:rounded-[12px] bg-black shadow-2xl'
       }`}>
         
-        {/* 📹 NATIVE VIDEO EMBED ELEMENT */}
+        {/* 📹 VIDEO ELEMENT */}
         <video
           ref={playerRef}
           id="fjorr-engine"
@@ -308,7 +307,7 @@ export default function WatchPage() {
           onEnded={() => { setIsEnded(true); setIsPlaying(false); setControlsVisible(false); }}
         />
 
-        {/* 🎯 PURE DARK TINT BACKDROP LAYER */}
+        {/* 🎯 PURE DARK TINT BACKDROP */}
         <div 
           className="absolute inset-0 bg-black/60 transition-opacity duration-500 pointer-events-none z-10"
           style={{ opacity: controlsVisible ? 1 : 0 }}
@@ -316,18 +315,18 @@ export default function WatchPage() {
 
         {/* Floating Text Subtitle Layer */}
         {selectedLangCode !== 'none' && currentSubtitleText && (
-          <div className="absolute bottom-[32%] left-1/2 -translate-x-1/2 max-w-[85%] text-center px-5 py-2 bg-zinc-950/80 backdrop-blur-md border border-white/5 rounded-[6px] text-[#F5F5F7] font-medium text-[15px] md:text-[17px] tracking-tight leading-relaxed z-25 pointer-events-none select-none font-inter shadow-2xl">
+          <div className="absolute bottom-[36%] left-1/2 -translate-x-1/2 max-w-[85%] text-center px-5 py-2 bg-zinc-950/80 backdrop-blur-md border border-white/5 rounded-[6px] text-[#F5F5F7] font-medium text-[15px] md:text-[17px] tracking-tight leading-relaxed z-25 pointer-events-none select-none font-inter shadow-2xl">
             {currentSubtitleText}
           </div>
         )}
 
-        {/* 🎛️ CORNER HUD INTERFACE MATRIX OVERLAY BLOCK */}
+        {/* 🎛️ CORNER HUD OVERLAY BLOCK */}
         <div 
           className="w-full flex flex-col justify-end items-start relative z-30 transition-opacity duration-500 select-none pb-2 gap-3"
           style={{ opacity: controlsVisible ? 1 : 0, pointerEvents: controlsVisible ? 'auto' : 'none' }}
         >
           
-          {/* STACK POSITION A: FILM TITLE DATA PACK BLOCK */}
+          {/* STACK POSITION A: FILM TITLE DATA BLOCK */}
           <div className="flex flex-col items-start justify-center text-left text-[#F5F5F7] pl-1">
             <h2 className="text-1xl md:text-2xl font-bold tracking-tight font-sans leading-none">
               {film?.name || 'Shoebox'}
@@ -337,7 +336,41 @@ export default function WatchPage() {
             </p>
           </div>
 
-          {/* STACK POSITION B: BUTTON ACTIONS CONTROL PANEL ROW */}
+          {/* STACK POSITION B: DETACHED HORIZONTAL SUBTITLE SELECTION TRACK */}
+          {showCCMenu && (
+            <div className="w-full max-w-[320px] flex items-center gap-3 pl-1 py-1 overflow-x-auto no-scrollbar animate-in fade-in slide-in-from-left-2 duration-200">
+              <button 
+                onClick={() => handleSubtitleSelection('none', 'Off')}
+                className={`text-xs font-bold tracking-wider uppercase transition-colors shrink-0 ${
+                  selectedLangCode === 'none' ? 'text-[#46ceff]' : 'text-white/40 hover:text-white/80'
+                }`}
+              >
+                Off
+              </button>
+              
+              {Array.isArray(film?.language_subtitle) && film.language_subtitle.map((item: any) => {
+                const code = item?.language?.code || '';
+                const fullLanguageName = item?.language?.name || code.toUpperCase();
+                if (!code) return null;
+
+                const isCurrentActive = selectedLangCode?.toLowerCase().trim() === code.toLowerCase().trim();
+
+                return (
+                  <button
+                    key={code}
+                    onClick={() => handleSubtitleSelection(code.trim(), fullLanguageName.trim())}
+                    className={`text-xs font-bold tracking-wider uppercase transition-colors shrink-0 ${
+                      isCurrentActive ? 'text-[#46ceff]' : 'text-white/40 hover:text-white/80'
+                    }`}
+                  >
+                    {fullLanguageName}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {/* STACK POSITION C: BUTTON ACTIONS CONTROL PANEL ROW */}
           <div className="flex items-center gap-2 h-13 relative">
             
             {/* Play / Pause Toggle Button */}
@@ -347,9 +380,9 @@ export default function WatchPage() {
               title={isPlaying ? "Pause" : "Play"}
             >
               {isPlaying ? (
-                <img src="/icons/pause.svg" className="w-7 h-7 invert" alt="Pause Stream" />
+                <img src="/icons/pause.svg" className="w-7 h-7 invert" alt="Pause" />
               ) : (
-                <img src="/icons/play.svg" className="w-7 h-7 ml-0.5 invert" alt="Play Stream" />
+                <img src="/icons/play.svg" className="w-7 h-7 ml-0.5 invert" alt="Play" />
               )}
             </button>
 
@@ -368,7 +401,7 @@ export default function WatchPage() {
               className="w-9 h-9 flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity duration-200 cursor-pointer"
               title="Fast Forward 10s"
             >
-              <img src="/icons/forward10.svg" className="w-[22px] h-[22px] invert" alt="Forward 10s" />
+              <img src="/icons/forward10.svg" className="w-[22px] h-[22px] invert" alt="Fast Forward 10s" />
             </button>
 
             {/* Captions CC Menu Trigger Button */}
@@ -377,7 +410,7 @@ export default function WatchPage() {
               className={`w-9 h-9 flex items-center justify-center transition-opacity duration-200 cursor-pointer ${showCCMenu || selectedLangCode !== 'none' ? 'opacity-100 brightness-150' : 'opacity-70 hover:opacity-100'}`}
               title="Captions"
             >
-              <img src="/icons/cc.svg" className="w-[22px] h-[22px] invert" alt="Captions Menu Toggle" />
+              <img src="/icons/cc.svg" className="w-[22px] h-[22px] invert" alt="Captions" />
             </button>
 
             {/* Fullscreen Toggle Switch Button */}
@@ -400,56 +433,16 @@ export default function WatchPage() {
               title={isMuted ? "Unmute" : "Mute"}
             >
               {isMuted ? (
-                <img src="/icons/mute.svg" className="w-[22px] h-[22px] invert" alt="Unmute Audio Feed" />
+                <img src="/icons/mute.svg" className="w-[22px] h-[22px] invert" alt="Unmute" />
               ) : (
-                <img src="/icons/volume.svg" className="w-[22px] h-[22px] invert" alt="Mute Audio Feed" />
+                <img src="/icons/volume.svg" className="w-[22px] h-[22px] invert" alt="Mute" />
               )}
             </button>
             
-            {/* CC Dropdown Menu layer popup context */}
-            {showCCMenu && (
-              <div className="absolute bottom-14 left-2 z-50 pointer-events-auto">
-                <div className="w-44 bg-[#2a2a2a] rounded-[8px] backdrop-blur-xl p-1.5 flex flex-col gap-0.5 text-left text-xs animate-in fade-in slide-in-from-bottom-2 duration-200">
-                  <button 
-                    onClick={() => handleSubtitleSelection('none', 'Off')} 
-                    className={`w-full py-1.5 px-2.5 rounded-[4px] text-left transition-colors font-semibold ${
-                      selectedLangCode === 'none' ? 'text-[#f5f5f7] bg-white/5' : 'text-white/40 hover:bg-white/5'
-                    }`}
-                  >
-                    Captions Off
-                  </button>
-
-                  <div className="w-full h-[1px] bg-white/5 my-1" />
-
-                  {Array.isArray(film?.language_subtitle) && film.language_subtitle.map((item: any) => {
-                    const code = item?.language?.code || '';
-                    const fullLanguageName = item?.language?.name || code.toUpperCase();
-                    if (!code) return null;
-
-                    const isCurrentActive = selectedLangCode?.toLowerCase().trim() === code.toLowerCase().trim();
-
-                    return (
-                      <button 
-                        key={code} 
-                        onClick={() => handleSubtitleSelection(code.trim(), fullLanguageName.trim())} 
-                        className={`w-full py-1.5 px-2.5 rounded-[4px] text-left transition-colors capitalize flex items-center justify-between font-semibold ${
-                          isCurrentActive 
-                            ? 'text-[#46ceff] bg-white/5' 
-                            : 'text-white/80 hover:bg-white/5'
-                        }`}
-                      >
-                        <span>{fullLanguageName}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
           </div>
 
-          {/* STACK POSITION C: TRADITIONAL RESTRICTED SCRUBBER TRACK RUNNER */}
-          <div className="w-full max-w-[320px] flex items-center justify-between gap-4 h-5 pl-1 mt-1">
+          {/* STACK POSITION D: TRADITIONAL RESTRICTED SCRUBBER TRACK RUNNER */}
+          <div className="w-full max-w-[320px] flex items-center justify-between gap-4 h-5 pl-1 mt-1 relative">
             <div className="w-10 text-right select-none font-mono font-bold text-sm text-white opacity-60 tracking-tight shrink-0">
               {formatTime(currentTime)}
             </div>
@@ -466,7 +459,11 @@ export default function WatchPage() {
                 onChange={handleScrubChange}
                 onMouseUp={handleScrubEnd}
                 onTouchEnd={handleScrubEnd}
-                className="w-full h-5 rounded-full appearance-none cursor-pointer outline-none accent-white transition-all duration-150 bg-transparent relative z-20"
+                className="w-full h-5 rounded-[4px] appearance-none cursor-pointer outline-none bg-transparent relative z-25
+                           [&::-webkit-slider-runnable-track]:w-full [&::-webkit-slider-runnable-track]:h-5 [&::-webkit-slider-runnable-track]:bg-white/20 [&::-webkit-slider-runnable-track]:rounded-[4px]
+                           [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-[4px] [&::-webkit-slider-thumb]:mt-0
+                           [&::-moz-range-track]:w-full [&::-moz-range-track]:h-5 [&::-moz-range-track]:bg-white/20 [&::-moz-range-track]:rounded-[4px]
+                           [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:rounded-[4px] [&::-moz-range-thumb]:border-0"
                 style={{
                   background: `linear-gradient(to right, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.55) ${duration ? (currentTime / duration) * 100 : 0}%, rgba(255,255,255,0.1) ${duration ? (currentTime / duration) * 100 : 0}%, rgba(255,255,255,0.1) 100%)`
                 }}
