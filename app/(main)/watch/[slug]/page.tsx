@@ -438,7 +438,7 @@ export default function WatchPage() {
         
         {/* STACK POSITION A: FILM TITLE DATA BLOCK */}
         <div className="flex flex-col items-start justify-center text-left text-[#F5F5F7] pl-1">
-          <h2 className="text-1xl md:text-2xl font-bold tracking-tight font-sans leading-none">
+          <h2 className="text-[20px] md:text-2xl font-bold tracking-tight font-sans leading-none">
             {film?.name || 'Shoebox'}
           </h2>
           <p className="text-xs md:text-sm font-medium font-sans opacity-60 mt-2 tracking-normal">
