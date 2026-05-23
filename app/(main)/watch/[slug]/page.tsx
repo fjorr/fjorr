@@ -22,7 +22,7 @@ export default function WatchPage() {
   const [duration, setDuration] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
-  // 🎯 THE STABILITY CONTROL FLAG
+  // --- THE STABILITY CONTROL FLAG ---
   const [isScrubbing, setIsScrubbing] = useState(false);
 
   // --- CUSTOM REACT SUBTITLE STATE ---
@@ -147,11 +147,14 @@ export default function WatchPage() {
     }
   };
 
-  const handleScrubEnd = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // 🎯 FIXED SIGNATURE: Swapped to a standard React.SyntheticEvent type wrapper block 
+  // to cleanly accept any mouse, touch, or field mutations without build worker error rejections
+  const handleScrubEnd = (e: React.SyntheticEvent<HTMLInputElement>) => {
     setIsScrubbing(false);
     const player = playerRef.current;
     if (!player || !duration) return;
-    const finalTime = parseFloat(e.target.value);
+    
+    const finalTime = parseFloat(e.currentTarget.value);
     player.currentTime = finalTime;
     showUIControls();
   };
@@ -326,19 +329,18 @@ export default function WatchPage() {
           
           {/* STACK POSITION A: FILM TITLE DATA PACK BLOCK */}
           <div className="flex flex-col items-start justify-center text-left text-[#F5F5F7] pl-1">
-            <h2 className="text-1xl md:text-2xl font-bold tracking-tight font-sans leading-none">
+            <h2 className="text-2xl md:text-3xl font-bold tracking-wide font-sans leading-none">
               {film?.name || 'Shoebox'}
             </h2>
-            <p className="text-sm md:text-sm font-semibold font-sans opacity-60 mt-1 tracking-normal">
+            <p className="text-sm md:text-base font-medium font-sans opacity-60 mt-2 tracking-normal">
               {film?.story_date || '1972'} &middot; {film?.location || 'Portland, Oregon'}
             </p>
           </div>
 
           {/* STACK POSITION B: BUTTON ACTIONS CONTROL PANEL ROW */}
-          {/* 🎯 RESTORED ICON CALIBRATION TRACKS */}
           <div className="flex items-center gap-2 h-13 relative">
             
-            {/* 1. Custom Play / Pause Toggle (🎯 SWEET SPOT MID SIZE) */}
+            {/* Play / Pause Toggle Button */}
             <button 
               onClick={togglePlay} 
               className="w-10 h-10 flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity duration-200 cursor-pointer"
@@ -351,7 +353,7 @@ export default function WatchPage() {
               )}
             </button>
 
-            {/* 2. Custom Rewind Back 10s */}
+            {/* Rewind Back 10s Button */}
             <button 
               onClick={() => { if (playerRef.current) playerRef.current.currentTime = Math.max(0, currentTime - 10); }} 
               className="w-9 h-9 flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity duration-200 cursor-pointer"
@@ -360,7 +362,7 @@ export default function WatchPage() {
               <img src="/icons/back10.svg" className="w-[22px] h-[22px] invert" alt="Rewind 10s" />
             </button>
 
-            {/* 3. Custom Fast Forward 10s */}
+            {/* Fast Forward 10s Button */}
             <button 
               onClick={() => { if (playerRef.current) playerRef.current.currentTime = Math.min(duration, currentTime + 10); }} 
               className="w-9 h-9 flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity duration-200 cursor-pointer"
@@ -369,7 +371,7 @@ export default function WatchPage() {
               <img src="/icons/forward10.svg" className="w-[22px] h-[22px] invert" alt="Forward 10s" />
             </button>
 
-            {/* 4. Custom Captions CC Menu Trigger */}
+            {/* Captions CC Menu Trigger Button */}
             <button 
               onClick={() => setShowCCMenu(!showCCMenu)} 
               className={`w-9 h-9 flex items-center justify-center transition-opacity duration-200 cursor-pointer ${showCCMenu || selectedLangCode !== 'none' ? 'opacity-100 brightness-150' : 'opacity-70 hover:opacity-100'}`}
@@ -378,7 +380,7 @@ export default function WatchPage() {
               <img src="/icons/cc.svg" className="w-[22px] h-[22px] invert" alt="Captions Menu Toggle" />
             </button>
 
-            {/* 5. Custom Fullscreen Toggle Switch */}
+            {/* Fullscreen Toggle Switch Button */}
             <button 
               onClick={toggleFullscreen} 
               className="w-9 h-9 flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity duration-200 cursor-pointer"
@@ -391,7 +393,7 @@ export default function WatchPage() {
               )}
             </button>
 
-            {/* 6. Custom Volume Speaker Mute Toggle */}
+            {/* Volume Speaker Mute Toggle Button */}
             <button 
               onClick={toggleMute} 
               className="w-9 h-9 flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity duration-200 cursor-pointer"
@@ -464,7 +466,7 @@ export default function WatchPage() {
                 onChange={handleScrubChange}
                 onMouseUp={handleScrubEnd}
                 onTouchEnd={handleScrubEnd}
-                className="w-full h-5 rounded-full appearance-none cursor-pointer outline-none bg-transparent relative z-20"
+                className="w-full h-5 rounded-full appearance-none cursor-pointer outline-none accent-white transition-all duration-150 bg-transparent relative z-20"
                 style={{
                   background: `linear-gradient(to right, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.55) ${duration ? (currentTime / duration) * 100 : 0}%, rgba(255,255,255,0.1) ${duration ? (currentTime / duration) * 100 : 0}%, rgba(255,255,255,0.1) 100%)`
                 }}
