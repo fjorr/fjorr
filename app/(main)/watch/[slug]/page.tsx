@@ -93,7 +93,7 @@ export default function WatchPage() {
       if (isPlaying && !showCCMenu && !isScrubbing) {
         setControlsVisible(false);
       }
-    }, 2500);
+    }, 1500);
   };
 
   useEffect(() => {
