@@ -274,7 +274,7 @@ export default function WatchPage() {
 
   if (!film) {
     return (
-      <div className="w-full h-screen bg-[#1f1f1f] flex items-center justify-center font-mono text-xs tracking-widest text-white/30 animate-pulse">
+      <div className="w-full h-screen bg-[#1f1f1f] flex items-center justify-center font-mono text-xs tracking-widest text-white/60 animate-pulse">
         CONNECTING BROADCAST STREAM...
       </div>
     );
@@ -310,7 +310,7 @@ export default function WatchPage() {
 
         {/* 🎯 PURE DARK TINT BACKDROP LAYER */}
         <div 
-          className="absolute inset-0 bg-black/20 transition-opacity duration-500 pointer-events-none z-10"
+          className="absolute inset-0 bg-black/60 transition-opacity duration-500 pointer-events-none z-10"
           style={{ opacity: controlsVisible ? 1 : 0 }}
         />
 
@@ -329,10 +329,10 @@ export default function WatchPage() {
           
           {/* STACK POSITION A: FILM TITLE DATA PACK BLOCK */}
           <div className="flex flex-col items-start justify-center text-left text-[#F5F5F7] pl-1">
-            <h2 className="text-2xl md:text-3xl font-bold tracking-wide font-sans leading-none">
+            <h2 className="text-1xl md:text-2xl font-bold tracking-tight font-sans leading-none">
               {film?.name || 'Shoebox'}
             </h2>
-            <p className="text-sm md:text-base font-medium font-sans opacity-60 mt-2 tracking-normal">
+            <p className="text-sm md:text-sm font-medium font-sans opacity-60 mt-1 tracking-normal">
               {film?.story_date || '1972'} &middot; {film?.location || 'Portland, Oregon'}
             </p>
           </div>
@@ -450,7 +450,7 @@ export default function WatchPage() {
 
           {/* STACK POSITION C: TRADITIONAL RESTRICTED SCRUBBER TRACK RUNNER */}
           <div className="w-full max-w-[320px] flex items-center justify-between gap-4 h-5 pl-1 mt-1">
-            <div className="w-10 text-right select-none font-mono text-xs text-white opacity-40 tracking-tight shrink-0">
+            <div className="w-10 text-right select-none font-mono font-bold text-sm text-white opacity-60 tracking-tight shrink-0">
               {formatTime(currentTime)}
             </div>
 
@@ -473,7 +473,7 @@ export default function WatchPage() {
               />
             </div>
 
-            <div className="w-11 text-left select-none font-mono text-xs text-white opacity-40 tracking-tight shrink-0">
+            <div className="w-11 text-left select-none font-mono font-bold text-sm text-white opacity-60 tracking-tight shrink-0">
               -{formatTime(duration - currentTime)}
             </div>
           </div>
@@ -482,7 +482,7 @@ export default function WatchPage() {
 
         {/* LOADING INDICATOR OVERLAY */}
         {isLoading && (
-          <div className="absolute inset-0 bg-[#1f1f1f] flex items-center justify-center font-mono text-xs text-white/20 tracking-widest z-30 backdrop-blur-sm">
+          <div className="absolute inset-0 bg-[#1f1f1f] flex items-center justify-center font-mono text-xs text-white/60 tracking-widest z-30 backdrop-blur-sm">
             BUFFERING STREAM CODES...
           </div>
         )}
