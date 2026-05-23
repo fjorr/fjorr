@@ -98,15 +98,36 @@ export default function WatchPage() {
 
   useEffect(() => {
     window.addEventListener('mousemove', showUIControls);
-    window.addEventListener('click', showUIControls);
-    window.addEventListener('touchstart', showUIControls);
     return () => {
       window.removeEventListener('mousemove', showUIControls);
-      window.removeEventListener('click', showUIControls);
-      window.removeEventListener('touchstart', showUIControls);
       if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
     };
   }, [isPlaying, showCCMenu, isScrubbing]);
+
+  // 🎯 BULLETPROOF GLOBAL INTERACTION TRACKING ENGINE EFFECT
+  useEffect(() => {
+    const processScreenInteraction = (e: MouseEvent | TouchEvent) => {
+      const target = e.target as HTMLElement;
+      
+      if (target.closest('[data-ui-control="true"]')) {
+        return;
+      }
+
+      if (controlsVisible) {
+        if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
+        setControlsVisible(false);
+      } else {
+        showUIControls();
+      }
+    };
+
+    window.addEventListener('click', processScreenInteraction);
+    window.addEventListener('touchend', processScreenInteraction);
+    return () => {
+      window.removeEventListener('click', processScreenInteraction);
+      window.removeEventListener('touchend', processScreenInteraction);
+    };
+  }, [controlsVisible, isPlaying, showCCMenu, isScrubbing]);
 
   // --- 4. MEDIA ACTION HANDLERS ---
   const togglePlay = () => {
@@ -312,23 +333,27 @@ export default function WatchPage() {
       
       {/* 🎬 ABSOLUTE SCREEN-WIDE TOP NAVIGATION BAR */}
       <header 
-        className="absolute top-0 inset-x-0 w-full h-20 px-8 flex items-center justify-between z-40 transition-opacity duration-500"
-        style={{ opacity: controlsVisible ? 1 : 0, pointerEvents: controlsVisible ? 'auto' : 'none' }}
+        data-ui-control="true"
+        className={`absolute top-0 inset-x-0 w-full h-20 px-8 flex items-center justify-between z-40 transition-all duration-500 ease-out ${
+          controlsVisible ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0 pointer-events-none'
+        }`}
       >
         <div className="flex items-center justify-start">
-          <svg 
-  viewBox="0 0 143 81" 
-  fill="none" 
-  xmlns="http://www.w3.org/2000/svg"
-  className="h-7 w-auto text-white/70"
->
-  <path d="M71.3559 13.2942C60.8993 13.2942 52.4273 21.7814 52.4273 32.2448C52.4273 42.7082 60.9046 51.1953 71.3559 51.1953C81.8073 51.1953 90.2846 42.7082 90.2846 32.2448C90.2846 21.7814 81.8073 13.2942 71.3559 13.2942ZM71.3559 39.7278C67.232 39.7278 63.8869 36.3789 63.8869 32.2501C63.8869 28.1214 67.232 24.7725 71.3559 24.7725C75.4799 24.7725 78.825 28.1214 78.825 32.2501C78.825 36.3789 75.4799 39.7278 71.3559 39.7278Z" fill="white"/>
-  <path d="M35.9047 15.0355C35.4032 15.0355 34.9978 15.4414 34.9978 15.9435V60.9377C34.9978 65.4136 31.5887 69.0883 27.23 69.505C26.7605 69.5477 26.403 69.9322 26.403 70.4023V80.0912C26.403 80.6146 26.8405 81.0206 27.3633 80.9992C37.996 80.4971 46.4627 71.7109 46.4627 60.9377V15.9435C46.4627 15.4414 46.0573 15.0355 45.5558 15.0355H35.9047Z" fill="white"/>
-  <path d="M0 0.908003V48.498C0 49.0001 0.405462 49.406 0.906954 49.406H11.9931C12.4946 49.406 12.9001 49.0001 12.9001 48.498V35.1397C12.9001 34.6376 13.3055 34.2317 13.807 34.2317H26.0616C26.5631 34.2317 26.9685 33.8258 26.9685 33.3237V23.6615C26.9685 23.1594 26.5631 22.7535 26.0616 22.7535H13.807C13.3055 22.7535 12.9001 22.3476 12.9001 21.8455V12.3755C12.9001 11.8735 13.3055 11.4675 13.807 11.4675H27.4967C27.9982 11.4675 28.4037 11.0616 28.4037 10.5595V0.908003C28.4037 0.405931 27.9982 0 27.4967 0H0.906954C0.405462 0 0 0.405931 0 0.908003Z" fill="white"/>
+          {/* 🎯 LINK UTILITY IMPLEMENTED: Wrapped the entire brand vector block inside an anchor pipeline to route users outward to fjorr.com */}
+          <Link href="/" className="cursor-pointer block opacity-70 hover:opacity-100 transition-opacity">
+            <svg 
+              viewBox="0 0 143 81" 
+              fill="none" 
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-7 w-auto text-white"
+            >
+              <path d="M71.3559 13.2942C60.8993 13.2942 52.4273 21.7814 52.4273 32.2448C52.4273 42.7082 60.9046 51.1953 71.3559 51.1953C81.8073 51.1953 90.2846 42.7082 90.2846 32.2448C90.2846 21.7814 81.8073 13.2942 71.3559 13.2942ZM71.3559 39.7278C67.232 39.7278 63.8869 36.3789 63.8869 32.2501C63.8869 28.1214 67.232 24.7725 71.3559 24.7725C75.4799 24.7725 78.825 28.1214 78.825 32.2501C78.825 36.3789 75.4799 39.7278 71.3559 39.7278Z" fill="white"/>
+  <path d="M35.9047 15.0355C35.4032 15.0355 34.9978 15.4414 34.9978 15.9435V60.9377C34.9978 65.4136 31.5887 69.0883 27.23 69.505C26.7605 69.5477 26.403 69.9322 26.403 70.4023V80.0912C26.403 80.6146 26.8405 81.0206 27.3633 80.9992C37.996 80.4971 46.4627 71.7109 46.4627 60.9377V15.9435C46.4627 15.4414 46.0573 15.0355H35.9047Z" fill="white"/>
+  <path d="M0 0.908003V48.498C0 49.0001 0.405462 49.406 0.906954 49.406H11.9931C12.4946 49.406 12.9001 49.0001 12.9001 48.498V35.1397C12.4946 34.6376 13.3055 34.2317 13.807 34.2317H26.0616C26.5631 34.2317 26.9685 33.8258 26.9685 33.3237V23.6615C26.9685 23.1594 26.5631 22.7535 26.0616 22.7535H13.807C13.3055 22.7535 12.9001 22.3476 12.9001 21.8455V12.3755C12.9001 11.8735 13.3055 11.4675 13.807 11.4675H27.4967C27.9982 11.4675 28.4037 11.0616 28.4037 10.5595V0.908003C28.4037 0.405931 27.9982 0 27.4967 0H0.906954C0.405462 0 0 0.405931 0 0.908003Z" fill="white"/>
   <path d="M116.309 15.9435V22.7375C116.309 23.2395 115.903 23.6455 115.402 23.6455H108.509C108.066 23.6455 107.709 24.0033 107.709 24.4466V48.5568C107.709 49.0589 107.303 49.4648 106.802 49.4648H97.1508C96.6493 49.4648 96.2438 49.0589 96.2438 48.5568V15.9435C96.2438 15.4414 96.6493 15.0355 97.1508 15.0355H115.402C115.903 15.0355 116.309 15.4414 116.309 15.9435Z" fill="white"/>
   <path d="M143 15.9435V22.7375C143 23.2395 142.595 23.6455 142.093 23.6455H135.2C134.757 23.6455 134.4 24.0033 134.4 24.4466V48.5568C134.4 49.0589 133.994 49.4648 133.493 49.4648H123.842C123.34 49.4648 122.935 49.0589 122.935 48.5568V15.9435C122.935 15.4414 123.34 15.0355 123.842 15.0355H142.093C142.595 15.0355 143 15.4414 143 15.9435Z" fill="white"/>
 </svg>
-
+          </Link>
         </div>
 
         <button
@@ -388,7 +413,7 @@ export default function WatchPage() {
 
           {/* Floating Text Subtitle Layer */}
           {selectedLangCode !== 'none' && currentSubtitleText && (
-            <div className="absolute bottom-[4%] left-1/2 -translate-x-1/2 max-w-[85%] text-center px-5 py-2 bg-zinc-950/40 backdrop-blur-md border border-white/5 rounded-[6px] text-[#F5F5F7] font-medium text-[15px] md:text-base tracking-tight leading-normal z-25 pointer-events-none select-none font-sans font-semibold shadow-2xl">
+            <div className="absolute bottom-[10%] left-1/2 -translate-x-1/2 max-w-[85%] text-center px-5 py-2 bg-zinc-950/40 backdrop-blur-md border border-white/5 rounded-[6px] text-[#F5F5F7] font-medium text-[15px] md:text-base tracking-tight leading-normal z-25 pointer-events-none select-none font-sans font-semibold shadow-2xl">
               {currentSubtitleText}
             </div>
           )}
@@ -405,13 +430,15 @@ export default function WatchPage() {
 
       {/* 🎛️ SCREEN-PINNED FIXED FOOTER OVERLAY BLOCK */}
       <div 
-        className="fixed bottom-0 inset-x-0 w-full flex flex-col justify-end items-start z-30 transition-opacity duration-500 select-none px-8 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] gap-3"
-        style={{ opacity: controlsVisible ? 1 : 0, pointerEvents: controlsVisible ? 'auto' : 'none' }}
+        data-ui-control="true"
+        className={`fixed bottom-0 inset-x-0 w-full flex flex-col justify-end items-start text-left z-30 transition-all duration-500 ease-out select-none px-8 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] gap-3 ${
+          controlsVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'
+        }`}
       >
         
         {/* STACK POSITION A: FILM TITLE DATA BLOCK */}
         <div className="flex flex-col items-start justify-center text-left text-[#F5F5F7] pl-1">
-          <h2 className="text-[20px] md:text-2xl font-bold tracking-tight font-sans leading-none">
+          <h2 className="text-1xl md:text-2xl font-bold tracking-tight font-sans leading-none">
             {film?.name || 'Shoebox'}
           </h2>
           <p className="text-xs md:text-sm font-medium font-sans opacity-60 mt-2 tracking-normal">
@@ -421,7 +448,7 @@ export default function WatchPage() {
 
         {/* STACK POSITION B: DETACHED HORIZONTAL SUBTITLE SELECTION TRACK */}
         {showCCMenu && (
-          <div className="w-max max-w-lg flex items-center gap-4 pl-3.5 pr-4 py-1.5 bg-white/[0.04] backdrop-blur-md border border-white/5 rounded-[6px] overflow-hidden select-none animate-in fade-in slide-in-from-left-2 duration-200 shadow-xl">
+          <div className="w-max max-w-lg flex items-center gap-4 px-4 py-1.5 bg-white/[0.04] backdrop-blur-md border border-white/5 rounded-[6px] overflow-hidden select-none animate-in fade-in slide-in-from-left-2 duration-200 shadow-xl">
             <button 
               onClick={() => handleSubtitleSelection('none', 'Off')}
               className={`text-xs font-bold tracking-normal capitalize transition-colors shrink-0 ${
@@ -494,8 +521,8 @@ export default function WatchPage() {
               alt="Captions" 
               style={{
                 filter: selectedLangCode !== 'none'
-                  ? 'invert(80%) sepia(60%) saturate(400%) hue-rotate(342deg) brightness(104%) contrast(102%)'
-                  : 'invert(80%)'
+                  ? 'invert(80%) sepia(89%) saturate(293%) hue-rotate(342deg) brightness(104%) contrast(102%)'
+                  : 'invert(100%)'
               }}
             />
           </button>
@@ -526,8 +553,6 @@ export default function WatchPage() {
         </div>
 
         {/* STACK POSITION D: TRADITIONAL RESTRICTED SCRUBBER TRACK RUNNER */}
-        {/* 🎯 ADJUSTED WIDTH CAPSULE: Swapped w-full to run w-full md:max-w-[500px] inline. 
-            This keeps it fluid on mobile phones while capping tablet and desktop screen width layout blocks. */}
         <div className="w-full md:max-w-[500px] flex items-center justify-between gap-4 h-5 pl-1 mt-1 relative">
           <div className="w-10 text-right select-none font-mono font-bold text-sm text-white opacity-60 tracking-tight shrink-0">
             {formatTime(currentTime)}
@@ -577,11 +602,11 @@ export default function WatchPage() {
       >
         <div className="max-w-2xl text-center flex flex-col items-center gap-8 px-6 relative">
           
-          <p className="font-sans text-lg md:text-lg font-semibold text-[#F5F5F7]/90 leading-relaxed max-w-xl">
+          <p className="font-sans text-lg md:text-lg font-semibold text-[#F5F5F7]/90 leading-relaxed max-w-lg">
             {film?.last_line || 'The credits fade to black.'}
           </p>
 
-          <div className="flex items-center gap-6 text-white/50 tracking-wider font-sans text-sm">
+          <div className="flex items-center gap-6 text-white/50 tracking-wider font-sans font-semibold text-sm">
             <button onClick={handleReplay} className="flex items-center gap-2 hover:text-[#f5f5f7] transition-colors group cursor-pointer normal-case">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 group-hover:-rotate-45 transition-transform duration-300">
                 <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
@@ -617,7 +642,7 @@ export default function WatchPage() {
             </Link>
           </div>
 
-          <div className="font-tradeGothic font-semibold tracking-normal text-[#F5F5F7]/70 uppercase select-none pointer-events-none origin-center transform scale-y-135 leading-loose text-center max-w-xl" style={{ fontSize: '14px' }}>
+          <div className="font-tradeGothic font-semibold tracking-normal text-[#F5F5F7]/40 uppercase select-none pointer-events-none origin-center transform scale-y-135 leading-loose text-center max-w-xl" style={{ fontSize: '14px' }}>
             <span>{film?.name}</span> &nbsp;&nbsp;&nbsp;&nbsp; <span>{film?.story_date || film?.story_year || film?.date || '2026'}</span> &nbsp;&nbsp;&nbsp;&nbsp; <span>{film?.location || 'Studio Grid'}</span>
           </div>
 
