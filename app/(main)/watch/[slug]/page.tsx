@@ -93,7 +93,7 @@ export default function WatchPage() {
       if (isPlaying && !showCCMenu && !isScrubbing) {
         setControlsVisible(false);
       }
-    }, 1500);
+    }, 2000);
   };
 
   useEffect(() => {
@@ -297,6 +297,27 @@ export default function WatchPage() {
     }
   }, [currentTime, parsedCues, selectedLangCode]);
 
+  // --- FORCE-DISABLE INTERNAL MANIFEST CAPTIONS ON STREAM MOUNT ---
+  useEffect(() => {
+    const player = playerRef.current;
+    if (!player) return;
+
+    const disableNativeTracks = () => {
+      if (player.textTracks) {
+        for (let i = 0; i < player.textTracks.length; i++) {
+          player.textTracks[i].mode = 'disabled';
+        }
+      }
+    };
+
+    disableNativeTracks();
+    player.textTracks.addEventListener('addtrack', disableNativeTracks);
+    
+    return () => {
+      player.textTracks.removeEventListener('addtrack', disableNativeTracks);
+    };
+  }, [film]);
+
   const formatTime = (time: number) => {
     if (isNaN(time)) return "0:00";
     const m = Math.floor(time / 60);
@@ -320,8 +341,8 @@ export default function WatchPage() {
 
   if (!film) {
     return (
-      <div className="w-full h-screen bg-[#1f1f1f] flex items-center justify-center font-mono text-xs tracking-widest text-white/60 animate-pulse">
-        CONNECTING BROADCAST STREAM...
+      <div className="w-full h-screen bg-[#1f1f1f] flex items-center justify-center font-sans font-bold text-base tracking-normal text-white/60 animate-pulse">
+        Rolling...
       </div>
     );
   }
@@ -413,15 +434,15 @@ export default function WatchPage() {
 
           {/* Floating Text Subtitle Layer */}
           {selectedLangCode !== 'none' && currentSubtitleText && (
-            <div className="absolute bottom-[10%] left-1/2 -translate-x-1/2 max-w-[85%] text-center px-5 py-2 bg-zinc-950/40 backdrop-blur-md border border-white/5 rounded-[6px] text-[#F5F5F7] font-medium text-[15px] md:text-base tracking-tight leading-normal z-25 pointer-events-none select-none font-sans font-semibold shadow-2xl">
+            <div className="absolute bottom-[4%] left-1/2 -translate-x-1/2 max-w-[85%] text-center px-5 py-2 bg-zinc-950/40 backdrop-blur-md border border-white/5 rounded-[6px] text-[#F5F5F7] font-medium text-[15px] md:text-base tracking-tight leading-normal z-25 pointer-events-none select-none font-sans font-semibold shadow-2xl">
               {currentSubtitleText}
             </div>
           )}
 
           {/* LOADING INDICATOR OVERLAY */}
           {isLoading && (
-            <div className="absolute inset-0 bg-[#1f1f1f] flex items-center justify-center font-mono text-xs text-white/60 tracking-widest z-30 backdrop-blur-sm">
-              BUFFERING STREAM CODES...
+            <div className="absolute inset-0 bg-[#1f1f1f] flex items-center justify-center font-sans font-bold text-base text-white/60 tracking-normal z-30 backdrop-blur-sm">
+             Preparing film...
             </div>
           )}
 
@@ -521,7 +542,7 @@ export default function WatchPage() {
               alt="Captions" 
               style={{
                 filter: selectedLangCode !== 'none'
-                  ? 'invert(80%) sepia(89%) saturate(293%) hue-rotate(342deg) brightness(104%) contrast(102%)'
+                  ? 'invert(80%) sepia(100%) saturate(290%) hue-rotate(320deg) brightness(104%) contrast(102%)'
                   : 'invert(100%)'
               }}
             />
@@ -553,46 +574,53 @@ export default function WatchPage() {
         </div>
 
         {/* STACK POSITION D: TRADITIONAL RESTRICTED SCRUBBER TRACK RUNNER */}
-        <div className="w-full md:max-w-[500px] flex items-center justify-between gap-4 h-5 pl-1 mt-1 relative">
-          <div className="w-10 text-right select-none font-mono font-bold text-sm text-white opacity-60 tracking-tight shrink-0">
-            {formatTime(currentTime)}
-          </div>
+<div className="w-full md:max-w-[500px] flex items-center justify-between gap-4 h-10 pl-1 mt-1 relative mx-0">
+  <div className="w-10 text-right select-none font-mono font-bold text-sm text-white opacity-60 tracking-tight shrink-0 self-center leading-none">
+    {formatTime(currentTime)}
+  </div>
 
-          <div className="flex-grow relative flex items-center h-5">
-            <div className="absolute inset-x-0 h-[10px] bg-white/25 rounded-full pointer-events-none z-10" />
-            <div 
-              className="absolute left-0 h-[10px] bg-white/60 rounded-full pointer-events-none z-10"
-              style={{ width: `${currentProgress}%` }}
-            />
-            <input 
-              type="range"
-              min={0}
-              max={duration || 100}
-              step="any"
-              value={currentTime}
-              onMouseDown={handleScrubStart}
-              onTouchStart={handleScrubStart}
-              onChange={handleScrubChange}
-              onMouseUp={handleScrubEnd}
-              onTouchEnd={handleScrubEnd}
-              className="w-full h-5 appearance-none cursor-pointer outline-none bg-transparent relative z-20 m-0
-                           [&::-webkit-slider-runnable-track]:w-full [&::-webkit-slider-runnable-track]:h-5 [&::-webkit-slider-runnable-track]:bg-transparent
-                           [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-[18px] [&::-webkit-slider-thumb]:h-[18px] [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:transition-transform active:[&::-webkit-slider-thumb]:scale-110
-                           [&::-moz-range-track]:w-full [&::-moz-range-track]:h-5 [&::-moz-range-track]:bg-transparent
-                           [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-[18px] [&::-moz-range-thumb]:h-[18px] [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:shadow-md"
-            />
-          </div>
+  {/* Relative wrapper holding both the absolute visual track line and the absolute input controller */}
+  <div className="flex-grow relative flex items-center h-10 select-none">
+    {/* Visual background track track */}
+    <div className="absolute inset-x-0 h-[10px] bg-white/25 rounded-full pointer-events-none z-10 top-1/2 -translate-y-1/2" />
+    
+    {/* Visual progress track */}
+    <div 
+      className="absolute left-0 h-[10px] bg-white/60 rounded-full pointer-events-none z-10 top-1/2 -translate-y-1/2"
+      style={{ width: `${currentProgress}%` }}
+    />
+    
+    {/* Interactive invisible input slider */}
+    <input 
+      type="range"
+      min={0}
+      max={duration || 100}
+      step="any"
+      value={currentTime}
+      onMouseDown={handleScrubStart}
+      onTouchStart={handleScrubStart}
+      onChange={handleScrubChange}
+      onMouseUp={handleScrubEnd}
+      onTouchEnd={handleScrubEnd}
+      className="w-full h-10 appearance-none cursor-pointer outline-none bg-transparent relative z-20 m-0 block
+                   [&::-webkit-slider-runnable-track]:w-full [&::-webkit-slider-runnable-track]:h-10 [&::-webkit-slider-runnable-track]:bg-transparent
+                   [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-[18px] [&::-webkit-slider-thumb]:h-[18px] [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:transition-transform active:[&::-webkit-slider-thumb]:scale-110 [&::-webkit-slider-thumb]:relative [&::-webkit-slider-thumb]:top-1/2 [&::-webkit-slider-thumb]:-translate-y-1/2
+                   [&::-moz-range-track]:w-full [&::-moz-range-track]:h-10 [&::-moz-range-track]:bg-transparent
+                   [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-[18px] [&::-moz-range-thumb]:h-[18px] [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:shadow-md"
+    />
+  </div>
 
-          <div className="w-11 text-left select-none font-mono font-bold text-sm text-white opacity-60 tracking-tight shrink-0">
-            -{formatTime(duration - currentTime)}
-          </div>
-        </div>
+  <div className="w-11 text-left select-none font-mono font-bold text-sm text-white opacity-60 tracking-tight shrink-0 self-center leading-none">
+    -{formatTime(duration - currentTime)}
+  </div>
+</div>
 
       </div>
 
       {/* REPLAY FILM END SCREEN OVERLAY */}
       <div 
         id="end-screen"
+        data-ui-control="true"
         className="absolute inset-0 bg-[#1f1f1f] backdrop-blur-md flex flex-col items-center justify-center transition-all duration-1000 ease-in-out z-40"
         style={{ 
           opacity: isEnded ? 1 : 0, 
