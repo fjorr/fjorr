@@ -129,16 +129,42 @@ export default function AboutPage() {
             <div ref={maskBackdropRef} className="absolute inset-0 bg-black z-15 pointer-events-none opacity-100" />
           </div>
 
-          {/* Balanced Headline Presentation Engine */}
-          <div ref={heroSectionRef} className="absolute inset-0 flex flex-col items-center justify-center text-center z-20 px-6 max-w-4xl mx-auto pointer-events-none">
-            <h1 className="font-futura text-[38px] sm:text-[55px] md:text-[70px] lg:text-[80px] leading-[0.95em] font-black uppercase tracking-tighter text-[#f5f5f7] w-full">
-              <div ref={titleLine1Ref}>
-                <span className="block">The world runs</span>
-                <span className="block text-[#f5f5f7]">on atoms.</span>
-              </div>
-              <span ref={titleLine2Ref} className="block text-[#f5f5f7] mt-0">And stories.</span>
-            </h1>
-          </div>
+  {/* Balanced Headline Presentation Engine */}
+<div ref={heroSectionRef} className="absolute inset-0 flex flex-col items-center justify-center text-center z-20 px-6 max-w-4xl mx-auto pointer-events-none">
+  
+  {/* Embedded Native Animation Core Styles */}
+  <style jsx global>{`
+    @keyframes cinematicFadeUp {
+      0% {
+        opacity: 0;
+        transform: translateY(28px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .reveal-line {
+      animation: cinematicFadeUp 1200ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+  `}</style>
+
+  <h1 className="font-futura text-[80px] sm:text-[80px] md:text-[100px] lg:text-[120px] leading-[0.75em] font-black uppercase tracking-tighter text-[#f5f5f7] w-full">
+    
+    {/* First Line Sequence (Staggered Intro) */}
+    {/* 🎯 ANTI-FLASH FIX: Hardcoded opacity: 0 into inline styles so they load completely hidden */}
+    <div ref={titleLine1Ref} className="flex flex-col">
+      <span className="reveal-line block" style={{ opacity: 0, animationDelay: '100ms' }}>The</span>
+      <span className="reveal-line block" style={{ opacity: 0, animationDelay: '250ms' }}>world</span>
+      <span className="reveal-line block" style={{ opacity: 0, animationDelay: '400ms' }}>runs on</span>
+      <span className="reveal-line block text-[#f5f5f7]" style={{ opacity: 0, animationDelay: '550ms' }}>atoms.</span>
+    </div>
+    
+    {/* Dynamic Reveal Sequence (Fires after a longer cinematic beat) */}
+    <span className="reveal-line block text-[#f5f5f7] mt-0" style={{ opacity: 0, animationDelay: '1650ms' }}>And</span>
+    <span className="reveal-line block text-[#f5f5f7] mt-0" style={{ opacity: 0, animationDelay: '1950ms' }}>stories.</span>
+  </h1>
+</div>
 
         </div>
 
