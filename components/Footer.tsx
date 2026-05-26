@@ -4,34 +4,48 @@ import React from 'react';
 import { Icon } from './ui/Icons';
 import Link from 'next/link';
 import { IntelForm } from './IntelForm';
+// 🎯 PATH DETECTION ENGINE IMPORT
+import { usePathname } from 'next/navigation';
 
 interface FooterProps {
   variant?: 'light' | 'dark';
 }
 
 export default function Footer({ variant }: FooterProps) {
+  // Read the active path coordinates automatically
+  const pathname = usePathname();
+  const isAboutPage = pathname === '/about';
+
   const isCustomVariant = variant === 'light' || variant === 'dark';
 
-  // 🎯 THE CONTRAST ENGINE: Determine explicit text colors based on your database setting
-  const isDarkBg = variant === 'light'; // variant="light" means use white text for dark backgrounds
+  // 🎯 THE CONTRAST ENGINE: Determine explicit text colors based on database settings or About page override
+  // If we are on the about page, we want white text to pop cleanly off the black background
+  const isDarkBg = variant === 'light' || isAboutPage; 
   
-  const textColor = isCustomVariant 
+  const textColor = (isCustomVariant || isAboutPage) 
     ? (isDarkBg ? 'text-white' : 'text-black') 
     : 'text-black dark:text-white';
     
-  const subTextColor = isCustomVariant 
+  const subTextColor = (isCustomVariant || isAboutPage) 
     ? (isDarkBg ? 'text-white/60' : 'text-black/60') 
     : 'text-black/40 dark:text-white/60';
     
-  const mutedTextColor = isCustomVariant 
+  const mutedTextColor = (isCustomVariant || isAboutPage) 
     ? (isDarkBg ? 'text-white/40' : 'text-black/40') 
     : 'text-black/30 dark:text-white/40';
+
+  // Compute the optimal structural background color layout classes dynamically
+  const getBackgroundClass = () => {
+    if (isAboutPage) return 'bg-black'; // ⚡ Strict override: lock to pure black on the about page layout sheet
+    if (isCustomVariant) return 'bg-transparent';
+    return 'bg-[#F5F5F7] dark:bg-[#1F1F1F]';
+  };
 
   return (
     <footer 
       className={`
         w-full pt-16 pb-10 px-[10%] text-center flex flex-col items-center transition-colors duration-300
-        ${isCustomVariant ? 'bg-transparent' : 'bg-[#F5F5F7] dark:bg-[#1F1F1F]'}
+        ${getBackgroundClass()}
         ${textColor}
       `}
     >
@@ -89,7 +103,11 @@ export default function Footer({ variant }: FooterProps) {
 
       {/* 3. THE NEWSLETTER INPUT WRAPPER BLOCK */}
       <div className="w-full max-w-64 mb-6">
-        <IntelForm variant={variant} isCustomVariant={isCustomVariant} />
+        {/* Pass down light/dark variant props safely, using light colors to force dark inputs if on about page */}
+        <IntelForm 
+          variant={isAboutPage ? 'light' : variant} 
+          isCustomVariant={isCustomVariant || isAboutPage} 
+        />
       </div>
 
       {/* 4. THE EDITORIAL PLATFORM EXPLAINER TEXT (Inter) */}
