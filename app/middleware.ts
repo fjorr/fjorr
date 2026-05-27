@@ -11,7 +11,7 @@ export function middleware(request: NextRequest) {
     pathname.startsWith('/api') ||
     pathname === '/favicon.ico' ||
     pathname === '/robots.txt' ||
-    pathname.includes('.') // Skips public folder media files like .mp4, .png, .avif
+    pathname.includes('.')
   ) {
     return NextResponse.next();
   }
@@ -21,24 +21,22 @@ export function middleware(request: NextRequest) {
 
   // 1. If trying to access the password page but already authenticated, skip it
   if (pathname === '/password' && isAuthenticated) {
-    return NextResponse.redirect(new URL('/', request.url));
+    // 🎯 FIXED: Force relative rewrite to root to prevent proxy domain loops
+    return NextResponse.redirect(new URL('/', request.nextUrl));
   }
 
   // 2. If not authenticated and trying to access the main site, force redirect
   if (pathname !== '/password' && !isAuthenticated) {
-    return NextResponse.redirect(new URL('/password', request.url));
+    // 🎯 FIXED: Redirect directly to the relative '/password' route relative to whatever current domain (www or staging) is active
+    return NextResponse.redirect(new URL('/password', request.nextUrl));
   }
 
   return NextResponse.next();
 }
 
-// 🎯 SIMPLIFIED CONFIG: Let the code above do the heavy filtering work
 export const config = {
   matcher: [
-    /*
-     * Match all paths so our internal system bypass filter 
-     * can perfectly block everything else.
-     */
+    // Capture absolutely everything so our internal function code can filter accurately
     '/((?!_next|[^?]*\\/[^?]*\\.).*)',
     '/',
   ],
