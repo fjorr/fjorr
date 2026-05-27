@@ -5,7 +5,7 @@ import FilmHero from './FilmHero';
 import ArtifactRail from './ArtifactRail';
 import FilmRail from './FilmRail';
 import FilmSpecs from './FilmSpecs';
-import CinemaTheater from './CinemaTheater.tsx'; 
+import CinemaTheater from './CinemaTheater'; 
 
 interface WrapperProps {
   filmData: any;
