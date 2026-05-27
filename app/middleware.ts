@@ -5,6 +5,17 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
+  // ⚡ SYSTEM BYPASS: Instantly skip Next.js system files, assets, and APIs
+  if (
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/api') ||
+    pathname === '/favicon.ico' ||
+    pathname === '/robots.txt' ||
+    pathname.includes('.') // Skips public folder media files like .mp4, .png, .avif
+  ) {
+    return NextResponse.next();
+  }
+
   // Look for our secure authorization cookie
   const isAuthenticated = request.cookies.has('site-auth');
 
@@ -21,15 +32,14 @@ export function middleware(request: NextRequest) {
   return NextResponse.next();
 }
 
-// 🎯 HARDENED MATCHER CONFIGURATION
+// 🎯 SIMPLIFIED CONFIG: Let the code above do the heavy filtering work
 export const config = {
   matcher: [
     /*
-     * Match all request paths except for:
-     * - Internal Next.js system build files (_next/static, _next/image)
-     * - API endpoints if you want them public (/api)
-     * - Explicitly allowed root brand assets (favicon.ico, robots.txt)
+     * Match all paths so our internal system bypass filter 
+     * can perfectly block everything else.
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|robots.txt).*)',
+    '/((?!_next|[^?]*\\/[^?]*\\.).*)',
+    '/',
   ],
 };
