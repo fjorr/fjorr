@@ -1,11 +1,12 @@
-// proxy.ts
+// middleware.ts
 import { updateSession } from "@/lib/supabase/proxy";
 import { NextResponse, type NextRequest } from "next/server";
 
-export async function proxy(request: NextRequest) {
+// 🎯 VERCEL STRICTLY LOOKS FOR THE NAME "middleware"
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // 1. SYSTEM BYPASS: Instantly pass through public assets so they don't break/loop
+  // 1. SYSTEM BYPASS: Instantly pass through public assets and the login page
   if (
     pathname === '/password' ||
     pathname.startsWith('/_next') ||
@@ -16,7 +17,7 @@ export async function proxy(request: NextRequest) {
     return await updateSession(request);
   }
 
-  // 2. CHECK SITE PASSWORD COOKIE: Look for our secure gate token
+  // 2. CHECK SITE PASSWORD COOKIE
   const isAuthenticated = request.cookies.has('site-auth');
 
   // 3. ENFORCE INTERCEPT: If no authorization cookie is present, redirect to /password
