@@ -47,13 +47,18 @@ export default function WatchPage({ initialFilm }: WatchPageProps) {
   // --- THE STABILITY CONTROL FLAG ---
   const [isScrubbing, setIsScrubbing] = useState(false);
 
+  // 🎬 BUMPER ENGINE ARCHITECTURE STATE
+  const [isPlayingLogo, setIsPlayingLogo] = useState(true);
+  const LOGO_SOURCE = "https://media.fjorr.com/assets/studio-logo/fjorr-studio-logo-master.mp4";
+
   // --- CUSTOM REACT SUBTITLE STATE ---
   const [selectedLangCode, setSelectedLangCode] = useState<string>('none');
   const [parsedCues, setParsedCues] = useState<any[]>([]);
   const [currentSubtitleText, setCurrentSubtitleText] = useState<string>('');
 
   // --- NODES REF HOOKS ---
-  const playerRef = useRef<HTMLVideoElement | null>(null);
+  const filmPlayerRef = useRef<HTMLVideoElement | null>(null);
+  const logoPlayerRef = useRef<HTMLVideoElement | null>(null);
   const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // --- 1. INITIAL BASE DATA FETCH ---
@@ -112,6 +117,10 @@ export default function WatchPage({ initialFilm }: WatchPageProps) {
 
   // --- 3. AUTO-HIDE INTERACTION MANAGEMENT ---
   const showUIControls = () => {
+    if (isPlayingLogo) {
+      setControlsVisible(false);
+      return;
+    }
     setControlsVisible(true);
     if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
 
@@ -128,7 +137,7 @@ export default function WatchPage({ initialFilm }: WatchPageProps) {
       window.removeEventListener('mousemove', showUIControls);
       if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
     };
-  }, [isPlaying, showCCMenu, isScrubbing]);
+  }, [isPlaying, showCCMenu, isScrubbing, isPlayingLogo]);
 
   // 🎯 BULLETPROOF GLOBAL INTERACTION TRACKING ENGINE EFFECT
   useEffect(() => {
@@ -157,7 +166,7 @@ export default function WatchPage({ initialFilm }: WatchPageProps) {
 
   // --- 4. MEDIA ACTION HANDLERS ---
   const togglePlay = () => {
-    const player = playerRef.current;
+    const player = isPlayingLogo ? logoPlayerRef.current : filmPlayerRef.current;
     if (!player) return;
     if (isPlaying) {
       player.pause();
@@ -167,7 +176,7 @@ export default function WatchPage({ initialFilm }: WatchPageProps) {
   };
 
   const toggleMute = () => {
-    const player = playerRef.current;
+    const player = isPlayingLogo ? logoPlayerRef.current : filmPlayerRef.current;
     if (!player) return;
     player.muted = !isMuted;
     setIsMuted(!isMuted);
@@ -178,15 +187,21 @@ export default function WatchPage({ initialFilm }: WatchPageProps) {
   };
 
   const handleReplay = () => {
-    const player = playerRef.current;
-    if (!player) return;
-    player.currentTime = 0;
+    setIsPlayingLogo(true); // 🎬 Reset to show logo intro first on replay
     setIsEnded(false);
-    player.play().catch(() => {});
+    setCurrentTime(0);
+    
+    setTimeout(() => {
+      const player = logoPlayerRef.current;
+      if (player) {
+        player.load();
+        player.play().catch(() => {});
+      }
+    }, 50);
   };
 
   const toggleFullscreen = () => {
-    const player = playerRef.current;
+    const player = isPlayingLogo ? logoPlayerRef.current : filmPlayerRef.current;
     const container = player?.parentElement;
     if (!player || !container) return;
 
@@ -195,35 +210,32 @@ export default function WatchPage({ initialFilm }: WatchPageProps) {
         container.requestFullscreen().catch(() => {});
       } else if (player.requestFullscreen) {
         player.requestFullscreen().catch(() => {});
-      } else if ((player as any).webkitEnterFullscreen) {
-        (player as any).webkitEnterFullscreen();
-      } else if ((player as any).webkitRequestFullscreen) {
-        (player as any).webkitRequestFullscreen();
       }
     } else {
       if (document.exitFullscreen) {
         document.exitFullscreen().catch(() => {});
-      } else if ((document as any).webkitExitFullscreen) {
-        (document as any).webkitExitFullscreen();
       }
     }
   };
 
   const handleScrubStart = () => {
+    if (isPlayingLogo) return;
     setIsScrubbing(true);
   };
 
   const handleScrubChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (isPlayingLogo) return;
     const targetTime = parseFloat(e.target.value);
     setCurrentTime(targetTime);
-    if (playerRef.current) {
-      playerRef.current.currentTime = targetTime;
+    if (filmPlayerRef.current) {
+      filmPlayerRef.current.currentTime = targetTime;
     }
   };
 
   const handleScrubEnd = (e: React.SyntheticEvent<HTMLInputElement>) => {
+    if (isPlayingLogo) return;
     setIsScrubbing(false);
-    const player = playerRef.current;
+    const player = filmPlayerRef.current;
     if (!player || !duration) return;
     
     const finalTime = parseFloat(e.currentTarget.value);
@@ -325,7 +337,7 @@ export default function WatchPage({ initialFilm }: WatchPageProps) {
 
   // --- FORCE-DISABLE INTERNAL MANIFEST CAPTIONS ON STREAM MOUNT ---
   useEffect(() => {
-    const player = playerRef.current;
+    const player = filmPlayerRef.current;
     if (!player) return;
 
     const disableNativeTracks = () => {
@@ -351,19 +363,51 @@ export default function WatchPage({ initialFilm }: WatchPageProps) {
     return `${m}:${s}`;
   };
 
+  // --- TWO-STAGE SEAMLESS AUTOPLAY HANDSHAKE ENGINES ---
   useEffect(() => {
-    const player = playerRef.current;
-    if (player && film) {
-      player.muted = false;
-      player.play()
-        .then(() => setIsPlaying(true))
+    const logoPlayer = logoPlayerRef.current;
+    if (logoPlayer && isPlayingLogo) {
+      logoPlayer.muted = true;
+      setIsMuted(true);
+      
+      logoPlayer.play()
+        .then(() => {
+          setIsPlaying(true);
+          logoPlayer.muted = false;
+          setIsMuted(false);
+        })
         .catch(() => {
-          player.muted = true;
+          logoPlayer.muted = true;
           setIsMuted(true);
-          player.play().catch(() => {});
+          logoPlayer.play().catch(() => {});
         });
     }
-  }, [film]);
+  }, [isPlayingLogo]);
+
+  useEffect(() => {
+    const filmPlayer = filmPlayerRef.current;
+    if (filmPlayer && !isPlayingLogo && film) {
+      filmPlayer.play()
+        .then(() => setIsPlaying(true))
+        .catch(() => {
+          filmPlayer.muted = true;
+          setIsMuted(true);
+          filmPlayer.play().catch(() => {});
+        });
+    }
+  }, [isPlayingLogo, film]);
+
+  // Handle Video Termination Handshakes
+  const handleVideoEnded = () => {
+    if (isPlayingLogo) {
+      setIsPlayingLogo(false);
+      setCurrentTime(0);
+    } else {
+      setIsEnded(true);
+      setIsPlaying(false);
+      setControlsVisible(false);
+    }
+  };
 
   if (!film) {
     return (
@@ -378,8 +422,8 @@ export default function WatchPage({ initialFilm }: WatchPageProps) {
   return (
     <div className="fixed inset-0 w-full h-[100svh] bg-[#1f1f1f] text-[#F5F5F7] select-none overflow-hidden flex flex-col justify-between font-sans">
       
-{/* 🧠 STRUCTURED ACTION DATA: AI Streaming Validation Optimization */}
-<script
+      {/* 🧠 STRUCTURED ACTION DATA: AI Streaming Validation Optimization */}
+      <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
@@ -396,29 +440,22 @@ export default function WatchPage({ initialFilm }: WatchPageProps) {
         }}
       />
 
-
       {/* 🎬 ABSOLUTE SCREEN-WIDE TOP NAVIGATION BAR */}
       <header 
         data-ui-control="true"
         className={`absolute top-0 inset-x-0 w-full h-20 px-8 flex items-center justify-between z-40 transition-all duration-500 ease-out ${
-          controlsVisible ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0 pointer-events-none'
+          controlsVisible && !isPlayingLogo ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0 pointer-events-none'
         }`}
       >
         <div className="flex items-center justify-start">
-          {/* 🎯 LINK UTILITY IMPLEMENTED: Wrapped the entire brand vector block inside an anchor pipeline to route users outward to fjorr.com */}
           <Link href="/" className="cursor-pointer block opacity-70 hover:opacity-100 transition-opacity">
-            <svg 
-              viewBox="0 0 143 81" 
-              fill="none" 
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-7 w-auto text-white"
-            >
+            <svg viewBox="0 0 143 81" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-7 w-auto text-white">
               <path d="M71.3559 13.2942C60.8993 13.2942 52.4273 21.7814 52.4273 32.2448C52.4273 42.7082 60.9046 51.1953 71.3559 51.1953C81.8073 51.1953 90.2846 42.7082 90.2846 32.2448C90.2846 21.7814 81.8073 13.2942 71.3559 13.2942ZM71.3559 39.7278C67.232 39.7278 63.8869 36.3789 63.8869 32.2501C63.8869 28.1214 67.232 24.7725 71.3559 24.7725C75.4799 24.7725 78.825 28.1214 78.825 32.2501C78.825 36.3789 75.4799 39.7278 71.3559 39.7278Z" fill="white"/>
-  <path d="M35.9047 15.0355C35.4032 15.0355 34.9978 15.4414 34.9978 15.9435V60.9377C34.9978 65.4136 31.5887 69.0883 27.23 69.505C26.7605 69.5477 26.403 69.9322 26.403 70.4023V80.0912C26.403 80.6146 26.8405 81.0206 27.3633 80.9992C37.996 80.4971 46.4627 71.7109 46.4627 60.9377V15.9435C46.4627 15.4414 46.0573 15.0355H35.9047Z" fill="white"/>
-  <path d="M0 0.908003V48.498C0 49.0001 0.405462 49.406 0.906954 49.406H11.9931C12.4946 49.406 12.9001 49.0001 12.9001 48.498V35.1397C12.4946 34.6376 13.3055 34.2317 13.807 34.2317H26.0616C26.5631 34.2317 26.9685 33.8258 26.9685 33.3237V23.6615C26.9685 23.1594 26.5631 22.7535 26.0616 22.7535H13.807C13.3055 22.7535 12.9001 22.3476 12.9001 21.8455V12.3755C12.9001 11.8735 13.3055 11.4675 13.807 11.4675H27.4967C27.9982 11.4675 28.4037 11.0616 28.4037 10.5595V0.908003C28.4037 0.405931 27.9982 0 27.4967 0H0.906954C0.405462 0 0 0.405931 0 0.908003Z" fill="white"/>
-  <path d="M116.309 15.9435V22.7375C116.309 23.2395 115.903 23.6455 115.402 23.6455H108.509C108.066 23.6455 107.709 24.0033 107.709 24.4466V48.5568C107.709 49.0589 107.303 49.4648 106.802 49.4648H97.1508C96.6493 49.4648 96.2438 49.0589 96.2438 48.5568V15.9435C96.2438 15.4414 96.6493 15.0355 97.1508 15.0355H115.402C115.903 15.0355 116.309 15.4414 116.309 15.9435Z" fill="white"/>
-  <path d="M143 15.9435V22.7375C143 23.2395 142.595 23.6455 142.093 23.6455H135.2C134.757 23.6455 134.4 24.0033 134.4 24.4466V48.5568C134.4 49.0589 133.994 49.4648 133.493 49.4648H123.842C123.34 49.4648 122.935 49.0589 122.935 48.5568V15.9435C122.935 15.4414 123.34 15.0355 123.842 15.0355H142.093C142.595 15.0355 143 15.4414 143 15.9435Z" fill="white"/>
-</svg>
+              <path d="M35.9047 15.0355C35.4032 15.0355 34.9978 15.4414 34.9978 15.9435V60.9377C34.9978 65.4136 31.5887 69.0883 27.23 69.505C26.7605 69.5477 26.403 69.9322 26.403 70.4023V80.0912C26.403 80.6146 26.8405 81.0206 27.3633 80.9992C37.996 80.4971 46.4627 71.7109 46.4627 60.9377V15.9435C46.4627 15.4414 46.0573 15.0355H35.9047Z" fill="white"/>
+              <path d="M0 0.908003V48.498C0 49.0001 0.405462 49.406 0.906954 49.406H11.9931C12.4946 49.406 12.9001 49.0001 12.9001 48.498V35.1397C12.4946 34.6376 13.3055 34.2317 13.807 34.2317H26.0616C26.5631 34.2317 26.9685 33.8258 26.9685 33.3237V23.6615C26.9685 23.1594 26.5631 22.7535 26.0616 22.7535H13.807C13.3055 22.7535 12.9001 22.3476 12.9001 21.8455V12.3755C12.9001 11.8735 13.3055 11.4675 13.807 11.4675H27.4967C27.9982 11.4675 28.4037 11.0616 28.4037 10.5595V0.908003C28.4037 0.405931 27.9982 0 27.4967 0H0.906954C0.405462 0 0 0.405931 0 0.908003Z" fill="white"/>
+              <path d="M116.309 15.9435V22.7375C116.309 23.2395 115.903 23.6455 115.402 23.6455H108.509C108.066 23.6455 107.709 24.0033 107.709 24.4466V48.5568C107.709 49.0589 107.303 49.4648 106.802 49.4648H97.1508C96.6493 49.4648 96.2438 49.0589 96.2438 48.5568V15.9435C96.2438 15.4414 96.6493 15.0355 97.1508 15.0355H115.402C115.903 15.0355 116.309 15.4414 116.309 15.9435Z" fill="white"/>
+              <path d="M143 15.9435V22.7375C143 23.2395 142.595 23.6455 142.093 23.6455H135.2C134.757 23.6455 134.4 24.0033 134.4 24.4466V48.5568C134.4 49.0589 133.994 49.4648 133.493 49.4648H123.842C123.34 49.4648 122.935 49.0589 122.935 48.5568V15.9435C122.935 15.4414 123.34 15.0355 123.842 15.0355H142.093C142.595 15.0355 143 15.4414 143 15.9435Z" fill="white"/>
+            </svg>
           </Link>
         </div>
 
@@ -427,16 +464,7 @@ export default function WatchPage({ initialFilm }: WatchPageProps) {
           className="p-2 text-white/60 hover:text-white transition-colors cursor-pointer"
           title="Return to Film Info"
         >
-          <svg 
-            xmlns="http://www.w3.org/2000/svg" 
-            viewBox="0 0 24 24" 
-            fill="none" 
-            stroke="currentColor" 
-            strokeWidth="2.5" 
-            strokeLinecap="round" 
-            strokeLinejoin="round" 
-            className="w-5 h-5 md:w-6 md:h-6"
-          >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 md:w-6 md:h-6">
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
           </svg>
@@ -446,14 +474,27 @@ export default function WatchPage({ initialFilm }: WatchPageProps) {
       {/* 🎯 MIDDLE VIEWPORT WRAPPER GRID LAYER */}
       <div className="flex-grow w-full flex items-center justify-center">
         
-        {/* 🎬 MAIN CONTAINER BOX */}
-        <div className={`relative w-full max-w-[1200px] aspect-video overflow-hidden transition-all duration-500 z-10 flex flex-col justify-end ${
+        {/* 🎬 MAIN CONTAINER BOX - ISOLATED BLACK GRAPHICS */}
+        <div className={`relative w-full max-w-[1200px] aspect-video overflow-hidden transition-all duration-500 z-10 flex flex-col justify-end bg-black ${
           isFullscreen ? 'max-w-none h-screen rounded-none border-0' : 'xl:rounded-[12px]'
         }`}>
           
-          {/* 📹 VIDEO ELEMENT */}
+          {/* 🎬 VIDEO PLAYER 1: THE STUDIO BUMPER INTRO */}
+          {isPlayingLogo && (
+            <video
+              ref={logoPlayerRef}
+              src={`${LOGO_SOURCE}?nocache=${Date.now()}`}
+              playsInline
+              autoPlay
+              crossOrigin="anonymous"
+              className="w-full h-full object-contain absolute inset-0 z-20 bg-black"
+              onEnded={handleVideoEnded}
+            />
+          )}
+          
+          {/* 📹 VIDEO PLAYER 2: THE MAIN STREAMING FILM FEATURE */}
           <video
-            ref={playerRef}
+            ref={filmPlayerRef}
             id="fjorr-engine"
             src={`https://stream.mux.com/${film.mux_playback_id}.m3u8`}
             playsInline
@@ -468,7 +509,7 @@ export default function WatchPage({ initialFilm }: WatchPageProps) {
             onDurationChange={(e) => setDuration(e.currentTarget.duration)}
             onPlaying={() => { setIsPlaying(true); setIsEnded(false); setIsLoading(false); }}
             onPause={() => setIsPlaying(false)}
-            onEnded={() => { setIsEnded(true); setIsPlaying(false); setControlsVisible(false); }}
+            onEnded={handleVideoEnded}
           />
 
           {/* 🎯 PURE DARK TINT BACKDROP */}
@@ -486,7 +527,7 @@ export default function WatchPage({ initialFilm }: WatchPageProps) {
 
           {/* LOADING INDICATOR OVERLAY */}
           {isLoading && (
-            <div className="absolute inset-0 bg-[#1f1f1f] flex items-center justify-center font-sans font-bold text-base text-white/60 tracking-normal z-30 backdrop-blur-sm">
+            <div className="absolute inset-0 bg-black flex items-center justify-center font-sans font-bold text-base text-white/60 tracking-normal z-30 backdrop-blur-sm">
              Preparing film...
             </div>
           )}
@@ -498,7 +539,7 @@ export default function WatchPage({ initialFilm }: WatchPageProps) {
       <div 
         data-ui-control="true"
         className={`fixed bottom-0 inset-x-0 w-full flex flex-col justify-end items-start text-left z-30 transition-all duration-500 ease-out select-none px-8 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] gap-3 ${
-          controlsVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'
+          controlsVisible && !isPlayingLogo ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'
         }`}
       >
         
@@ -560,16 +601,18 @@ export default function WatchPage({ initialFilm }: WatchPageProps) {
             )}
           </button>
 
+          {/* Rewind 10s Button */}
           <button 
-            onClick={() => { if (playerRef.current) playerRef.current.currentTime = Math.max(0, currentTime - 10); }} 
+            onClick={() => { const player = isPlayingLogo ? logoPlayerRef.current : filmPlayerRef.current; if (player) player.currentTime = Math.max(0, currentTime - 10); }} 
             className="w-10 h-10 flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity duration-200 cursor-pointer"
             title="Rewind 10s"
           >
             <img src="/icons/back10.svg" className="w-6 h-6 invert" alt="Rewind 10s" />
           </button>
 
+          {/* Fast Forward 10s Button */}
           <button 
-            onClick={() => { if (playerRef.current) playerRef.current.currentTime = Math.min(duration, currentTime + 10); }} 
+            onClick={() => { const player = isPlayingLogo ? logoPlayerRef.current : filmPlayerRef.current; if (player) player.currentTime = Math.min(duration, currentTime + 10); }} 
             className="w-10 h-10 flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity duration-200 cursor-pointer"
             title="Fast Forward 10s"
           >
@@ -582,16 +625,12 @@ export default function WatchPage({ initialFilm }: WatchPageProps) {
             title="Captions"
           >
             <img 
-    src="/icons/cc.svg" 
-    className="w-6 h-6" 
-    alt="Captions" 
-    style={{
-      // 🎯 FIXED: Removed the complex amber color matrix entirely. 
-      // The button will now stay clean white whether a language is active or not.
-      filter: 'invert(100%)'
-    }}
-  />
-</button>
+              src="/icons/cc.svg" 
+              className="w-6 h-6" 
+              alt="Captions" 
+              style={{ filter: 'invert(100%)' }}
+            />
+          </button>
 
           <button 
             onClick={toggleFullscreen} 
@@ -601,7 +640,7 @@ export default function WatchPage({ initialFilm }: WatchPageProps) {
             {isFullscreen ? (
               <img src="/icons/compress.svg" className="w-6 h-6 invert" alt="Exit Fullscreen" />
             ) : (
-                <img src="/icons/expand.svg" className="w-6 h-6 invert" alt="Enter Fullscreen" />
+              <img src="/icons/expand.svg" className="w-6 h-6 invert" alt="Enter Fullscreen" />
             )}
           </button>
 
@@ -619,46 +658,46 @@ export default function WatchPage({ initialFilm }: WatchPageProps) {
         </div>
 
         {/* STACK POSITION D: TRADITIONAL RESTRICTED SCRUBBER TRACK RUNNER */}
-<div className="w-full md:max-w-[500px] flex items-center justify-between gap-4 h-10 pl-1 mt-1 relative mx-0">
-  <div className="w-10 text-right select-none font-mono font-bold text-sm text-white opacity-60 tracking-tight shrink-0 self-center leading-none">
-    {formatTime(currentTime)}
-  </div>
+        <div className="w-full md:max-w-[500px] flex items-center justify-between gap-4 h-10 pl-1 mt-1 relative mx-0">
+          <div className="w-10 text-right select-none font-mono font-bold text-sm text-white opacity-60 tracking-tight shrink-0 self-center leading-none">
+            {formatTime(currentTime)}
+          </div>
 
-  {/* Relative wrapper holding both the absolute visual track line and the absolute input controller */}
-  <div className="flex-grow relative flex items-center h-10 select-none">
-    {/* Visual background track track */}
-    <div className="absolute inset-x-0 h-[10px] bg-white/25 rounded-full pointer-events-none z-10 top-1/2 -translate-y-1/2" />
-    
-    {/* Visual progress track */}
-    <div 
-      className="absolute left-0 h-[10px] bg-white/60 rounded-full pointer-events-none z-10 top-1/2 -translate-y-1/2"
-      style={{ width: `${currentProgress}%` }}
-    />
-    
-    {/* Interactive invisible input slider */}
-    <input 
-      type="range"
-      min={0}
-      max={duration || 100}
-      step="any"
-      value={currentTime}
-      onMouseDown={handleScrubStart}
-      onTouchStart={handleScrubStart}
-      onChange={handleScrubChange}
-      onMouseUp={handleScrubEnd}
-      onTouchEnd={handleScrubEnd}
-      className="w-full h-10 appearance-none cursor-pointer outline-none bg-transparent relative z-20 m-0 block
-                   [&::-webkit-slider-runnable-track]:w-full [&::-webkit-slider-runnable-track]:h-10 [&::-webkit-slider-runnable-track]:bg-transparent
-                   [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-[18px] [&::-webkit-slider-thumb]:h-[18px] [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:transition-transform active:[&::-webkit-slider-thumb]:scale-110 [&::-webkit-slider-thumb]:relative [&::-webkit-slider-thumb]:top-1/2 [&::-webkit-slider-thumb]:-translate-y-1/2
-                   [&::-moz-range-track]:w-full [&::-moz-range-track]:h-10 [&::-moz-range-track]:bg-transparent
-                   [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-[18px] [&::-moz-range-thumb]:h-[18px] [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:shadow-md"
-    />
-  </div>
+          {/* Relative wrapper holding both the absolute visual track line and the absolute input controller */}
+          <div className="flex-grow relative flex items-center h-10 select-none">
+            {/* Visual background track track */}
+            <div className="absolute inset-x-0 h-[10px] bg-white/25 rounded-full pointer-events-none z-10 top-1/2 -translate-y-1/2" />
+            
+            {/* Visual progress track */}
+            <div 
+              className="absolute left-0 h-[10px] bg-white/60 rounded-full pointer-events-none z-10 top-1/2 -translate-y-1/2"
+              style={{ width: `${currentProgress}%` }}
+            />
+            
+            {/* Interactive invisible input slider */}
+            <input 
+              type="range"
+              min={0}
+              max={duration || 100}
+              step="any"
+              value={currentTime}
+              onMouseDown={handleScrubStart}
+              onTouchStart={handleScrubStart}
+              onChange={handleScrubChange}
+              onMouseUp={handleScrubEnd}
+              onTouchEnd={handleScrubEnd}
+              className="w-full h-10 appearance-none cursor-pointer outline-none bg-transparent relative z-20 m-0 block
+                           [&::-webkit-slider-runnable-track]:w-full [&::-webkit-slider-runnable-track]:h-10 [&::-webkit-slider-runnable-track]:bg-transparent
+                           [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-[18px] [&::-webkit-slider-thumb]:h-[18px] [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:transition-transform active:[&::-webkit-slider-thumb]:scale-110 [&::-webkit-slider-thumb]:relative [&::-webkit-slider-thumb]:top-1/2 [&::-webkit-slider-thumb]:-translate-y-1/2
+                           [&::-moz-range-track]:w-full [&::-moz-range-track]:h-10 [&::-moz-range-track]:bg-transparent
+                           [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-[18px] [&::-moz-range-thumb]:h-[18px] [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:shadow-md"
+            />
+          </div>
 
-  <div className="w-11 text-left select-none font-mono font-bold text-sm text-white opacity-60 tracking-tight shrink-0 self-center leading-none">
-    -{formatTime(duration - currentTime)}
-  </div>
-</div>
+          <div className="w-11 text-left select-none font-mono font-bold text-sm text-white opacity-60 tracking-tight shrink-0 self-center leading-none">
+            -{formatTime(duration - currentTime)}
+          </div>
+        </div>
 
       </div>
 
