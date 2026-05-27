@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 export default async function sitemap() {
   const baseUrl = 'https://fjorr.com';
 
-  // 1. Define all your core static pages
+  // 1. Core static pages
   const staticRoutes = [
     '', 
     '/about', 
@@ -20,19 +20,18 @@ export default async function sitemap() {
     priority: route === '' ? 1.0 : 0.6,
   }));
 
-  // Create an internal server-side direct client handshake wrapper
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   );
 
-  // 2. Concurrently fetch all database rows for films and artifacts
+  // 2. Fetch database slugs
   const [filmsResponse, artifactsResponse] = await Promise.all([
     supabase.from('film').select('slug, updated_at'),
     supabase.from('artifact').select('slug, updated_at')
   ]);
 
-  // 3. Map out your short film profile page URLs
+  // 3. Map dynamic film pages
   const dynamicFilmRoutes = (filmsResponse.data || []).map((film) => ({
     url: `${baseUrl}/film/${film.slug}`,
     lastModified: film.updated_at ? new Date(film.updated_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
@@ -40,15 +39,15 @@ export default async function sitemap() {
     priority: 0.8,
   }));
 
-  // 4. Map out your custom streaming watch page URLs
+  // 4. Map dynamic watch players
   const dynamicWatchRoutes = (filmsResponse.data || []).map((film) => ({
     url: `${baseUrl}/watch/${film.slug}`,
     lastModified: film.updated_at ? new Date(film.updated_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
     changeFrequency: 'weekly',
-    priority: 0.5, // Slightly lower index priority than the main info pages
+    priority: 0.5,
   }));
 
-  // 5. Map out your historical archive artifact URLs
+  // 5. Map dynamic historical artifacts
   const dynamicArtifactRoutes = (artifactsResponse.data || []).map((art) => ({
     url: `${baseUrl}/artifact/${art.slug}`,
     lastModified: art.updated_at ? new Date(art.updated_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
@@ -56,7 +55,6 @@ export default async function sitemap() {
     priority: 0.7,
   }));
 
-  // Merge every route layer together into a clean, unified array
   return [
     ...staticRoutes, 
     ...dynamicFilmRoutes, 

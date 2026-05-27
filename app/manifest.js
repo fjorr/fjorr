@@ -1,10 +1,8 @@
-import { MetadataRoute } from 'next';
-
-export default function manifest(): MetadataRoute.Manifest {
+export default function manifest() {
   return {
-    name: 'Fjorr',
+    name: 'Fjorr Myth Engine',
     short_name: 'Fjorr',
-    description: 'Short films of the world’s greatest stories.',
+    description: 'Short, premium cinematic stories built to form the imagination.',
     start_url: '/',
     display: 'standalone',
     background_color: '#0B0B0C',
