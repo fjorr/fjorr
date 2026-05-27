@@ -81,6 +81,7 @@ export default async function DynamicArtifactPage({ params }: ArtifactPageProps)
       is_dark_bg,
       hero_clsx,
       hero_tall,
+      blok_ogrf,
       link_cta,
       link,
       release_date,
