@@ -1,1 +1,0 @@
-export default function WhyPage() { return <div className='pt-32 pb-16 px-[10%]'><h1 className='text-5xl font-tradeGothic uppercase tracking-tighter mb-4'>Why Fjorr</h1><p className='text-white/60 font-sans'>Our philosophy on preserving human history through high-end cinema.</p></div> }

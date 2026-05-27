@@ -4,12 +4,62 @@ import { notFound } from 'next/navigation';
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { ArtifactSidebar } from '@/components/ArtifactSidebar';
+import type { Metadata } from 'next';
 
 export const dynamic = 'force-dynamic';
 export const dynamicParams = true;
 
 interface ArtifactPageProps {
   params: Promise<{ slug: string }>;
+}
+
+// =========================================================================
+// 🤖 THE DYNAMIC ARTIFACT METADATA ENGINE: Paste this right above DynamicArtifactPage
+// =========================================================================
+export async function generateMetadata({ params }: ArtifactPageProps): Promise<Metadata> {
+  const { slug: urlSlug } = await params;
+  const supabase = await createClient();
+
+  // Querying target parameters straight from your new artifact table schema
+  const { data: artifact } = await supabase
+    .from('artifact')
+    .select('name, teaser, slug, blok_ogrf')
+    .eq('slug', urlSlug)
+    .maybeSingle();
+
+  if (!artifact) {
+    return { title: 'Artifact Not Found' };
+  }
+
+  const titleText = artifact.name;
+  const descriptionText = artifact.teaser || 'Explore this historical narrative artifact on Fjorr.';
+  const ogImageUrl = artifact.blok_ogrf || 'https://fjorr.com/og-main-preview.jpg';
+
+  return {
+    title: titleText, // Auto-appends " | Fjorr" because of your root layout.tsx rules!
+    description: descriptionText,
+    openGraph: {
+      title: `${titleText} | Fjorr`,
+      description: descriptionText,
+      url: `https://fjorr.com/artifact/${artifact.slug}`,
+      siteName: 'Fjorr',
+      type: 'article', // Using article/object formatting for tangible artifact elements
+      images: [
+        {
+          url: ogImageUrl,
+          width: 1200,
+          height: 630,
+          alt: `Historical archive preview for ${artifact.name}`,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${titleText} | Fjorr`,
+      description: descriptionText,
+      images: [ogImageUrl],
+    },
+  };
 }
 
 export default async function DynamicArtifactPage({ params }: ArtifactPageProps) {
@@ -79,6 +129,30 @@ export default async function DynamicArtifactPage({ params }: ArtifactPageProps)
       style={{ backgroundColor: customBg }}
       className={`w-full min-h-screen flex flex-col justify-between transition-colors duration-500 ease-out ${textClass}`}
     >
+{/* 🧠 STRUCTURED DATA HANDSHAKE: AI Search Engine Optimization */}
+<script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "CreativeWork",
+            "name": artifact.name,
+            "description": artifact.description || artifact.teaser,
+            "image": artifact.blok_ogrf || artifact.hero_tall || "https://fjorr.com/og-main-preview.jpg",
+            "dateCreated": artifact.release_date,
+            "creator": {
+              "@type": "Person",
+              "name": creatorName || "Fjorr Contributor"
+            },
+            "publisher": {
+              "@type": "Organization",
+              "name": "Fjorr"
+            }
+          })
+        }}
+      />
+
+
       <Navbar variant={isDarkBg ? 'light' : 'dark'} />
 
       {/* 🚀 ASYMMETRIC MAIN WORKSPACE STAGE */}

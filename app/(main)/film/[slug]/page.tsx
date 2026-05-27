@@ -6,6 +6,7 @@ import FilmHero from '@/components/FilmHero';
 import ArtifactRail from '@/components/ArtifactRail';
 import FilmRail from '@/components/FilmRail';
 import FilmSpecs from '@/components/FilmSpecs';
+import type { Metadata } from 'next';
 
 export const dynamic = 'force-dynamic';
 export const dynamicParams = true;
@@ -13,6 +14,57 @@ export const dynamicParams = true;
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
+
+// =========================================================================
+// 🤖 THE DYNAMIC METADATA ENGINE
+// =========================================================================
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug: urlSlug } = await params;
+  const supabase = await createClient();
+
+  // Query your explicit columns: name, teaser, and blok_ogrf snapshot
+  const { data: film } = await supabase
+    .from('film')
+    .select('name, teaser, slug, blok_ogrf')
+    .eq('slug', urlSlug)
+    .maybeSingle();
+
+  if (!film) {
+    return { title: 'Film Not Found' };
+  }
+
+  const titleText = film.name;
+  const descriptionText = film.teaser || 'Watch this cinematic story on Fjorr.';
+  const ogImageUrl = film.blok_ogrf || 'https://fjorr.com/og-main-preview.jpg';
+
+  return {
+    title: titleText, // Auto-stamped with " | Fjorr" via your layout.tsx rules
+    description: descriptionText,
+    openGraph: {
+      title: `${titleText} | Fjorr`,
+      description: descriptionText,
+      url: `https://fjorr.com/film/${film.slug}`,
+      siteName: 'Fjorr',
+      type: 'video.movie',
+      images: [
+        {
+          url: ogImageUrl,
+          width: 1200,
+          height: 630,
+          alt: `Cinematic preview for ${film.name}`,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${titleText} | Fjorr`,
+      description: descriptionText,
+      images: [ogImageUrl],
+    },
+  };
+}
+
+// 🎯 THE DYNAMIC PAGE COMPONENT
 
 export default async function FilmDetailPage({ params }: PageProps) {
   const { slug: urlSlug } = await params;
@@ -149,6 +201,25 @@ async function DeferredPageContent({ urlSlug }: { urlSlug: string }) {
 
     return (
       <>
+      {/* 🧠 STRUCTURED DATA HANDSHAKE: AI Search Engine Optimization */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Movie",
+            "name": filmData.name,
+            "description": filmData.teaser,
+            "image": filmData.blok_ogrf || "https://fjorr.com/og-main-preview.jpg",
+            "datePublished": filmData.release_date,
+            "productionCompany": {
+              "@type": "Organization",
+              "name": "Fjorr"
+            }
+          })
+        }}
+      />
+      
         <FilmHero film={filmData} />
         
         {/* 🎯 FIXED: Changed gap-12 to gap-0 and pt-12 to pt-8 to tighten up the global background container */}
