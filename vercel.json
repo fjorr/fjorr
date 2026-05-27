@@ -1,0 +1,11 @@
+{
+    "crons": [],
+    "cleanUrls": true,
+    "routes": [
+      {
+        "src": "/(.*)",
+        "middleware": true,
+        "continue": true
+      }
+    ]
+  }
