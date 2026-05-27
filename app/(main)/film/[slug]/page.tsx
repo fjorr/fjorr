@@ -76,7 +76,7 @@ async function DeferredPageContent({ urlSlug }: { urlSlug: string }) {
 
   const displayLocation = Array.isArray(filmData.location) && filmData.location.length > 0 ? filmData.location[0] : filmData.location || '';
   
-  // 🎯 FIXED DATA BUILDER LAYER: Maps your loaded transcript lines directly to build a secure subtitle array payload
+  // 🎯 DATA BUILDER LAYER: Maps your loaded transcript lines directly to build a secure subtitle array payload
   const languageNameMap: Record<string, string> = { en: 'English', es: 'Spanish', fr: 'French', it: 'Italian' };
   const subtitlesData = transcripts.map((row: any) => {
     const cleanCode = (row.language_code || 'en').toLowerCase().trim();

@@ -14,7 +14,7 @@ interface CinemaTheaterProps {
     language_subtitle?: {
       code: string;
       name: string;
-      vtt_url: string; // This carries your raw WebVTT database text block!
+      vtt_url: string;
     }[];
   };
   onClose: () => void;
@@ -44,10 +44,18 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
   const [currentSubtitleText, setCurrentSubtitleText] = useState<string>('');
 
   // --- NODES REF HOOKS ---
-  const containerRef = useRef<HTMLDivElement | null>(null); // 🎯 MASTER WRAPPER CONTAINER HOOK
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const filmPlayerRef = useRef<HTMLVideoElement | null>(null);
   const logoPlayerRef = useRef<HTMLVideoElement | null>(null);
   const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // 🎯 THE NAV UNMOUNT HANDSHAKE TRIGGER PIPELINE
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('fjorr_hide_main_navbar'));
+    return () => {
+      window.dispatchEvent(new CustomEvent('fjorr_show_main_navbar'));
+    };
+  }, []);
 
   // Fullscreen lifecycle observer
   useEffect(() => {
@@ -138,7 +146,6 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
   };
 
   const toggleFullscreen = () => {
-    // 🎯 EXPANSION FIX: Target the master container DOM root node instead of individual child video tracks
     const container = containerRef.current;
     if (!container) return;
 
@@ -151,8 +158,6 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
     } else {
       if (document.exitFullscreen) {
         document.exitFullscreen().catch(() => {});
-      } else if ((document as any).webkitExitFullscreen) {
-        (document as any).webkitExitFullscreen();
       }
     }
   };
@@ -188,7 +193,7 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
     return secs;
   };
 
-  // --- FIXED INSTANT PARSING ENGINE ---
+  // --- CLOSED CAPTION SELECTION ENGINE ---
   const handleSubtitleSelection = (langCode: string, langName: string) => {
     setSelectedLangCode(langCode);
     setShowCCMenu(false);
@@ -203,10 +208,7 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
     const matchedRecord = tracksArray.find((item: any) => (item?.code || '').toLowerCase().trim() === langCode.toLowerCase().trim());
     
     const vttText = matchedRecord?.vtt_url;
-    if (!vttText) {
-      console.warn(`⚠️ FJORR Engine: WebVTT string data payload missing.`);
-      return;
-    }
+    if (!vttText) return;
 
     try {
       const lines = vttText.replace(/\r\n/g, '\n').split('\n');
@@ -234,11 +236,10 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
       if (currentCue) cuesArray.push(currentCue);
       setParsedCues(cuesArray);
     } catch (err) {
-      console.error("🔴 FJORR SUBTITLE PARSER ERROR:", err);
+      console.error(err);
     }
   };
 
-  // Subtitle synchronization tracker loop
   useEffect(() => {
     if (selectedLangCode === 'none' || parsedCues.length === 0) {
       setCurrentSubtitleText('');
@@ -248,7 +249,6 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
     setCurrentSubtitleText(activeCue ? activeCue.text : '');
   }, [currentTime, parsedCues, selectedLangCode]);
 
-  // Disable native video player track manifests
   useEffect(() => {
     const player = filmPlayerRef.current;
     if (!player) return;
@@ -297,6 +297,7 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
     const filmPlayer = filmPlayerRef.current;
     if (filmPlayer && !isPlayingLogo && film) {
       setIsLoading(true);
+      setIsEnded(false);
       
       if (filmPlayer.canPlayType('application/vnd.apple.mpegurl')) {
         filmPlayer.src = `https://stream.mux.com/${film.mux_playback_id}.m3u8`;
@@ -345,32 +346,55 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
 
   return (
     <div 
-      ref={containerRef} // 🎯 MASTER DOM LINK BOUNDARY HOIST
-      className="fixed inset-0 w-full h-[100svh] bg-[#1f1f1f] text-[#F5F5F7] select-none overflow-hidden flex flex-col justify-between font-sans z-50 animate-in fade-in duration-300"
+      ref={containerRef}
+      id="fjorr-theater-root"
+      className="fixed inset-0 w-full h-[100svh] bg-[#1f1f1f] text-[#F5F5F7] select-none overflow-hidden flex flex-col justify-between font-sans z-[99999] animate-in fade-in duration-300"
     >
       
-      {/* 🎬 WATCH PAGE HEADER BRAND LAYOUT */}
-      <header data-ui-control="true" className={`absolute top-0 inset-x-0 w-full h-20 px-8 flex items-center justify-between z-40 transition-all duration-500 ease-out ${controlsVisible && !isPlayingLogo ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0 pointer-events-none'}`}>
-        <div className="flex items-center justify-start">
-          <button onClick={onClose} className="cursor-pointer block opacity-70 hover:opacity-100 transition-opacity bg-transparent border-0 outline-none p-0">
-            <svg viewBox="0 0 143 81" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-7 w-auto text-white">
-              <path d="M71.3559 13.2942C60.8993 13.2942 52.4273 21.7814 52.4273 32.2448C52.4273 42.7082 60.9046 51.1953 71.3559 51.1953C81.8073 51.1953 90.2846 42.7082 90.2846 32.2448C90.2846 21.7814 81.8073 13.2942 71.3559 13.2942ZM71.3559 39.7278C67.232 39.7278 63.8869 36.3789 63.8869 32.2501C63.8869 28.1214 67.232 24.7725 71.3559 24.7725C75.4799 24.7725 78.825 28.1214 78.825 32.2501C78.825 36.3789 75.4799 39.7278 71.3559 39.7278Z" fill="white"/>
-              <path d="M35.9047 15.0355C35.4032 15.0355 34.9978 15.4414 34.9978 15.9435V60.9377C34.9978 65.4136 31.5887 69.0883 27.23 69.505C26.7605 69.5477 26.403 69.9322 26.403 70.4023V80.0912C26.403 80.6146 26.8405 81.0206 27.3633 80.9992C37.996 80.4971 46.4627 71.7109 46.4627 60.9377V15.9435C46.4627 15.4414 46.0573 15.0355H35.9047Z" fill="white"/>
-              <path d="M0 0.908003V48.498C0 49.0001 0.405462 49.406 0.906954 49.406H11.9931C12.4946 49.406 12.9001 48.498V35.1397C12.4946 34.6376 13.3055 34.2317 13.807 34.2317H26.0616C26.5631 34.2317 26.9685 33.8258 26.9685 33.3237V23.6615C26.9685 23.1594 26.5631 22.7535 26.0616 22.7535H13.807V12.3755C12.9001 11.8735 13.3055 11.4675 13.807 11.4675H27.4967C27.9982 11.4675 28.4037 11.0616 28.4037 10.5595V0.908003C28.4037 0.405931 27.9982 0 27.4967 0H0.906954C0.405462 0 0 0.405931 0 0.908003Z" fill="white"/>
-              <path d="M116.309 15.9435V22.7375C116.309 23.2395 115.402 23.6455 115.402 23.6455H108.509C108.066 23.6455 107.709 24.0033 107.709 24.4466V48.5568C107.709 49.0589 107.303 49.4648 106.802 49.4648H97.1508C96.6493 49.4648 96.2438 49.0589 96.2438 48.5568V15.9435C96.2438 15.4414 96.6493 15.0355H97.1508C96.6493 15.0355 115.402 15.4414 115.402 15.9435Z" fill="white"/>
-              <path d="M143 15.9435V22.7375C143 23.2395 142.595 23.6455 142.093 23.6455H135.2C134.757 23.6455 134.4 24.0033 134.4 24.4466V48.5568C134.4 49.0589 133.994 49.4648 133.493 49.4648H123.842C123.34 49.4648 122.935 49.0589 122.935 48.5568V15.9435C122.935 15.4414 123.34 15.0355 123.842 15.0355H142.093C142.595 15.0355 143 15.4414 143 15.9435Z" fill="white"/>
+     {/* 🎬 DYNAMIC THEATER PILL NAVBAR HEADER */}
+     <header 
+        data-ui-control="true" 
+        className={`absolute top-0 inset-x-0 w-full h-[70px] pt-[20px] px-4 flex justify-center pointer-events-none z-50 transition-all duration-500 ease-out ${
+          ((controlsVisible && !isPlayingLogo) || isPlayingLogo) ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0 pointer-events-none'
+        }`}
+      >
+        <div className="inline-flex h-[50px] px-[30px] items-center gap-[20px] pointer-events-auto bg-transparent">
+          
+          {/* Left: Official Fjorr Logo Box */}
+          <div className="w-[50px] flex items-center text-white shrink-0 translate-y-[2px]">
+            <svg viewBox="0 0 143 81" className="w-full h-auto" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M71.3559 13.2942C60.8993 13.2942 52.4273 21.7814 52.4273 32.2448C52.4273 42.7082 60.9046 51.1953 71.3559 51.1953C81.8073 51.1953 90.2846 42.7082 90.2846 32.2448C90.2846 21.7814 81.8073 13.2942 71.3559 13.2942ZM71.3559 39.7278C67.232 39.7278 63.8869 36.3789 63.8869 32.2501C63.8869 28.1214 67.232 24.7725 71.3559 24.7725C75.4799 24.7725 78.825 28.1214 78.825 32.2501C78.825 36.3789 75.4799 39.7278 71.3559 39.7278Z" fill="currentColor"/>
+              <path d="M35.9047 15.0355C35.4032 15.0355 34.9978 15.4414 34.9978 15.9435V60.9377C34.9978 65.4136 31.5887 69.0883 27.23 69.505C26.7605 69.5477 26.403 69.9322 26.403 70.4023V80.0912C26.403 80.6146 26.8405 81.0206 27.3633 80.9992C37.996 80.4971 46.4627 71.7109 46.4627 60.9377V15.9435C46.4627 15.4414 46.0573 15.0355 45.5558 15.0355H35.9047Z" fill="currentColor"/>
+              <path d="M0 0.908003V48.498C0 49.0001 0.405462 49.406 0.906954 49.406H11.9931C12.4946 49.406 12.9001 49.0001 12.9001 48.498V35.1397C12.4946 34.6376 13.3055 34.2317 13.807 34.2317H26.0616C26.5631 34.2317 26.9685 33.8258 26.9685 33.3237V23.6615C26.9685 23.1594 26.5631 22.7535 26.0616 22.7535H13.807C13.3055 22.7535 12.9001 22.3476 12.9001 21.8455V12.3755C12.9001 11.8735 13.3055 11.4675 13.807 11.4675H27.4967C27.9982 11.4675 28.4037 11.0616 28.4037 10.5595V0.908003C28.4037 0.405931 27.9982 0 27.4967 0H0.906954C0.405462 0 0 0.405931 0 0.908003Z" fill="currentColor"/>
+              <path d="M116.309 15.9435V22.7375C116.309 23.2395 115.402 23.6455 115.402 23.6455H108.509C108.066 23.6455 107.709 24.0033 107.709 24.4466V48.5568C107.709 49.0589 107.303 49.4648 106.802 49.4648H97.1508C96.6493 49.4648 96.2438 49.0589 96.2438 48.5568V15.9435C96.2438 15.4414 96.6493 15.0355 97.1508 15.0355H115.402C115.903 15.0355 116.309 15.4414 116.309 15.9435Z" fill="currentColor"/>
+              <path d="M143 15.9435V22.7375C143 23.2395 142.595 23.6455 142.093 23.6455H135.2C134.757 23.6455 134.4 24.0033 134.4 24.4466V48.5568C134.4 49.0589 133.994 49.4648 133.493 49.4648H123.842C123.34 49.4648 122.935 49.0589 122.935 48.5568V15.9435C122.935 15.4414 123.34 15.0355 123.842 15.0355H142.093C142.595 15.0355 143 15.4414 143 15.9435Z" fill="currentColor"/>
             </svg>
+          </div>
+
+          {/* Center: Slogan Display */}
+          <div className="flex items-center shrink-0">
+            <span className="font-sans text-xs font-medium tracking-normal select-none whitespace-nowrap text-white/80">
+              Short films of the greatest stories
+            </span>
+          </div>
+
+          {/* Right: Close icon */}
+          <button 
+            onClick={onClose} 
+            className="w-[18px] h-[18px] flex items-center justify-center cursor-pointer shrink-0 text-white bg-transparent border-0 p-0 outline-none transition-opacity hover:opacity-70"
+            title="Close Theater"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
           </button>
+
         </div>
-        <button onClick={onClose} className="p-2 text-white/60 hover:text-white transition-colors bg-transparent border-0 outline-none cursor-pointer">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 md:w-6 md:h-6"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        </button>
       </header>
 
+      {/* 📹 FILM PLAYER CORE FRAME */}
       <div className="flex-grow w-full flex items-center justify-center">
         <div className={`relative w-full max-w-[1200px] aspect-video overflow-hidden bg-black transition-all duration-500 z-10 flex flex-col justify-end ${isFullscreen ? 'max-w-none h-screen rounded-none border-0' : 'xl:rounded-[12px]'}`}>
           
-          {/* 🎬 DUAL ELEMENT STAGE: PLAYER 1 (LOGO INTRO) */}
+          {/* PLAYER CONTAINER 1: LOGO BUMPER INTRO */}
           {isPlayingLogo && (
             <video
               ref={logoPlayerRef}
@@ -382,7 +406,7 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
             />
           )}
 
-          {/* 📹 DUAL ELEMENT STAGE: PLAYER 2 (MUX FEATURE STREAM) */}
+          {/* PLAYER CONTAINER 2: DYNAMIC FEATURE FILM */}
           <video
             ref={filmPlayerRef}
             id="fjorr-engine"
@@ -400,7 +424,7 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
 
           <div className="absolute inset-0 bg-black/60 transition-opacity duration-500 pointer-events-none z-10" style={{ opacity: controlsVisible ? 1 : 0 }} />
 
-          {/* 💬 FLOATING SUBTITLES LAYOUT BOX */}
+          {/* Captions Overlay */}
           {selectedLangCode !== 'none' && currentSubtitleText && (
             <div className="absolute bottom-[6%] left-1/2 -translate-x-1/2 max-w-[85%] text-center px-5 py-2.5 bg-zinc-950/70 backdrop-blur-md border border-white/10 rounded-[6px] text-[#F5F5F7] font-medium text-[15px] md:text-base tracking-tight leading-relaxed z-25 pointer-events-none select-none font-sans whitespace-pre-line shadow-2xl">
               {currentSubtitleText}
@@ -408,19 +432,21 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
           )}
 
           {isLoading && (
-            <div className="absolute inset-0 bg-black flex items-center justify-center text-sm font-mono tracking-widest text-white/40 z-30">Buffering...</div>
+            <div className="absolute inset-0 bg-black flex items-center justify-center text-sm font-sans font-bold tracking-normal text-white/0 z-30">Rolling...</div>
           )}
         </div>
       </div>
 
-      {/* 🎛️ CONTROL SYSTEM OVERLAY LAYOUT */}
-      <div data-ui-control="true" className={`fixed bottom-0 inset-x-0 w-full flex flex-col justify-end items-start text-left z-30 transition-all duration-500 ease-out select-none px-8 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] gap-3 ${controlsVisible && !isPlayingLogo ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'}`}>
-        <div className="flex flex-col items-start pl-1 text-[#F5F5F7]">
+      {/* 🎛️ HUD CONTROLS FOOTER BLOCK */}
+<div 
+  data-ui-control="true" 
+  className={`fixed bottom-0 inset-x-0 w-full flex flex-col justify-end items-start text-left z-30 transition-all duration-500 ease-out select-none px-8 pb-[calc(env(safe-area-inset-bottom)_+_1.5rem)] gap-3 ${controlsVisible && !isPlayingLogo ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'}`}
+>
+  <div className="flex flex-col items-start pl-1 text-[#F5F5F7]">
           <h2 className="text-[20px] md:text-2xl font-bold tracking-tight leading-none">{film?.name}</h2>
           <p className="text-xs md:text-sm font-medium opacity-60 mt-2 tracking-normal">{film?.story_date} &middot; {film?.location}</p>
         </div>
 
-        {/* 🎯 CLOSED CAPTIONS DIALOG SELECTION BLOCK LIST */}
         {showCCMenu && (
           <div className="w-max flex items-center gap-4 px-4 py-2 bg-zinc-900/90 backdrop-blur-md border border-white/5 rounded-[6px] overflow-hidden shadow-xl animate-in fade-in slide-in-from-left-2 duration-200">
             <button 
@@ -468,33 +494,15 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
             <div className="absolute inset-x-0 h-[10px] bg-white/25 rounded-full pointer-events-none z-10 top-1/2 -translate-y-1/2" />
             <div className="absolute left-0 h-[10px] bg-white/60 rounded-full pointer-events-none z-10 top-1/2 -translate-y-1/2" style={{ width: `${currentProgress}%` }} />
             
-            {/* 🎨 WHITE TIMELINE SCRUBBER THUMB CONTROL */}
-            <input 
-              type="range" 
-              min={0} 
-              max={duration || 100} 
-              step="any" 
-              value={currentTime} 
-              onMouseDown={handleScrubStart} 
-              onTouchStart={handleScrubStart} 
-              onChange={handleScrubChange} 
-              onMouseUp={handleScrubEnd} 
-              onTouchEnd={handleScrubEnd} 
-              className="w-full h-10 appearance-none bg-transparent cursor-pointer outline-none relative z-20 m-0 block
-                           focus:outline-none focus:ring-0 focus:border-transparent
-                           [&::-webkit-slider-runnable-track]:w-full [&::-webkit-slider-runnable-track]:h-10 [&::-webkit-slider-runnable-track]:bg-transparent
-                           [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:transition-transform active:[&::-webkit-slider-thumb]:scale-110 [&::-webkit-slider-thumb]:relative [&::-webkit-slider-thumb]:top-1/2 [&::-webkit-slider-thumb]:-translate-y-1/2 [&::-webkit-slider-thumb]:border-0 [&::-webkit-slider-thumb]:outline-none
-                           [&::-moz-range-track]:w-full [&::-moz-range-track]:h-10 [&::-moz-range-track]:bg-transparent
-                           [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-3.5 [&::-moz-range-thumb]:h-3.5 [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:shadow-md active:[&::-moz-range-thumb]:scale-110 [&::-moz-range-thumb]:outline-none"
-              style={{ accentColor: '#ffffff', WebkitAppearance: 'none' }}
-            />
+            {/* White scrubber thumb track input */}
+            <input type="range" min={0} max={duration || 100} step="any" value={currentTime} onMouseDown={handleScrubStart} onTouchStart={handleScrubStart} onChange={handleScrubChange} onMouseUp={handleScrubEnd} onTouchEnd={handleScrubEnd} className="w-full h-10 appearance-none bg-transparent cursor-pointer outline-none relative z-20 m-0 block focus:outline-none focus:ring-0 focus:border-transparent [&::-webkit-slider-runnable-track]:w-full [&::-webkit-slider-runnable-track]:h-10 [&::-webkit-slider-runnable-track]:bg-transparent [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:transition-transform active:[&::-webkit-slider-thumb]:scale-110 [&::-webkit-slider-thumb]:relative [&::-webkit-slider-thumb]:top-1/2 [&::-webkit-slider-thumb]:-translate-y-1/2 [&::-webkit-slider-thumb]:border-0 [&::-webkit-slider-thumb]:outline-none [&::-moz-range-track]:w-full [&::-moz-range-track]:h-10 [&::-moz-range-track]:bg-transparent [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-3.5 [&::-moz-range-thumb]:h-3.5 [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:shadow-md active:[&::-moz-range-thumb]:scale-110 [&::-moz-range-thumb]:outline-none" style={{ accentColor: '#ffffff', WebkitAppearance: 'none' }} />
           </div>
           <div className="w-11 text-left select-none font-mono font-bold text-sm text-white opacity-60 tracking-tight shrink-0 self-center leading-none">-{formatTime(duration - currentTime)}</div>
         </div>
       </div>
 
       {/* REPLAY FILM END SCREEN OVERLAY */}
-      <div id="end-screen" data-ui-control="true" className="absolute inset-0 bg-[#1f1f1f] backdrop-blur-md flex flex-col items-center justify-center transition-all duration-1000 ease-in-out z-40" style={{ opacity: isEnded ? 1 : 0, pointerEvents: isEnded ? 'auto' : 'none', transform: isEnded ? 'scale(1)' : 'scale(1.03)' }}>
+      <div id="end-screen" data-ui-control="true" className="absolute inset-0 bg-[#1f1f1f] backdrop-blur-sm flex flex-col items-center justify-center transition-all duration-500 ease-in-out z-40" style={{ opacity: isEnded ? 1 : 0, pointerEvents: isEnded ? 'auto' : 'none' }}>
         <div className="max-w-2xl text-center flex flex-col items-center gap-8 px-6 relative">
           <p className="font-sans text-lg font-semibold text-[#F5F5F7]/90 leading-relaxed max-w-lg">{film?.last_line || 'The credits fade to black.'}</p>
           <div className="flex items-center gap-6 text-white/50 font-sans text-sm">
