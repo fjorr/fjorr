@@ -5,12 +5,34 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 
-export default function WatchPage() {
+// 🧠 1. DEFINE PROP MATRIX SO TYPESCRIPT SIGNS OFF ON THE SERVER HANDSHAKE
+interface WatchPageProps {
+  initialFilm?: {
+    id: any;
+    name: any;
+    slug: any;
+    mux_playback_id: any;
+    last_line: any;
+    story_date: any;
+    location: any;
+    language_subtitle: {
+      vtt_url: any;
+      language: {
+        code: any;
+        name: any;
+      }[];
+    }[];
+  };
+}
+
+// 🧠 2. ACCEPT INITIALFILM FROM SERVER DESTINATION TRACE
+export default function WatchPage({ initialFilm }: WatchPageProps) {
   const { slug } = useParams();
   const router = useRouter();
   
   // --- LAYER STATE ARCHITECTURE ---
-  const [film, setFilm] = useState<any>(null);
+  // Seed state with initialFilm if server provided it, otherwise fallback to null for client lookup
+  const [film, setFilm] = useState<any>(initialFilm || null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [controlsVisible, setControlsVisible] = useState(false);
@@ -20,7 +42,7 @@ export default function WatchPage() {
   
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!initialFilm); // No layout loading flicker if data is already here!
 
   // --- THE STABILITY CONTROL FLAG ---
   const [isScrubbing, setIsScrubbing] = useState(false);
@@ -36,6 +58,9 @@ export default function WatchPage() {
 
   // --- 1. INITIAL BASE DATA FETCH ---
   useEffect(() => {
+    // If the server already hydrated this data, bypass client fetch execution entirely!
+    if (film) return;
+
     const supabase = createBrowserClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -62,12 +87,13 @@ export default function WatchPage() {
 
       if (data) {
         setFilm(data);
+        setIsLoading(false);
       } else {
         router.push('/');
       }
     }
     getFilmPayload();
-  }, [slug]);
+  }, [slug, film]);
 
   useEffect(() => {
     const handleFsChange = () => {
