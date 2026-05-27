@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!film) return { title: 'Film Not Found' };
 
   const titleText = `Watching: ${film.name}`;
-  const descriptionText = film.teaser || 'Experience this cinematic narrative on Fjorr.';
+  const descriptionText = film.teaser || 'Watch this short film on Fjorr.';
   const ogImageUrl = film.blok_ogrf || 'https://fjorr.com/og-main-preview.jpg';
 
   return {

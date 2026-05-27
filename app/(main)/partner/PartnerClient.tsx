@@ -16,7 +16,7 @@ export default function PartnerClient() {
             "@context": "https://schema.org",
             "@type": "WebPage",
             "name": "Partner with Fjorr",
-            "description": "Collaborate with Fjorr. We work with brands, studios, and individuals who believe stories shape people to bring meaningful ideas to life.",
+            "description": "Collaborate with Fjorr. We work with brands, studios, and individualse.",
             "provider": {
               "@type": "Organization",
               "name": "Fjorr",

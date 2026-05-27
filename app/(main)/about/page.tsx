@@ -3,17 +3,17 @@ import AboutClient from './AboutClient'; // 🛠️ Points directly to your GSAP
 
 // 🎯 SERVER-SIDE METADATA ENGINE FOR THE ABOUT MANIFESTO
 export const metadata: Metadata = {
-  title: 'Our Story', // Automatically transforms to "Our Story | Fjorr" via layout.tsx
-  description: 'We are building a myth engine. Short, cinematic films designed to form imagination, character, and cultural literacy.',
+  title: 'About', // Automatically transforms to "About | Fjorr" via layout.tsx
+  description: 'Short films of the world’s greatest stories. Designed to form imagination, character, and cultural literacy.',
   openGraph: {
-    title: 'Our Story | Fjorr',
-    description: 'We are building a myth engine. Short, cinematic films designed to form imagination, character, and cultural literacy.',
+    title: 'About | Fjorr',
+    description: 'Short films of the world’s greatest stories.',
     url: 'https://fjorr.com/about',
     type: 'website',
   },
   twitter: {
-    title: 'Our Story | Fjorr',
-    description: 'We are building a myth engine. Short, cinematic films designed to form imagination, character, and cultural literacy.',
+    title: 'About | Fjorr',
+    description: 'Short films of the world’s greatest stories.',
   }
 };
 

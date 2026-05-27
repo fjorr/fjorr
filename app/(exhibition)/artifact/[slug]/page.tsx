@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: ArtifactPageProps): Promise<M
   }
 
   const titleText = artifact.name;
-  const descriptionText = artifact.teaser || 'Explore this historical narrative artifact on Fjorr.';
+  const descriptionText = artifact.teaser || 'Explore this cultural artifact on Fjorr.';
   const ogImageUrl = artifact.blok_ogrf || 'https://fjorr.com/og-main-preview.jpg';
 
   return {
@@ -49,7 +49,7 @@ export async function generateMetadata({ params }: ArtifactPageProps): Promise<M
           url: ogImageUrl,
           width: 1200,
           height: 630,
-          alt: `Historical archive preview for ${artifact.name}`,
+          alt: `Archive preview for ${artifact.name}`,
         },
       ],
     },

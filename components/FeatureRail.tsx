@@ -221,11 +221,12 @@ export default function FeatureRail({ films, activeIndex, onSlideChange }: Featu
           </div>
         </div>
 
-        {/* =========================================================================
+       {/* =========================================================================
            🎬 CAROUSEL NAVIGATION TRACKS
            ========================================================================= */}
         <div className="absolute inset-x-0 bottom-8 z-30 flex items-center justify-center md:justify-center pointer-events-none px-8 md:px-12">
           
+          {/* CENTER: Navigation Dot indicators */}
           <div className="flex items-center justify-center gap-2 pointer-events-auto mx-auto">
             {films.map((_, index) => (
               <button
@@ -242,13 +243,14 @@ export default function FeatureRail({ films, activeIndex, onSlideChange }: Featu
             ))}
           </div>
 
-          {/* RIGHT DIRECTIONAL CONTROLS */}
-          <div className="hidden md:flex absolute right-6 items-center gap-2.5 pointer-events-auto">
+          {/* LOWER RIGHT: Floating Navigation Controls */}
+          {/* 🎯 FIXED: Changed from absolute right-6 to right-8 on mobile, and removed hidden wrapper so it anchors in the lower right across all devices */}
+          <div className="absolute right-6 md:right-12 flex items-center gap-2.5 pointer-events-auto">
             
-            {/* AUTOPLAY PROGRESS TOGGLE */}
+            {/* AUTOPLAY PROGRESS TOGGLE (Visible on Mobile + Desktop) */}
             <button 
               onClick={handleTogglePlay}
-              className="w-8 h-8 relative rounded-full flex items-center justify-center backdrop-blur-sm transition-all duration-200 active:scale-95 bg-white/10 hover:bg-white/15"
+              className="w-8 h-8 relative rounded-full flex items-center justify-center backdrop-blur-sm transition-all duration-200 active:scale-95 bg-black/40 md:bg-white/10 hover:bg-black/60 md:hover:bg-white/15 border border-white/10 md:border-transparent"
               aria-label={isPlaying ? "Pause autoplay loop" : "Start autoplay loop"}
             >
               <svg className="absolute inset-0 w-full h-full transform -rotate-90">
@@ -257,7 +259,7 @@ export default function FeatureRail({ films, activeIndex, onSlideChange }: Featu
                   cy="16"
                   r={RADIUS}
                   fill="transparent"
-                  stroke="rgba(255, 255, 255, 0.25)"
+                  stroke="rgba(255, 255, 255, 0.2)"
                   strokeWidth="2"
                 />
                 <circle
@@ -283,18 +285,17 @@ export default function FeatureRail({ films, activeIndex, onSlideChange }: Featu
               </div>
             </button>
 
-            {/* Prev Button */}
+            {/* DESKTOP ONLY: Navigation Chevrons */}
             <button 
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigatePrev(); }}
-              className="w-8 h-8 rounded-full bg-white/10 text-white flex items-center justify-center backdrop-blur-sm hover:bg-white/20 active:scale-95 transition-all duration-200"
+              className="hidden md:flex w-8 h-8 rounded-full bg-white/10 text-white items-center justify-center backdrop-blur-sm hover:bg-white/20 active:scale-95 transition-all duration-200"
             >
               <ChevronRight size={16} className="rotate-180" />
             </button>
             
-            {/* Next Button */}
             <button 
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigateNext(); }}
-              className="w-8 h-8 rounded-full bg-white/10 text-white flex items-center justify-center backdrop-blur-sm hover:bg-white/20 active:scale-95 transition-all duration-200"
+              className="hidden md:flex w-8 h-8 rounded-full bg-white/10 text-white items-center justify-center backdrop-blur-sm hover:bg-white/20 active:scale-95 transition-all duration-200"
             >
               <ChevronRight size={16} />
             </button>

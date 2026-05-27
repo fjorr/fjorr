@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const titleText = film.name;
-  const descriptionText = film.teaser || 'Watch this cinematic story on Fjorr.';
+  const descriptionText = film.teaser || 'Watch this short film on Fjorr.';
   const ogImageUrl = film.blok_ogrf || 'https://fjorr.com/og-main-preview.jpg';
 
   return {
@@ -51,7 +51,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
           url: ogImageUrl,
           width: 1200,
           height: 630,
-          alt: `Cinematic preview for ${film.name}`,
+          alt: `Short film poster for ${film.name}`,
         },
       ],
     },

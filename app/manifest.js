@@ -1,8 +1,8 @@
 export default function manifest() {
   return {
-    name: 'Fjorr Myth Engine',
+    name: 'Fjorr',
     short_name: 'Fjorr',
-    description: 'Short, premium cinematic stories built to form the imagination.',
+    description: 'Short films of the world’s greatest stories.',
     start_url: '/',
     display: 'standalone',
     background_color: '#0B0B0C',

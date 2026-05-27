@@ -21,16 +21,15 @@ export function middleware(request: NextRequest) {
   return NextResponse.next();
 }
 
-// 🎯 CRITICAL: Matcher configuration ensures static assets and APIs aren't locked out
+// 🎯 HARDENED MATCHER CONFIGURATION
 export const config = {
   matcher: [
     /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
+     * Match all request paths except for:
+     * - Internal Next.js system build files (_next/static, _next/image)
+     * - API endpoints if you want them public (/api)
+     * - Explicitly allowed root brand assets (favicon.ico, robots.txt)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|robots.txt).*)',
   ],
 };

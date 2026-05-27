@@ -98,8 +98,8 @@ export default function NominateClient() {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "ContactPage",
-            "name": "Nominate a Story | Fjorr",
-            "description": "Know a story the world needs to hear? A piece of history, fictional adventure, or forgotten legend. Nominate it to the Fjorr myth engine.",
+            "name": "Nominate | Fjorr",
+            "description": "Know a story the world needs to hear? A piece of history, fictional adventure, or forgotten legend. Nominate it.",
             "url": "https://fjorr.com/nominate"
           })
         }}

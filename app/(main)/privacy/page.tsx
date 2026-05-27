@@ -4,16 +4,16 @@ import PrivacyClient from './PrivacyClient'; // 🛠️ Points directly to your 
 // 🎯 SERVER-SIDE METADATA ENGINE FOR PRIVACY POLICY
 export const metadata: Metadata = {
   title: 'Privacy Policy', // Automatically transforms to "Privacy Policy | Fjorr" via layout.tsx
-  description: 'Fjorr is built to be simple. No accounts. No tracking. Read our commitment to your absolute digital privacy.',
+  description: 'Read our commitment to your absolute digital privacy.',
   openGraph: {
     title: 'Privacy Policy | Fjorr',
-    description: 'Fjorr is built to be simple. No accounts. No tracking. Read our commitment to your absolute digital privacy.',
+    description: 'Read our commitment to your absolute digital privacy.',
     url: 'https://fjorr.com/privacy',
     type: 'website',
   },
   twitter: {
     title: 'Privacy Policy | Fjorr',
-    description: 'Fjorr is built to be simple. No accounts. No tracking. Read our commitment to your absolute digital privacy.',
+    description: 'Read our commitment to your absolute digital privacy.',
   }
 };
 

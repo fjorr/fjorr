@@ -86,23 +86,25 @@ export default function AboutClient() {
       // ⚛️ PART 3: Technical JetBrains Section Activates (Dot Grid Fades In)
       masterTl.fromTo(techDotOverlayRef.current, { opacity: 0 }, { opacity: 1, duration: 0.4 }, '>-=0.1');
 
-      // --- Pinned Helmet Frame Dispatcher Sequential Loop ---
+     // --- Pinned Helmet Frame Dispatcher Sequential Loop ---
+      // ⚡ FORCE STEPPED SNAPPING: ease: "steps(1)" completely overrides GSAP defaults and bans fading.
       masterTl.fromTo(helmetContainerRef.current, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.4 });
       
-      masterTl.to('.helmet-frame', { display: 'none', duration: 0.01 });
-      masterTl.to('.helmet-frame-1', { display: 'block', duration: 0.1 });
-      masterTl.to('.helmet-frame-1', { display: 'none', duration: 0.01 });
-      masterTl.to('.helmet-frame-2', { display: 'block', duration: 0.1 });
-      masterTl.to('.helmet-frame-2', { display: 'none', duration: 0.01 });
-      masterTl.to('.helmet-frame-3', { display: 'block', duration: 0.1 });
-      masterTl.to('.helmet-frame-3', { display: 'none', duration: 0.01 });
-      masterTl.to('.helmet-frame-4', { display: 'block', duration: 0.1 });
-      masterTl.to('.helmet-frame-4', { display: 'none', duration: 0.01 });
-      masterTl.to('.helmet-frame-5', { display: 'block', duration: 0.1 });
+      // Pop Frame 2 on top of Frame 1 instantly
+      masterTl.to('.helmet-frame-2', { opacity: 1, duration: 0.1, ease: 'steps(1)' });
+      
+      // Pop Frame 3 on top of Frame 2 instantly
+      masterTl.to('.helmet-frame-3', { opacity: 1, duration: 0.1, ease: 'steps(1)' });
+      
+      // Pop Frame 4 on top of Frame 3 instantly
+      masterTl.to('.helmet-frame-4', { opacity: 1, duration: 0.1, ease: 'steps(1)' });
+      
+      // Pop Frame 5 on top of Frame 4 instantly
+      masterTl.to('.helmet-frame-5', { opacity: 1, duration: 0.1, ease: 'steps(1)' });
 
       masterTl.fromTo(helmetTextRef.current, { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.4 }, '>-=0.05');
 
-      // Clear the Helmet layout frame out
+      // Clear the whole container out at the end of the section
       masterTl.to([helmetContainerRef.current, helmetTextRef.current], { opacity: 0, y: -30, duration: 0.4 }, '+=0.4');
 
       // 📐 PART 4: Engineering Blueprint Wordmark Tracing Engine
@@ -230,17 +232,40 @@ export default function AboutClient() {
             backgroundSize: '24px 24px'
           }}
         >
-          {/* HELMET STAGE LAYOUT */}
+{/* HELMET STAGE LAYOUT */}
 <div ref={helmetContainerRef} className="absolute inset-0 flex flex-col items-center justify-center p-6 opacity-0">
-  {/* ⚡ Size bumped from w-32/h-32 to w-40/h-40 */}
-  <div className="w-[250px] h-[250px] relative flex items-center justify-center">
-    {/* Added 'origin-center will-change-transform' to aid animation performance */}
-    <img src="https://media.fjorr.com/assets/animation/icon/fjorr-production-logo-frame-01.avif" className="helmet-frame helmet-frame-1 block w-full h-full object-contain origin-center will-change-transform" alt="" />
-    <img src="https://media.fjorr.com/assets/animation/icon/fjorr-production-logo-frame-02.avif" className="helmet-frame helmet-frame-2 hidden w-full h-full object-contain origin-center will-change-transform" alt="" />
-    <img src="https://media.fjorr.com/assets/animation/icon/fjorr-production-logo-frame-03.avif" className="helmet-frame helmet-frame-3 hidden w-full h-full object-contain origin-center will-change-transform" alt="" />
-    <img src="https://media.fjorr.com/assets/animation/icon/fjorr-production-logo-frame-04.avif" className="helmet-frame helmet-frame-4 hidden w-full h-full object-contain origin-center will-change-transform" alt="" />
-    <img src="https://media.fjorr.com/assets/animation/icon/fjorr-production-logo-frame-05.avif" className="helmet-frame helmet-frame-5 hidden w-full h-full object-contain origin-center will-change-transform" alt="" />
-  </div>
+<div className="w-[250px] h-[250px] relative flex items-center justify-center">
+  <img 
+    src="https://media.fjorr.com/assets/animation/icon/fjorr-production-logo-frame-01.avif" 
+    className="helmet-frame helmet-frame-1 absolute inset-0 w-full h-full object-contain origin-center will-change-transform" 
+    style={{ opacity: 1 }}
+    alt="" 
+  />
+  <img 
+    src="https://media.fjorr.com/assets/animation/icon/fjorr-production-logo-frame-02.avif" 
+    className="helmet-frame helmet-frame-2 absolute inset-0 w-full h-full object-contain origin-center will-change-transform" 
+    style={{ opacity: 0 }}
+    alt="" 
+  />
+  <img 
+    src="https://media.fjorr.com/assets/animation/icon/fjorr-production-logo-frame-03.avif" 
+    className="helmet-frame helmet-frame-3 absolute inset-0 w-full h-full object-contain origin-center will-change-transform" 
+    style={{ opacity: 0 }}
+    alt="" 
+  />
+  <img 
+    src="https://media.fjorr.com/assets/animation/icon/fjorr-production-logo-frame-04.avif" 
+    className="helmet-frame helmet-frame-4 absolute inset-0 w-full h-full object-contain origin-center will-change-transform" 
+    style={{ opacity: 0 }}
+    alt="" 
+  />
+  <img 
+    src="https://media.fjorr.com/assets/animation/icon/fjorr-production-logo-frame-05.avif" 
+    className="helmet-frame helmet-frame-5 absolute inset-0 w-full h-full object-contain origin-center will-change-transform" 
+    style={{ opacity: 0 }}
+    alt="" 
+  />
+</div>
   
   <div ref={helmetTextRef} className="mt-6 text-center font-mono text-base tracking-tight text-[#f5f5f7]/80 opacity-0 max-w-sm">
     <div className="font-bold border border-white/60 rounded px-2 py-0.5 text-[11px] uppercase tracking-normal text-white/60 mb-3 w-max mx-auto">Logo</div>
