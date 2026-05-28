@@ -12,19 +12,26 @@ export default function PromoSplit() {
       <div className="w-full max-w-[1440px] mx-auto">
         
         {/* THE RESPONSIVE CORE: flex-col on mobile and tablet, lg:flex-row on desktop */}
-        <div className="w-full flex flex-col lg:flex-row gap-4 items-stretch">
+        {/* 💥 FIXED: Added gap-12 on mobile to space the stacked boxes */}
+        <div className="w-full flex flex-col lg:flex-row gap-12 lg:gap-4 items-stretch">
           
           {/* LEFT CONTAINER (The Text Overlay Frame) */}
-          <div className="w-full lg:w-1/2 aspect-[4/3] lg:aspect-square bg-transparent relative drop-shadow-[0_10px_20px_rgba(0,0,0,0.4)]">
+          {/* 💥 FIXED: Changed aspect-[4/3] to aspect-auto and h-auto.
+              Combined with the gap-12 on the parent flex container, this forces 
+              the mobile box to vertically stretch based on its text content! */}
+          <div className="w-full lg:w-1/2 aspect-auto lg:aspect-square h-auto lg:h-full bg-transparent relative drop-shadow-[0_10px_20px_rgba(0,0,0,0.4)] flex flex-col items-center justify-center">
             {/* CLOUDFLARE ASSET: Left Dark Texture Backing */}
+            {/* 💥 FIXED: Added 'hidden lg:block' so this dark backing image is completely 
+                deleted on mobile and only appears on desktop. */}
             <img 
               src="https://media.fjorr.com/assets/fjorr-partner-promo-crowd-f1v04.avif" 
               alt="Partnerships Background"
-              className="w-full h-full object-cover opacity-40 mix-blend-luminosity pointer-events-none rounded-[8px]"
+              className="hidden lg:block absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-luminosity pointer-events-none rounded-[8px]"
             />
             
             {/* ABSOLUTE COPY OVERLAY CONTAINER */}
-            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center p-8 md:p-12 rounded-[8px]">
+            {/* 💥 FIXED: Changed 'absolute inset-0 z-10' to 'relative z-10 flex flex-col' for fluid stacking */}
+            <div className="relative z-10 flex flex-col items-center justify-center text-center p-8 md:p-12 lg:p-12 rounded-[8px]">
               <span className="font-sans font-bold text-[11px] uppercase tracking-[0.25em] text-white/50 mb-4">
                 Partnerships
               </span>

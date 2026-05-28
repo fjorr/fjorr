@@ -1,8 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import FeatureRail from './FeatureRail'; 
 import { createBrowserClient } from '@supabase/ssr';
+import SkeletonLoader from './SkeletonLoader';
+
+const CinemaTheater = dynamic(() => import('@/components/CinemaTheater'), {
+  ssr: false,
+});
 
 export default function FeatureRailLoader() {
   const [filmsList, setFilmsList] = useState<any[]>([]);
@@ -10,6 +16,9 @@ export default function FeatureRailLoader() {
   
   const [showAnchor, setShowAnchor] = useState<boolean>(true);
   const [fadeAnchor, setFadeAnchor] = useState<boolean>(false);
+
+  const [showTheater, setShowTheater] = useState<boolean>(false);
+  const [selectedFilm, setSelectedFilm] = useState<any>(null);
 
   useEffect(() => {
     async function loadData() {
@@ -20,7 +29,6 @@ export default function FeatureRailLoader() {
 
         const supabase = createBrowserClient(url, key);
 
-        // 🛠️ STEP 1: Find the internal dynamic UUID token for our "featured" category slug row
         const { data: collectionRow, error: collectionError } = await supabase
           .from('collection')
           .select('id')
@@ -32,7 +40,6 @@ export default function FeatureRailLoader() {
           return;
         }
 
-        // 🛠️ STEP 2: Query the junction table and enforce your 'sort_order' priorities
         const { data: mappedCollectionRows, error } = await supabase
           .from('collection_map')
           .select(`
@@ -41,8 +48,11 @@ export default function FeatureRailLoader() {
               id,
               name,
               slug,
+              mux_playback_id,
+              last_line,
               teaser,
               story_date,
+              location,
               hero_wide,
               hero_clsx,
               hero_tall,
@@ -55,16 +65,14 @@ export default function FeatureRailLoader() {
             )
           `)
           .eq('collection_id', collectionRow.id)
-          /* 🎯 THE FIX: Orders rows directly by your custom database sort_order integers ascending (1, 2...) */
           .order('sort_order', { ascending: true });
 
         if (error) {
-          console.error("Junction sorted query evaluation dropped: ", error.message);
+          console.error("Junction query evaluation dropped: ", error.message);
           return;
         }
 
         if (mappedCollectionRows && mappedCollectionRows.length > 0) {
-          // Extract nested relational data objects cleanly
           const processedFilms = mappedCollectionRows
             .map((row: any) => {
               const f = row.film;
@@ -94,31 +102,102 @@ export default function FeatureRailLoader() {
     loadData();
   }, []);
 
+  const handlePlayClick = async (filmAsset: any) => {
+    try {
+      const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      if (!url || !key) {
+        setSelectedFilm(filmAsset);
+        setShowTheater(true);
+        return;
+      }
+
+      const supabase = createBrowserClient(url, key);
+
+      const { data: verifiedFilm, error: filmError } = await supabase
+        .from('film')
+        .select('id, name, slug, mux_playback_id, last_line, story_date, location, runtime')
+        .eq('slug', filmAsset.slug)
+        .maybeSingle();
+
+      if (filmError || !verifiedFilm) {
+        setSelectedFilm(filmAsset);
+        setShowTheater(true);
+        return;
+      }
+
+      const { data: junctionTracks, error: subtitleError } = await supabase
+        .from('language_subtitle')
+        .select(`
+          vtt_url,
+          language (
+            code,
+            name
+          )
+        `)
+        .eq('film_id', verifiedFilm.id);
+
+      const flattenedTracks = (junctionTracks || []).map((track: any) => {
+        return {
+          code: track.language?.code || 'en',
+          name: track.language?.name || 'English',
+          vtt_url: track.vtt_url || ''
+        };
+      });
+
+      const fullyCompiledPayload = {
+        ...verifiedFilm, 
+        language_subtitle: flattenedTracks,
+        sponsor: filmAsset.sponsor
+      };
+
+      setSelectedFilm(fullyCompiledPayload);
+      setShowTheater(true);
+
+    } catch (e) {
+      console.error(e);
+      setSelectedFilm(filmAsset);
+      setShowTheater(true);
+    }
+  };
+
   return (
     <div className="w-full relative bg-[#1F1F1F]">
       
-      {/* SAFE RENDERING ENGINE DISPLAY PIPELINE */}
       {filmsList && filmsList.length > 0 ? (
         <FeatureRail 
           films={filmsList} 
           activeIndex={activeIndex} 
           onSlideChange={setActiveIndex} 
+          onPlayClick={handlePlayClick}
+          isTheaterActive={showTheater}
         />
       ) : (
-        <div className="w-full flex justify-center">
-          <div className="w-full max-w-[1440px] aspect-[1/1.618] md:aspect-[4/3] lg:aspect-[16/9] bg-[#1F1F1F]" />
+        /* 🎯 INITIAL SKELETON: Renders while the array maps */
+        <div className="w-full flex justify-center animate-pulse">
+          <div className="w-full max-w-[1440px] aspect-[1/1.618] md:aspect-[4/3] lg:aspect-[16/9] overflow-hidden rounded-none min-[1440px]:rounded-xl">
+            <SkeletonLoader variant="feature" />
+          </div>
         </div>
       )}
 
-      {/* SKELETON REVEAL SYSTEM MASK CONTAINER */}
+      {showTheater && selectedFilm && (
+        <CinemaTheater 
+          film={selectedFilm} 
+          onClose={() => {
+            setShowTheater(false);
+            setSelectedFilm(null);
+          }} 
+        />
+      )}
+
+      {/* 🎯 FADE CURTAIN: Replaced the old empty box with your custom Dot Matrix Skeleton */}
       {showAnchor && (
-        <div 
-          className={`absolute inset-0 w-full pointer-events-none z-50 transform-gpu transition-opacity duration-500 ease-in-out ${
-            fadeAnchor ? 'opacity-0' : 'opacity-100'
-          }`}
-        >
-          <div className="w-full flex justify-center">
-            <div className="w-full max-w-[1440px] aspect-[1/1.618] md:aspect-[4/3] lg:aspect-[16/9] bg-[#1F1F1F]" />
+        <div className={`absolute inset-0 w-full pointer-events-none z-50 transform-gpu transition-opacity duration-500 ease-in-out ${fadeAnchor ? 'opacity-0' : 'opacity-100'}`}>
+          <div className="w-full flex justify-center bg-[#1F1F1F] h-full">
+            <div className="w-full max-w-[1440px] aspect-[1/1.618] md:aspect-[4/3] lg:aspect-[16/9] overflow-hidden rounded-none min-[1440px]:rounded-xl">
+              <SkeletonLoader variant="feature" />
+            </div>
           </div>
         </div>
       )}
