@@ -64,10 +64,28 @@ export default function CinemaTheater({ film, onClose, backUrl }: CinemaTheaterP
     }
   };
 
+  // 🎯 MOBILE VIEWPORT MOMENTUM LOCK PIPELINE:
+  // Strips document scrolling features from both html and body elements on mount,
+  // then cleanly restores the original baseline environment layouts when theater closes.
   useEffect(() => {
     window.dispatchEvent(new CustomEvent('fjorr_hide_main_navbar'));
+    
+    // Save original baseline site values
+    const originalBodyOverflow = document.body.style.overflow;
+    const originalBodyHeight = document.body.style.height;
+    const originalHtmlOverflow = document.documentElement.style.overflow;
+
+    // Apply strict screen locks
+    document.body.style.overflow = 'hidden';
+    document.body.style.height = '100svh';
+    document.documentElement.style.overflow = 'hidden';
+
     return () => {
       window.dispatchEvent(new CustomEvent('fjorr_show_main_navbar'));
+      // Restore previous environment values cleanly
+      document.body.style.overflow = originalBodyOverflow;
+      document.body.style.height = originalBodyHeight;
+      document.documentElement.style.overflow = originalHtmlOverflow;
     };
   }, []);
 
@@ -290,9 +308,6 @@ export default function CinemaTheater({ film, onClose, backUrl }: CinemaTheaterP
     let vttText = matchedRecord?.vtt_url;
     if (!vttText) return;
 
-    // 🎯 THE CLOUDFLARE ASYNCHRONOUS BRIDGE OVERPASS:
-    // If the database returns a link address (starts with http or contains .vtt link structures),
-    // cleanly fire an over-the-wire fetch download pass to grab the clean text content string layout!
     const isExternalUrlLinkPath = vttText.trim().startsWith('http') || vttText.trim().includes('.vtt');
     if (isExternalUrlLinkPath) {
       try {
@@ -306,7 +321,6 @@ export default function CinemaTheater({ film, onClose, backUrl }: CinemaTheaterP
     }
 
     try {
-      // Handles unescaped PostgreSQL relationship schema artifacts
       let normalizedVttText = vttText.replace(/\\n/g, '\n');
 
       const lines = normalizedVttText.replace(/\r\n/g, '\n').split('\n');
@@ -388,18 +402,13 @@ export default function CinemaTheater({ film, onClose, backUrl }: CinemaTheaterP
 
   useEffect(() => {
     const filmPlayer = filmPlayerRef.current;
-    
-    // Clear out residual text cues from the view stack when loading a new movie entry
     setSelectedLangCode('none');
     setParsedCues([]);
     setCurrentSubtitleText('');
 
-    console.log("THEATER DATA PROFILE RECEIVED:", film);
-
     if (filmPlayer && !isPlayingLogo && film) {
       setIsLoading(true);
       setIsEnded(false);
-      
       filmPlayer.muted = isMuted; 
       
       const targetPlaybackId = film.mux_playback_id || (film as any).playback_id || (film as any).mux_id;
@@ -472,7 +481,10 @@ export default function CinemaTheater({ film, onClose, backUrl }: CinemaTheaterP
     <div 
       ref={containerRef}
       id="fjorr-theater-root"
-      className="fixed inset-0 w-full h-[100svh] bg-[#1f1f1f] text-[#F5F5F7] select-none overflow-hidden flex flex-col justify-between font-sans z-[99999] animate-in fade-in duration-300"
+      // 🎯 FIXED CONTAINER MAPPING STRATEGY:
+      // Switches stack hierarchy priority via z-[999999] to sit completely above underlying content nodes, 
+      // and passes down touch-none to lock out default mobile elastic momentum document updates.
+      className="fixed inset-0 w-full h-[100svh] bg-[#1f1f1f] text-[#F5F5F7] select-none overflow-hidden touch-none flex flex-col justify-between font-sans z-[999999] animate-in fade-in duration-300"
     >
       
      {/* 🎬 DYNAMIC THEATER PILL NAVBAR HEADER */}
@@ -489,7 +501,7 @@ export default function CinemaTheater({ film, onClose, backUrl }: CinemaTheaterP
           <svg viewBox="0 0 143 81" className="w-full h-auto" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M71.3559 13.2942C60.8993 13.2942 52.4273 21.7814 52.4273 32.2448C52.4273 42.7082 60.9046 51.1953 71.3559 51.1953C81.8073 51.1953 90.2846 42.7082 90.2846 32.2448C90.2846 21.7814 81.8073 13.2942 71.3559 13.2942ZM71.3559 39.7278C67.232 39.7278 63.8869 36.3789 63.8869 32.2501C63.8869 28.1214 67.232 24.7725 71.3559 24.7725C75.4799 24.7725 78.825 28.1214 78.825 32.2501C78.825 36.3789 75.4799 39.7278 71.3559 39.7278Z" fill="currentColor"/>
             <path d="M35.9047 15.0355C35.4032 15.0355 34.9978 15.4414 34.9978 15.9435V60.9377C34.9978 65.4136 31.5887 69.0883 27.23 69.505C26.7605 69.5477 26.403 69.9322 26.403 70.4023V80.0912C26.403 80.6146 26.8405 81.0206 27.3633 80.9992C37.996 80.4971 46.4627 71.7109 46.4627 60.9377V15.9435C46.4627 15.4414 46.0573 15.0355 45.5558 15.0355H35.9047Z" fill="currentColor"/>
-            <path d="M0 0.908003V48.498C0 49.0001 0.405462 49.406 0.906954 49.406H11.9931C12.4946 49.406 12.9001 49.0001 12.9001 48.498V35.1397C12.9001 34.6376 13.3055 34.2317 13.807 34.2317H26.0616C26.5631 34.2317 26.9685 33.8258 26.9685 33.3237V23.6615C26.9685 23.1594 26.5631 22.7535 26.0616 22.7535H13.807C13.3055 22.7535 12.9001 22.3476 12.9001 21.8455V12.3755C12.9001 11.8735 13.3055 11.4675 13.807 11.4675H27.4967C27.9982 11.4675 28.4037 11.0616 28.4037 10.5595V0.908003C28.4037 0.405931 27.9982 0 27.4967 0H0.906954C0.405462 0 0 0.405931 0 0.908003Z" fill="currentColor"/>
+            <path d="M0 0.908003V48.498C0 49.0001 0.405462 49.406 0.906954 49.406H11.9931C12.4946 49.406 12.9001 49.0001 12.9001 48.498V35.1397C12.4946 34.6376 13.3055 34.2317H26.0616C26.5631 34.2317 26.9685 33.8258 26.9685 33.3237V23.6615C26.9685 23.1594 26.5631 22.7535 26.0616 22.7535H13.807C13.3055 22.7535 12.9001 22.3476 12.9001 21.8455V12.3755C12.9001 11.8735 13.3055 11.4675 13.807 11.4675H27.4967C27.9982 11.4675 28.4037 11.0616 28.4037 10.5595V0.908003C28.4037 0.405931 27.9982 0 27.4967 0H0.906954C0.405462 0 0 0.405931 0 0.908003Z" fill="currentColor"/>
             <path d="M116.309 15.9435V22.7375C116.309 23.2395 115.402 23.6455 115.402 23.6455H108.509C108.066 23.6455 107.709 24.0033 107.709 24.4466V48.5568C107.709 49.0589 107.303 49.4648 106.802 49.4648H97.1508C96.6493 49.4648 96.2438 49.0589 96.2438 48.5568V15.9435C96.2438 15.4414 96.6493 15.0355 97.1508 15.0355H115.402C115.903 15.0355 116.309 15.4414 116.309 15.9435Z" fill="currentColor"/>
             <path d="M143 15.9435V22.7375C143 23.2395 142.595 23.6455 142.093 23.6455H135.2C134.757 23.6455 134.4 24.0033 134.4 24.4466V48.5568C134.4 49.0589 133.994 49.4648 133.493 49.4648H123.842C123.34 49.4648 122.935 49.0589 122.935 48.5568V15.9435C122.935 15.4414 123.34 15.0355 123.842 15.0355H142.093C142.595 15.0355 143 15.4414 143 15.9435Z" fill="currentColor"/>
           </svg>
