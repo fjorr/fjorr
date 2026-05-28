@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface CinemaTheaterProps {
   film: {
@@ -18,12 +19,15 @@ interface CinemaTheaterProps {
     }[];
   };
   onClose: () => void;
+  backUrl?: string; // Optional destination link to handle historical redirects
 }
 
-export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
+export default function CinemaTheater({ film, onClose, backUrl }: CinemaTheaterProps) {
+  const router = useRouter();
+
   // --- LAYER STATE ARCHITECTURE ---
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(false); // 🔊 Set layout baseline to active volume state
+  const [isMuted, setIsMuted] = useState(false); 
   const [controlsVisible, setControlsVisible] = useState(false);
   const [isEnded, setIsEnded] = useState(false);
   const [showCCMenu, setShowCCMenu] = useState(false);
@@ -42,6 +46,9 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
   const [selectedLangCode, setSelectedLangCode] = useState<string>('none');
   const [parsedCues, setParsedCues] = useState<any[]>([]);
   const [currentSubtitleText, setCurrentSubtitleText] = useState<string>('');
+  
+  // Anti-overwrite memory shield
+  const [cachedSubtitles, setCachedSubtitles] = useState<any[]>([]);
 
   // --- NODES REF HOOKS ---
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -49,7 +56,14 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
   const logoPlayerRef = useRef<HTMLVideoElement | null>(null);
   const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // 🎯 THE NAV UNMOUNT HANDSHAKE TRIGGER PIPELINE
+  const handleCloseNavigation = () => {
+    if (backUrl) {
+      router.push(backUrl);
+    } else {
+      onClose();
+    }
+  };
+
   useEffect(() => {
     window.dispatchEvent(new CustomEvent('fjorr_hide_main_navbar'));
     return () => {
@@ -57,7 +71,14 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
     };
   }, []);
 
-  // Fullscreen lifecycle observer
+  // Secure substrate cache layer mapping parameters cleanly on initialization
+  useEffect(() => {
+    if (film?.language_subtitle && film.language_subtitle.length > 0) {
+      setCachedSubtitles(film.language_subtitle);
+    }
+  }, [film?.id, film?.language_subtitle]);
+
+  // Fullscreen container lifecycle tracker hooks
   useEffect(() => {
     const handleFsChange = () => {
       setIsFullscreen(
@@ -143,13 +164,10 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
     };
   }, [controlsVisible, isPlaying, showCCMenu, isScrubbing]);
 
-  // 🔊 HARDWARE EVENT LISTENER HANDSHAKE
   const handleVolumeChange = (e: React.SyntheticEvent<HTMLVideoElement>) => {
     setIsMuted(e.currentTarget.muted);
   };
 
-  // 🎯 HARDWARE READY HANDSHAKE
-  // This executes the absolute second the browser constructs the player, forcing alignment
   const handlePlayerReady = (e: React.SyntheticEvent<HTMLVideoElement>) => {
     e.currentTarget.muted = isMuted;
   };
@@ -163,15 +181,13 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
 
   const toggleMute = () => {
     const targetMuteState = !isMuted;
-    
     if (logoPlayerRef.current) logoPlayerRef.current.muted = targetMuteState;
     if (filmPlayerRef.current) filmPlayerRef.current.muted = targetMuteState;
-    
     setIsMuted(targetMuteState);
   };
 
   const handleReplay = () => {
-    setIsMuted(false); // Force state tracker clear
+    setIsMuted(false); 
     setIsPlayingLogo(true);
     setIsEnded(false);
     setCurrentTime(0);
@@ -182,7 +198,6 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
       if (player) {
         player.load();
         player.muted = false;
-        
         if (filmPlayerRef.current) filmPlayerRef.current.muted = false;
 
         player.play()
@@ -204,7 +219,6 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
   const toggleFullscreen = () => {
     const container = containerRef.current;
     const activeVideo = isPlayingLogo ? logoPlayerRef.current : filmPlayerRef.current;
-    
     if (!container || !activeVideo) return;
 
     const isMobileSafari = /iPhone|iPod/.test(navigator.userAgent) && !(document as any).requestFullscreen;
@@ -260,7 +274,7 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
   };
 
   // --- CLOSED CAPTION SELECTION ENGINE ---
-  const handleSubtitleSelection = (langCode: string, langName: string) => {
+  const handleSubtitleSelection = async (langCode: string, langName: string) => {
     setSelectedLangCode(langCode);
     setShowCCMenu(false);
 
@@ -270,14 +284,32 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
       return;
     }
 
-    const tracksArray = film?.language_subtitle || [];
+    const tracksArray = cachedSubtitles.length > 0 ? cachedSubtitles : (film?.language_subtitle || []);
     const matchedRecord = tracksArray.find((item: any) => (item?.code || '').toLowerCase().trim() === langCode.toLowerCase().trim());
     
-    const vttText = matchedRecord?.vtt_url;
+    let vttText = matchedRecord?.vtt_url;
     if (!vttText) return;
 
+    // 🎯 THE CLOUDFLARE ASYNCHRONOUS BRIDGE OVERPASS:
+    // If the database returns a link address (starts with http or contains .vtt link structures),
+    // cleanly fire an over-the-wire fetch download pass to grab the clean text content string layout!
+    const isExternalUrlLinkPath = vttText.trim().startsWith('http') || vttText.trim().includes('.vtt');
+    if (isExternalUrlLinkPath) {
+      try {
+        const response = await fetch(vttText.trim());
+        if (!response.ok) throw new Error(`HTTP network text track stream error status: ${response.status}`);
+        vttText = await response.text();
+      } catch (err) {
+        console.error("🚨 Cloudflare VTT cross-origin download rejected by browser context:", err);
+        return;
+      }
+    }
+
     try {
-      const lines = vttText.replace(/\r\n/g, '\n').split('\n');
+      // Handles unescaped PostgreSQL relationship schema artifacts
+      let normalizedVttText = vttText.replace(/\\n/g, '\n');
+
+      const lines = normalizedVttText.replace(/\r\n/g, '\n').split('\n');
       const cuesArray: any[] = [];
       let currentCue: any = null;
 
@@ -341,14 +373,12 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
   useEffect(() => {
     const logoPlayer = logoPlayerRef.current;
     if (logoPlayer && isPlayingLogo) {
-      
       logoPlayer.play()
         .then(() => {
           setIsPlaying(true);
           setIsLoading(false);
         })
         .catch(() => {
-          // Fallback to safety if browser forces an unmuted block
           logoPlayer.muted = true;
           setIsMuted(true);
           logoPlayer.play().then(() => setIsLoading(false)).catch(() => setIsLoading(false));
@@ -358,29 +388,56 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
 
   useEffect(() => {
     const filmPlayer = filmPlayerRef.current;
+    
+    // Clear out residual text cues from the view stack when loading a new movie entry
+    setSelectedLangCode('none');
+    setParsedCues([]);
+    setCurrentSubtitleText('');
+
+    console.log("THEATER DATA PROFILE RECEIVED:", film);
+
     if (filmPlayer && !isPlayingLogo && film) {
       setIsLoading(true);
       setIsEnded(false);
       
-      filmPlayer.muted = isMuted; // Match current state environment posture perfectly
+      filmPlayer.muted = isMuted; 
       
+      const targetPlaybackId = film.mux_playback_id || (film as any).playback_id || (film as any).mux_id;
+
+      if (!targetPlaybackId) {
+        console.error("CRITICAL ERROR: No valid Mux Playback ID found!", film);
+        setIsLoading(false);
+        return;
+      }
+
       if (filmPlayer.canPlayType('application/vnd.apple.mpegurl')) {
-        filmPlayer.src = `https://stream.mux.com/${film.mux_playback_id}.m3u8`;
+        filmPlayer.src = `https://stream.mux.com/${targetPlaybackId}.m3u8`;
       } else {
-        filmPlayer.src = `https://stream.mux.com/${film.mux_playback_id}/high.mp4`;
+        filmPlayer.src = `https://stream.mux.com/${targetPlaybackId}/high.mp4`;
       }
       
       filmPlayer.load();
       filmPlayer.play()
-        .then(() => setIsPlaying(true))
-        .catch((err) => console.warn("Feature play blocked:", err));
+        .then(() => {
+          setIsPlaying(true);
+          if (filmPlayerRef.current) {
+            setIsMuted(filmPlayerRef.current.muted);
+          }
+        })
+        .catch((err) => {
+          console.warn("Feature play blocked by decoder runtime execution:", err);
+          setIsLoading(false);
+        });
     }
-  }, [isPlayingLogo, film]);
+  }, [isPlayingLogo, film?.id]); 
 
   const handleVideoEnded = () => {
     if (isPlayingLogo) {
       setIsPlayingLogo(false);
       setCurrentTime(0);
+      if (filmPlayerRef.current) {
+        filmPlayerRef.current.muted = isMuted;
+      }
     } else {
       setIsEnded(true);
       setIsPlaying(false);
@@ -409,6 +466,8 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
     <img src="/icons/volume.svg" className="w-6 h-6 invert" alt="Mute" />
   );
 
+  const currentLanguageTracks = cachedSubtitles.length > 0 ? cachedSubtitles : (film?.language_subtitle || []);
+
   return (
     <div 
       ref={containerRef}
@@ -427,13 +486,13 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
           
           {/* Left: Official Fjorr Logo Box */}
           <div className="w-[50px] flex items-center text-white shrink-0 translate-y-[2px]">
-            <svg viewBox="0 0 143 81" className="w-full h-auto" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M71.3559 13.2942C60.8993 13.2942 52.4273 21.7814 52.4273 32.2448C52.4273 42.7082 60.9046 51.1953 71.3559 51.1953C81.8073 51.1953 90.2846 42.7082 90.2846 32.2448C90.2846 21.7814 81.8073 13.2942 71.3559 13.2942ZM71.3559 39.7278C67.232 39.7278 63.8869 36.3789 63.8869 32.2501C63.8869 28.1214 67.232 24.7725 71.3559 24.7725C75.4799 24.7725 78.825 28.1214 78.825 32.2501C78.825 36.3789 75.4799 39.7278 71.3559 39.7278Z" fill="currentColor"/>
-              <path d="M35.9047 15.0355C35.4032 15.0355 34.9978 15.4414 34.9978 15.9435V60.9377C34.9978 65.4136 31.5887 69.0883 27.23 69.505C26.7605 69.5477 26.403 69.9322 26.403 70.4023V80.0912C26.403 80.6146 26.8405 81.0206 27.3633 80.9992C37.996 80.4971 46.4627 71.7109 46.4627 60.9377V15.9435C46.4627 15.4414 46.0573 15.0355 45.5558 15.0355H35.9047Z" fill="currentColor"/>
-              <path d="M0 0.908003V48.498C0 49.0001 0.405462 49.406 0.906954 49.406H11.9931C12.4946 49.406 12.9001 49.0001 12.9001 48.498V35.1397C12.4946 34.6376 13.3055 34.2317 13.807 34.2317H26.0616C26.5631 34.2317 26.9685 33.8258 26.9685 33.3237V23.6615C26.9685 23.1594 26.5631 22.7535 26.0616 22.7535H13.807C13.3055 22.7535 12.9001 22.3476 12.9001 21.8455V12.3755C12.9001 11.8735 13.3055 11.4675 13.807 11.4675H27.4967C27.9982 11.4675 28.4037 11.0616 28.4037 10.5595V0.908003C28.4037 0.405931 27.9982 0 27.4967 0H0.906954C0.405462 0 0 0.405931 0 0.908003Z" fill="currentColor"/>
-              <path d="M116.309 15.9435V22.7375C116.309 23.2395 115.402 23.6455 115.402 23.6455H108.509C108.066 23.6455 107.709 24.0033 107.709 24.4466V48.5568C107.709 49.0589 107.303 49.4648 106.802 49.4648H97.1508C96.6493 49.4648 96.2438 49.0589 96.2438 48.5568V15.9435C96.2438 15.4414 96.6493 15.0355 97.1508 15.0355H115.402C115.903 15.0355 116.309 15.4414 116.309 15.9435Z" fill="currentColor"/>
-              <path d="M143 15.9435V22.7375C143 23.2395 142.595 23.6455 142.093 23.6455H135.2C134.757 23.6455 134.4 24.0033 134.4 24.4466V48.5568C134.4 49.0589 133.994 49.4648 133.493 49.4648H123.842C123.34 49.4648 122.935 49.0589 122.935 48.5568V15.9435C122.935 15.4414 123.34 15.0355 123.842 15.0355H142.093C142.595 15.0355 143 15.4414 143 15.9435Z" fill="currentColor"/>
-            </svg>
+          <svg viewBox="0 0 143 81" className="w-full h-auto" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M71.3559 13.2942C60.8993 13.2942 52.4273 21.7814 52.4273 32.2448C52.4273 42.7082 60.9046 51.1953 71.3559 51.1953C81.8073 51.1953 90.2846 42.7082 90.2846 32.2448C90.2846 21.7814 81.8073 13.2942 71.3559 13.2942ZM71.3559 39.7278C67.232 39.7278 63.8869 36.3789 63.8869 32.2501C63.8869 28.1214 67.232 24.7725 71.3559 24.7725C75.4799 24.7725 78.825 28.1214 78.825 32.2501C78.825 36.3789 75.4799 39.7278 71.3559 39.7278Z" fill="currentColor"/>
+            <path d="M35.9047 15.0355C35.4032 15.0355 34.9978 15.4414 34.9978 15.9435V60.9377C34.9978 65.4136 31.5887 69.0883 27.23 69.505C26.7605 69.5477 26.403 69.9322 26.403 70.4023V80.0912C26.403 80.6146 26.8405 81.0206 27.3633 80.9992C37.996 80.4971 46.4627 71.7109 46.4627 60.9377V15.9435C46.4627 15.4414 46.0573 15.0355 45.5558 15.0355H35.9047Z" fill="currentColor"/>
+            <path d="M0 0.908003V48.498C0 49.0001 0.405462 49.406 0.906954 49.406H11.9931C12.4946 49.406 12.9001 49.0001 12.9001 48.498V35.1397C12.9001 34.6376 13.3055 34.2317 13.807 34.2317H26.0616C26.5631 34.2317 26.9685 33.8258 26.9685 33.3237V23.6615C26.9685 23.1594 26.5631 22.7535 26.0616 22.7535H13.807C13.3055 22.7535 12.9001 22.3476 12.9001 21.8455V12.3755C12.9001 11.8735 13.3055 11.4675 13.807 11.4675H27.4967C27.9982 11.4675 28.4037 11.0616 28.4037 10.5595V0.908003C28.4037 0.405931 27.9982 0 27.4967 0H0.906954C0.405462 0 0 0.405931 0 0.908003Z" fill="currentColor"/>
+            <path d="M116.309 15.9435V22.7375C116.309 23.2395 115.402 23.6455 115.402 23.6455H108.509C108.066 23.6455 107.709 24.0033 107.709 24.4466V48.5568C107.709 49.0589 107.303 49.4648 106.802 49.4648H97.1508C96.6493 49.4648 96.2438 49.0589 96.2438 48.5568V15.9435C96.2438 15.4414 96.6493 15.0355 97.1508 15.0355H115.402C115.903 15.0355 116.309 15.4414 116.309 15.9435Z" fill="currentColor"/>
+            <path d="M143 15.9435V22.7375C143 23.2395 142.595 23.6455 142.093 23.6455H135.2C134.757 23.6455 134.4 24.0033 134.4 24.4466V48.5568C134.4 49.0589 133.994 49.4648 133.493 49.4648H123.842C123.34 49.4648 122.935 49.0589 122.935 48.5568V15.9435C122.935 15.4414 123.34 15.0355 123.842 15.0355H142.093C142.595 15.0355 143 15.4414 143 15.9435Z" fill="currentColor"/>
+          </svg>
           </div>
 
           {/* Center: Slogan Display */}
@@ -445,7 +504,7 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
 
           {/* Right: Close icon */}
           <button 
-            onClick={onClose} 
+            onClick={handleCloseNavigation} 
             className="w-[18px] h-[18px] flex items-center justify-center cursor-pointer shrink-0 text-white bg-transparent border-0 p-0 outline-none transition-opacity hover:opacity-70"
             title="Close Theater"
           >
@@ -466,7 +525,7 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
               src={LOGO_SOURCE}
               preload="auto"
               playsInline
-              onCanPlay={handlePlayerReady} // 🛡️ Hard reset right on browser compilation
+              onCanPlay={handlePlayerReady}
               onVolumeChange={handleVolumeChange}
               className="w-full h-full object-contain absolute inset-0 z-20 bg-black"
               onEnded={handleVideoEnded}
@@ -480,7 +539,7 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
             preload="auto"
             playsInline
             crossOrigin="anonymous"
-            onCanPlay={handlePlayerReady} // 🛡️ Hard reset right on browser compilation
+            onCanPlay={handlePlayerReady}
             onVolumeChange={handleVolumeChange}
             className="w-full h-full object-contain absolute inset-0 z-0 bg-black"
             style={{ filter: isEnded ? 'blur(20px) brightness(0.3)' : 'blur(0px)' }}
@@ -512,8 +571,17 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
         className={`fixed bottom-0 inset-x-0 w-full flex flex-col justify-end items-start text-left z-30 transition-all duration-500 ease-out select-none px-8 pb-[calc(env(safe-area-inset-bottom)_+_1.5rem)] gap-3 ${controlsVisible && !isPlayingLogo ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'}`}
       >
         <div className="flex flex-col items-start pl-1 text-[#F5F5F7]">
-          <h2 className="text-[20px] md:text-2xl font-bold tracking-tight leading-none">{film?.name}</h2>
-          <p className="text-xs md:text-sm font-medium opacity-60 mt-2 tracking-normal">{film?.story_date} &middot; {film?.location}</p>
+          <h2 className="text-[20px] md:text-2xl font-bold tracking-tight leading-none">
+            {film?.name}
+          </h2>
+          <p className="text-xs md:text-sm font-medium opacity-60 mt-2 tracking-normal">
+            {(() => {
+              const dateVal = film?.story_date || '';
+              const locationVal = film?.location || '';
+              if (dateVal && locationVal) return `${dateVal} · ${locationVal}`;
+              return dateVal || locationVal || 'Theatrical Feature';
+            })()}
+          </p>
         </div>
 
         {showCCMenu && (
@@ -524,21 +592,25 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
             >
               Off
             </button>
-            {Array.isArray(film?.language_subtitle) && film.language_subtitle.map((item: any) => {
-              const code = (item?.code || '').trim();
-              const fullLanguageName = (item?.name || code.toUpperCase()).trim();
-              if (!code) return null;
+            {(() => {
+              if (!Array.isArray(currentLanguageTracks)) return null;
               
-              return (
-                <button 
-                  key={code} 
-                  onClick={() => handleSubtitleSelection(code, fullLanguageName)} 
-                  className={`text-xs font-bold tracking-normal transition-colors bg-transparent border-0 outline-none cursor-pointer ${selectedLangCode?.toLowerCase().trim() === code.toLowerCase() ? 'text-[#ffd446]' : 'text-white/40 hover:text-white/80'}`}
-                >
-                  {fullLanguageName}
-                </button>
-              );
-            })}
+              return currentLanguageTracks.map((item: any) => {
+                const code = (item?.code || '').trim();
+                const fullLanguageName = (item?.name || code.toUpperCase()).trim();
+                if (!code) return null;
+                
+                return (
+                  <button 
+                    key={code} 
+                    onClick={() => handleSubtitleSelection(code, fullLanguageName)} 
+                    className={`text-xs font-bold tracking-normal transition-colors bg-transparent border-0 outline-none cursor-pointer ${selectedLangCode?.toLowerCase().trim() === code.toLowerCase() ? 'text-[#ffd446]' : 'text-white/40 hover:text-white/80'}`}
+                  >
+                    {fullLanguageName}
+                  </button>
+                );
+              });
+            })()}
           </div>
         )}
 
@@ -546,8 +618,8 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
           <button onClick={togglePlay} className="w-12 h-12 flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity bg-transparent border-0 outline-none cursor-pointer" title={isPlaying ? "Pause" : "Play"}>
             {playIcon}
           </button>
-          <button onClick={() => { const p = isPlayingLogo ? logoPlayerRef.current : filmPlayerRef.current; if (p) p.currentTime = Math.max(0, currentTime - 10); }} className="w-10 h-10 flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity bg-transparent border-0 outline-none cursor-pointer" title="Rewind 10s"><img src="/icons/back10.svg" className="w-6 h-6 invert" alt="Rewind 10s" /></button>
-          <button onClick={() => { const p = isPlayingLogo ? logoPlayerRef.current : filmPlayerRef.current; if (p) p.currentTime = Math.min(duration, currentTime + 10); }} className="w-10 h-10 flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity bg-transparent border-0 outline-none cursor-pointer" title="Fast Forward 10s"><img src="/icons/forward10.svg" className="w-6 h-6 invert" alt="Fast Forward 10s" /></button>
+          <button onClick={() => { const p = filmPlayerRef.current; if (p) p.currentTime = Math.max(0, currentTime - 10); }} className="w-10 h-10 flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity bg-transparent border-0 outline-none cursor-pointer" title="Rewind 10s"><img src="/icons/back10.svg" className="w-6 h-6 invert" alt="Rewind 10s" /></button>
+          <button onClick={() => { const p = filmPlayerRef.current; if (p) p.currentTime = Math.min(duration, currentTime + 10); }} className="w-10 h-10 flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity bg-transparent border-0 outline-none cursor-pointer" title="Fast Forward 10s"><img src="/icons/forward10.svg" className="w-6 h-6 invert" alt="Fast Forward 10s" /></button>
           <button onClick={() => setShowCCMenu(!showCCMenu)} className={`w-10 h-10 flex items-center justify-center transition-opacity bg-transparent border-0 outline-none cursor-pointer ${showCCMenu ? 'opacity-100' : 'opacity-70 hover:opacity-100'}`} title="Captions"><img src="/icons/cc.svg" className="w-6 h-6" alt="Captions" style={{ filter: 'invert(100%)' }} /></button>
           <button onClick={toggleFullscreen} className="w-10 h-10 flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity bg-transparent border-0 outline-none cursor-pointer" title="Fullscreen">
             {fullscreenIcon}
@@ -563,7 +635,6 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
             <div className="absolute inset-x-0 h-[10px] bg-white/25 rounded-full pointer-events-none z-10 top-1/2 -translate-y-1/2" />
             <div className="absolute left-0 h-[10px] bg-white/60 rounded-full pointer-events-none z-10 top-1/2 -translate-y-1/2" style={{ width: `${currentProgress}%` }} />
             
-            {/* White scrubber thumb track input */}
             <input type="range" min={0} max={duration || 100} step="any" value={currentTime} onMouseDown={handleScrubStart} onTouchStart={handleScrubStart} onChange={handleScrubChange} onMouseUp={handleScrubEnd} onTouchEnd={handleScrubEnd} className="w-full h-10 appearance-none bg-transparent cursor-pointer outline-none relative z-20 m-0 block focus:outline-none focus:ring-0 focus:border-transparent [&::-webkit-slider-runnable-track]:w-full [&::-webkit-slider-runnable-track]:h-10 [&::-webkit-slider-runnable-track]:bg-transparent [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:transition-transform active:[&::-webkit-slider-thumb]:scale-110 [&::-webkit-slider-thumb]:relative [&::-webkit-slider-thumb]:top-1/2 [&::-webkit-slider-thumb]:-translate-y-1/2 [&::-webkit-slider-thumb]:border-0 [&::-webkit-slider-thumb]:outline-none [&::-moz-range-track]:w-full [&::-moz-range-track]:h-10 [&::-moz-range-track]:bg-transparent [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-3.5 [&::-moz-range-thumb]:h-3.5 [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:shadow-md active:[&::-moz-range-thumb]:scale-110 [&::-moz-range-thumb]:outline-none" style={{ accentColor: '#ffffff', WebkitAppearance: 'none' }} />
           </div>
           <div className="w-11 text-left select-none font-mono font-bold text-sm text-white opacity-60 tracking-tight shrink-0 self-center leading-none">-{formatTime(duration - currentTime)}</div>
@@ -575,10 +646,7 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
         <div className="max-w-2xl text-center flex flex-col items-center gap-8 px-6 relative">
           <p className="font-sans text-lg font-semibold text-[#F5F5F7]/90 leading-relaxed max-w-lg">{film?.last_line || 'The credits fade to black.'}</p>
           
-          {/* 🍿 ACTION BUTTON GRID (Share sits directly in the center) */}
           <div className="flex items-center gap-6 text-white/50 font-sans font-semibold text-sm">
-            
-            {/* Left Action: Replay */}
             <button onClick={handleReplay} className="flex items-center gap-2 hover:text-[#f5f5f7] transition-colors group bg-transparent border-0 outline-none cursor-pointer font-sans">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 group-hover:-rotate-45 transition-transform duration-300">
                 <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
@@ -587,7 +655,6 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
               Replay
             </button>
 
-            {/* Center Action: Native Share Handshake Pipeline */}
             <button 
               onClick={() => {
                 const shareData = { title: film?.name, url: `${window.location.origin}/film/${film?.slug}` };
@@ -610,15 +677,13 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
               Share
             </button>
 
-            {/* Right Action: Onward Next Layer */}
-            <button onClick={onClose} className="flex items-center gap-2 hover:text-[#f5f5f7] transition-colors group bg-transparent border-0 outline-none cursor-pointer font-sans">
+            <button onClick={handleCloseNavigation} className="flex items-center gap-2 hover:text-[#f5f5f7] transition-colors group bg-transparent border-0 outline-none cursor-pointer font-sans">
               Onward 
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 group-translate-x-1 transition-transform">
                 <path d="M5 12h14" />
                 <path d="m12 5 7 7-7 7" />
               </svg>
             </button>
-
           </div>
           
           <div className="font-tradeGothic tracking-tight text-[#F5F5F7]/40 uppercase text-base">

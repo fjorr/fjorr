@@ -25,9 +25,11 @@ interface FeatureRailProps {
   films: FilmAsset[];
   activeIndex: number;
   onSlideChange: (index: number) => void;
+  onPlayClick: (film: FilmAsset) => void; 
+  isTheaterActive?: boolean; // 🎯 ADDED: Incoming system layout flag interface descriptor
 }
 
-export default function FeatureRail({ films, activeIndex, onSlideChange }: FeatureRailProps) {
+export default function FeatureRail({ films, activeIndex, onSlideChange, onPlayClick, isTheaterActive = false }: FeatureRailProps) {
   const fallbackBg = 'linear-gradient(to bottom, #4C7A57, #36593E)';
   
   const [isPlaying, setIsPlaying] = useState(true);
@@ -35,7 +37,6 @@ export default function FeatureRail({ films, activeIndex, onSlideChange }: Featu
   const AUTOPLAY_DELAY = 5000;
   const TICK_RATE = 100;
 
-  // Touch Swipe State Refs
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
 
@@ -48,8 +49,11 @@ export default function FeatureRail({ films, activeIndex, onSlideChange }: Featu
   const currentFilm = films[activeIndex] || films[0];
   if (!currentFilm) return null;
 
+  // Autoplay calculations loop listener
   useEffect(() => {
-    if (!isPlaying) return;
+    // 🎯 REACTION ENGINE GUARD:
+    // If the movie theater modal frame layer is running, we freeze this background slider loop completely!
+    if (!isPlaying || isTheaterActive) return;
 
     const timer = setInterval(() => {
       setProgress((prevProgress) => {
@@ -63,7 +67,7 @@ export default function FeatureRail({ films, activeIndex, onSlideChange }: Featu
     }, TICK_RATE);
 
     return () => clearInterval(timer);
-  }, [isPlaying, activeIndex, films.length, onSlideChange]);
+  }, [isPlaying, activeIndex, films.length, onSlideChange, isTheaterActive]);
 
   useEffect(() => {
     setProgress(0);
@@ -85,7 +89,6 @@ export default function FeatureRail({ films, activeIndex, onSlideChange }: Featu
     onSlideChange(nextTarget);
   };
 
-  /* 🎯 MOBILE SWIPE DETECTOR LOGIC */
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.targetTouches[0].clientX;
   };
@@ -96,7 +99,6 @@ export default function FeatureRail({ films, activeIndex, onSlideChange }: Featu
 
   const handleTouchEnd = () => {
     if (!touchStartX.current || !touchEndX.current) return;
-    
     const totalSwipeDistance = touchStartX.current - touchEndX.current;
     const swipeThreshold = 50; 
 
@@ -105,7 +107,6 @@ export default function FeatureRail({ films, activeIndex, onSlideChange }: Featu
     } else if (totalSwipeDistance < -swipeThreshold) {
       navigatePrev();
     }
-
     touchStartX.current = null;
     touchEndX.current = null;
   };
@@ -120,14 +121,12 @@ export default function FeatureRail({ films, activeIndex, onSlideChange }: Featu
     <section className="w-full flex justify-center bg-[#1F1F1F]">
       <div className="w-full max-w-[1440px] relative group/rail overflow-hidden rounded-none min-[1440px]:rounded-xl">
         
-        {/* 🎯 FIXED: Wrapper container handles relative touch nodes instead of the absolute navigation shell */}
         <div 
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
           className="w-full relative aspect-[1/1.618] md:aspect-[4/3] lg:aspect-[16/9] overflow-hidden rounded-none min-[1440px]:rounded-xl select-none"
         >
-          {/* 🎬 MAIN POSTER BACKDROP LINK: Navigates cleanly to the specific Info Profile Detail page */}
           <Link 
             href={`/film/${currentFilm.slug || ''}`}
             className="absolute inset-0 w-full h-full block z-0 cursor-pointer"
@@ -135,7 +134,6 @@ export default function FeatureRail({ films, activeIndex, onSlideChange }: Featu
               background: 'linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0) 100%)'
             }}
           >
-            {/* RESPONSIVE PICTURE ENGINE */}
             <picture key={currentFilm.id} className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none group-hover/rail:scale-[1.01] transition-transform duration-700 animate-slide-fade">
               <source media="(min-width: 1024px)" srcSet={currentFilm.hero_wide} />
               <source media="(min-width: 768px)" srcSet={currentFilm.hero_clsx || currentFilm.hero_wide} />
@@ -154,14 +152,10 @@ export default function FeatureRail({ films, activeIndex, onSlideChange }: Featu
 
             <div 
               className="absolute inset-x-0 bottom-0 h-1/2 z-10 pointer-events-none"
-              style={{
-                background: 'linear-gradient(to top, #000000BF 0%, #00000000 100%)'
-              }}
+              style={{ background: 'linear-gradient(to top, #000000BF 0%, #00000000 100%)' }}
             />
           </Link>
 
-          {/* CONTENT DISCOVERY TEXT BLOCK & WATCH PLAYER TRIGGER CONTAINER */}
-          {/* pointer-events-none lets mouse clicks bleed straight back down onto the main profile link layer */}
           <div className="absolute inset-x-0 bottom-0 px-8 md:px-12 pb-14 md:pb-16 pt-16 md:pt-32 z-20 max-w-2xl w-full flex flex-col text-center md:text-left items-center md:items-start mx-auto md:mx-0 pointer-events-none">
             {currentFilm.sponsor && (
               <div className="w-full font-sans font-bold text-sm text-white/100 tracking-wide mb-2.5 antialiased">
@@ -183,7 +177,6 @@ export default function FeatureRail({ films, activeIndex, onSlideChange }: Featu
               )
             )}
 
-            {/* METADATA ROW */}
             <div className="flex items-center justify-center md:justify-start gap-2.5 font-mono text-sm text-white/60 tracking-tight mb-2">
               {(() => {
                 const ratingVal = typeof currentFilm.rating === 'object' ? currentFilm.rating?.name : currentFilm.rating;
@@ -210,23 +203,21 @@ export default function FeatureRail({ films, activeIndex, onSlideChange }: Featu
               {currentFilm.teaser}
             </p>
 
-            {/* 🎯 FIXED: Replaced raw button wrapper with explicit standalone link routing directly to watch player scene */}
-            <Link
-              href={`/watch/${currentFilm.slug || ''}`}
-              className="h-10 px-6 inline-flex items-center justify-center gap-2 bg-white hover:bg-white/90 text-black font-sans font-bold text-sm tracking-normal rounded-full transition-all active:scale-[0.98] duration-150 shadow-lg pointer-events-auto cursor-pointer"
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onPlayClick(currentFilm);
+              }}
+              className="h-10 px-6 inline-flex items-center justify-center gap-2 bg-white hover:bg-white/90 text-black font-sans font-bold text-sm tracking-normal rounded-full transition-all active:scale-[0.98] duration-150 shadow-lg pointer-events-auto cursor-pointer border-0 outline-none"
             >
               <Play size={14} className="fill-current stroke-current" />
               <span>Play {getRuntimeDisplay()}</span>
-            </Link>
+            </button>
           </div>
         </div>
 
-       {/* =========================================================================
-           🎬 CAROUSEL NAVIGATION TRACKS
-           ========================================================================= */}
         <div className="absolute inset-x-0 bottom-8 z-30 flex items-center justify-center md:justify-center pointer-events-none px-8 md:px-12">
-          
-          {/* CENTER: Navigation Dot indicators */}
           <div className="flex items-center justify-center gap-2 pointer-events-auto mx-auto">
             {films.map((_, index) => (
               <button
@@ -243,25 +234,14 @@ export default function FeatureRail({ films, activeIndex, onSlideChange }: Featu
             ))}
           </div>
 
-          {/* LOWER RIGHT: Floating Navigation Controls */}
-          {/* 🎯 FIXED: Changed from absolute right-6 to right-8 on mobile, and removed hidden wrapper so it anchors in the lower right across all devices */}
           <div className="absolute right-6 md:right-12 flex items-center gap-2.5 pointer-events-auto">
-            
-            {/* AUTOPLAY PROGRESS TOGGLE (Visible on Mobile + Desktop) */}
             <button 
               onClick={handleTogglePlay}
               className="w-8 h-8 relative rounded-full flex items-center justify-center backdrop-blur-sm transition-all duration-200 active:scale-95 bg-black/40 md:bg-white/10 hover:bg-black/60 md:hover:bg-white/15 border border-white/10 md:border-transparent"
               aria-label={isPlaying ? "Pause autoplay loop" : "Start autoplay loop"}
             >
               <svg className="absolute inset-0 w-full h-full transform -rotate-90">
-                <circle
-                  cx="16"
-                  cy="16"
-                  r={RADIUS}
-                  fill="transparent"
-                  stroke="rgba(255, 255, 255, 0.2)"
-                  strokeWidth="2"
-                />
+                <circle cx="16" cy="16" r={RADIUS} fill="transparent" stroke="rgba(255, 255, 255, 0.2)" strokeWidth="2" />
                 <circle
                   cx="16"
                   cy="16"
@@ -275,7 +255,6 @@ export default function FeatureRail({ films, activeIndex, onSlideChange }: Featu
                   strokeLinecap="round"
                 />
               </svg>
-
               <div className="relative z-10 text-white flex items-center justify-center">
                 {isPlaying ? (
                   <Pause size={12} fill="currentColor" />
@@ -285,7 +264,6 @@ export default function FeatureRail({ films, activeIndex, onSlideChange }: Featu
               </div>
             </button>
 
-            {/* DESKTOP ONLY: Navigation Chevrons */}
             <button 
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigatePrev(); }}
               className="hidden md:flex w-8 h-8 rounded-full bg-white/10 text-white items-center justify-center backdrop-blur-sm hover:bg-white/20 active:scale-95 transition-all duration-200"
@@ -299,9 +277,7 @@ export default function FeatureRail({ films, activeIndex, onSlideChange }: Featu
             >
               <ChevronRight size={16} />
             </button>
-
           </div>
-
         </div>
 
       </div>
