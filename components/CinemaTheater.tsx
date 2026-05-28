@@ -25,7 +25,7 @@ interface CinemaTheaterProps {
 export default function CinemaTheater({ film, onClose, backUrl }: CinemaTheaterProps) {
   const router = useRouter();
 
-  // --- LAYER STATE ARCHITECTURE ---
+  // --- UPDATE LAYER STATE ARCHITECTURE ---
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false); 
   const [controlsVisible, setControlsVisible] = useState(false);
