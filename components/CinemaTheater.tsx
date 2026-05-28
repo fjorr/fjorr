@@ -65,24 +65,19 @@ export default function CinemaTheater({ film, onClose, backUrl }: CinemaTheaterP
   };
 
   // 🎯 MOBILE SCROLL CONTAINMENT LIFECYCLE HOOK
-  // Freezes background document layout tracking loops completely on initial mount
-  // and cleanly restores baseline styling configurations when the component shuts down.
   useEffect(() => {
     window.dispatchEvent(new CustomEvent('fjorr_hide_main_navbar'));
     
-    // Read and save original baseline platform parameters
     const originalBodyOverflow = document.body.style.overflow;
     const originalBodyHeight = document.body.style.height;
     const originalHtmlOverflow = document.documentElement.style.overflow;
 
-    // Apply absolute responsive screen boundaries
     document.body.style.overflow = 'hidden';
     document.body.style.height = '100svh';
     document.documentElement.style.overflow = 'hidden';
 
     return () => {
       window.dispatchEvent(new CustomEvent('fjorr_show_main_navbar'));
-      // Restore standard site environment definitions
       document.body.style.overflow = originalBodyOverflow;
       document.body.style.height = originalBodyHeight;
       document.documentElement.style.overflow = originalHtmlOverflow;
@@ -202,36 +197,6 @@ export default function CinemaTheater({ film, onClose, backUrl }: CinemaTheaterP
     if (logoPlayerRef.current) logoPlayerRef.current.muted = targetMuteState;
     if (filmPlayerRef.current) filmPlayerRef.current.muted = targetMuteState;
     setIsMuted(targetMuteState);
-  };
-
-  const handleReplay = () => {
-    setIsMuted(false); 
-    setIsPlayingLogo(true);
-    setIsEnded(false);
-    setCurrentTime(0);
-    setIsLoading(true);
-
-    setTimeout(() => {
-      const player = logoPlayerRef.current;
-      if (player) {
-        player.load();
-        player.muted = false;
-        if (filmPlayerRef.current) filmPlayerRef.current.muted = false;
-
-        player.play()
-          .then(() => {
-            setIsPlaying(true);
-            setIsLoading(false);
-          })
-          .catch((err) => {
-            console.warn("Replay volume fallback configuration rejected by browser context:", err);
-            player.muted = true;
-            if (filmPlayerRef.current) filmPlayerRef.current.muted = true;
-            setIsMuted(true);
-            player.play().then(() => setIsLoading(false)).catch(() => setIsLoading(false));
-          });
-      }
-    }, 50);
   };
 
   const toggleFullscreen = () => {
@@ -465,9 +430,6 @@ export default function CinemaTheater({ film, onClose, backUrl }: CinemaTheaterP
     <div 
       ref={containerRef}
       id="fjorr-theater-root"
-      // 🎯 THE STACKING FIX:
-      // Uses 'z-[999999]' to position the video panel safely above underlying document structures,
-      // and 'touch-none' to ensure mobile touch momentum gestures cannot slide content into the window layout.
       className="fixed inset-0 w-full h-[100svh] bg-[#1f1f1f] text-[#F5F5F7] select-none overflow-hidden touch-none flex flex-col justify-between font-sans z-[999999] animate-in fade-in duration-300"
     >
       
@@ -564,9 +526,11 @@ export default function CinemaTheater({ film, onClose, backUrl }: CinemaTheaterP
       {/* 🎛️ HUD CONTROLS FOOTER BLOCK */}
       <div 
         data-ui-control="true" 
-        className={`fixed bottom-0 inset-x-0 w-full flex flex-col justify-end items-start text-left z-30 transition-all duration-500 ease-out select-none px-8 pb-[calc(env(safe-area-inset-bottom)_+_1.5rem)] gap-3 ${controlsVisible && !isPlayingLogo ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'}`}
+        // 🎯 THE CENTERING ADJUSTMENT:
+        // Changed layout hooks from 'items-start text-left' to center justify everything horizontally across the layout screen.
+        className={`fixed bottom-0 inset-x-0 w-full flex flex-col justify-end items-center text-center z-30 transition-all duration-500 ease-out select-none px-8 pb-[calc(env(safe-area-inset-bottom)_+_1.5rem)] gap-3 ${controlsVisible && !isPlayingLogo ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'}`}
       >
-        <div className="flex flex-col items-start pl-1 text-[#F5F5F7]">
+        <div className="flex flex-col items-center pl-1 text-[#F5F5F7]">
           <h2 className="text-[20px] md:text-2xl font-bold tracking-tight leading-none">
             {film?.name}
           </h2>
@@ -610,7 +574,7 @@ export default function CinemaTheater({ film, onClose, backUrl }: CinemaTheaterP
           </div>
         )}
 
-        <div className="flex items-center gap-2 h-10 relative">
+        <div className="flex items-center gap-2 h-10 relative justify-center">
           <button onClick={togglePlay} className="w-12 h-12 flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity bg-transparent border-0 outline-none cursor-pointer" title={isPlaying ? "Pause" : "Play"}>
             {playIcon}
           </button>
@@ -625,7 +589,9 @@ export default function CinemaTheater({ film, onClose, backUrl }: CinemaTheaterP
           </button>
         </div>
 
-        <div className="w-full md:max-w-[500px] flex items-center justify-between gap-4 h-10 pl-1 mt-1 relative mx-0">
+        {/* 🎯 THE PROGRESS SCRIBER CONTAINER CENTERING:
+            Changed alignment positioning from 'mx-0 text-left' to 'mx-auto justify-center' */}
+        <div className="w-full md:max-w-[500px] flex items-center justify-between gap-4 h-10 pl-1 mt-1 relative mx-auto">
           <div className="w-10 text-right select-none font-mono font-bold text-sm text-white opacity-60 tracking-tight shrink-0 self-center leading-none">{formatTime(currentTime)}</div>
           <div className="flex-grow relative flex items-center h-10 select-none">
             <div className="absolute inset-x-0 h-[10px] bg-white/25 rounded-full pointer-events-none z-10 top-1/2 -translate-y-1/2" />
@@ -643,12 +609,15 @@ export default function CinemaTheater({ film, onClose, backUrl }: CinemaTheaterP
           <p className="font-sans text-lg font-semibold text-[#F5F5F7]/90 leading-relaxed max-w-lg">{film?.last_line || 'The credits fade to black.'}</p>
           
           <div className="flex items-center gap-6 text-white/50 font-sans font-semibold text-sm">
-            <button onClick={handleReplay} className="flex items-center gap-2 hover:text-[#f5f5f7] transition-colors group bg-transparent border-0 outline-none cursor-pointer font-sans">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 group-hover:-rotate-45 transition-transform duration-300">
-                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-                <path d="M3 3v5h5" />
+            <button 
+              onClick={handleCloseNavigation} 
+              className="flex items-center gap-2 hover:text-[#f5f5f7] transition-colors group bg-transparent border-0 outline-none cursor-pointer font-sans"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
               </svg>
-              Replay
+              Close
             </button>
 
             <button 

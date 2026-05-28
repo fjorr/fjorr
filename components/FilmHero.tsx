@@ -53,13 +53,18 @@ export default function FilmHero({ film, onPlayClick }: FilmHeroProps) {
             <p className="font-sans font-medium text-sm leading-snug text-white/80 max-w-xs md:max-w-xs tracking-normal mb-5">{film.teaser}</p>
 
             {isReleased ? (
-              <button
-                onClick={onPlayClick} // 🔊 DIRECTLY OPENS THE THEATER VIA REACT WITHOUT LOOSE WINDOW EVENTS
-                className="h-10 px-6 inline-flex items-center justify-center gap-2 bg-white hover:bg-white/90 text-black font-sans font-bold text-sm tracking-normal rounded-full transition-all active:scale-[0.98] duration-150 shadow-lg cursor-pointer border-0 outline-none"
-              >
-                <Play size={14} className="fill-current stroke-current" />
-                <span>Play {getRuntimeDisplay()}</span>
-              </button>
+            <button
+            onClick={onPlayClick} // 🔊 DIRECTLY OPENS THE THEATER VIA REACT WITHOUT LOOSE WINDOW EVENTS
+            className="h-10 px-6 inline-flex items-center justify-center gap-2 bg-white hover:bg-white/90 text-black font-sans font-bold text-sm tracking-normal rounded-full transition-all active:scale-[0.98] duration-150 shadow-lg cursor-pointer border-0 outline-none"
+          >
+            {/* 🎯 LOAD YOUR LOCAL SVG FILE */}
+            <img 
+              src="/icons/play.svg" 
+              className="w-5 h-5 select-none object-contain translate-y-[0.5px]" 
+              alt="Play" 
+            />
+            <span>Play {getRuntimeDisplay()}</span>
+          </button>
             ) : (
               <div className="h-10 px-6 inline-flex items-center justify-center gap-2 bg-black/90 backdrop-blur-md text-white/80 font-sans font-bold text-sm tracking-normal rounded-full border border-white/5 select-none">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 0 18 0a9 9 0 0 0 -18 0z" /></svg>
