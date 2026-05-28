@@ -355,7 +355,7 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
      <header 
         data-ui-control="true" 
         className={`absolute top-0 inset-x-0 w-full h-[70px] pt-[20px] px-4 flex justify-center pointer-events-none z-50 transition-all duration-500 ease-out ${
-          ((controlsVisible && !isPlayingLogo) || isPlayingLogo) ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0 pointer-events-none'
+          controlsVisible ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0 pointer-events-none'
         }`}
       >
         <div className="inline-flex h-[50px] px-[30px] items-center gap-[20px] pointer-events-auto bg-transparent">
@@ -422,7 +422,7 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
             onEnded={handleVideoEnded}
           />
 
-          <div className="absolute inset-0 bg-black/60 transition-opacity duration-500 pointer-events-none z-10" style={{ opacity: controlsVisible ? 1 : 0 }} />
+          <div className="absolute inset-0 bg-black/40 transition-opacity duration-500 pointer-events-none z-10" style={{ opacity: controlsVisible ? 1 : 0 }} />
 
           {/* Captions Overlay */}
           {selectedLangCode !== 'none' && currentSubtitleText && (
@@ -473,7 +473,7 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
           </div>
         )}
 
-        <div className="flex items-center gap-2 h-13 relative">
+        <div className="flex items-center gap-2 h-10 relative">
           <button onClick={togglePlay} className="w-12 h-12 flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity bg-transparent border-0 outline-none cursor-pointer" title={isPlaying ? "Pause" : "Play"}>
             {playIcon}
           </button>
