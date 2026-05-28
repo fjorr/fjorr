@@ -433,7 +433,7 @@ export default function CinemaTheater({ film, onClose, backUrl }: CinemaTheaterP
       /* 🎯 FIXED OVERLAY CANVAS HEIGHT:
          Changed from 'h-full bottom-0' to a modern dynamic lock 'h-[100dvh] lg:h-full lg:bottom-0'.
          This enforces strict system window boundaries, blocking background leakage without dropping layout alignment. */
-      className="fixed inset-0 w-full h-[100dvh] lg:h-full lg:bottom-0 bg-[#1f1f1f] text-[#F5F5F7] select-none overflow-hidden touch-none flex flex-col justify-between font-sans z-[99999] will-change-transform animate-in fade-in duration-300"
+      className="fixed inset-0 w-full h-[100dvh] lg:h-full lg:bottom-0 bg-[#000000] text-[#F5F5F7] select-none overflow-hidden touch-none flex flex-col justify-between font-sans z-[99999] will-change-transform animate-in fade-in duration-300"
     >
       
      {/* 🎬 DYNAMIC THEATER PILL NAVBAR HEADER */}
@@ -644,7 +644,7 @@ export default function CinemaTheater({ film, onClose, backUrl }: CinemaTheaterP
       </div>
 
       {/* REPLAY FILM END SCREEN OVERLAY */}
-      <div id="end-screen" data-ui-control="true" className="absolute inset-0 bg-[#1f1f1f] backdrop-blur-sm flex flex-col items-center justify-center transition-all duration-500 ease-in-out z-40" style={{ opacity: isEnded ? 1 : 0, pointerEvents: isEnded ? 'auto' : 'none' }}>
+      <div id="end-screen" data-ui-control="true" className="absolute inset-0 bg-[#000000] backdrop-blur-sm flex flex-col items-center justify-center transition-all duration-500 ease-in-out z-40" style={{ opacity: isEnded ? 1 : 0, pointerEvents: isEnded ? 'auto' : 'none' }}>
         <div className="max-w-2xl text-center flex flex-col items-center gap-8 px-6 relative">
           <p className="font-sans text-lg font-semibold text-[#F5F5F7]/90 leading-relaxed max-w-lg">{film?.last_line || 'The credits fade to black.'}</p>
           
