@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import FeatureRail from './FeatureRail'; 
 import { createBrowserClient } from '@supabase/ssr';
+import SkeletonLoader from './SkeletonLoader';
 
 const CinemaTheater = dynamic(() => import('@/components/CinemaTheater'), {
   ssr: false,
@@ -169,11 +170,14 @@ export default function FeatureRailLoader() {
           activeIndex={activeIndex} 
           onSlideChange={setActiveIndex} 
           onPlayClick={handlePlayClick}
-          isTheaterActive={showTheater} // 🎯 ADDED: Passes down theater visibility context
+          isTheaterActive={showTheater}
         />
       ) : (
-        <div className="w-full flex justify-center">
-          <div className="w-full max-w-[1440px] aspect-[1/1.618] md:aspect-[4/3] lg:aspect-[16/9] bg-[#1F1F1F]" />
+        /* 🎯 INITIAL SKELETON: Renders while the array maps */
+        <div className="w-full flex justify-center animate-pulse">
+          <div className="w-full max-w-[1440px] aspect-[1/1.618] md:aspect-[4/3] lg:aspect-[16/9] overflow-hidden rounded-none min-[1440px]:rounded-xl">
+            <SkeletonLoader variant="feature" />
+          </div>
         </div>
       )}
 
@@ -187,10 +191,13 @@ export default function FeatureRailLoader() {
         />
       )}
 
+      {/* 🎯 FADE CURTAIN: Replaced the old empty box with your custom Dot Matrix Skeleton */}
       {showAnchor && (
         <div className={`absolute inset-0 w-full pointer-events-none z-50 transform-gpu transition-opacity duration-500 ease-in-out ${fadeAnchor ? 'opacity-0' : 'opacity-100'}`}>
-          <div className="w-full flex justify-center">
-            <div className="w-full max-w-[1440px] aspect-[1/1.618] md:aspect-[4/3] lg:aspect-[16/9] bg-[#1F1F1F]" />
+          <div className="w-full flex justify-center bg-[#1F1F1F] h-full">
+            <div className="w-full max-w-[1440px] aspect-[1/1.618] md:aspect-[4/3] lg:aspect-[16/9] overflow-hidden rounded-none min-[1440px]:rounded-xl">
+              <SkeletonLoader variant="feature" />
+            </div>
           </div>
         </div>
       )}

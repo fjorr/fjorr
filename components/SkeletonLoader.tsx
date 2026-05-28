@@ -28,7 +28,7 @@ export default function SkeletonLoader({ variant = 'feature' }: SkeletonLoaderPr
               radial gradient layout block using '#425875'. 
           */}
           <div 
-            className={`absolute ${marginStyle} opacity-30`}
+            className={`absolute ${marginStyle} opacity-20`}
             style={{
               backgroundImage: 'radial-gradient(#FFFFFF 1px, transparent 1px)',
               backgroundSize: '20px 20px',

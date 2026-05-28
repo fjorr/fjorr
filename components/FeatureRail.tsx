@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { ChevronRight } from 'lucide-react'; 
 
 interface FilmAsset {
   id: string;
@@ -40,10 +39,8 @@ export default function FeatureRail({ films, activeIndex, onSlideChange, onPlayC
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
 
-  // 🎯 PERFECT MATCHING METRICS:
-  // Using a radius of 15 inside a 32x32px view box matches the absolute outer 
-  // bounds of the button perfectly, locking the stroke flush with the edge.
-  const RADIUS = 15;
+  // 🎯 PERFECT MATCHING METRICS FOR 40x40 VIEWBOX CANVAS
+  const RADIUS = 18.75;
   const CIRCUMFERENCE = 2 * Math.PI * RADIUS; 
   const strokeDashoffset = CIRCUMFERENCE - (progress / 100) * CIRCUMFERENCE;
 
@@ -52,6 +49,7 @@ export default function FeatureRail({ films, activeIndex, onSlideChange, onPlayC
   const currentFilm = films[activeIndex] || films[0];
   if (!currentFilm) return null;
 
+  // Autoplay loop progress engine listener
   useEffect(() => {
     if (!isPlaying || isTheaterActive) return;
 
@@ -59,7 +57,13 @@ export default function FeatureRail({ films, activeIndex, onSlideChange, onPlayC
       setProgress((prevProgress) => {
         if (prevProgress >= 100) {
           const nextTarget = activeIndex === films.length - 1 ? 0 : activeIndex + 1;
-          onSlideChange(nextTarget);
+          
+          // 🛡️ ANTI-CRASH SCHEDULER DEFERRAL:
+          // Pushes state modifications out of the current stack render trace to fix console conflict loops.
+          setTimeout(() => {
+            onSlideChange(nextTarget);
+          }, 0);
+
           return 0;
         }
         return prevProgress + (TICK_RATE / AUTOPLAY_DELAY) * 100;
@@ -212,10 +216,10 @@ export default function FeatureRail({ films, activeIndex, onSlideChange, onPlayC
               className="h-10 px-6 inline-flex items-center justify-center gap-2 bg-white hover:bg-white/90 text-black font-sans font-bold text-sm tracking-normal rounded-full transition-all active:scale-[0.98] duration-150 shadow-lg pointer-events-auto cursor-pointer border-0 outline-none"
             >
               <img 
-    src="/icons/play.svg" 
-    className="w-5 h-5 select-none object-contain" 
-    alt="Play" 
-  />
+                src="/icons/play.svg" 
+                className="w-4 h-4 select-none object-contain translate-y-[0.5px]" 
+                alt="Play Icon" 
+              />
               <span>Play {getRuntimeDisplay()}</span>
             </button>
           </div>
@@ -241,8 +245,8 @@ export default function FeatureRail({ films, activeIndex, onSlideChange, onPlayC
             ))}
           </div>
 
-     {/* Unified Layout Control Buttons Layer */}
-     <div className="absolute right-6 md:right-12 flex items-center gap-2 pointer-events-auto">
+          {/* Unified Layout Control Buttons Layer */}
+          <div className="absolute right-6 md:right-12 flex items-center gap-2 pointer-events-auto">
             
             {/* PROGRESS TOGGLE BUTTON CONTAINER */}
             <button 
@@ -251,16 +255,16 @@ export default function FeatureRail({ films, activeIndex, onSlideChange, onPlayC
               aria-label={isPlaying ? "Pause autoplay loop" : "Start autoplay loop"}
             >
               <svg className="absolute inset-0 w-full h-full transform -rotate-90 pointer-events-none" viewBox="0 0 40 40">
-                <circle cx="20" cy="20" r={18.75} fill="transparent" stroke="rgba(255, 255, 255, 0.15)" strokeWidth="2.5" />
+                <circle cx="20" cy="20" r={RADIUS} fill="transparent" stroke="rgba(255, 255, 255, 0.15)" strokeWidth="2.5" />
                 <circle
                   cx="20"
                   cy="20"
-                  r={18.75}
+                  r={RADIUS}
                   fill="transparent"
                   stroke="#FFFFFF"
                   strokeWidth="2.5"
-                  strokeDasharray={2 * Math.PI * 18.75}
-                  strokeDashoffset={(2 * Math.PI * 18.75) - (progress / 100) * (2 * Math.PI * 18.75)}
+                  strokeDasharray={CIRCUMFERENCE}
+                  strokeDashoffset={strokeDashoffset}
                   className="transition-all duration-100 ease-linear"
                   strokeLinecap="round"
                 />
@@ -268,16 +272,11 @@ export default function FeatureRail({ films, activeIndex, onSlideChange, onPlayC
               
               <div className="relative z-10 text-white flex items-center justify-center w-full h-full pointer-events-none">
                 {isPlaying ? (
-                  // 🎯 SCALED PAUSE BARS:
-                  // Increased thickness to 4px and height to 12px for better readability
                   <div className="flex gap-[3px]">
                     <div className="w-1 h-3 bg-white rounded-full"></div>
                     <div className="w-1 h-3 bg-white rounded-full"></div>
                   </div>
                 ) : (
-                  // 🎯 SCALED PLAY TRIANGLE:
-                  // Increased viewBox scale to 12x14px so the center vector path asset fills out
-                  // the larger glass mask geometry naturally.
                   <svg width="12" height="14" viewBox="0 0 12 14" fill="currentColor" className="translate-x-[1px]">
                     <path d="M2 1.5V12.5L11 7L2 1.5Z" />
                   </svg>
@@ -288,17 +287,21 @@ export default function FeatureRail({ films, activeIndex, onSlideChange, onPlayC
             {/* PREVIOUS SLIDE NAVIGATION CONTROLLER */}
             <button 
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigatePrev(); }}
-              className="hidden md:flex w-10 h-10 rounded-full bg-white/10 text-white items-center justify-center backdrop-blur-sm hover:bg-white/20 active:scale-95 transition-all duration-200 cursor-pointer"
+              className="hidden md:flex w-10 h-10 rounded-full bg-white/10 text-white items-center justify-center backdrop-blur-sm hover:bg-white/20 active:scale-95 transition-all duration-200 cursor-pointer "
             >
-              <svg width="6" height="10" viewBox="0 0 6 10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="rotate-180"><polyline points="1.5 8.5 5 5 1.5 1.5"></polyline></svg>
+              <svg width="6" height="10" viewBox="0 0 6 10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="rotate-180">
+                <polyline points="1.5 8.5 5 5 1.5 1.5" />
+              </svg>
             </button>
             
             {/* NEXT SLIDE NAVIGATION CONTROLLER */}
             <button 
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigateNext(); }}
-              className="hidden md:flex w-10 h-10 rounded-full bg-white/10 text-white items-center justify-center backdrop-blur-sm hover:bg-white/20 active:scale-95 transition-all duration-200 cursor-pointer"
+              className="hidden md:flex w-10 h-10 rounded-full bg-white/10 text-white items-center justify-center backdrop-blur-sm hover:bg-white/20 active:scale-95 transition-all duration-200 cursor-pointer "
             >
-              <svg width="6" height="10" viewBox="0 0 6 10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1.5 8.5 5 5 1.5 1.5"></polyline></svg>
+              <svg width="6" height="10" viewBox="0 0 6 10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="1.5 8.5 5 5 1.5 1.5" />
+              </svg>
             </button>
           </div>
         </div>

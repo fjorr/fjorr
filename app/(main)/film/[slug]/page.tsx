@@ -1,7 +1,9 @@
 import React, { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { createClient } from '@/utils/supabase/server'; 
-import FilmPageContentWrapper from '@/components/FilmPageContentWrapper'; // 🎬 IMPORT WRAPPER
+import FilmPageContentWrapper from '@/components/FilmPageContentWrapper'; 
+// 🎯 IMPORT YOUR NEW SERVER-SAFE BRIDGE FILE
+import ServerSafeSkeleton from '@/components/ServerSafeSkeleton';
 import type { Metadata } from 'next';
 
 export const dynamic = 'force-dynamic';
@@ -32,11 +34,26 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function FilmDetailPage({ params }: PageProps) {
   const { slug: urlSlug } = await params;
   return (
-    <div className="w-full min-h-screen bg-black text-white flex flex-col items-center pt-0 -mt-[70px] relative z-0">
+    <div className="w-full min-h-screen bg-[#1F1F1F] text-white flex flex-col items-center pt-0 -mt-[70px] relative z-0">
       <Suspense 
         fallback={
-          <div className="w-full min-h-screen text-center text-white/30 text-[14px] font-mono tracking-widest flex flex-col gap-3 items-center justify-center relative select-none animate-pulse" style={{ backgroundColor: '#1F1F1F', backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 1px)', backgroundSize: '20px 20px', backgroundPosition: 'center center' }}>
-            <span className="tracking-normal font-sans font-bold text-xs text-white/40">Loading film.</span>
+          /* ⚡ INSTANT SERVER-STREAMED SKELETON LAYER (0ms Load Time) */
+          <div className="w-full flex justify-center bg-[#1F1F1F] animate-pulse">
+            <div className="w-full relative aspect-[1/1.618] md:aspect-[4/3] lg:aspect-[16/9] overflow-hidden">
+              
+              {/* 🎯 ONE SOURCE OF DESIGN TRUTH:
+                 Your exact SkeletonLoader design paints immediately, error free! */}
+              <ServerSafeSkeleton variant="feature" />
+              
+              {/* Wireframe element metrics overlap exactly on top */}
+              <div className="absolute inset-x-0 bottom-0 px-8 md:px-12 pb-14 md:pb-16 flex flex-col items-center md:items-start gap-4 z-10">
+                <div className="w-32 h-4 bg-white/5 rounded" />
+                <div className="w-64 h-12 bg-white/10 rounded-lg" />
+                <div className="w-full max-w-xs h-4 bg-white/5 rounded" />
+                <div className="w-40 h-10 bg-white/20 rounded-full mt-2" />
+              </div>
+
+            </div>
           </div>
         }
       >
@@ -76,14 +93,13 @@ async function DeferredPageContent({ urlSlug }: { urlSlug: string }) {
 
   const displayLocation = Array.isArray(filmData.location) && filmData.location.length > 0 ? filmData.location[0] : filmData.location || '';
   
-  // 🎯 DATA BUILDER LAYER: Maps your loaded transcript lines directly to build a secure subtitle array payload
   const languageNameMap: Record<string, string> = { en: 'English', es: 'Spanish', fr: 'French', it: 'Italian' };
   const subtitlesData = transcripts.map((row: any) => {
     const cleanCode = (row.language_code || 'en').toLowerCase().trim();
     return {
       code: cleanCode,
       name: languageNameMap[cleanCode] || cleanCode.toUpperCase(),
-      vtt_url: row.content // Seeds your video player track downloader link cleanly
+      vtt_url: row.content 
     };
   });
 
@@ -95,7 +111,6 @@ async function DeferredPageContent({ urlSlug }: { urlSlug: string }) {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ "@context": "https://schema.org", "@type": "Movie", "name": filmData.name, "description": filmData.teaser, "image": filmData.blok_ogrf || "https://fjorr.com/og-main-preview.jpg", "datePublished": filmData.release_date, "productionCompany": { "@type": "Organization", "name": "Fjorr" } }) }} />
       
-      {/* 🎯 HAND PRE-LOADED DATA STRAIGHT INTO THE WRAPPER CONTROL ROOM */}
       <FilmPageContentWrapper 
         filmData={filmData}
         relatedArtifacts={relatedArtifacts}
