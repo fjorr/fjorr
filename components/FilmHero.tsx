@@ -67,7 +67,21 @@ export default function FilmHero({ film, onPlayClick }: FilmHeroProps) {
           </button>
             ) : (
               <div className="h-10 px-6 inline-flex items-center justify-center gap-2 bg-black/90 backdrop-blur-md text-white/80 font-sans font-bold text-sm tracking-normal rounded-full border border-white/5 select-none">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 0 18 0a9 9 0 0 0 -18 0z" /></svg>
+                <svg 
+  className="w-4 h-4" 
+  fill="none" 
+  stroke="currentColor" 
+  strokeWidth="2.5" 
+  viewBox="0 0 24 24"
+  strokeLinecap="round" 
+  strokeLinejoin="round"
+>
+  {/* 🎯 Clock Frame Outline: Placed exactly at center core (12,12) with a vector radius grid weight of 9 */}
+  <circle cx="12" cy="12" r="9" />
+  
+  {/* 🎯 Clock Hands Tracking Vector: Draws accurate countdown angles to match coming soon presentation layouts */}
+  <path d="M12 7v5l3 2" />
+</svg>
                 <span>Coming Soon</span>
               </div>
             )}
