@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { ChevronRight, Play, Pause } from 'lucide-react'; 
+import { ChevronRight } from 'lucide-react'; 
 
 interface FilmAsset {
   id: string;
@@ -26,7 +26,7 @@ interface FeatureRailProps {
   activeIndex: number;
   onSlideChange: (index: number) => void;
   onPlayClick: (film: FilmAsset) => void; 
-  isTheaterActive?: boolean; // 🎯 ADDED: Incoming system layout flag interface descriptor
+  isTheaterActive?: boolean; 
 }
 
 export default function FeatureRail({ films, activeIndex, onSlideChange, onPlayClick, isTheaterActive = false }: FeatureRailProps) {
@@ -40,7 +40,10 @@ export default function FeatureRail({ films, activeIndex, onSlideChange, onPlayC
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
 
-  const RADIUS = 14;
+  // 🎯 PERFECT MATCHING METRICS:
+  // Using a radius of 15 inside a 32x32px view box matches the absolute outer 
+  // bounds of the button perfectly, locking the stroke flush with the edge.
+  const RADIUS = 15;
   const CIRCUMFERENCE = 2 * Math.PI * RADIUS; 
   const strokeDashoffset = CIRCUMFERENCE - (progress / 100) * CIRCUMFERENCE;
 
@@ -49,10 +52,7 @@ export default function FeatureRail({ films, activeIndex, onSlideChange, onPlayC
   const currentFilm = films[activeIndex] || films[0];
   if (!currentFilm) return null;
 
-  // Autoplay calculations loop listener
   useEffect(() => {
-    // 🎯 REACTION ENGINE GUARD:
-    // If the movie theater modal frame layer is running, we freeze this background slider loop completely!
     if (!isPlaying || isTheaterActive) return;
 
     const timer = setInterval(() => {
@@ -211,13 +211,20 @@ export default function FeatureRail({ films, activeIndex, onSlideChange, onPlayC
               }}
               className="h-10 px-6 inline-flex items-center justify-center gap-2 bg-white hover:bg-white/90 text-black font-sans font-bold text-sm tracking-normal rounded-full transition-all active:scale-[0.98] duration-150 shadow-lg pointer-events-auto cursor-pointer border-0 outline-none"
             >
-              <Play size={14} className="fill-current stroke-current" />
+              <img 
+    src="/icons/play.svg" 
+    className="w-5 h-5 select-none object-contain" 
+    alt="Play" 
+  />
               <span>Play {getRuntimeDisplay()}</span>
             </button>
           </div>
         </div>
 
-        <div className="absolute inset-x-0 bottom-8 z-30 flex items-center justify-center md:justify-center pointer-events-none px-8 md:px-12">
+        {/* CONTROLS BAR SECTION LAYER */}
+        <div className="absolute inset-x-0 bottom-8 z-30 flex items-center justify-center pointer-events-none px-8 md:px-12">
+          
+          {/* Slider Position Indicator Dots Layer */}
           <div className="flex items-center justify-center gap-2 pointer-events-auto mx-auto">
             {films.map((_, index) => (
               <button
@@ -234,48 +241,64 @@ export default function FeatureRail({ films, activeIndex, onSlideChange, onPlayC
             ))}
           </div>
 
-          <div className="absolute right-6 md:right-12 flex items-center gap-2.5 pointer-events-auto">
+     {/* Unified Layout Control Buttons Layer */}
+     <div className="absolute right-6 md:right-12 flex items-center gap-2 pointer-events-auto">
+            
+            {/* PROGRESS TOGGLE BUTTON CONTAINER */}
             <button 
               onClick={handleTogglePlay}
-              className="w-8 h-8 relative rounded-full flex items-center justify-center backdrop-blur-sm transition-all duration-200 active:scale-95 bg-black/40 md:bg-white/10 hover:bg-black/60 md:hover:bg-white/15 border border-white/10 md:border-transparent"
+              className="w-10 h-10 relative rounded-full flex items-center justify-center backdrop-blur-sm transition-all duration-200 active:scale-95 bg-white/10 hover:bg-white/20 border border-white/10 overflow-hidden transform-gpu"
               aria-label={isPlaying ? "Pause autoplay loop" : "Start autoplay loop"}
             >
-              <svg className="absolute inset-0 w-full h-full transform -rotate-90">
-                <circle cx="16" cy="16" r={RADIUS} fill="transparent" stroke="rgba(255, 255, 255, 0.2)" strokeWidth="2" />
+              <svg className="absolute inset-0 w-full h-full transform -rotate-90 pointer-events-none" viewBox="0 0 40 40">
+                <circle cx="20" cy="20" r={18.75} fill="transparent" stroke="rgba(255, 255, 255, 0.15)" strokeWidth="2.5" />
                 <circle
-                  cx="16"
-                  cy="16"
-                  r={RADIUS}
+                  cx="20"
+                  cy="20"
+                  r={18.75}
                   fill="transparent"
                   stroke="#FFFFFF"
-                  strokeWidth="2"
-                  strokeDasharray={CIRCUMFERENCE}
-                  strokeDashoffset={strokeDashoffset}
+                  strokeWidth="2.5"
+                  strokeDasharray={2 * Math.PI * 18.75}
+                  strokeDashoffset={(2 * Math.PI * 18.75) - (progress / 100) * (2 * Math.PI * 18.75)}
                   className="transition-all duration-100 ease-linear"
                   strokeLinecap="round"
                 />
               </svg>
-              <div className="relative z-10 text-white flex items-center justify-center">
+              
+              <div className="relative z-10 text-white flex items-center justify-center w-full h-full pointer-events-none">
                 {isPlaying ? (
-                  <Pause size={12} fill="currentColor" />
+                  // 🎯 SCALED PAUSE BARS:
+                  // Increased thickness to 4px and height to 12px for better readability
+                  <div className="flex gap-[3px]">
+                    <div className="w-1 h-3 bg-white rounded-full"></div>
+                    <div className="w-1 h-3 bg-white rounded-full"></div>
+                  </div>
                 ) : (
-                  <Play size={12} fill="currentColor" className="translate-x-[0.5px]" />
+                  // 🎯 SCALED PLAY TRIANGLE:
+                  // Increased viewBox scale to 12x14px so the center vector path asset fills out
+                  // the larger glass mask geometry naturally.
+                  <svg width="12" height="14" viewBox="0 0 12 14" fill="currentColor" className="translate-x-[1px]">
+                    <path d="M2 1.5V12.5L11 7L2 1.5Z" />
+                  </svg>
                 )}
               </div>
             </button>
 
+            {/* PREVIOUS SLIDE NAVIGATION CONTROLLER */}
             <button 
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigatePrev(); }}
-              className="hidden md:flex w-8 h-8 rounded-full bg-white/10 text-white items-center justify-center backdrop-blur-sm hover:bg-white/20 active:scale-95 transition-all duration-200"
+              className="hidden md:flex w-10 h-10 rounded-full bg-white/10 text-white items-center justify-center backdrop-blur-sm hover:bg-white/20 active:scale-95 transition-all duration-200 cursor-pointer"
             >
-              <ChevronRight size={16} className="rotate-180" />
+              <svg width="6" height="10" viewBox="0 0 6 10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="rotate-180"><polyline points="1.5 8.5 5 5 1.5 1.5"></polyline></svg>
             </button>
             
+            {/* NEXT SLIDE NAVIGATION CONTROLLER */}
             <button 
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigateNext(); }}
-              className="hidden md:flex w-8 h-8 rounded-full bg-white/10 text-white items-center justify-center backdrop-blur-sm hover:bg-white/20 active:scale-95 transition-all duration-200"
+              className="hidden md:flex w-10 h-10 rounded-full bg-white/10 text-white items-center justify-center backdrop-blur-sm hover:bg-white/20 active:scale-95 transition-all duration-200 cursor-pointer"
             >
-              <ChevronRight size={16} />
+              <svg width="6" height="10" viewBox="0 0 6 10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1.5 8.5 5 5 1.5 1.5"></polyline></svg>
             </button>
           </div>
         </div>
