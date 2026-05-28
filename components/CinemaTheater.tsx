@@ -430,11 +430,10 @@ export default function CinemaTheater({ film, onClose, backUrl }: CinemaTheaterP
     <div 
       ref={containerRef}
       id="fjorr-theater-root"
-      /* 🎯 SAFARI DYNAMIC BOTTOM GAP SHIELD:
-         - Changed from 'h-[100svh]' to 'h-full bottom-0' to enforce physical window tracking.
-         - Appended 'will-change-transform' to force hardware rendering isolation on WebKit devices.
-         - Changed z-index from z-[999999] to the ultimate standard layer depth of z-[99999] for strict layout priority. */
-      className="fixed inset-0 w-full h-full bottom-0 bg-[#1f1f1f] text-[#F5F5F7] select-none overflow-hidden touch-none flex flex-col justify-between font-sans z-[99999] will-change-transform animate-in fade-in duration-300"
+      /* 🎯 FIXED OVERLAY CANVAS HEIGHT:
+         Changed from 'h-full bottom-0' to a modern dynamic lock 'h-[100dvh] lg:h-full lg:bottom-0'.
+         This enforces strict system window boundaries, blocking background leakage without dropping layout alignment. */
+      className="fixed inset-0 w-full h-[100dvh] lg:h-full lg:bottom-0 bg-[#1f1f1f] text-[#F5F5F7] select-none overflow-hidden touch-none flex flex-col justify-between font-sans z-[99999] will-change-transform animate-in fade-in duration-300"
     >
       
      {/* 🎬 DYNAMIC THEATER PILL NAVBAR HEADER */}
@@ -477,7 +476,10 @@ export default function CinemaTheater({ film, onClose, backUrl }: CinemaTheaterP
       </header>
 
       {/* 📹 FILM PLAYER CORE FRAME */}
-      <div className="flex-grow w-full flex items-center justify-center">
+      {/* 🎯 FIXED DYNAMIC VIEWPORT VERTICAL ALIGNMENT:
+          Added 'flex-grow h-full items-center justify-center' configuration settings directly to this frame wrapper.
+          This pulls the player back to absolute dead center vertically on Mobile Safari regardless of dynamic UI layouts! */}
+      <div className="flex-grow w-full h-full flex items-center justify-center relative z-10">
         <div className={`relative w-full max-w-[1200px] aspect-video overflow-hidden bg-black transition-all duration-500 z-10 flex flex-col justify-end ${isFullscreen ? 'max-w-none h-screen rounded-none border-0' : 'xl:rounded-[12px]'}`}>
           
           {/* PLAYER CONTAINER 1: LOGO BUMPER INTRO */}
@@ -528,9 +530,6 @@ export default function CinemaTheater({ film, onClose, backUrl }: CinemaTheaterP
       </div>
 
       {/* 🎛️ HUD CONTROLS FOOTER BLOCK */}
-      {/* 🎯 SAFARI HUD PULLOVER MITIGATION:
-          Changed from fixed layout position to absolute context tracking layout rules on viewports. 
-          Enforced bottom padding parameters via fluid clamp settings to bypass Safari UI bounds clipping. */}
       <div 
         data-ui-control="true" 
         className={`absolute bottom-0 inset-x-0 w-full flex flex-col justify-end items-center text-center z-30 transition-all duration-500 ease-out select-none px-8 pb-[calc(env(safe-area-inset-bottom)_+_2rem)] gap-3 ${controlsVisible && !isPlayingLogo ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'}`}
