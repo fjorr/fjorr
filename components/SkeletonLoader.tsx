@@ -4,35 +4,46 @@ import React from 'react';
 
 interface SkeletonLoaderProps {
   variant?: 'feature' | 'poster';
+  backgroundColor?: string;
+  isDarkBg?: boolean;
+  dotOpacity?: number;
 }
 
-export default function SkeletonLoader({ variant = 'feature' }: SkeletonLoaderProps) {
-  // Sets standard 30px frames for wide grids, and a cleaner 12px frame for posters
+export default function SkeletonLoader({ 
+  variant = 'feature',
+  backgroundColor = '#1F1F1F',
+  isDarkBg = true,
+  dotOpacity
+}: SkeletonLoaderProps) {
   const paddingStyle = variant === 'poster' ? 'p-3' : 'p-[30px]';
   const marginStyle = variant === 'poster' ? 'top-3 bottom-3 left-3 right-3' : 'top-[30px] bottom-[30px] left-[30px] right-[30px]';
 
+  const dotColor = isDarkBg ? '#FFFFFF' : '#000000';
+  const wireframeBorder = isDarkBg ? 'border-white/10' : 'border-black/10';
+
+  const finalOpacity = dotOpacity !== undefined 
+    ? dotOpacity 
+    : (isDarkBg ? 0.3 : 0.4);
+
   return (
-    <div className="w-full h-full bg-transparent flex items-center justify-center">
-      
-      {/* 1. MASTER EXTERIOR CONTAINER FRAME
-          🎯 CONVERTED TO HEX: 'border-blue-400/10' is now a beautiful custom steel-blue wireframe edge color '#1c2533'
-      */}
-      {/* 🎯 border-[#92E2FF]/30 sets the border opacity to exactly 30% */}
-      <div className="w-full h-full border border-[#FFFFFF]/10 rounded-2xl bg-[#1F1F1F] flex items-center justify-center overflow-hidden relative">
-        
-        {/* 2. SOLID INTERIOR GREY FRAAME */}
-        <div className={`w-full h-full bg-[#1F1F1F] relative flex items-center justify-center ${paddingStyle}`}>
+    /* 🎯 UNBREAKABLE FLEX BOX FRAME:
+       We force the root container to always be fully expanded (w-full h-full) 
+       and flex-centered so your inner matrix grid never collapses to 0px! */
+    <div className="w-full h-full flex items-center justify-center relative">
+      <div 
+        style={{ backgroundColor }} 
+        className={`w-full h-full border ${wireframeBorder} rounded-2xl flex items-center justify-center overflow-hidden relative`}
+      >
+        <div style={{ backgroundColor }} className={`w-full h-full relative flex items-center justify-center ${paddingStyle}`}>
           
-          {/* 3. CLAMPED MATRIX CANVAS
-              🎯 CONVERTED TO HEX: The steel-blue dots are now cleanly baked at full 1.0 opacity inside your 
-              radial gradient layout block using '#425875'. 
-          */}
           <div 
-            className={`absolute ${marginStyle} opacity-20`}
+            className={`absolute ${marginStyle}`}
             style={{
-              backgroundImage: 'radial-gradient(#FFFFFF 1px, transparent 1px)',
+              backgroundImage: `radial-gradient(${dotColor} 1px, transparent 1px)`,
               backgroundSize: '20px 20px',
-              backgroundPosition: 'center', // Symmetrical distribution from center axis outward
+              backgroundPosition: 'center',
+              opacity: finalOpacity,
+              transition: 'opacity 150ms ease',
             }}
           />
 
