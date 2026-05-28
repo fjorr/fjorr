@@ -23,7 +23,7 @@ interface CinemaTheaterProps {
 export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
   // --- LAYER STATE ARCHITECTURE ---
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(false); // 🔊 Set layout baseline to active volume state
   const [controlsVisible, setControlsVisible] = useState(false);
   const [isEnded, setIsEnded] = useState(false);
   const [showCCMenu, setShowCCMenu] = useState(false);
@@ -60,13 +60,40 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
   // Fullscreen lifecycle observer
   useEffect(() => {
     const handleFsChange = () => {
-      setIsFullscreen(!!document.fullscreenElement || !!(document as any).webkitFullscreenElement);
+      setIsFullscreen(
+        !!document.fullscreenElement || 
+        !!(document as any).webkitFullscreenElement ||
+        !!(filmPlayerRef.current as any)?.webkitDisplayingFullscreen ||
+        !!(logoPlayerRef.current as any)?.webkitDisplayingFullscreen
+      );
     };
+
     document.addEventListener('fullscreenchange', handleFsChange);
     document.addEventListener('webkitfullscreenchange', handleFsChange);
+    
+    const filmEl = filmPlayerRef.current;
+    const logoEl = logoPlayerRef.current;
+    
+    if (filmEl) {
+      filmEl.addEventListener('webkitbeginfullscreen', handleFsChange);
+      filmEl.addEventListener('webkitendfullscreen', handleFsChange);
+    }
+    if (logoEl) {
+      logoEl.addEventListener('webkitbeginfullscreen', handleFsChange);
+      logoEl.addEventListener('webkitendfullscreen', handleFsChange);
+    }
+
     return () => {
       document.removeEventListener('fullscreenchange', handleFsChange);
       document.removeEventListener('webkitfullscreenchange', handleFsChange);
+      if (filmEl) {
+        filmEl.removeEventListener('webkitbeginfullscreen', handleFsChange);
+        filmEl.removeEventListener('webkitendfullscreen', handleFsChange);
+      }
+      if (logoEl) {
+        logoEl.removeEventListener('webkitbeginfullscreen', handleFsChange);
+        logoEl.removeEventListener('webkitendfullscreen', handleFsChange);
+      }
     };
   }, []);
 
@@ -116,6 +143,17 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
     };
   }, [controlsVisible, isPlaying, showCCMenu, isScrubbing]);
 
+  // 🔊 HARDWARE EVENT LISTENER HANDSHAKE
+  const handleVolumeChange = (e: React.SyntheticEvent<HTMLVideoElement>) => {
+    setIsMuted(e.currentTarget.muted);
+  };
+
+  // 🎯 HARDWARE READY HANDSHAKE
+  // This executes the absolute second the browser constructs the player, forcing alignment
+  const handlePlayerReady = (e: React.SyntheticEvent<HTMLVideoElement>) => {
+    e.currentTarget.muted = isMuted;
+  };
+
   // --- MEDIA HANDLERS ---
   const togglePlay = () => {
     const player = isPlayingLogo ? logoPlayerRef.current : filmPlayerRef.current;
@@ -124,13 +162,16 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
   };
 
   const toggleMute = () => {
-    const player = isPlayingLogo ? logoPlayerRef.current : filmPlayerRef.current;
-    if (!player) return;
-    player.muted = !isMuted;
-    setIsMuted(!isMuted);
+    const targetMuteState = !isMuted;
+    
+    if (logoPlayerRef.current) logoPlayerRef.current.muted = targetMuteState;
+    if (filmPlayerRef.current) filmPlayerRef.current.muted = targetMuteState;
+    
+    setIsMuted(targetMuteState);
   };
 
   const handleReplay = () => {
+    setIsMuted(false); // Force state tracker clear
     setIsPlayingLogo(true);
     setIsEnded(false);
     setCurrentTime(0);
@@ -140,24 +181,49 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
       const player = logoPlayerRef.current;
       if (player) {
         player.load();
-        player.play().catch(() => {});
+        player.muted = false;
+        
+        if (filmPlayerRef.current) filmPlayerRef.current.muted = false;
+
+        player.play()
+          .then(() => {
+            setIsPlaying(true);
+            setIsLoading(false);
+          })
+          .catch((err) => {
+            console.warn("Replay volume fallback forced by device policy:", err);
+            player.muted = true;
+            if (filmPlayerRef.current) filmPlayerRef.current.muted = true;
+            setIsMuted(true);
+            player.play().then(() => setIsLoading(false)).catch(() => setIsLoading(false));
+          });
       }
     }, 50);
   };
 
   const toggleFullscreen = () => {
     const container = containerRef.current;
-    if (!container) return;
+    const activeVideo = isPlayingLogo ? logoPlayerRef.current : filmPlayerRef.current;
+    
+    if (!container || !activeVideo) return;
 
-    if (!document.fullscreenElement && !(document as any).webkitFullscreenElement) {
-      if (container.requestFullscreen) {
+    const isMobileSafari = /iPhone|iPod/.test(navigator.userAgent) && !(document as any).requestFullscreen;
+
+    if (!document.fullscreenElement && !(document as any).webkitFullscreenElement && !(activeVideo as any).webkitDisplayingFullscreen) {
+      if (isMobileSafari && (activeVideo as any).webkitEnterFullscreen) {
+        (activeVideo as any).webkitEnterFullscreen();
+      } else if (container.requestFullscreen) {
         container.requestFullscreen().catch(() => {});
       } else if ((container as any).webkitRequestFullscreen) {
         (container as any).webkitRequestFullscreen();
       }
     } else {
-      if (document.exitFullscreen) {
+      if (isMobileSafari && (activeVideo as any).webkitExitFullscreen) {
+        (activeVideo as any).webkitExitFullscreen();
+      } else if (document.exitFullscreen) {
         document.exitFullscreen().catch(() => {});
+      } else if ((document as any).webkitExitFullscreen) {
+        (document as any).webkitExitFullscreen();
       }
     }
   };
@@ -271,21 +337,18 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
     return `${m}:${s}`;
   };
 
-  // --- PLAYBACK ENGINE INITIALIZATIONS ---
+  // --- INITIAL ON-MOUNT AUTOMATION LOOP ---
   useEffect(() => {
     const logoPlayer = logoPlayerRef.current;
     if (logoPlayer && isPlayingLogo) {
-      logoPlayer.muted = true;
-      setIsMuted(true);
       
       logoPlayer.play()
         .then(() => {
           setIsPlaying(true);
-          logoPlayer.muted = false;
-          setIsMuted(false);
           setIsLoading(false);
         })
         .catch(() => {
+          // Fallback to safety if browser forces an unmuted block
           logoPlayer.muted = true;
           setIsMuted(true);
           logoPlayer.play().then(() => setIsLoading(false)).catch(() => setIsLoading(false));
@@ -298,6 +361,8 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
     if (filmPlayer && !isPlayingLogo && film) {
       setIsLoading(true);
       setIsEnded(false);
+      
+      filmPlayer.muted = isMuted; // Match current state environment posture perfectly
       
       if (filmPlayer.canPlayType('application/vnd.apple.mpegurl')) {
         filmPlayer.src = `https://stream.mux.com/${film.mux_playback_id}.m3u8`;
@@ -401,6 +466,8 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
               src={LOGO_SOURCE}
               preload="auto"
               playsInline
+              onCanPlay={handlePlayerReady} // 🛡️ Hard reset right on browser compilation
+              onVolumeChange={handleVolumeChange}
               className="w-full h-full object-contain absolute inset-0 z-20 bg-black"
               onEnded={handleVideoEnded}
             />
@@ -413,6 +480,8 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
             preload="auto"
             playsInline
             crossOrigin="anonymous"
+            onCanPlay={handlePlayerReady} // 🛡️ Hard reset right on browser compilation
+            onVolumeChange={handleVolumeChange}
             className="w-full h-full object-contain absolute inset-0 z-0 bg-black"
             style={{ filter: isEnded ? 'blur(20px) brightness(0.3)' : 'blur(0px)' }}
             onTimeUpdate={(e) => { if (!isScrubbing) setCurrentTime(e.currentTarget.currentTime); }}
@@ -438,11 +507,11 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
       </div>
 
       {/* 🎛️ HUD CONTROLS FOOTER BLOCK */}
-<div 
-  data-ui-control="true" 
-  className={`fixed bottom-0 inset-x-0 w-full flex flex-col justify-end items-start text-left z-30 transition-all duration-500 ease-out select-none px-8 pb-[calc(env(safe-area-inset-bottom)_+_1.5rem)] gap-3 ${controlsVisible && !isPlayingLogo ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'}`}
->
-  <div className="flex flex-col items-start pl-1 text-[#F5F5F7]">
+      <div 
+        data-ui-control="true" 
+        className={`fixed bottom-0 inset-x-0 w-full flex flex-col justify-end items-start text-left z-30 transition-all duration-500 ease-out select-none px-8 pb-[calc(env(safe-area-inset-bottom)_+_1.5rem)] gap-3 ${controlsVisible && !isPlayingLogo ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'}`}
+      >
+        <div className="flex flex-col items-start pl-1 text-[#F5F5F7]">
           <h2 className="text-[20px] md:text-2xl font-bold tracking-tight leading-none">{film?.name}</h2>
           <p className="text-xs md:text-sm font-medium opacity-60 mt-2 tracking-normal">{film?.story_date} &middot; {film?.location}</p>
         </div>
@@ -505,12 +574,55 @@ export default function CinemaTheater({ film, onClose }: CinemaTheaterProps) {
       <div id="end-screen" data-ui-control="true" className="absolute inset-0 bg-[#1f1f1f] backdrop-blur-sm flex flex-col items-center justify-center transition-all duration-500 ease-in-out z-40" style={{ opacity: isEnded ? 1 : 0, pointerEvents: isEnded ? 'auto' : 'none' }}>
         <div className="max-w-2xl text-center flex flex-col items-center gap-8 px-6 relative">
           <p className="font-sans text-lg font-semibold text-[#F5F5F7]/90 leading-relaxed max-w-lg">{film?.last_line || 'The credits fade to black.'}</p>
-          <div className="flex items-center gap-6 text-white/50 font-sans text-sm">
-            <button onClick={handleReplay} className="flex items-center gap-2 hover:text-[#f5f5f7] transition-colors group bg-transparent border-0 outline-none cursor-pointer font-sans"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 group-hover:-rotate-45 transition-transform duration-300"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></svg>Replay</button>
-            <button onClick={onClose} className="flex items-center gap-2 hover:text-[#f5f5f7] transition-colors group bg-transparent border-0 outline-none cursor-pointer font-sans">Onward <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 group-translate-x-1 transition-transform"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg></button>
+          
+          {/* 🍿 ACTION BUTTON GRID (Share sits directly in the center) */}
+          <div className="flex items-center gap-6 text-white/50 font-sans font-semibold text-sm">
+            
+            {/* Left Action: Replay */}
+            <button onClick={handleReplay} className="flex items-center gap-2 hover:text-[#f5f5f7] transition-colors group bg-transparent border-0 outline-none cursor-pointer font-sans">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 group-hover:-rotate-45 transition-transform duration-300">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                <path d="M3 3v5h5" />
+              </svg>
+              Replay
+            </button>
+
+            {/* Center Action: Native Share Handshake Pipeline */}
+            <button 
+              onClick={() => {
+                const shareData = { title: film?.name, url: `${window.location.origin}/film/${film?.slug}` };
+                if (navigator.share) { 
+                  navigator.share(shareData).catch(() => {}); 
+                } else { 
+                  navigator.clipboard.writeText(shareData.url); 
+                  alert('Link copied to clipboard'); 
+                }
+              }}
+              className="flex items-center gap-2 hover:text-[#f5f5f7] transition-colors group bg-transparent border-0 outline-none cursor-pointer font-sans normal-case"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 transition-transform duration-200" >
+                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+                <g className="group-hover:-translate-y-0.5 transition-transform duration-200">
+                  <polyline points="16 6 12 2 8 6" />
+                  <line x1="12" y1="2" x2="12" y2="15" />
+                </g>
+              </svg>
+              Share
+            </button>
+
+            {/* Right Action: Onward Next Layer */}
+            <button onClick={onClose} className="flex items-center gap-2 hover:text-[#f5f5f7] transition-colors group bg-transparent border-0 outline-none cursor-pointer font-sans">
+              Onward 
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 group-translate-x-1 transition-transform">
+                <path d="M5 12h14" />
+                <path d="m12 5 7 7-7 7" />
+              </svg>
+            </button>
+
           </div>
-          <div className="font-sans tracking-widest text-[#F5F5F7]/40 uppercase text-xs">
-            <span>{film?.name}</span> &nbsp;&bull;&nbsp; <span>{film?.story_date}</span> &nbsp;&bull;&nbsp; <span>{film?.location}</span>
+          
+          <div className="font-tradeGothic tracking-tight text-[#F5F5F7]/40 uppercase text-base">
+            <span>{film?.name}</span> &nbsp;<span>{film?.story_date}</span> &nbsp;<span>{film?.location}</span>
           </div>
         </div>
       </div>
