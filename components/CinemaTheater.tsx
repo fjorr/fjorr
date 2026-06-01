@@ -40,7 +40,7 @@ export default function CinemaTheater({ film, onClose, backUrl }: CinemaTheaterP
 
   // 🎬 BUMPER ENGINE ARCHITECTURE STATE
   const [isPlayingLogo, setIsPlayingLogo] = useState(true);
-  const LOGO_SOURCE = "https://media.fjorr.com/assets/studio-logo/fjorr-studio-logo-winner.mp4";
+  const LOGO_SOURCE = "https://media.fjorr.com/assets/studio-logo/fjorr-studio-logo-04.mp4";
 
   // --- CUSTOM REACT SUBTITLE STATE ---
   const [selectedLangCode, setSelectedLangCode] = useState<string>('none');
