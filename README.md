@@ -1,109 +1,253 @@
-<a href="https://demo-nextjs-with-supabase.vercel.app/">
-  <img alt="Next.js and Supabase Starter Kit - the fastest way to build apps with Next.js and Supabase" src="https://demo-nextjs-with-supabase.vercel.app/opengraph-image.png">
-  <h1 align="center">Next.js and Supabase Starter Kit</h1>
-</a>
+# Fjorr
 
-<p align="center">
- The fastest way to build apps with Next.js and Supabase
-</p>
+A Next.js site for **Fjorr** — short films about the world's greatest stories, plus a browsable archive of related cultural artifacts. Content lives in Supabase; video streams through Mux; static assets (posters, animations) are hosted on `media.fjorr.com`.
 
-<p align="center">
-  <a href="#features"><strong>Features</strong></a> ·
-  <a href="#demo"><strong>Demo</strong></a> ·
-  <a href="#deploy-to-vercel"><strong>Deploy to Vercel</strong></a> ·
-  <a href="#clone-and-run-locally"><strong>Clone and run locally</strong></a> ·
-  <a href="#feedback-and-issues"><strong>Feedback and issues</strong></a>
-  <a href="#more-supabase-examples"><strong>More Examples</strong></a>
-</p>
-<br/>
+Production: [fjorr.com](https://fjorr.com)
 
-## Features
+---
 
-- Works across the entire [Next.js](https://nextjs.org) stack
-  - App Router
-  - Pages Router
-  - Proxy
-  - Client
-  - Server
-  - It just works!
-- supabase-ssr. A package to configure Supabase Auth to use cookies
-- Password-based authentication block installed via the [Supabase UI Library](https://supabase.com/ui/docs/nextjs/password-based-auth)
-- Styling with [Tailwind CSS](https://tailwindcss.com)
-- Components with [shadcn/ui](https://ui.shadcn.com/)
-- Optional deployment with [Supabase Vercel Integration and Vercel deploy](#deploy-your-own)
-  - Environment variables automatically assigned to Vercel project
+## Quick start
 
-## Demo
+```bash
+npm install
+npm run dev        # http://localhost:3000
+npm run build      # production build
+npm start          # serve production build
+```
 
-You can view a fully working demo at [demo-nextjs-with-supabase.vercel.app](https://demo-nextjs-with-supabase.vercel.app/).
+### Environment variables
 
-## Deploy to Vercel
+Set these in `.env.local` (or in Vercel):
 
-Vercel deployment will guide you through creating a Supabase account and project.
+| Variable | Purpose |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Used by most app code (server + client queries) |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Used by middleware session refresh (`lib/supabase/proxy.ts`). Set this to the same value as the anon key if you only have one key. |
+| `SITE_PASSWORD` | Site-wide preview gate password (defaults to `fjorr-preview-2026` if unset) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Optional. Used by the newsletter signup server action for writes to `intel_list`. Falls back to anon key if missing. |
 
-After installation of the Supabase integration, all relevant environment variables will be assigned to the project so the deployment is fully functioning.
+**Debug tip:** visit `/debug-db` to confirm the server can reach Supabase and read from the `film` table.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&project-name=nextjs-with-supabase&repository-name=nextjs-with-supabase&demo-title=nextjs-with-supabase&demo-description=This+starter+configures+Supabase+Auth+to+use+cookies%2C+making+the+user%27s+session+available+throughout+the+entire+Next.js+app+-+Client+Components%2C+Server+Components%2C+Route+Handlers%2C+Server+Actions+and+Middleware.&demo-url=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2F&external-id=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&demo-image=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2Fopengraph-image.png)
+---
 
-The above will also clone the Starter kit to your GitHub, you can clone that locally and develop locally.
+## How the site is organized
 
-If you wish to just develop locally and not deploy to Vercel, [follow the steps below](#clone-and-run-locally).
+### Route groups
 
-## Clone and run locally
+Next.js route groups (folders in parentheses) control layout, not URLs:
 
-1. You'll first need a Supabase project which can be made [via the Supabase dashboard](https://database.new)
+```
+app/
+├── layout.tsx              # Root: fonts, global metadata, dark theme
+├── (gate)/password/        # Site password gate (no navbar/footer)
+├── (main)/                 # Standard pages — shared Navbar + Footer
+│   ├── page.tsx            # Homepage
+│   ├── film/[slug]/        # Individual film detail
+│   ├── search/             # Search films + artifacts
+│   ├── nominate/           # Story nomination form
+│   ├── about, contact, partner, privacy, terms
+│   └── auth/               # Supabase auth pages (starter-kit leftover)
+└── (exhibition)/artifact/[slug]/   # Artifact detail — custom themed layout
+```
 
-2. Create a Next.js app using the Supabase Starter template npx command
+**`(main)/layout.tsx`** wraps most pages with `Navbar` and `Footer`. Artifact pages in `(exhibition)` render their own chrome because each artifact can have a custom background color and light/dark text.
 
-   ```bash
-   npx create-next-app --example with-supabase with-supabase-app
-   ```
+### Request flow
 
-   ```bash
-   yarn create next-app --example with-supabase with-supabase-app
-   ```
+```
+Browser request
+    ↓
+middleware.ts (root)          ← site password cookie check
+    ↓
+lib/supabase/proxy.ts         ← refreshes Supabase auth session (if env vars set)
+    ↓
+Page (Server or Client Component)
+    ↓
+Supabase query → render
+```
 
-   ```bash
-   pnpm create next-app --example with-supabase with-supabase-app
-   ```
+**Site password gate:** Before anything else, `middleware.ts` checks for a `site-auth` cookie. Without it, users are sent to `/password`. Submitting the correct phrase via `POST /api/gate` sets the cookie for 7 days.
 
-3. Use `cd` to change into the app's directory
+**Note:** There is also an `app/middleware.ts` file — Next.js only runs the root `middleware.ts`. The one inside `app/` is unused.
 
-   ```bash
-   cd with-supabase-app
-   ```
+---
 
-4. Rename `.env.example` to `.env.local` and update the following:
+## Data model (Supabase)
 
-  ```env
-  NEXT_PUBLIC_SUPABASE_URL=[INSERT SUPABASE PROJECT URL]
-  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=[INSERT SUPABASE PROJECT API PUBLISHABLE OR ANON KEY]
-  ```
-  > [!NOTE]
-  > This example uses `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, which refers to Supabase's new **publishable** key format.
-  > Both legacy **anon** keys and new **publishable** keys can be used with this variable name during the transition period. Supabase's dashboard may show `NEXT_PUBLIC_SUPABASE_ANON_KEY`; its value can be used in this example.
-  > See the [full announcement](https://github.com/orgs/supabase/discussions/29260) for more information.
+All content is in Supabase Postgres. There is no local schema file in this repo — the tables below are inferred from query usage.
 
-  Both `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` can be found in [your Supabase project's API settings](https://supabase.com/dashboard/project/_?showConnect=true)
+### Core content
 
-5. You can now run the Next.js local development server:
+| Table | What it holds |
+|---|---|
+| `film` | Short films. Key fields: `slug`, `name`, `teaser`, `mux_playback_id`, `release_date`, hero images (`hero_wide`, `hero_clsx`, `hero_tall`), OG image (`blok_ogrf`), poster (`blok_tall`), `runtime`, `location`, `last_line`, `story_date` |
+| `artifact` | Cultural artifacts linked to films. Key fields: `slug`, `name`, `description`, `quote`, `primary_color`, `is_dark_bg`, hero images, `link` / `link_cta` |
+| `search` | Denormalized view/table for search — combines films and artifacts with `item_type`, `search_content`, ratings, themes, etc. |
 
-   ```bash
-   npm run dev
-   ```
+### Relationships
 
-   The starter kit should now be running on [localhost:3000](http://localhost:3000/).
+| Table | Purpose |
+|---|---|
+| `collection` + `collection_map` | Curated film groupings. Homepage "Featured" rail reads `collection.slug = 'featured'`. |
+| `film_artifact` | Links films ↔ artifacts (with `sort_order`) |
+| `creator_map` + `creator` | Film/artifact credits |
+| `tag_map` + `tag` | Film tags/themes |
+| `language_subtitle` + `language` | Subtitle tracks (VTT URLs per language) |
+| `transcript` | Transcript/subtitle content on film detail pages |
+| `rating`, `theme`, `sponsor` | Lookup tables joined from `film` |
 
-6. This template comes with the default shadcn/ui style initialized. If you instead want other ui.shadcn styles, delete `components.json` and [re-install shadcn/ui](https://ui.shadcn.com/docs/installation/next)
+### User submissions
 
-> Check out [the docs for Local Development](https://supabase.com/docs/guides/getting-started/local-development) to also run Supabase locally.
+| Table | Purpose |
+|---|---|
+| `nominations` | Story nominations from `/nominate` |
+| `intel_list` | Newsletter signups (via `components/intel.ts` server action) |
 
-## Feedback and issues
+---
 
-Please file feedback and issues over on the [Supabase GitHub org](https://github.com/supabase/supabase/issues/new/choose).
+## Page-by-page mental model
 
-## More Supabase examples
+### Homepage (`app/(main)/page.tsx`)
 
-- [Next.js Subscription Payments Starter](https://github.com/vercel/nextjs-subscription-payments)
-- [Cookie-based Auth and the Next.js 13 App Router (free course)](https://youtube.com/playlist?list=PL5S4mPUpp4OtMhpnp93EFSo42iQ40XjbF)
-- [Supabase Auth and the Next.js App Router](https://github.com/supabase/supabase/tree/master/examples/auth/nextjs)
+Stacked sections, each fetching its own data:
+
+1. **HeroHome** — static banner
+2. **FeatureRailLoader** — featured films carousel (from `collection` → `collection_map`)
+3. **FilmRailLoader** × 2 — "Latest" (released) and "Coming Soon" (future `release_date`)
+4. **ArtifactRailLoader** — recent artifacts
+5. **PromoSplit** — partner + nominate CTAs
+
+### Film detail (`/film/[slug]`)
+
+Server component fetches the film plus related data in parallel (artifacts, recommendations, transcripts, tags, creators). Passes everything to **FilmPageContentWrapper** (client), which renders:
+
+- **FilmHero** — poster, title, play button
+- **CinemaTheater** — fullscreen video player overlay
+- **ArtifactRail** — related artifacts
+- **FilmRail** — "More films" recommendations
+- **FilmSpecs** — metadata, credits, themes
+
+Films with a future `release_date` are treated as "Coming Soon."
+
+### Artifact detail (`/artifact/[slug]`)
+
+Lives outside the main layout. Fetches theme tokens (`primary_color`, `is_dark_bg`) first for instant theming, then loads full content inside a `Suspense` boundary with a skeleton fallback. Layout is a split view: hero image left, **ArtifactSidebar** right.
+
+### Search (`/search`)
+
+Client-side. Queries the `search` table with `ilike` on `name`, `teaser`, and `search_content`, then ranks results client-side. Shows latest releases when idle, empty-state when no matches.
+
+---
+
+## Component pattern: Loader → Presentation
+
+Most homepage rails follow the same pattern:
+
+```
+*RailLoader.tsx   (Server Component — queries Supabase)
+       ↓
+*Rail.tsx         (Client Component — carousel UI, GSAP animations)
+```
+
+**FeatureRailLoader** is the exception — it's a client component that fetches on mount (needed because it also manages the video theater state).
+
+Shared UI utilities:
+
+- **SkeletonLoader** / **ServerSafeSkeleton** — dot-matrix loading placeholders
+- **CinemaTheater** — the video player (dynamically imported, `ssr: false`)
+
+---
+
+## Video playback (CinemaTheater)
+
+Films stream via **Mux**. The player reads `film.mux_playback_id` and builds a URL like:
+
+```
+https://stream.mux.com/{playback_id}.m3u8   (or /high.mp4 fallback)
+```
+
+Behavior:
+
+1. Plays a Fjorr studio logo bumper first (`media.fjorr.com/assets/studio-logo/...`)
+2. Then streams the film
+3. Custom subtitle rendering — fetches VTT files from `language_subtitle` and parses cues in JS (not native `<track>`)
+4. Dispatches `fjorr_hide_main_navbar` / `fjorr_show_main_navbar` events so the Navbar hides during playback
+
+Theater can be opened from the homepage feature rail or from a film detail page.
+
+---
+
+## Supabase clients (there are two)
+
+This project started from the Supabase starter kit and grew organically. Two client setups coexist:
+
+| Location | Key env var | Used by |
+|---|---|---|
+| `utils/supabase/server.ts` | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Film/artifact pages, rail loaders, sitemap, debug page |
+| `lib/supabase/server.ts` | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Starter-kit auth components |
+| `lib/supabase/proxy.ts` | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Middleware session refresh |
+
+Client-side code (`FeatureRailLoader`, `SearchClient`, `NominateClient`) creates browser clients directly with `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+
+If middleware auth redirects become a problem, check `lib/supabase/proxy.ts` — it redirects unauthenticated users to `/auth/login` on all routes except `/` and `/auth/*`. This only runs when `PUBLISHABLE_KEY` is set (`hasEnvVars` in `lib/utils.ts`).
+
+---
+
+## Static assets & media
+
+- **Posters, hero images, OG images** — stored as URLs in Supabase (likely Cloudflare R2 or similar at `media.fjorr.com`)
+- **Video** — Mux (`mux_playback_id` on each film)
+- **Local public files** — `public/icons/` (player controls), `public/fjorr_scout.mp4`, favicon
+
+Image field naming convention:
+- `blok_tall` — tall poster (rails, cards)
+- `blok_ogrf` — Open Graph / social preview
+- `hero_wide`, `hero_clsx`, `hero_tall` — hero section variants
+
+---
+
+## Forms & server actions
+
+| Feature | Mechanism | Destination |
+|---|---|---|
+| Newsletter signup | Server action in `components/intel.ts` | `intel_list` table |
+| Story nomination | Client form in `NominateClient.tsx` | `nominations` table |
+| Site password | `POST /api/gate/route.ts` | Sets `site-auth` cookie |
+
+---
+
+## Styling
+
+- **Tailwind CSS** with custom design tokens in `app/globals.css` (`dark-01`, `light-01`, etc.)
+- **Fonts:** Inter + JetBrains Mono (Google Fonts), Futura via Adobe Typekit (`xyf8acw.css`)
+- **UI primitives:** shadcn/ui components in `components/ui/`
+- **Animations:** GSAP in rail components, CSS transitions elsewhere
+
+---
+
+## Auth pages (starter-kit leftover)
+
+The `app/(main)/auth/` directory contains login, sign-up, password reset, and a protected demo page from the original Supabase starter. These are not central to the public site experience but remain wired up if you want user accounts later.
+
+---
+
+## Deployment
+
+Hosted on **Vercel**. The sitemap (`app/sitemap.js`) and web manifest (`app/manifest.js`) are generated at build time. SEO metadata is set per-page via Next.js `metadata` exports, with JSON-LD structured data on film and artifact pages.
+
+---
+
+## Useful paths when you're lost
+
+| I want to… | Start here |
+|---|---|
+| Change the homepage layout | `app/(main)/page.tsx` |
+| Edit the featured carousel | `components/FeatureRailLoader.tsx` + `FeatureRail.tsx` |
+| Fix video playback | `components/CinemaTheater.tsx` |
+| Change film page layout | `components/FilmPageContentWrapper.tsx` |
+| Change artifact page layout | `app/(exhibition)/artifact/[slug]/page.tsx` |
+| Update site password | `SITE_PASSWORD` env var or `app/api/gate/route.ts` |
+| Debug Supabase connection | `/debug-db` |
+| Change global nav/footer | `components/Navbar.tsx`, `components/Footer.tsx` |
+| Update SEO defaults | `app/layout.tsx` |
