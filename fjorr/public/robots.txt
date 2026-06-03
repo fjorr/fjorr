@@ -1,0 +1,11 @@
+# 🤖 Invite all Search, Social, and AI crawlers
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /_next/
+
+# Host profile definition
+Host: https://fjorr.com
+
+# 🗺️ Point them directly to your dynamic sitemap matrix
+Sitemap: https://fjorr.com/sitemap.xml

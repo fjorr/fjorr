@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --dark-01: #1F1F1F;
+  --dark-02: #1F1F1FA6;
+  --dark-03: #1F1F1F66;
+  --dark-04: #1F1F1F0D;
+
+  --light-01: #F5F5F7;
+  --light-02: #F5F5F7A6;
+  --light-03: #F5F5F766;
+  --light-04: #F5F5F70D;
+}
+
+html, body {
+  background-color: #1F1F1F !important;
+  color: #F5F5F7 !important;
+  font-family: 'Inter', -apple-system, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* 📟 System Terminal Cursor Blink Engine */
+.cursor-system {
+  animation: blinkCursor 0.6s step-end infinite;
+}
+
+@keyframes blinkCursor {
+  from, to { opacity: 0; }
+  50% { opacity: 1; }
+}
+
+@keyframes fadeUpReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  opacity: 0;
+  animation: fadeUpReveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
