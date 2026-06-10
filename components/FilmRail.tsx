@@ -80,9 +80,11 @@ export default function FilmRail({ title, films: rawFilms }: FilmRailProps) {
   const formatIndex = (num: number) => String(num).padStart(2, '0');
 
   return (
-    /* 🎯 REMOVED select-none FROM CONTAINER CLASS LIST TO UNBLOCK TOUCH GESTURES */
     <section ref={containerRef} className="w-full pb-0 relative group/rail z-20 px-8 md:px-16">
-      <style dangerouslySetInnerHTML={{__html: `.no-scrollbar::-webkit-scrollbar { display: none !important; }`}} />
+      <style dangerouslySetInnerHTML={{__html: `
+        .no-scrollbar::-webkit-scrollbar { display: none !important; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      `}} />
       <div className="w-full max-w-[1440px] mx-auto relative">
         
         {/* HEADER */}
@@ -120,33 +122,37 @@ export default function FilmRail({ title, films: rawFilms }: FilmRailProps) {
           )}
         </div>
 
-        {/* HORIZONTAL CAROUSEL */}
+        {/* HORIZONTAL CAROUSEL CONTAINER */}
         <div className="w-full overflow-hidden rounded-[8px]">
-          {/* 🎯 UPGRADED CAROUSEL CONTAINER: 
-              - Replaced scroll-smooth with touch-pan-x on mobile viewports so trackpads/screens read vector velocities.
-              - Appended standard Webkit scrolling properties to keep touch actions extremely responsive.
+          {/* 🎯 SWAPPED GRID FOR FLEXBOX:
+              - Removed 'grid' and 'auto-cols' to fix Safari rendering calculation locks.
+              - `overflow-x-scroll` combined with `touch-pan-x` natively unblocks dragging forward and backward.
+              - `scroll-smooth` is intentionally left off so native touch hardware tracks perfectly.
           */}
           <div 
             ref={railRef} 
             onScroll={handleScroll}
-            className="no-scrollbar w-full grid grid-flow-col auto-cols-[calc((100%-2rem)/3)] md:auto-cols-[calc((100%-3.75rem)/4)] lg:auto-cols-[calc((100%-7.5rem)/6)] gap-4 md:gap-5 lg:gap-6 overflow-x-auto overflow-y-hidden snap-x snap-mandatory touch-pan-x" 
-            style={{ 
-              scrollbarWidth: 'none', 
-              msOverflowStyle: 'none',
-              WebkitOverflowScrolling: 'touch'
-            }}
+            className="no-scrollbar w-full flex overflow-x-scroll overflow-y-hidden snap-x snap-mandatory touch-pan-x gap-4 md:gap-5 lg:gap-6" 
+            style={{ WebkitOverflowScrolling: 'touch' }}
           >
             {activeFilms.map((film, index) => {
               const filmUrlParam = film.slug || film.id;
               const posterDelay = `${150 + index * 75}ms`;
               
               return (
+                /* 🎯 FLUID PERCENTAGE BASES:
+                   - Mobile: calc((100% - 2rem) / 3) -> Clean 3 items layout
+                   - Tablet: calc((100% - 3.75rem) / 4) -> Clean 4 items layout
+                   - Desktop: calc((100% - 7.5rem) / 6) -> Clean 6 items layout
+                */
                 <Link 
                   key={index} 
                   href={`/film/${filmUrlParam}`} 
-                  className={`w-full shrink-0 snap-start group/card block transition-all duration-700 ease-out transform ${
-                    hasEnteredScreen ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-6 scale-[0.98]'
-                  }`}
+                  className={`shrink-0 snap-start group/card block transition-all duration-700 ease-out transform
+                    w-[calc((100%-2rem)/3)] 
+                    md:w-[calc((100%-3.75rem)/4)] 
+                    lg:w-[calc((100%-7.5rem)/6)]
+                    ${hasEnteredScreen ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-6 scale-[0.98]'}`}
                   style={{ transitionDelay: hasEnteredScreen ? posterDelay : '0ms' }}
                 >
                   <div className="w-full aspect-[2/3] rounded-[8px] bg-zinc-900/40 border border-white/5 overflow-hidden relative transition-all duration-300 group-hover/card:scale-[1.02] shadow-xl flex items-center justify-center">
