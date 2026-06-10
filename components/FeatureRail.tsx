@@ -8,14 +8,16 @@ interface FilmAsset {
   name?: string;
   slug?: string;
   teaser?: string;
-  story_date?: string;
+  story_date?: string | { name: string } | any;
   hero_wide?: string; 
   hero_clsx?: string; 
   hero_tall?: string; 
   title_art_code?: string; 
   title_art_hex?: string; 
+  title_art_scale?: number; 
   runtime?: number; 
-  sponsor?: string;
+  sponsor?: string | { name: string } | any; 
+  sponsor_id?: string;
   rating?: { name: string } | any;
   theme?: { name: string } | any;
 }
@@ -39,7 +41,6 @@ export default function FeatureRail({ films, activeIndex, onSlideChange, onPlayC
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
 
-  // 🎯 PERFECT MATCHING METRICS FOR 40x40 VIEWBOX CANVAS
   const RADIUS = 18.75;
   const CIRCUMFERENCE = 2 * Math.PI * RADIUS; 
   const strokeDashoffset = CIRCUMFERENCE - (progress / 100) * CIRCUMFERENCE;
@@ -49,7 +50,23 @@ export default function FeatureRail({ films, activeIndex, onSlideChange, onPlayC
   const currentFilm = films[activeIndex] || films[0];
   if (!currentFilm) return null;
 
-  // Autoplay loop progress engine listener
+  // 🎯 SPONSOR DATA EXTRACTION MATCHED
+  const getSponsorName = () => {
+    if (currentFilm.sponsor?.name) return currentFilm.sponsor.name;
+    if (typeof currentFilm.sponsor === 'string') return currentFilm.sponsor;
+    if (currentFilm.sponsor_id === '0afb5b63-1e90-4a37-824d-33cc41afde3d') {
+      return 'Mercedes-Benz';
+    }
+    return null;
+  };
+
+  const sponsorName = getSponsorName();
+
+  // 📐 CLEAN MAX-WIDTH MATH MATCHED
+  const baselineWidth = 300; 
+  const currentScale = currentFilm.title_art_scale || 1.0;
+  const calculatedWidth = `${baselineWidth * currentScale}px`;
+
   useEffect(() => {
     if (!isPlaying || isTheaterActive) return;
 
@@ -58,8 +75,6 @@ export default function FeatureRail({ films, activeIndex, onSlideChange, onPlayC
         if (prevProgress >= 100) {
           const nextTarget = activeIndex === films.length - 1 ? 0 : activeIndex + 1;
           
-          // 🛡️ ANTI-CRASH SCHEDULER DEFERRAL:
-          // Pushes state modifications out of the current stack render trace to fix console conflict loops.
           setTimeout(() => {
             onSlideChange(nextTarget);
           }, 0);
@@ -161,18 +176,29 @@ export default function FeatureRail({ films, activeIndex, onSlideChange, onPlayC
           </Link>
 
           <div className="absolute inset-x-0 bottom-0 px-8 md:px-12 pb-14 md:pb-16 pt-16 md:pt-32 z-20 max-w-2xl w-full flex flex-col text-center md:text-left items-center md:items-start mx-auto md:mx-0 pointer-events-none">
-            {currentFilm.sponsor && (
-              <div className="w-full font-sans font-bold text-sm text-white/100 tracking-wide mb-2.5 antialiased">
-                {currentFilm.sponsor} <span className="font-medium text-white/70">presents</span>
+            
+            {/* 🎯 RESOLVED SPONSOR VIEWPORT */}
+            {sponsorName && (
+              <div className="w-full font-sans font-bold text-[13px] text-white/90 tracking-wide mb-2.5 antialiased">
+                {sponsorName} <span className="font-medium text-white/70">presents</span>
               </div>
             )}
 
             {currentFilm.title_art_code ? (
+              /* 🎯 ROCK-SOLID HORIZONTAL SCALE CONTAINER MATCHED */
               <div 
-                className="mb-4 max-w-[220px] md:max-w-[280px] w-full [&>svg]:w-full [&>svg]:h-auto mx-auto md:mx-0 transition-transform duration-300"
-                style={{ color: currentFilm.title_art_hex || '#FFFFFF' }}
-                dangerouslySetInnerHTML={{ __html: currentFilm.title_art_code }}
-              />
+                className="mb-4 w-full max-w-[240px] md:max-w-[380px] flex items-center justify-center md:justify-start [&>svg]:w-full [&>svg]:h-auto" 
+                style={{ 
+                  color: currentFilm.title_art_hex || '#FFFFFF',
+                  '--desktop-width': calculatedWidth
+                } as React.CSSProperties}
+              >
+                {/* Responsive Width Override Block */}
+                <div 
+                  className="w-full md:w-[var(--desktop-width)]"
+                  dangerouslySetInnerHTML={{ __html: currentFilm.title_art_code }}
+                />
+              </div>
             ) : (
               currentFilm.name && (
                 <h2 className="text-[28px] md:text-[36px] font-sans font-black uppercase tracking-tight leading-none text-white mb-3">
@@ -181,12 +207,13 @@ export default function FeatureRail({ films, activeIndex, onSlideChange, onPlayC
               )
             )}
 
-            <div className="flex items-center justify-center md:justify-start gap-2.5 font-mono text-sm text-white/60 tracking-tight mb-2">
+            {/* 🎯 UPDATED METADATA GRID CONTAINER ROW */}
+            <div className="flex items-center justify-center md:justify-start gap-2.5 font-sans text-sm text-white/40 tracking-normal mb-2 select-none">
               {(() => {
                 const ratingVal = typeof currentFilm.rating === 'object' ? currentFilm.rating?.name : currentFilm.rating;
                 if (!ratingVal) return null;
                 return (
-                  <span className="px-1 py-0.25 border border-white/70 rounded-[4px] text-white/70 font-extrabold text-[12px] uppercase">
+                  <span className="px-1 py-0.25 border border-white/60 rounded-[4px] text-white/60 font-semibold text-[12px] uppercase">
                     {ratingVal}
                   </span>
                 );
@@ -196,10 +223,17 @@ export default function FeatureRail({ films, activeIndex, onSlideChange, onPlayC
                 const themeVal = typeof currentFilm.theme === 'object' ? currentFilm.theme?.name : currentFilm.theme;
                 if (!themeVal) return null;
                 return (
-                  <span className="capitalize font-semibold text-white/70">
+                  <span className="capitalize font-medium text-white/60">
                     {themeVal}
                   </span>
                 );
+              })()}
+
+              {/* 🎯 INJECTED CLEAN STORY DATE MARKER */}
+              {(() => { 
+                const storyDateVal = typeof currentFilm.story_date === 'object' ? currentFilm.story_date?.name : currentFilm.story_date; 
+                if (!storyDateVal) return null; 
+                return <span className="text-white/60 font-medium">{storyDateVal}</span>; 
               })()}
             </div>
 

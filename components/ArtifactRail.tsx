@@ -24,10 +24,8 @@ export default function ArtifactRail({ title, artifacts: rawArtifacts }: Artifac
     return artifact && artifact.slug;
   });
 
-  // Generates 18 slots by cycling the validated layout array payload
-  const activeArtifacts = filteredArtifacts.length > 0 
-    ? Array.from({ length: 18 }, (_, i) => filteredArtifacts[i % filteredArtifacts.length]) 
-    : [];
+  // Only use the actual artifacts passed in—no forced 18-slot looping
+  const activeArtifacts = filteredArtifacts;
 
   /* 🌟 THE VISIBILITY OBSERVATION ENGINE */
   useEffect(() => {
@@ -71,7 +69,7 @@ export default function ArtifactRail({ title, artifacts: rawArtifacts }: Artifac
   }, []);
 
   // Calculates true total pages based on how many items are actually visible on screen
-  const totalPages = Math.ceil(activeArtifacts.length / itemsPerPage);
+  const totalPages = Math.ceil(activeArtifacts.length / itemsPerPage) || 1;
 
   // 🎯 FIXED SCROLL PROGRESS ENGINE: Dynamically maps tracking based on current fluid gap size
   const handleScroll = () => {
@@ -193,17 +191,13 @@ export default function ArtifactRail({ title, artifacts: rawArtifacts }: Artifac
                   style={{ transitionDelay: hasEnteredScreen ? cardDelay : '0ms' }}
                 >
                   <div className="w-full aspect-[2/3] rounded-[8px] bg-zinc-900/40 border border-white/5 overflow-hidden relative transition-all duration-300 group-hover/card:scale-[1.02] shadow-xl flex items-center justify-center">
-                    {artifact.blok_tall ? (
+                    {artifact.blok_tall && (
                       <img 
                         src={artifact.blok_tall} 
                         alt={artifact.name} 
                         className="w-full h-full object-cover pointer-events-none" 
                         loading="lazy" 
                       />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center p-4 text-center text-white/30 font-sans font-medium text-[11px]" style={{ background: 'linear-gradient(to bottom, #3b3954, #272538)' }}>
-                        {artifact.name} {index + 1}
-                      </div>
                     )}
                   </div>
                 </Link>

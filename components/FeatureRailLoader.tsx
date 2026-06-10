@@ -40,6 +40,10 @@ export default function FeatureRailLoader() {
           return;
         }
 
+        /* 🎯 SAFE STANDARD IMPLICIT RELATION JOIN:
+           Fetches your custom title_art_scale variable and smoothly routes 
+           through the sponsor_id foreign key link straight to the creator table.
+        */
         const { data: mappedCollectionRows, error } = await supabase
           .from('collection_map')
           .select(`
@@ -58,10 +62,11 @@ export default function FeatureRailLoader() {
               hero_tall,
               title_art_code,
               title_art_hex,
+              title_art_scale,
               runtime,
               rating ( name ),
               theme ( name ),
-              sponsor:sponsor_id ( name )
+              creator:sponsor_id ( name )
             )
           `)
           .eq('collection_id', collectionRow.id)
@@ -78,11 +83,15 @@ export default function FeatureRailLoader() {
               const f = row.film;
               if (!f) return null;
               
+              // Fallback block safely reads whether it resolves as an explicit alias or object link
+              const sponsorObj = f.creator || f.sponsor;
+              
               return {
                 ...f,
-                sponsor: typeof f.sponsor === 'object' && f.sponsor !== null
-                  ? (f.sponsor as any).name 
-                  : f.sponsor
+                // Flattens the nested object name string so FeatureRail reads it cleanly
+                sponsor: typeof sponsorObj === 'object' && sponsorObj !== null
+                  ? (sponsorObj as any).name 
+                  : sponsorObj
               };
             })
             .filter(Boolean);
@@ -173,7 +182,6 @@ export default function FeatureRailLoader() {
           isTheaterActive={showTheater}
         />
       ) : (
-        /* 🎯 INITIAL SKELETON: Renders while the array maps */
         <div className="w-full flex justify-center animate-pulse">
           <div className="w-full max-w-[1440px] aspect-[1/1.618] md:aspect-[4/3] lg:aspect-[16/9] overflow-hidden rounded-none min-[1440px]:rounded-xl">
             <SkeletonLoader variant="feature" />
@@ -191,7 +199,6 @@ export default function FeatureRailLoader() {
         />
       )}
 
-      {/* 🎯 FADE CURTAIN: Replaced the old empty box with your custom Dot Matrix Skeleton */}
       {showAnchor && (
         <div className={`absolute inset-0 w-full pointer-events-none z-50 transform-gpu transition-opacity duration-500 ease-in-out ${fadeAnchor ? 'opacity-0' : 'opacity-100'}`}>
           <div className="w-full flex justify-center bg-[#1F1F1F] h-full">
