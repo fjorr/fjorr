@@ -646,7 +646,7 @@ export default function CinemaTheater({ film, onClose, backUrl }: CinemaTheaterP
       {/* REPLAY FILM END SCREEN OVERLAY */}
       <div id="end-screen" data-ui-control="true" className="absolute inset-0 bg-[#000000] backdrop-blur-sm flex flex-col items-center justify-center transition-all duration-500 ease-in-out z-40" style={{ opacity: isEnded ? 1 : 0, pointerEvents: isEnded ? 'auto' : 'none' }}>
         <div className="max-w-2xl text-center flex flex-col items-center gap-8 px-6 relative">
-          <p className="font-sans text-lg font-semibold text-[#F5F5F7]/90 leading-relaxed max-w-lg">{film?.last_line || 'The credits fade to black.'}</p>
+          <p className="font-sans text-lg font-semibold text-[#F5F5F7]/90 leading-relaxed max-w-lg">{film?.last_line || 'Fin.'}</p>
           
           <div className="flex items-center gap-6 text-white/50 font-sans font-semibold text-sm">
             <button 
