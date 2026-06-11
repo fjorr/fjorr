@@ -25,7 +25,7 @@ interface ArtifactSidebarProps {
   subTextClass: string;
   mutedTextClass: string;
   borderClass: string;
-  isLoader?: boolean; // 🎯 Added missing typing property parameter
+  isLoader?: boolean; 
 }
 
 export function ArtifactSidebar({
@@ -44,7 +44,7 @@ export function ArtifactSidebar({
   subTextClass,
   mutedTextClass,
   borderClass,
-  isLoader = false, // 🎯 Defaults cleanly down to standard view presentation
+  isLoader = false, 
 }: ArtifactSidebarProps) {
   
   const formatExternalUrl = (url: string | null | undefined): string => {
@@ -56,8 +56,7 @@ export function ArtifactSidebar({
     return `https://${trimmed}`;
   };
 
-  // 🎯 HIGH-FIDELITY SIDEBAR WIREFRAME ROD GENERATOR
-  // This executes instantly at 0ms during server-streaming phases
+  // 🎯 HIGH-FIDELITY SIDEBAR WIREFRAME SKELETON
   if (isLoader) {
     const wireframeContentColor = isDarkBg ? 'bg-white/5' : 'bg-black/5';
     const wireframeTitleColor = isDarkBg ? 'bg-white/10' : 'bg-black/10';
@@ -82,7 +81,6 @@ export function ArtifactSidebar({
     );
   }
 
-  // 🎬 RE-ENGAGED PRODUCTION LIVE DATA BLOCK (UNTOUCHED)
   return (
     <div 
       style={{ backgroundColor: customBg }}
@@ -92,14 +90,32 @@ export function ArtifactSidebar({
         Film Artifact
       </span>
 
-      <h1 className={`font-sans text-2xl capitalize tracking-tighter leading-none font-black mb-2 ${textClass}`}>
+      <h1 className={`font-sans text-2xl capitalize tracking-tighter leading-none font-black mb-4 ${textClass}`}>
         {name}
       </h1>
 
-      <div className={`flex flex-col items-start gap-y-0.5 mb-5 ${subTextClass}`}>
-        {creatorName && <span className="font-sans text-sm font-medium leading-tight capitalize">{creatorName}</span>}
-        {label && <span className="font-sans text-sm font-medium leading-tight capitalize">{label}</span>}
-        {releaseYear && <span className="font-sans text-sm font-medium leading-tight capitalize">{releaseYear}</span>}
+      {/* 🎯 METADATA CONTAINER STACKED BLOCK */}
+      <div className="flex flex-col items-start gap-y-0.5 mb-5">
+        
+        {/* Creator Name: Now rendered using full textClass brightness, bold weight, and a distinct bottom margin */}
+        {creatorName && (
+          <span className={`font-sans text-sm font-medium tracking-normal capitalize leading-tight mb-01 ${textClass}`}>
+            {creatorName}
+          </span>
+        )}
+
+        {/* Supporting Meta Tokens: Keeps the elegant, low-opacity text blend styling */}
+        {label && (
+          <span className={`font-sans text-sm font-medium leading-tight capitalize ${subTextClass}`}>
+            {label}
+          </span>
+        )}
+        
+        {releaseYear && (
+          <span className={`font-sans text-sm font-medium leading-tight capitalize ${subTextClass}`}>
+            {releaseYear}
+          </span>
+        )}
       </div>
 
       {quote && (

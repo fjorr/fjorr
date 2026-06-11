@@ -14,7 +14,6 @@ interface ArtifactPageProps {
   params: Promise<{ slug: string }>;
 }
 
-// === KEEP YOUR EXISTING generateMetadata ENGINE HERE UNTOUCHED ===
 export async function generateMetadata({ params }: ArtifactPageProps): Promise<Metadata> {
   const { slug: urlSlug } = await params;
   const supabase = await createClient();
@@ -35,7 +34,6 @@ export default async function DynamicArtifactPage({ params }: ArtifactPageProps)
   const { slug } = await params;
   const supabase = await createClient();
 
-  // ⚡ FAST-TRACK THEME TOKENS FROM SUPABASE
   const { data: colorTokens } = await supabase
     .from('artifact')
     .select('primary_color, is_dark_bg')
@@ -58,22 +56,9 @@ export default async function DynamicArtifactPage({ params }: ArtifactPageProps)
 
       <Suspense 
         fallback={
-          /* ⚡ HIGH-FIDELITY RESPONSIVE BACKDROP INTERFACE ENGINE */
           <main className="w-full lg:h-screen flex-grow flex flex-col lg:flex-row items-stretch lg:items-center relative z-0">
-            
-            {/* 🎬 MEDIA VIEWPORT BLOCK SKELETON LAYER 
-                Matches your production width ratios perfectly across breakpoints */}
             <div className="w-full lg:w-[calc(100%-400px)] h-auto lg:h-full flex items-center justify-center p-0 md:p-10 lg:p-12 relative z-0 flex-grow">
-              
-              {/* 🎯 FIXED MOBILE POSTER SIZE & LAYOUT JUMP:
-                  Forced fluid padding-based aspect ratio boxes on mobile/tablet vs 
-                  locked height ratios on desktop. We now clamp the maximum viewport width 
-                  and aspect ratio constraints so the skeleton mirrors the dynamic poster image geometry exactly.
-                  This eliminates any shifting and locks your vertical poster shape perfectly at 0ms. */}
               <div className="w-full max-w-[400px] md:max-w-4xl max-h-screen overflow-hidden transform lg:-translate-y-[35px] relative">
-                
-                {/* 🎯 ASPECT RATIO SHAPE (The magic clamp variable) */}
-                {/* Forces a fluid vertical poster aspect box on mobile, transitioning safely on tablet/desktop to match picture canvases */}
                 <div className="relative w-full aspect-[1/1.618] sm:aspect-[4/3] md:aspect-[16/10] z-10">
                   <div className="absolute inset-0 w-full h-full z-0">
                     <ServerSafeSkeleton 
@@ -84,11 +69,9 @@ export default async function DynamicArtifactPage({ params }: ArtifactPageProps)
                     />
                   </div>
                 </div>
-
               </div>
             </div>
 
-            {/* 📊 METADATA SIDEBAR LOADER INTERFACE DOCK */}
             <ArtifactSidebar 
               name=""
               label={null}
@@ -107,7 +90,6 @@ export default async function DynamicArtifactPage({ params }: ArtifactPageProps)
               borderClass={borderClass}
               isLoader={true} 
             />
-
           </main>
         }
       >
@@ -134,12 +116,11 @@ async function DeferredArtifactContent({
 }) {
   const supabase = await createClient();
 
-  // Run the deep relational schema compilation query while the skeleton layout renders
+  // 1. Fetch core artifact metadata metrics
   const { data: artifact, error } = await supabase
     .from('artifact')
     .select(`
       id, name, slug, label, description, teaser, quote, primary_color, is_dark_bg, hero_clsx, hero_tall, blok_ogrf, link_cta, link, release_date,
-      creator_map ( role, creator (name) ),
       film!film_artifact ( name, slug, runtime )
     `)
     .eq('slug', urlSlug)
@@ -149,16 +130,24 @@ async function DeferredArtifactContent({
     notFound();
   }
 
+  /* 🎯 THE BULLETPROOF FIX: 
+     Since the main join filter is dropped by the query engine parser, we run an 
+     isolated lookup query directly on creator_map using the resolved artifact.id.
+  */
+  const { data: mappingRows } = await supabase
+    .from('creator_map')
+    .select(`
+      creator ( name )
+    `)
+    .eq('artifact_id', artifact.id);
+
+  // Parse out the nested string securely from the mapping query rows
+  const rawCreatorObj = (mappingRows as any)?.[0]?.creator;
+  const creatorName = rawCreatorObj?.name || '';
+
   const subTextClass = isDarkBg ? 'text-white/60' : 'text-black/60';
   const mutedTextClass = isDarkBg ? 'text-white/40' : 'text-black/40';
-
   const releaseYear = artifact.release_date ? new Date(artifact.release_date).getFullYear() : null;
-
-  const rawCreatorData = artifact.creator_map?.[0]?.creator;
-  const creatorName = Array.isArray(rawCreatorData)
-    ? rawCreatorData[0]?.name || ''
-    : (rawCreatorData as any)?.name || '';
-
   const filmConnections = artifact.film || [];
 
   return (

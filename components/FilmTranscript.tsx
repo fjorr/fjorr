@@ -65,7 +65,7 @@ export default function FilmTranscript({ subtitles, transcripts }: FilmTranscrip
   return (
     <div className="w-full">
       
-      {/* 🎯 FLEX ANCHOR PACK: Links the controller button and the inline X fade button together */}
+      {/* 🎯 CONTROL HEADER PACK */}
       <div className="flex items-center gap-2">
         
         <div className="relative inline-block" ref={dropdownRef}>
@@ -101,7 +101,7 @@ export default function FilmTranscript({ subtitles, transcripts }: FilmTranscrip
             </span>
           </button>
 
-          {/* Dropdown Options (Purely displays language filters now) */}
+          {/* Dropdown Options */}
           {isDropdownOpen && (
             <div className="absolute left-0 mt-2 w-48 bg-[#2a2a2a] rounded-[8px] shadow-2xl overflow-hidden z-50 px-1 py-1">
               {subtitles.map((sub, idx) => (
@@ -125,7 +125,7 @@ export default function FilmTranscript({ subtitles, transcripts }: FilmTranscrip
           )}
         </div>
 
-        {/* 🎯 FADE-IN CLOSE BUTTON TRIGGER */}
+        {/* CLOSE TRIGGER BUTTON */}
         <button
           onClick={() => {
             setIsAccordionOpen(false);
@@ -155,7 +155,11 @@ export default function FilmTranscript({ subtitles, transcripts }: FilmTranscrip
       {/* 🪗 ACCORDION CONTENT DISPLAY LIST */}
       {isAccordionOpen && activeLanguage && (
         <div className="w-full max-w-3xl mb-12 mt-6 transition-all duration-300">
-          <div className="w-full space-y-4 font-sans max-h-[400px] overflow-y-auto pr-4 scrollbar-none">
+          {/* 🎯 CLEAN AUTO-HEIGHT FIX:
+              Removed max-h-[400px], overflow-y-auto, and track padding (pr-4) 
+              so the browser naturally stretches this container vertically.
+          */}
+          <div className="w-full space-y-4 font-sans">
             {parsedTranscriptCues.length > 0 ? (
               parsedTranscriptCues.map((cue, idx) => (
                 <div key={idx} className="flex items-start gap-4 text-base leading-[1.5em]">
