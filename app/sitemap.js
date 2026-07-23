@@ -14,13 +14,13 @@ export default async function sitemap() {
   ].map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date().toISOString().split('T')[0],
-    changeFrequency: 'monthly' as const,
+    changeFrequency: 'monthly',
     priority: route === '' ? 1.0 : 0.6,
   }));
 
   const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   );
 
   const [filmsResponse, artifactsResponse] = await Promise.all([
@@ -33,7 +33,7 @@ export default async function sitemap() {
     lastModified: film.updated_at
       ? new Date(film.updated_at).toISOString().split('T')[0]
       : new Date().toISOString().split('T')[0],
-    changeFrequency: 'weekly' as const,
+    changeFrequency: 'weekly',
     priority: 0.8,
   }));
 
@@ -42,7 +42,7 @@ export default async function sitemap() {
     lastModified: art.updated_at
       ? new Date(art.updated_at).toISOString().split('T')[0]
       : new Date().toISOString().split('T')[0],
-    changeFrequency: 'weekly' as const,
+    changeFrequency: 'weekly',
     priority: 0.7,
   }));
 
