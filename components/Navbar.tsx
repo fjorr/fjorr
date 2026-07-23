@@ -3,19 +3,22 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 interface NavbarProps {
   variant?: 'light' | 'dark';
 }
 
 const EXPLORE_LINKS = [
-  { href: '/', label: 'Films' },
-  { href: '/nominate', label: 'Nominate' },
-  { href: '/partner', label: 'Partner' },
-  { href: '/about', label: 'About' },
-] as const;
+  { href: '/', labelKey: 'films' as const },
+  { href: '/nominate', labelKey: 'nominate' as const },
+  { href: '/partner', labelKey: 'partner' as const },
+  { href: '/about', labelKey: 'about' as const },
+];
 
 function Navbar({ variant = 'light' }: NavbarProps) {
+  const t = useTranslations('Nav');
   const pathname = usePathname() || '';
   const [isTheaterOpen, setIsTheaterOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -96,7 +99,7 @@ function Navbar({ variant = 'light' }: NavbarProps) {
         >
           <div className="w-[50px] shrink-0" />
           <span className="font-sans text-xs font-medium tracking-normal whitespace-nowrap">
-            Short films of the greatest stories
+            {t('tagline')}
           </span>
           <div className="w-[18px] shrink-0" />
         </div>
@@ -133,13 +136,13 @@ function Navbar({ variant = 'light' }: NavbarProps) {
               className="flex items-center shrink-0 cursor-pointer transition-opacity hover:opacity-80"
             >
               <span className={`font-sans text-xs font-medium tracking-normal select-none whitespace-nowrap ${subTextColor}`}>
-                Short films of the greatest stories
+                {t('tagline')}
               </span>
             </Link>
 
             <button
               type="button"
-              aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
+              aria-label={isMenuOpen ? t('closeMenu') : t('openMenu')}
               aria-expanded={isMenuOpen}
               onClick={() => setIsMenuOpen((open) => !open)}
               className={`relative w-[18px] h-[18px] cursor-pointer shrink-0 transition-opacity hover:opacity-70 ${textColor}`}
@@ -163,7 +166,7 @@ function Navbar({ variant = 'light' }: NavbarProps) {
             <div className="overflow-hidden min-h-0">
               <div className="px-[30px] pb-11 pt-4 flex flex-col gap-5">
                 <div className="flex flex-col gap-2">
-                  <p className={`font-sans text-xs font-medium ${mutedLabel}`}>Explore Fjorr</p>
+                  <p className={`font-sans text-xs font-medium ${mutedLabel}`}>{t('explore')}</p>
                   <nav className="flex flex-col gap-1.5">
                     {EXPLORE_LINKS.map((item) => {
                       const isActive =
@@ -172,6 +175,7 @@ function Navbar({ variant = 'light' }: NavbarProps) {
                           : pathname === item.href || pathname.startsWith(`${item.href}/`);
                       const activeMuted =
                         variant === 'light' ? 'text-white/35' : 'text-black/35';
+                      const label = t(item.labelKey);
 
                       if (isActive) {
                         return (
@@ -180,7 +184,7 @@ function Navbar({ variant = 'light' }: NavbarProps) {
                             aria-current="page"
                             className={`font-sans text-[15px] font-semibold tracking-tight cursor-default select-none ${activeMuted}`}
                           >
-                            {item.label}
+                            {label}
                           </span>
                         );
                       }
@@ -192,7 +196,7 @@ function Navbar({ variant = 'light' }: NavbarProps) {
                           onClick={() => setIsMenuOpen(false)}
                           className={`font-sans text-[15px] font-semibold tracking-tight transition-opacity hover:opacity-70 ${textColor}`}
                         >
-                          {item.label}
+                          {label}
                         </Link>
                       );
                     })}
@@ -200,7 +204,7 @@ function Navbar({ variant = 'light' }: NavbarProps) {
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <p className={`font-sans text-xs font-medium ${mutedLabel}`}>Contact</p>
+                  <p className={`font-sans text-xs font-medium ${mutedLabel}`}>{t('contact')}</p>
                   <p className={`font-sans text-[13px] font-medium leading-snug ${
                     variant === 'light' ? 'text-white/50' : 'text-black/50'
                   }`}>
@@ -227,8 +231,13 @@ function Navbar({ variant = 'light' }: NavbarProps) {
                           : 'bg-black/10 text-black hover:bg-black/15'
                     }`}
                   >
-                    {emailCopied ? 'Email copied. Fire away.' : "Let's talk"}
+                    {emailCopied ? t('emailCopied') : t('letsTalk')}
                   </button>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <p className={`font-sans text-xs font-medium ${mutedLabel}`}>{t('language')}</p>
+                  <LanguageSwitcher variant={variant} />
                 </div>
               </div>
             </div>

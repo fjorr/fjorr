@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { createBrowserClient } from '@supabase/ssr';
+import { useTranslations } from 'next-intl';
 
 const CinemaTheater = dynamic(() => import('@/components/CinemaTheater'), {
   ssr: false,
@@ -39,10 +40,13 @@ function isComingSoon(film: MinimalFilm) {
 }
 
 function MetaLine({ film }: { film: MinimalFilm }) {
+  const t = useTranslations('Film');
+  const year = formatYear(film);
   if (isComingSoon(film)) {
     return (
       <p className="font-sans text-[11px] font-medium uppercase tracking-wide text-white/30">
-        Coming Soon
+        {t('comingSoon')}
+        {year ? ` · ${year}` : ''}
       </p>
     );
   }
@@ -64,6 +68,7 @@ function MetaLine({ film }: { film: MinimalFilm }) {
 }
 
 export default function MinimalHomeList({ films }: { films: MinimalFilm[] }) {
+  const t = useTranslations('Film');
   const [showTheater, setShowTheater] = useState(false);
   const [selectedFilm, setSelectedFilm] = useState<any>(null);
 
@@ -152,14 +157,14 @@ export default function MinimalHomeList({ films }: { films: MinimalFilm[] }) {
                   onClick={() => handlePlay(film)}
                   className="h-8 px-3 rounded-[6px] bg-white/15 font-sans text-[13px] font-semibold text-white hover:bg-white/25 transition-colors"
                 >
-                  Play
+                  {t('playShort')}
                 </button>
               )}
               <Link
                 href={`/film/${film.slug}`}
                 className="h-8 px-3 rounded-[6px] bg-white/5 font-sans text-[13px] font-semibold text-white/55 hover:text-white/80 hover:bg-white/10 transition-colors inline-flex items-center"
               >
-                Info
+                {t('info')}
               </Link>
             </div>
           </div>

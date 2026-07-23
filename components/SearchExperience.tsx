@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, Suspense, type ReactNode } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
+import { useTranslations } from 'next-intl';
 
 import SearchIdleView from '@/components/SearchIdleView';
 import SearchResultsGrid from '@/components/SearchResultsGrid';
@@ -42,6 +43,7 @@ function SearchContent({
   className,
 }: SearchExperienceProps) {
   const { isMinimal } = useDisplayMode();
+  const tSearch = useTranslations('Search');
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -194,7 +196,7 @@ function SearchContent({
             type="text"
             value={query}
             onChange={handleInputChange}
-            placeholder="Search"
+            placeholder={tSearch('placeholder')}
             className="w-full bg-white/5 rounded-[10px] h-14 pl-14 pr-12 font-sans font-medium text-[16px] text-white placeholder-white/30 focus:bg-white/10 focus:outline-none focus:ring-0 focus:ring-offset-0 transition-all duration-300 shadow-2xl"
           />
           {query && (

@@ -154,7 +154,7 @@ async function DeferredArtifactContent({
   const filmConnections = artifact.film || [];
 
   return (
-    <main className="w-full lg:h-screen flex-grow flex flex-col lg:flex-row items-stretch lg:items-center animate-in fade-in duration-500 ease-out text-current relative z-0">
+    <main className="w-full lg:h-screen flex-grow flex flex-col lg:flex-row items-stretch lg:items-center text-current relative z-0">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -178,7 +178,7 @@ async function DeferredArtifactContent({
           <img 
             src={artifact.hero_tall || artifact.hero_clsx || ''} 
             alt={artifact.name || 'Fjorr Artifact Screen'} 
-            className="w-full h-auto max-h-full object-contain block mx-auto animate-fadeIn"
+            className="w-full h-auto max-h-full object-contain block mx-auto"
           />
         </picture>
       </div>

@@ -2,7 +2,9 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useLocale } from 'next-intl';
 import type Hls from 'hls.js';
+import { parseLocale } from '@/i18n/config';
 
 interface CinemaTheaterProps {
   film: {
@@ -25,6 +27,7 @@ interface CinemaTheaterProps {
 
 export default function CinemaTheater({ film, onClose, backUrl }: CinemaTheaterProps) {
   const router = useRouter();
+  const locale = parseLocale(useLocale());
 
   // --- UPDATE LAYER STATE ARCHITECTURE ---
   const [isPlaying, setIsPlaying] = useState(false);
@@ -44,7 +47,9 @@ export default function CinemaTheater({ film, onClose, backUrl }: CinemaTheaterP
   const LOGO_SOURCE = "https://media.fjorr.com/assets/studio-logo/fjorr-studio-logo-04.mp4";
 
   // --- CUSTOM REACT SUBTITLE STATE ---
-  const [selectedLangCode, setSelectedLangCode] = useState<string>('none');
+  const [selectedLangCode, setSelectedLangCode] = useState<string>(
+    locale === 'en' ? 'none' : locale
+  );
   const [parsedCues, setParsedCues] = useState<any[]>([]);
   const [currentSubtitleText, setCurrentSubtitleText] = useState<string>('');
   
@@ -366,10 +371,29 @@ export default function CinemaTheater({ film, onClose, backUrl }: CinemaTheaterP
     }
   }, [isPlayingLogo]);
 
+  // Prefer locale-matched captions when the theater opens (fr/es/it if a track exists).
+  useEffect(() => {
+    if (isPlayingLogo || !film) return;
+
+    const tracksArray = cachedSubtitles.length > 0 ? cachedSubtitles : (film?.language_subtitle || []);
+    const hasLocaleTrack = tracksArray.some(
+      (item: any) => (item?.code || '').toLowerCase().trim() === locale
+    );
+    const preferred = locale !== 'en' && hasLocaleTrack ? locale : 'none';
+
+    if (preferred === 'none') {
+      setSelectedLangCode('none');
+      setParsedCues([]);
+      setCurrentSubtitleText('');
+      return;
+    }
+
+    void handleSubtitleSelection(preferred, preferred);
+  }, [isPlayingLogo, film?.id, locale, cachedSubtitles]);
+
   useEffect(() => {
     const filmPlayer = filmPlayerRef.current;
     
-    setSelectedLangCode('none');
     setParsedCues([]);
     setCurrentSubtitleText('');
 

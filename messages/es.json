@@ -1,0 +1,30 @@
+{
+  "Nav": {
+    "tagline": "Cortos de las historias más grandes",
+    "explore": "Explorar Fjorr",
+    "films": "Films",
+    "nominate": "Nominar",
+    "partner": "Partner",
+    "about": "Acerca de",
+    "contact": "Contacto",
+    "letsTalk": "Hablemos",
+    "emailCopied": "Correo copiado. Adelante.",
+    "openMenu": "Abrir menú",
+    "closeMenu": "Cerrar menú",
+    "language": "Idioma"
+  },
+  "DisplayMode": {
+    "cinematic": "Cinemático",
+    "minimal": "Minimal"
+  },
+  "Film": {
+    "play": "Reproducir {runtime}",
+    "playShort": "Reproducir",
+    "info": "Info",
+    "comingSoon": "Próximamente",
+    "presents": "presenta"
+  },
+  "Search": {
+    "placeholder": "Buscar"
+  }
+}

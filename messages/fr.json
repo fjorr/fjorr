@@ -1,0 +1,30 @@
+{
+  "Nav": {
+    "tagline": "Courts métrages des plus grandes histoires",
+    "explore": "Explorer Fjorr",
+    "films": "Films",
+    "nominate": "Nominer",
+    "partner": "Partenaire",
+    "about": "À propos",
+    "contact": "Contact",
+    "letsTalk": "Parlons-en",
+    "emailCopied": "E-mail copié. À vous de jouer.",
+    "openMenu": "Ouvrir le menu",
+    "closeMenu": "Fermer le menu",
+    "language": "Langue"
+  },
+  "DisplayMode": {
+    "cinematic": "Cinéma",
+    "minimal": "Minimal"
+  },
+  "Film": {
+    "play": "Lire {runtime}",
+    "playShort": "Lire",
+    "info": "Infos",
+    "comingSoon": "Bientôt",
+    "presents": "présente"
+  },
+  "Search": {
+    "placeholder": "Rechercher"
+  }
+}

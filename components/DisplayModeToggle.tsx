@@ -1,10 +1,12 @@
 'use client';
 
 import React from 'react';
+import { useTranslations } from 'next-intl';
 import { useDisplayMode } from '@/components/DisplayModeProvider';
 
 /** Cinematic / Minimal switch — no label, centered under home search. */
 export default function DisplayModeToggle() {
+  const t = useTranslations('DisplayMode');
   const { mode, setMode } = useDisplayMode();
 
   return (
@@ -18,7 +20,7 @@ export default function DisplayModeToggle() {
             : 'text-white/40 hover:text-white/70'
         }`}
       >
-        Cinematic
+        {t('cinematic')}
       </button>
       <button
         type="button"
@@ -29,7 +31,7 @@ export default function DisplayModeToggle() {
             : 'text-white/40 hover:text-white/70'
         }`}
       >
-        Minimal
+        {t('minimal')}
       </button>
     </div>
   );

@@ -1,0 +1,30 @@
+{
+  "Nav": {
+    "tagline": "Cortometraggi delle storie più grandi",
+    "explore": "Esplora Fjorr",
+    "films": "Film",
+    "nominate": "Candida",
+    "partner": "Partner",
+    "about": "Chi siamo",
+    "contact": "Contatti",
+    "letsTalk": "Parliamone",
+    "emailCopied": "Email copiata. A te la palla.",
+    "openMenu": "Apri menu",
+    "closeMenu": "Chiudi menu",
+    "language": "Lingua"
+  },
+  "DisplayMode": {
+    "cinematic": "Cinema",
+    "minimal": "Minimal"
+  },
+  "Film": {
+    "play": "Guarda {runtime}",
+    "playShort": "Guarda",
+    "info": "Info",
+    "comingSoon": "Prossimamente",
+    "presents": "presenta"
+  },
+  "Search": {
+    "placeholder": "Cerca"
+  }
+}

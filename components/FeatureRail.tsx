@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 
 interface FilmAsset {
   id: string;
@@ -31,6 +32,7 @@ interface FeatureRailProps {
 }
 
 export default function FeatureRail({ films, activeIndex, onSlideChange, onPlayClick, isTheaterActive = false }: FeatureRailProps) {
+  const t = useTranslations('Film');
   const fallbackBg = 'linear-gradient(to bottom, #4C7A57, #36593E)';
   
   const [isPlaying, setIsPlaying] = useState(true);
@@ -182,7 +184,7 @@ export default function FeatureRail({ films, activeIndex, onSlideChange, onPlayC
             {/* 🎯 RESOLVED SPONSOR VIEWPORT */}
             {sponsorName && (
               <div className="w-full font-sans font-bold text-[13px] text-white/90 tracking-wide mb-2.5 antialiased">
-                {sponsorName} <span className="font-medium text-white/70">presents</span>
+                {sponsorName} <span className="font-medium text-white/70">{t('presents')}</span>
               </div>
             )}
 
@@ -256,7 +258,7 @@ export default function FeatureRail({ films, activeIndex, onSlideChange, onPlayC
                 className="w-4 h-4 select-none object-contain translate-y-[0.5px]" 
                 alt="Play Icon" 
               />
-              <span>Play {getRuntimeDisplay()}</span>
+              <span>{t('play', { runtime: getRuntimeDisplay() })}</span>
             </button>
           </div>
         </div>

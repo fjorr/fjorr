@@ -1,0 +1,30 @@
+{
+  "Nav": {
+    "tagline": "Short films of the greatest stories",
+    "explore": "Explore Fjorr",
+    "films": "Films",
+    "nominate": "Nominate",
+    "partner": "Partner",
+    "about": "About",
+    "contact": "Contact",
+    "letsTalk": "Let's talk",
+    "emailCopied": "Email copied. Fire away.",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "language": "Language"
+  },
+  "DisplayMode": {
+    "cinematic": "Cinematic",
+    "minimal": "Minimal"
+  },
+  "Film": {
+    "play": "Play {runtime}",
+    "playShort": "Play",
+    "info": "Info",
+    "comingSoon": "Coming Soon",
+    "presents": "presents"
+  },
+  "Search": {
+    "placeholder": "Search"
+  }
+}

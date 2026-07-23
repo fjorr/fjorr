@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Play } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface FilmHeroProps {
   film: any;
@@ -9,6 +10,7 @@ interface FilmHeroProps {
 }
 
 export default function FilmHero({ film, onPlayClick }: FilmHeroProps) {
+  const t = useTranslations('Film');
   const fallbackBg = 'linear-gradient(to bottom, #4C7A57, #36593E)';
 
   const isReleased = film.release_date 
@@ -61,7 +63,7 @@ export default function FilmHero({ film, onPlayClick }: FilmHeroProps) {
             {/* 🎯 SPONSOR INJECTION VIEW */}
             {sponsorName && (
               <div className="w-full font-sans font-bold text-[13px] text-white/90 tracking-wide mb-2.5 antialiased">
-                {sponsorName} <span className="font-medium text-white/70">presents</span>
+                {sponsorName} <span className="font-medium text-white/70">{t('presents')}</span>
               </div>
             )}
 
@@ -104,7 +106,7 @@ export default function FilmHero({ film, onPlayClick }: FilmHeroProps) {
                   className="w-5 h-5 select-none object-contain translate-y-[0.5px]" 
                   alt="Play" 
                 />
-                <span>Play {getRuntimeDisplay()}</span>
+                <span>{t('play', { runtime: getRuntimeDisplay() })}</span>
               </button>
             ) : (
               <div className="h-10 px-6 inline-flex items-center justify-center gap-2 bg-white/20 backdrop-blur-md text-white/80 font-sans font-bold text-sm tracking-normal rounded-full border border-white/5 select-none">
@@ -120,7 +122,7 @@ export default function FilmHero({ film, onPlayClick }: FilmHeroProps) {
                   <circle cx="12" cy="12" r="9" />
                   <path d="M12 7v5l3 2" />
                 </svg>
-                <span>Coming Soon</span>
+                <span>{t('comingSoon')}</span>
               </div>
             )}
           </div>
