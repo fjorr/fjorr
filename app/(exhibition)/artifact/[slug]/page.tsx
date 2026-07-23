@@ -49,7 +49,10 @@ export default async function DynamicArtifactPage({ params }: ArtifactPageProps)
 
   return (
     <div 
-      style={{ backgroundColor: customBg }}
+      style={{ 
+        backgroundColor: customBg,
+        ['--page-bg-color' as string]: customBg,
+      }}
       className={`w-full min-h-screen flex flex-col justify-between select-none transition-colors duration-500 ease-out ${textClass}`}
     >
       <Navbar variant={isDarkBg ? 'light' : 'dark'} />

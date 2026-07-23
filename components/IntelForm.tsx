@@ -51,7 +51,7 @@ export function IntelForm({ variant, isCustomVariant = true }: IntelFormProps) {
           <input 
             type="text" 
             name="email"
-            placeholder="Email" 
+            placeholder="Enter email for updates" 
             disabled={isPending}
             className={`w-full rounded-[8px] h-12 pl-5 pr-12 font-sans font-semibold text-[14px] focus:outline-none transition-all duration-200 disabled:opacity-50
               ${isCustomVariant 

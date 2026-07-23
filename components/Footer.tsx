@@ -50,58 +50,7 @@ export default function Footer({ variant }: FooterProps) {
       `}
     >
       
-      {/* 1. THE TOP BRAND ICON LAYER */}
-      <div className="mb-6 transition-colors">
-        <Link 
-          href="/" 
-          className={`w-6 h-6 mx-auto block hover:opacity-70 transition-opacity cursor-pointer ${textColor}`}
-          aria-label="Go to homepage"
-        >
-          {/* 🎯 INLINED RAW CLEAN LOGO SVG */}
-          <svg 
-            viewBox="0 0 146 146" 
-            fill="none" 
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-full h-full"
-          >
-            <path 
-              d="M124.53 103.73V113.76H105.63C103.42 113.76 101.63 111.97 101.63 109.76V60.37C101.63 58.16 103.42 56.37 105.63 56.37H136.2L136.14 103.72C136.14 103.72 124.37 103.74 124.54 103.74L124.53 103.73Z" 
-              fill="currentColor"
-            />
-            <path 
-              d="M141.18 44.49C143.61 44.49 145.59 42.52 145.59 40.08V4.63C145.59 2.07 143.52 0 140.96 0H45.12C20.2 0 0 20.2 0 45.12V140.96C0 143.52 2.07 145.59 4.63 145.59H140.95C143.51 145.59 145.58 143.52 145.58 140.96V130.15C145.58 127.66 143.56 125.64 141.07 125.64H105.62C96.85 125.64 89.74 118.53 89.74 109.76V60.37C89.74 51.6 96.85 44.49 105.62 44.49H141.18Z" 
-              fill="currentColor"
-            />
-          </svg>
-        </Link>
-      </div>
-
-      {/* 2. THE THREE NAVIGATION TRACKS (Trade Gothic) */}
-      <div className="flex flex-col gap-0 mb-6 font-tradeGothic uppercase tracking-tight text-[16px] md:text-[16px] leading-tight">
-        
-        {/* ROW 1: COMPANY */}
-        <div className="flex items-center justify-center gap-1 leading-tight">
-          <span className={`${mutedTextColor} font-bold select-none transition-colors`}>Company</span>
-          <Link href="/about" className={`${textColor} font-bold hover:opacity-70 transition-opacity`}>About</Link>
-          <Link href="/contact" className={`${textColor} font-bold hover:opacity-70 transition-opacity`}>Contact</Link>
-        </div>
-
-        {/* ROW 2: PARTICIPATE */}
-        <div className="flex items-center justify-center gap-1 leading-tight">
-          <span className={`${mutedTextColor} font-bold select-none transition-colors`}>Participate</span>
-          <Link href="/nominate" className={`${textColor} font-bold hover:opacity-70 transition-opacity`}>Nominate</Link>
-          <Link href="/partner" className={`${textColor} font-bold hover:opacity-70 transition-opacity`}>Partner</Link>
-        </div>
-
-        {/* ROW 3: EXPLORE */}
-        <div className="flex items-center justify-center gap-1 leading-tight">
-          <span className={`${mutedTextColor} font-bold select-none transition-colors`}>Explore</span>
-          <Link href="/" className={`${textColor} font-bold hover:opacity-70 transition-opacity`}>Films</Link>
-        </div>
-
-      </div>
-
-      {/* 3. THE NEWSLETTER INPUT WRAPPER BLOCK */}
+      {/* Newsletter input */}
       <div className="w-full max-w-64 mb-6">
         {/* Pass down light/dark variant props safely, using light colors to force dark inputs if on about page */}
         <IntelForm 
@@ -114,8 +63,7 @@ export default function Footer({ variant }: FooterProps) {
       <div className="max-w-2xl mb-2">
         <p className={`font-sans font-normal text-[12px] leading-[1.4em] tracking-normal transition-colors ${subTextColor}`}>
           Fjorr is home to short cinematic films about the world’s greatest <br className="hidden md:block" />
-          stories. The stories are intended for cultural, educational, and creative <br className="hidden md:block" />
-          purposes and may reflect artistic interpretation.
+          stories. The stories are intended for cultural, educational, and creative purposes.
         </p>
       </div>
 
