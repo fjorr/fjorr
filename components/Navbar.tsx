@@ -208,7 +208,7 @@ function Navbar({ variant = 'light' }: NavbarProps) {
                   <p className={`font-sans text-[13px] font-medium leading-snug ${
                     variant === 'light' ? 'text-white/50' : 'text-black/50'
                   }`}>
-                    Ideas, partnerships, or something worth making. We&apos;re here for it.
+                    {t('contactBlurb')}
                   </p>
                   <button
                     type="button"

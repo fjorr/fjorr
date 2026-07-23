@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: ArtifactPageProps): Promise<M
   if (!artifact) return { title: 'Artifact Not Found' };
   const titleText = artifact.name;
   const descriptionText = artifact.teaser || 'Explore this cultural artifact on Fjorr.';
-  const ogImageUrl = artifact.blok_ogrf || 'https://fjorr.com/og-main-preview.jpg';
+  const ogImageUrl = artifact.blok_ogrf || 'https://fjorr.com/opengraph-image.png';
   return {
     title: titleText,
     description: descriptionText,
@@ -163,7 +163,7 @@ async function DeferredArtifactContent({
             "@type": "CreativeWork",
             "name": artifact.name,
             "description": artifact.description || artifact.teaser,
-            "image": artifact.blok_ogrf || artifact.hero_tall || "https://fjorr.com/og-main-preview.jpg",
+            "image": artifact.blok_ogrf || artifact.hero_tall || "https://fjorr.com/opengraph-image.png",
             "dateCreated": artifact.release_date,
             "creator": { "@type": "Person", "name": creatorName || "Fjorr Contributor" },
             "publisher": { "@type": "Organization", "name": "Fjorr" }

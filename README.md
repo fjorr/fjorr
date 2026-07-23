@@ -24,7 +24,8 @@ Set these in `.env.local` (or in Vercel):
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Used by most app code (server + client queries) |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Used by middleware session refresh (`lib/supabase/proxy.ts`). Set this to the same value as the anon key if you only have one key. |
-| `SITE_PASSWORD` | Site-wide preview gate password (defaults to `fjorr-preview-2026` if unset) |
+| `SITE_PASSWORD` | Only used when `SITE_GATE_ENABLED=true` (staging preview gate) |
+| `SITE_GATE_ENABLED` | Set to `true` on staging/preview to re-enable `/password` gate. Leave unset/false in production. |
 | `SUPABASE_SERVICE_ROLE_KEY` | Optional. Used by the newsletter signup server action for writes to `intel_list`. Falls back to anon key if missing. |
 
 **Debug tip:** visit `/debug-db` to confirm the server can reach Supabase and read from the `film` table.
@@ -67,7 +68,7 @@ Page (Server or Client Component)
 Supabase query → render
 ```
 
-**Site password gate:** Before anything else, `middleware.ts` checks for a `site-auth` cookie. Without it, users are sent to `/password`. Submitting the correct phrase via `POST /api/gate` sets the cookie for 7 days.
+**Site password gate:** Disabled in production by default. Set `SITE_GATE_ENABLED=true` (and optionally `SITE_PASSWORD`) on staging/preview if you want the `/password` cookie gate. Middleware no longer forces anonymous visitors through Supabase login.
 
 **Note:** There is also an `app/middleware.ts` file — Next.js only runs the root `middleware.ts`. The one inside `app/` is unused.
 

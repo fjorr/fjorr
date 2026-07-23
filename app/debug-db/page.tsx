@@ -1,7 +1,12 @@
 import React from 'react';
 import { createClient } from '@/utils/supabase/server';
+import type { Metadata } from 'next';
 
 export const dynamic = 'force-dynamic';
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 export default async function DebugDatabasePage() {
   let serverUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'NOT FOUND';

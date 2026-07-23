@@ -9,6 +9,7 @@
     "contact": "Contact",
     "letsTalk": "Parlons-en",
     "emailCopied": "E-mail copié. À vous de jouer.",
+    "contactBlurb": "Idées, partenariats, ou quelque chose qui mérite d'être fait. On est là.",
     "openMenu": "Ouvrir le menu",
     "closeMenu": "Fermer le menu",
     "language": "Langue"
@@ -26,5 +27,42 @@
   },
   "Search": {
     "placeholder": "Rechercher"
+  },
+  "Nominate": {
+    "title": "Nominer.",
+    "description": "Vous connaissez une histoire que le monde doit entendre ? Un bout d'histoire. Une aventure fictive. Une légende oubliée. Proposez-la. Votre nom figurera au générique. Les droits de se vanter sont inclus.",
+    "storyPlaceholder": "Quelques mots ou une saga entière, écrivez-les ici.",
+    "emailPlaceholder": "Entrez votre e-mail.",
+    "disclaimer": "Nous examinons tout de bonne foi. Les nominations sont des pistes — nous développons peut-être déjà des idées similaires. Elles ne créent ni propriété ni rémunération, mais nous prenons chaque proposition au sérieux.",
+    "submit": "Nominer",
+    "submitting": "Envoi...",
+    "storyRequired": "L'histoire est obligatoire.",
+    "emailRequired": "L'e-mail est obligatoire.",
+    "emailInvalid": "Format d'e-mail invalide.",
+    "submitError": "Échec de la communication. Réessayez plus tard.",
+    "successTitle": "Reçu.",
+    "successBody": "Merci de nous avoir envoyé cette histoire. Nous l'examinerons avec soin. Si elle nous semble juste, nous vous recontacterons.",
+    "submitMore": "En proposer une autre",
+    "nominationLabel": "Nomination {number}"
+  },
+  "Partner": {
+    "headlineLine1": "Faites-les",
+    "headlineLine2": "Ressentir.",
+    "description": "Nous travaillons avec des marques, des studios et des personnes qui croient que les histoires façonnent les gens. Des films originaux aux partenariats culturels, nous collaborons pour donner vie à des idées qui comptent.",
+    "imageAlt": "Partenariats Fjorr"
+  },
+  "Footer": {
+    "blurb": "Fjorr accueille des courts métrages cinématographiques sur les plus grandes histoires du monde. Ces récits sont destinés à des fins culturelles, éducatives et créatives.",
+    "privacy": "Politique de confidentialité",
+    "terms": "Conditions d'utilisation",
+    "copyright": "© 2026 Fjorr. Tous droits réservés.",
+    "emailPlaceholder": "E-mail pour les actus",
+    "subscribeAria": "S'abonner à la newsletter",
+    "welcome": "Bienvenue sur Fjorr. C'est noté.",
+    "emailRequired": "E-mail obligatoire",
+    "emailInvalid": "Cet e-mail semble incorrect.",
+    "configError": "Erreur de configuration. Réessayez plus tard.",
+    "alreadyIn": "Cet e-mail est déjà inscrit.",
+    "somethingWrong": "Une erreur s'est produite. Réessayez."
   }
 }

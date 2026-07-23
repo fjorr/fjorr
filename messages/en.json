@@ -9,6 +9,7 @@
     "contact": "Contact",
     "letsTalk": "Let's talk",
     "emailCopied": "Email copied. Fire away.",
+    "contactBlurb": "Ideas, partnerships, or something worth making. We're here for it.",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
     "language": "Language"
@@ -26,5 +27,42 @@
   },
   "Search": {
     "placeholder": "Search"
+  },
+  "Nominate": {
+    "title": "Nominate.",
+    "description": "Know a story the world needs to hear? A piece of history. A fictional adventure. A forgotten legend. Nominate it. Your name goes on the film. Bragging rights included.",
+    "storyPlaceholder": "A few words or a sprawling saga, write it here.",
+    "emailPlaceholder": "Enter your email.",
+    "disclaimer": "We review everything in good faith. Nominations are simply pointers—we may already be developing similar ideas. They don't create ownership or compensation, but we take every submission seriously.",
+    "submit": "Nominate",
+    "submitting": "Sending...",
+    "storyRequired": "Story is required.",
+    "emailRequired": "Email is required.",
+    "emailInvalid": "Invalid email format.",
+    "submitError": "Database communication dropped. Please try again later.",
+    "successTitle": "Logged.",
+    "successBody": "Thank you for sending this story our way. We'll review it with care. If it feels like a fit, we'll be in touch.",
+    "submitMore": "Submit more",
+    "nominationLabel": "Nomination {number}"
+  },
+  "Partner": {
+    "headlineLine1": "Make",
+    "headlineLine2": "'Em Feel.",
+    "description": "We work with brands, studios, and individuals who believe stories shape people. From original films to cultural partnerships, we collaborate to bring meaningful ideas to life.",
+    "imageAlt": "Fjorr Partnerships"
+  },
+  "Footer": {
+    "blurb": "Fjorr is home to short cinematic films about the world's greatest stories. The stories are intended for cultural, educational, and creative purposes.",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Use",
+    "copyright": "© 2026 Fjorr. All rights reserved.",
+    "emailPlaceholder": "Enter email for updates",
+    "subscribeAria": "Subscribe to newsletter",
+    "welcome": "Welcome to Fjorr. You're in.",
+    "emailRequired": "Email required",
+    "emailInvalid": "That email looks a bit off.",
+    "configError": "Configuration error. Try again later.",
+    "alreadyIn": "Email is already in.",
+    "somethingWrong": "Something went wrong. Try again."
   }
 }

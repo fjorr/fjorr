@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!film) return { title: 'Film Not Found' };
   const titleText = film.name;
   const descriptionText = film.teaser || 'Watch this short film on Fjorr.';
-  const ogImageUrl = film.blok_ogrf || 'https://fjorr.com/og-main-preview.jpg';
+  const ogImageUrl = film.blok_ogrf || 'https://fjorr.com/opengraph-image.png';
   return {
     title: titleText,
     description: descriptionText,
@@ -113,7 +113,7 @@ async function DeferredPageContent({ urlSlug }: { urlSlug: string }) {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ "@context": "https://schema.org", "@type": "Movie", "name": filmData.name, "description": filmData.teaser, "image": filmData.blok_ogrf || "https://fjorr.com/og-main-preview.jpg", "datePublished": filmData.release_date, "productionCompany": { "@type": "Organization", "name": "Fjorr" } }) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ "@context": "https://schema.org", "@type": "Movie", "name": filmData.name, "description": filmData.teaser, "image": filmData.blok_ogrf || "https://fjorr.com/opengraph-image.png", "datePublished": filmData.release_date, "productionCompany": { "@type": "Organization", "name": "Fjorr" } }) }} />
       
       <FilmPageContentWrapper 
         filmData={filmData}

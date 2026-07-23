@@ -9,6 +9,7 @@
     "contact": "Contatti",
     "letsTalk": "Parliamone",
     "emailCopied": "Email copiata. A te la palla.",
+    "contactBlurb": "Idee, partnership o qualcosa che valga la pena fare. Ci siamo.",
     "openMenu": "Apri menu",
     "closeMenu": "Chiudi menu",
     "language": "Lingua"
@@ -26,5 +27,42 @@
   },
   "Search": {
     "placeholder": "Cerca"
+  },
+  "Nominate": {
+    "title": "Candida.",
+    "description": "Conosci una storia che il mondo deve sentire? Un pezzo di storia. Un'avventura di finzione. Una leggenda dimenticata. Candidala. Il tuo nome finisce sul film. Diritti di vantarsene inclusi.",
+    "storyPlaceholder": "Poche parole o un'intera saga: scrivila qui.",
+    "emailPlaceholder": "Inserisci la tua email.",
+    "disclaimer": "Esaminiamo tutto in buona fede. Le candidature sono solo spunti: potremmo già stare sviluppando idee simili. Non creano proprietà né compensi, ma prendiamo ogni invio sul serio.",
+    "submit": "Candida",
+    "submitting": "Invio...",
+    "storyRequired": "La storia è obbligatoria.",
+    "emailRequired": "L'email è obbligatoria.",
+    "emailInvalid": "Formato email non valido.",
+    "submitError": "Comunicazione fallita. Riprova più tardi.",
+    "successTitle": "Registrato.",
+    "successBody": "Grazie per averci inviato questa storia. La esamineremo con cura. Se ci sembra adatta, ti contatteremo.",
+    "submitMore": "Inviane un'altra",
+    "nominationLabel": "Candidatura {number}"
+  },
+  "Partner": {
+    "headlineLine1": "Falli",
+    "headlineLine2": "Sentire.",
+    "description": "Lavoriamo con brand, studi e persone che credono che le storie plasmino le persone. Dai film originali alle partnership culturali, collaboriamo per dare vita a idee che contano.",
+    "imageAlt": "Partnership Fjorr"
+  },
+  "Footer": {
+    "blurb": "Fjorr ospita cortometraggi cinematografici sulle grandi storie del mondo. I racconti sono pensati per scopi culturali, educativi e creativi.",
+    "privacy": "Informativa sulla privacy",
+    "terms": "Termini di utilizzo",
+    "copyright": "© 2026 Fjorr. Tutti i diritti riservati.",
+    "emailPlaceholder": "Email per gli aggiornamenti",
+    "subscribeAria": "Iscriviti alla newsletter",
+    "welcome": "Benvenuto su Fjorr. Sei dentro.",
+    "emailRequired": "Email obbligatoria",
+    "emailInvalid": "Quell'email non sembra corretta.",
+    "configError": "Errore di configurazione. Riprova più tardi.",
+    "alreadyIn": "Email già registrata.",
+    "somethingWrong": "Qualcosa è andato storto. Riprova."
   }
 }

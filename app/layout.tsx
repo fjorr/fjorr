@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/og-main-preview.jpg",
+        url: "/opengraph-image.png",
         width: 1200,
         height: 630,
         alt: "Fjorr Cinematic Myth Engine Preview Layout",
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Fjorr",
     description: "Short films about the world’s greatest stories.",
-    images: ["/og-main-preview.jpg"],
+    images: ["/opengraph-image.png"],
   },
   robots: {
     index: true,

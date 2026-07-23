@@ -9,6 +9,7 @@
     "contact": "Contacto",
     "letsTalk": "Hablemos",
     "emailCopied": "Correo copiado. Adelante.",
+    "contactBlurb": "Ideas, alianzas o algo que valga la pena hacer. Estamos aquí.",
     "openMenu": "Abrir menú",
     "closeMenu": "Cerrar menú",
     "language": "Idioma"
@@ -26,5 +27,42 @@
   },
   "Search": {
     "placeholder": "Buscar"
+  },
+  "Nominate": {
+    "title": "Nominar.",
+    "description": "¿Conoces una historia que el mundo necesita oír? Un trozo de historia. Una aventura de ficción. Una leyenda olvidada. Nomínala. Tu nombre irá en la película. Derechos de alarde incluidos.",
+    "storyPlaceholder": "Unas palabras o una saga entera: escríbela aquí.",
+    "emailPlaceholder": "Introduce tu email.",
+    "disclaimer": "Revisamos todo de buena fe. Las nominaciones son solo pistas: quizá ya estemos desarrollando ideas similares. No crean propiedad ni compensación, pero tomamos cada envío en serio.",
+    "submit": "Nominar",
+    "submitting": "Enviando...",
+    "storyRequired": "La historia es obligatoria.",
+    "emailRequired": "El email es obligatorio.",
+    "emailInvalid": "Formato de email no válido.",
+    "submitError": "Falló la comunicación. Inténtalo más tarde.",
+    "successTitle": "Registrado.",
+    "successBody": "Gracias por enviarnos esta historia. La revisaremos con cuidado. Si encaja, nos pondremos en contacto.",
+    "submitMore": "Enviar otra",
+    "nominationLabel": "Nominación {number}"
+  },
+  "Partner": {
+    "headlineLine1": "Hazlos",
+    "headlineLine2": "Sentir.",
+    "description": "Trabajamos con marcas, estudios y personas que creen que las historias dan forma a la gente. Desde films originales hasta alianzas culturales, colaboramos para dar vida a ideas con sentido.",
+    "imageAlt": "Alianzas Fjorr"
+  },
+  "Footer": {
+    "blurb": "Fjorr es el hogar de cortos cinematográficos sobre las grandes historias del mundo. Los relatos están pensados con fines culturales, educativos y creativos.",
+    "privacy": "Política de privacidad",
+    "terms": "Términos de uso",
+    "copyright": "© 2026 Fjorr. Todos los derechos reservados.",
+    "emailPlaceholder": "Email para novedades",
+    "subscribeAria": "Suscribirse al boletín",
+    "welcome": "Bienvenido a Fjorr. Ya estás dentro.",
+    "emailRequired": "Email obligatorio",
+    "emailInvalid": "Ese email no parece correcto.",
+    "configError": "Error de configuración. Inténtalo más tarde.",
+    "alreadyIn": "Ese email ya está inscrito.",
+    "somethingWrong": "Algo salió mal. Inténtalo de nuevo."
   }
 }
