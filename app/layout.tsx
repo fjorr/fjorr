@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
-import { cookies } from "next/headers";
 import "./globals.css";
 import { DisplayModeProvider } from "@/components/DisplayModeProvider";
-import { DISPLAY_MODE_COOKIE, parseDisplayMode } from "@/lib/display-mode";
 
 // Fallback constant left clean for alternative pipeline validation if necessary
 const defaultUrl = process.env.VERCEL_URL
@@ -61,13 +59,15 @@ export const metadata: Metadata = {
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-sans",
-  weight: ["300", "400", "500", "700", "800"],
+  weight: ["400", "500", "700", "800"],
+  display: "swap",
 });
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
-  weight: ["300", "400", "500", "700", "800"],
+  weight: ["400", "500", "700"],
+  display: "swap",
 });
 
 const fontVariables = `${inter.variable} ${jetbrainsMono.variable}`;
@@ -77,24 +77,13 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  console.log("--- ENV KEY DEBUGGER ---");
-  console.log("All environment keys found:", Object.keys(process.env));
-  console.log("--------------------------");
-
-  const cookieStore = await cookies();
-  const initialMode = parseDisplayMode(
-    cookieStore.get(DISPLAY_MODE_COOKIE)?.value
-  );
-
   return (
     <html lang="en" className={`${fontVariables} dark`}>
       <head>
         <link rel="stylesheet" href="https://use.typekit.net/xyf8acw.css" />
       </head>
       <body className="font-sans antialiased text-light-01 min-h-screen">
-        <DisplayModeProvider initialMode={initialMode}>
-          {children}
-        </DisplayModeProvider>
+        <DisplayModeProvider>{children}</DisplayModeProvider>
       </body>
     </html>
   );

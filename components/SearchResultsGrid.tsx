@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 
 interface SearchItem {
@@ -59,10 +60,12 @@ export default function SearchResultsGrid({ results }: ResultsGridProps) {
             {/* POSTER CANVAS CONTAINER */}
             <div className="w-full aspect-[2/3] rounded-[8px] border border-white/5 bg-zinc-900/40 overflow-hidden relative shadow-xl group-hover:border-white/10 transition-all duration-300">
               {item.blok_tall ? (
-                <img 
-                  src={item.blok_tall} 
-                  alt={item.name} 
-                  className="w-full h-full object-cover group-hover:scale-[1.01] transition-transform duration-500 pointer-events-none" 
+                <Image
+                  src={item.blok_tall}
+                  alt={item.name}
+                  fill
+                  sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
+                  className="object-cover group-hover:scale-[1.01] transition-transform duration-500 pointer-events-none"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-emerald-500/20 text-emerald-400 font-mono text-[10px] tracking-widest uppercase">

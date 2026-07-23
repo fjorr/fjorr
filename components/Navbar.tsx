@@ -21,7 +21,6 @@ function Navbar({ variant = 'light' }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [emailCopied, setEmailCopied] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
-  const widthLockRef = useRef<HTMLDivElement>(null);
   const contactEmail = 'scout@fjorr.com';
 
   const textColor = variant === 'light' ? 'text-white' : 'text-black';
@@ -45,27 +44,6 @@ function Navbar({ variant = 'light' }: NavbarProps) {
       : 'border-black/5 shadow-[0_8px_32px_rgba(0,0,0,0.1)]';
   const glassAnimClass =
     variant === 'light' ? 'animate-nav-glass' : 'animate-nav-glass-light';
-
-  useEffect(() => {
-    const el = widthLockRef.current;
-    if (!el) return;
-
-    const publishWidth = () => {
-      document.documentElement.style.setProperty(
-        '--nav-glass-width',
-        `${el.getBoundingClientRect().width}px`
-      );
-    };
-
-    publishWidth();
-    const observer = new ResizeObserver(publishWidth);
-    observer.observe(el);
-    // Keep --nav-glass-width around across remounts so the home search bar
-    // doesn't collapse when the navbar effect re-runs (e.g. Strict Mode).
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
 
   useEffect(() => {
     if (!isMenuOpen) setEmailCopied(false);
@@ -113,7 +91,6 @@ function Navbar({ variant = 'light' }: NavbarProps) {
       <div ref={panelRef} className="relative h-[50px] pointer-events-auto">
         {/* In-flow width lock — keeps header height fixed while menu floats */}
         <div
-          ref={widthLockRef}
           className="flex h-[50px] px-[30px] items-center gap-[20px] opacity-0 pointer-events-none select-none"
           aria-hidden
         >

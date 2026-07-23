@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { ContactPill } from '@/components/ui/contact-pill'; 
 
 export default function PromoSplit() {
@@ -23,11 +24,15 @@ export default function PromoSplit() {
             {/* CLOUDFLARE ASSET: Left Dark Texture Backing */}
             {/* 💥 FIXED: Added 'hidden lg:block' so this dark backing image is completely 
                 deleted on mobile and only appears on desktop. */}
-            <img 
-              src="https://media.fjorr.com/assets/fjorr-partner-promo-crowd-f1v04.avif" 
-              alt="Partnerships Background"
-              className="hidden lg:block absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-luminosity pointer-events-none rounded-[8px]"
-            />
+            <div className="hidden lg:block absolute inset-0 pointer-events-none">
+              <Image
+                src="https://media.fjorr.com/assets/fjorr-partner-promo-crowd-f1v04.avif"
+                alt="Partnerships Background"
+                fill
+                sizes="50vw"
+                className="object-cover opacity-40 mix-blend-luminosity rounded-[8px]"
+              />
+            </div>
             
             {/* ABSOLUTE COPY OVERLAY CONTAINER */}
             {/* 💥 FIXED: Changed 'absolute inset-0 z-10' to 'relative z-10 flex flex-col' for fluid stacking */}
@@ -68,13 +73,13 @@ export default function PromoSplit() {
           </div>
 
           {/* RIGHT CONTAINER (The Crowd Portrait Frame) */}
-          <div className="w-full lg:w-1/2 aspect-[4/3] lg:aspect-square bg-transparent drop-shadow-[0_10px_20px_rgba(0,0,0,0.4)]">
-            {/* CLOUDFLARE ASSET: Right Portrait Photo */}
-            <img 
-              src="https://media.fjorr.com/assets/fjorr-partner-promo-crowd-f2v04.avif" 
+          <div className="w-full lg:w-1/2 aspect-[4/3] lg:aspect-square bg-transparent drop-shadow-[0_10px_20px_rgba(0,0,0,0.4)] relative">
+            <Image
+              src="https://media.fjorr.com/assets/fjorr-partner-promo-crowd-f2v04.avif"
               alt="Crowd Feeling Stories"
-              className="w-full h-full object-cover filter grayscale rounded-[8px]"
-              loading="lazy"
+              fill
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              className="object-cover filter grayscale rounded-[8px]"
             />
           </div>
 

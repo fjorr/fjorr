@@ -34,15 +34,12 @@ type SearchExperienceProps = {
   /** Called whenever search goes from empty ↔ active (trimmed query length > 0). */
   onSearchActiveChange?: (active: boolean) => void;
   className?: string;
-  /** Match the sticky navbar glass pill width (--nav-glass-width). */
-  matchNavWidth?: boolean;
 };
 
 function SearchContent({
   idleContent,
   onSearchActiveChange,
   className,
-  matchNavWidth = false,
 }: SearchExperienceProps) {
   const { isMinimal } = useDisplayMode();
   const searchParams = useSearchParams();
@@ -69,6 +66,9 @@ function SearchContent({
     onSearchActiveChange?.(isSearchActive);
   }, [isSearchActive, onSearchActiveChange]);
 
+  const SEARCH_SELECT =
+    'id, internal_id, item_type, slug, name, teaser, blok_tall, search_content, release_date, rating, theme, runtime, label, creator';
+
   useEffect(() => {
     // Home preview supplies its own idle rails — skip the "latest" fetch there.
     if (idleContent !== undefined) return;
@@ -77,7 +77,7 @@ function SearchContent({
       const currentIsoString = new Date().toISOString();
       const { data } = await supabase
         .from('search')
-        .select('*')
+        .select(SEARCH_SELECT)
         .lte('release_date', currentIsoString)
         .order('release_date', { ascending: false })
         .limit(5);
@@ -103,8 +103,9 @@ function SearchContent({
     const delayDebounceFn = setTimeout(async () => {
       const { data, error } = await supabase
         .from('search')
-        .select('*')
-        .or(`name.ilike.%${query}%,teaser.ilike.%${query}%,search_content.ilike.%${query}%`);
+        .select(SEARCH_SELECT)
+        .or(`name.ilike.%${query}%,teaser.ilike.%${query}%,search_content.ilike.%${query}%`)
+        .limit(40);
 
       if (!error && data) {
         const cleanQuery = query.toLowerCase().trim();
@@ -182,16 +183,7 @@ function SearchContent({
   return (
     <div className={className ?? 'w-full max-w-4xl flex flex-col items-center gap-8'}>
       <div className="w-full flex flex-col items-center gap-4">
-        <div
-          className={`relative group animate-in fade-in slide-in-from-top-3 duration-500 fill-mode-both [transform:translateZ(0)] [backface-visibility:hidden] max-w-full ${
-            matchNavWidth ? '' : 'w-full max-w-sm'
-          }`}
-          style={
-            matchNavWidth
-              ? { width: 'var(--nav-glass-width, 24rem)' }
-              : undefined
-          }
-        >
+        <div className="relative group w-full max-w-sm animate-in fade-in slide-in-from-top-3 duration-500 fill-mode-both [transform:translateZ(0)] [backface-visibility:hidden]">
           <span className="absolute left-5 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none transition-colors group-focus-within:text-white/80">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />

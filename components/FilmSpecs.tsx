@@ -53,10 +53,11 @@ export default function FilmSpecs({
           {film.note && <span className="font-normal">{film.note}</span>}
         </div>
 
-        {/* SEPARATED CAPTIONS TRANSCRIPT MODULE */}
-        <div className="mt-6">
-          <FilmTranscript subtitles={subtitles} transcripts={transcripts} />
-        </div>
+        {subtitles.length > 0 && (
+          <div className="mt-6">
+            <FilmTranscript subtitles={subtitles} transcripts={transcripts} />
+          </div>
+        )}
       </div>
 
       {/* 📋 UNIFIED DETAILS PANEL */}
@@ -95,12 +96,14 @@ export default function FilmSpecs({
             <span className="text-white font-semibold">{audioLanguages.join(', ')}</span>
           </div>
 
-          <div className="flex items-baseline gap-2">
-            <span className="text-white/40 font-medium">Subtitles</span>
-            <span className="text-white font-semibold">
-              {subtitles.map(s => s.name).join(', ')}
-            </span>
-          </div>
+          {subtitles.length > 0 && (
+            <div className="flex items-baseline gap-2">
+              <span className="text-white/40 font-medium">Subtitles</span>
+              <span className="text-white font-semibold">
+                {subtitles.map(s => s.name).join(', ')}
+              </span>
+            </div>
+          )}
 
           {themes.length > 0 && (
             <div className="flex items-baseline gap-2">

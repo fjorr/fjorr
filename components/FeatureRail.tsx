@@ -160,6 +160,8 @@ export default function FeatureRail({ films, activeIndex, onSlideChange, onPlayC
                 src={currentFilm.hero_tall || currentFilm.hero_clsx || currentFilm.hero_wide} 
                 alt={currentFilm.name || "Featured Film Asset"} 
                 className="w-full h-full object-cover"
+                fetchPriority="high"
+                decoding="async"
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';
                   if (e.currentTarget.parentElement?.parentElement) {

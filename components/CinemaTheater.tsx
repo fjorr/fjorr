@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import type Hls from 'hls.js';
 
 interface CinemaTheaterProps {
   film: {
@@ -55,6 +56,7 @@ export default function CinemaTheater({ film, onClose, backUrl }: CinemaTheaterP
   const filmPlayerRef = useRef<HTMLVideoElement | null>(null);
   const logoPlayerRef = useRef<HTMLVideoElement | null>(null);
   const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hlsRef = useRef<Hls | null>(null);
 
   const handleCloseNavigation = () => {
     if (backUrl) {
@@ -371,6 +373,11 @@ export default function CinemaTheater({ film, onClose, backUrl }: CinemaTheaterP
     setParsedCues([]);
     setCurrentSubtitleText('');
 
+    if (hlsRef.current) {
+      hlsRef.current.destroy();
+      hlsRef.current = null;
+    }
+
     if (filmPlayer && !isPlayingLogo && film) {
       setIsLoading(true);
       setIsEnded(false);
@@ -385,24 +392,74 @@ export default function CinemaTheater({ film, onClose, backUrl }: CinemaTheaterP
         return;
       }
 
+      const hlsUrl = `https://stream.mux.com/${targetPlaybackId}.m3u8`;
+      let cancelled = false;
+
+      const startPlayback = () => {
+        if (cancelled || !filmPlayerRef.current) return;
+        filmPlayerRef.current.play()
+          .then(() => {
+            setIsPlaying(true);
+            if (filmPlayerRef.current) {
+              setIsMuted(filmPlayerRef.current.muted);
+            }
+          })
+          .catch((err) => {
+            console.warn("Feature play blocked by decoder runtime execution:", err);
+            setIsLoading(false);
+          });
+      };
+
+      // Safari / iOS: native HLS. Everyone else: hls.js ABR (no high.mp4).
       if (filmPlayer.canPlayType('application/vnd.apple.mpegurl')) {
-        filmPlayer.src = `https://stream.mux.com/${targetPlaybackId}.m3u8`;
+        filmPlayer.src = hlsUrl;
+        filmPlayer.load();
+        startPlayback();
       } else {
-        filmPlayer.src = `https://stream.mux.com/${targetPlaybackId}/high.mp4`;
-      }
-      
-      filmPlayer.load();
-      filmPlayer.play()
-        .then(() => {
-          setIsPlaying(true);
-          if (filmPlayerRef.current) {
-            setIsMuted(filmPlayerRef.current.muted);
+        import('hls.js').then(({ default: Hls }) => {
+          if (cancelled || !filmPlayerRef.current) return;
+
+          if (Hls.isSupported()) {
+            const hls = new Hls({
+              enableWorker: true,
+              lowLatencyMode: false,
+              backBufferLength: 30,
+            });
+            hlsRef.current = hls;
+            hls.loadSource(hlsUrl);
+            hls.attachMedia(filmPlayerRef.current);
+            hls.on(Hls.Events.MANIFEST_PARSED, () => {
+              startPlayback();
+            });
+            hls.on(Hls.Events.ERROR, (_event, data) => {
+              if (data.fatal) {
+                console.error('HLS fatal error:', data);
+                setIsLoading(false);
+              }
+            });
+          } else {
+            // Last-resort progressive fallback
+            filmPlayerRef.current.src = `https://stream.mux.com/${targetPlaybackId}/high.mp4`;
+            filmPlayerRef.current.load();
+            startPlayback();
           }
-        })
-        .catch((err) => {
-          console.warn("Feature play blocked by decoder runtime execution:", err);
-          setIsLoading(false);
+        }).catch((err) => {
+          console.error('Failed to load hls.js:', err);
+          if (filmPlayerRef.current) {
+            filmPlayerRef.current.src = `https://stream.mux.com/${targetPlaybackId}/high.mp4`;
+            filmPlayerRef.current.load();
+            startPlayback();
+          }
         });
+      }
+
+      return () => {
+        cancelled = true;
+        if (hlsRef.current) {
+          hlsRef.current.destroy();
+          hlsRef.current = null;
+        }
+      };
     }
   }, [isPlayingLogo, film?.id]); 
 
@@ -500,7 +557,7 @@ export default function CinemaTheater({ film, onClose, backUrl }: CinemaTheaterP
           <video
             ref={filmPlayerRef}
             id="fjorr-engine"
-            preload="auto"
+            preload="metadata"
             playsInline
             crossOrigin="anonymous"
             onCanPlay={handlePlayerReady}

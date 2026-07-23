@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useRef, useState, useEffect } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 
 interface ArtifactRailProps {
@@ -112,7 +113,7 @@ export default function ArtifactRail({ title, artifacts: rawArtifacts }: Artifac
 
   return (
     /* 🎯 PARENT CONTAINER INTERSECTION BOUNDARY: Linked with containerRef to intercept screen viewport entry */
-    <section ref={containerRef} className="w-full pb-0 relative group/rail select-none z-20 px-8 md:px-16">
+    <section ref={containerRef} className="w-full pb-0 relative group/rail z-20 px-8 md:px-16">
       
       {/* Scrollbar hidden styling core structure element */}
       <style dangerouslySetInnerHTML={{__html: `
@@ -164,46 +165,48 @@ export default function ArtifactRail({ title, artifacts: rawArtifacts }: Artifac
           </div>
         </div>
 
-        {/* ARTIFACT CAROUSEL WINDOW PANELS */}
-        <div className="w-full overflow-hidden rounded-[8px]">
-          <div 
-            ref={railRef} 
-            onScroll={handleScroll}
-            className="no-scrollbar w-full grid grid-flow-col auto-cols-[calc((100%-2rem)/3)] md:auto-cols-[calc((100%-3.75rem)/4)] lg:auto-cols-[calc((100%-7.5rem)/6)] gap-4 md:gap-5 lg:gap-6 overflow-x-auto overflow-y-hidden scroll-smooth snap-x snap-mandatory" 
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-          >
-            {activeArtifacts.map((item, index) => {
-              const artifact = item?.artifact ? item.artifact : item;
+        {/* ARTIFACT CAROUSEL — flex + native touch scroll (matches FilmRail; avoids iOS grid scroll lock) */}
+        <div 
+          ref={railRef} 
+          onScroll={handleScroll}
+          className="no-scrollbar w-full flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory touch-pan-x gap-4 md:gap-5 lg:gap-6 overscroll-x-contain rounded-[8px]" 
+          style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-x pinch-zoom', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          {activeArtifacts.map((item, index) => {
+            const artifact = item?.artifact ? item.artifact : item;
+            const cardDelay = `${150 + index * 75}ms`;
 
-              /* 🎯 STAGGER ENGINE: Builds cascading entry transitions using increments based on index locations */
-              const cardDelay = `${150 + index * 75}ms`;
-
-              return (
-                <Link 
-                  key={index} 
-                  href={`/artifact/${artifact.slug}`}
-                  className={`w-full shrink-0 snap-start group/card cursor-pointer block transition-all duration-700 ease-out transform ${
-                    hasEnteredScreen 
-                      ? 'opacity-100 translate-y-0 scale-100' 
-                      : 'opacity-0 translate-y-6 scale-[0.98]'
-                  }`}
-                  /* Safely injects the transitionDelay parameter string to create the visual trailing wave */
-                  style={{ transitionDelay: hasEnteredScreen ? cardDelay : '0ms' }}
-                >
-                  <div className="w-full aspect-[2/3] rounded-[8px] bg-zinc-900/40 border border-white/5 overflow-hidden relative transition-all duration-300 group-hover/card:scale-[1.02] shadow-xl flex items-center justify-center">
-                    {artifact.blok_tall && (
-                      <img 
-                        src={artifact.blok_tall} 
-                        alt={artifact.name} 
-                        className="w-full h-full object-cover pointer-events-none" 
-                        loading="lazy" 
-                      />
-                    )}
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
+            return (
+              <Link 
+                key={index} 
+                href={`/artifact/${artifact.slug}`}
+                draggable={false}
+                className={`shrink-0 snap-start group/card cursor-pointer block transition-all duration-700 ease-out transform
+                  w-[calc((100%-2rem)/3)] 
+                  md:w-[calc((100%-3.75rem)/4)] 
+                  lg:w-[calc((100%-7.5rem)/6)]
+                  ${
+                  hasEnteredScreen 
+                    ? 'opacity-100 translate-y-0 scale-100' 
+                    : 'opacity-0 translate-y-6 scale-[0.98]'
+                }`}
+                style={{ transitionDelay: hasEnteredScreen ? cardDelay : '0ms' }}
+              >
+                <div className="w-full aspect-[2/3] rounded-[8px] bg-zinc-900/40 border border-white/5 overflow-hidden relative transition-all duration-300 group-hover/card:scale-[1.02] shadow-xl flex items-center justify-center">
+                  {artifact.blok_tall && (
+                    <Image
+                      src={artifact.blok_tall}
+                      alt={artifact.name}
+                      fill
+                      sizes="(max-width: 768px) 33vw, (max-width: 1024px) 25vw, 16vw"
+                      className="object-cover pointer-events-none"
+                      draggable={false}
+                    />
+                  )}
+                </div>
+              </Link>
+            );
+          })}
         </div>
 
       </div>

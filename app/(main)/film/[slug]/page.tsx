@@ -74,19 +74,23 @@ async function DeferredPageContent({ urlSlug }: { urlSlug: string }) {
   let recommendedFilms: any[] = [];
   let transcripts: any[] = [];
   let tagRows: any[] = [];
-  let creatorRows: any[] = []; 
+  let creatorRows: any[] = [];
+  // Explicit false hides captions; null/true keep existing rows visible.
+  const showSubtitles = filmData.has_subtitles !== false;
 
   try {
     const [junctionRows, allFilmsResponse, transcriptRows, tagsResponse, creatorsResponse] = await Promise.all([
       supabase.from('film_artifact').select('sort_order, artifact:artifact_id (id, slug, name, blok_tall)').eq('film_id', filmData.id).order('sort_order', { ascending: true }),
-      supabase.from('film').select('id, name, slug, blok_tall, release_date').lte('release_date', currentIsoString).not('id', 'eq', filmData.id).order('release_date', { ascending: false }),
-      supabase.from('transcript').select('content, language_code').eq('film_id', filmData.id),
+      supabase.from('film').select('id, name, slug, blok_tall, release_date').lte('release_date', currentIsoString).not('id', 'eq', filmData.id).order('release_date', { ascending: false }).limit(12),
+      showSubtitles
+        ? supabase.from('transcript').select('content, language_code').eq('film_id', filmData.id)
+        : Promise.resolve({ data: [] as any[] }),
       supabase.from('tag_map').select('tag:tag_id ( name )').eq('film_id', filmData.id),
       supabase.from('creator_map').select('role, creator:creator_id ( name )').eq('film_id', filmData.id).order('sort_order', { ascending: true })
     ]);
     relatedArtifacts = junctionRows.data || [];
     recommendedFilms = allFilmsResponse.data || [];
-    transcripts = transcriptRows.data || [];
+    transcripts = showSubtitles ? (transcriptRows.data || []) : [];
     tagRows = tagsResponse.data || [];
     creatorRows = creatorsResponse.data || []; 
   } catch (err) { console.warn(err); }

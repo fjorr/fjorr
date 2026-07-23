@@ -74,7 +74,7 @@ export default function SearchResultsMinimal({ results }: { results: SearchItem[
       const supabase = createBrowserClient(url, key);
       const { data: verifiedFilm } = await supabase
         .from('film')
-        .select('id, name, slug, mux_playback_id, last_line, story_date, location, runtime')
+        .select('id, name, slug, mux_playback_id, last_line, story_date, location, runtime, has_subtitles')
         .eq('slug', item.slug)
         .maybeSingle();
 
@@ -84,22 +84,26 @@ export default function SearchResultsMinimal({ results }: { results: SearchItem[
         return;
       }
 
-      const { data: junctionTracks } = await supabase
-        .from('language_subtitle')
-        .select(`
-          vtt_url,
-          language (
-            code,
-            name
-          )
-        `)
-        .eq('film_id', verifiedFilm.id);
+      let flattenedTracks: { code: string; name: string; vtt_url: string }[] = [];
 
-      const flattenedTracks = (junctionTracks || []).map((track: any) => ({
-        code: track.language?.code || 'en',
-        name: track.language?.name || 'English',
-        vtt_url: track.vtt_url || '',
-      }));
+      if (verifiedFilm.has_subtitles !== false) {
+        const { data: junctionTracks } = await supabase
+          .from('language_subtitle')
+          .select(`
+            vtt_url,
+            language (
+              code,
+              name
+            )
+          `)
+          .eq('film_id', verifiedFilm.id);
+
+        flattenedTracks = (junctionTracks || []).map((track: any) => ({
+          code: track.language?.code || 'en',
+          name: track.language?.name || 'English',
+          vtt_url: track.vtt_url || '',
+        }));
+      }
 
       setSelectedFilm({
         ...verifiedFilm,
@@ -123,9 +127,9 @@ export default function SearchResultsMinimal({ results }: { results: SearchItem[
         return (
           <div
             key={item.id}
-            className="w-full flex items-center justify-between gap-8 py-5 first:pt-0 last:pb-0"
+            className="w-full flex items-center justify-between gap-8 py-4 first:pt-0 last:pb-0"
           >
-            <div className="min-w-0 flex-1 max-w-[380px] flex flex-col gap-1.5 pr-2">
+            <div className="min-w-0 flex-1 max-w-[380px] flex flex-col gap-1 pr-2">
               <h2 className="font-sans text-[18px] font-bold tracking-tight text-white leading-tight">
                 {item.name}
               </h2>

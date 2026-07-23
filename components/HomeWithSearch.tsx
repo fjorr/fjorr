@@ -20,7 +20,6 @@ export default function HomeWithSearch({ children }: { children: ReactNode }) {
           className="w-full max-w-4xl flex flex-col items-center gap-8"
           onSearchActiveChange={handleSearchActiveChange}
           idleContent={null}
-          matchNavWidth
         />
       </section>
 

@@ -1,13 +1,16 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import FilmHero from './FilmHero';
 import ArtifactRail from './ArtifactRail';
 import FilmRail from './FilmRail';
 import FilmSpecs from './FilmSpecs';
-import CinemaTheater from './CinemaTheater'; 
-// 🎯 IMPORT YOUR CUSTOM DESIGN SYSTEM ENGINE:
 import SkeletonLoader from '@/components/SkeletonLoader';
+
+const CinemaTheater = dynamic(() => import('@/components/CinemaTheater'), {
+  ssr: false,
+});
 
 interface WrapperProps {
   filmData: any;

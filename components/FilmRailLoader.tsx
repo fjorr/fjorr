@@ -27,7 +27,7 @@ export default async function FilmRailLoader({ title }: FilmRailLoaderProps) {
       .order('release_date', { ascending: false });
   }
 
-  const { data: rawFilms, error } = await query;
+  const { data: rawFilms, error } = await query.limit(24);
 
   if (error || !rawFilms || rawFilms.length === 0) {
     console.error(`Error loading rail [${title}]:`, error);

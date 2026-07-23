@@ -44,12 +44,14 @@ export default async function MinimalHomeLoader() {
       .from('film')
       .select(FILM_SELECT)
       .lte('release_date', currentIsoString)
-      .order('release_date', { ascending: false }),
+      .order('release_date', { ascending: false })
+      .limit(50),
     supabase
       .from('film')
       .select(FILM_SELECT)
       .gt('release_date', currentIsoString)
-      .order('release_date', { ascending: true }),
+      .order('release_date', { ascending: true })
+      .limit(50),
   ]);
 
   if (released.error) {

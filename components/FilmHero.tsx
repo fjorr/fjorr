@@ -10,13 +10,6 @@ interface FilmHeroProps {
 
 export default function FilmHero({ film, onPlayClick }: FilmHeroProps) {
   const fallbackBg = 'linear-gradient(to bottom, #4C7A57, #36593E)';
-  
-  // 🔬 TRACKING CHECKPOINT
-  console.log("🕵️‍♂️ DATABASE PAYLOAD TRACE:", {
-    film_name: film?.name,
-    raw_sponsor_id_field: film?.sponsor_id,
-    sponsor_relation_object: film?.sponsor
-  });
 
   const isReleased = film.release_date 
     ? new Date(film.release_date).getTime() <= new Date().getTime()
