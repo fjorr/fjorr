@@ -10,175 +10,109 @@ interface ArtifactRailProps {
 }
 
 export default function ArtifactRail({ title, artifacts: rawArtifacts }: ArtifactRailProps) {
-  const containerRef = useRef<HTMLDivElement>(null); // Parent container boundaries stage reference
+  const containerRef = useRef<HTMLDivElement>(null);
   const railRef = useRef<HTMLDivElement>(null);
-  const [currentPage, setCurrentPage] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState(6);
-  const [isMobile, setIsMobile] = useState(false);
-  
-  /* 🎬 SCROLL INTERSECTION TRACKING STATE */
+  const [showArrows, setShowArrows] = useState(false);
   const [hasEnteredScreen, setHasEnteredScreen] = useState(false);
 
-  // Filter out any broken elements missing an active slug property
   const filteredArtifacts = (rawArtifacts || []).filter((item) => {
     const artifact = item?.artifact ? item.artifact : item;
     return artifact && artifact.slug;
   });
-
-  // Only use the actual artifacts passed in—no forced 18-slot looping
   const activeArtifacts = filteredArtifacts;
 
-  /* 🌟 THE VISIBILITY OBSERVATION ENGINE */
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           setHasEnteredScreen(true);
-          // Disconnect once tracked so layouts lock permanently during horizontal navigation passes
           if (containerRef.current) observer.unobserve(containerRef.current);
         }
       },
-      { 
-        threshold: 0.1, // Fires when 10% of the rail canvas appears inside the viewport view frame
-        rootMargin: '0px 0px -40px 0px' // Optical offset to guarantee the scroll looks fully intentional
-      }
+      { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
     );
-
-    if (containerRef.current) {
-      observer.observe(containerRef.current);
-    }
-
+    if (containerRef.current) observer.observe(containerRef.current);
     return () => observer.disconnect();
   }, []);
 
-  // Handle items per page and mobile viewport detection state updates
   useEffect(() => {
-    const handleResize = () => {
+    const update = () => {
       const width = window.innerWidth;
-      
-      // Explicit state toggle flag for conditional DOM demolition
-      setIsMobile(width < 768);
-
-      if (width >= 1024) setItemsPerPage(6);
-      else if (width >= 768) setItemsPerPage(4);
-      else setItemsPerPage(3);
-    };
-
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  // Calculates true total pages based on how many items are actually visible on screen
-  const totalPages = Math.ceil(activeArtifacts.length / itemsPerPage) || 1;
-
-  // 🎯 FIXED SCROLL PROGRESS ENGINE: Dynamically maps tracking based on current fluid gap size
-  const handleScroll = () => {
-    if (railRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = railRef.current;
-      
-      if (scrollWidth > clientWidth) {
-        const currentGap = window.innerWidth >= 1024 ? 24 : window.innerWidth >= 768 ? 20 : 16;
-        const itemWidth = (scrollWidth + currentGap) / activeArtifacts.length;
-        
-        // Maps the scroll placement parameter index directly onto our visible groupings
-        const calculatedPage = Math.round(scrollLeft / (itemWidth * itemsPerPage));
-        
-        // Safety lock preventing trailing indexes from overflowing array page length boundaries
-        const safePage = Math.max(0, Math.min(calculatedPage, totalPages - 1));
-        setCurrentPage(safePage);
+      if (width < 768) {
+        setShowArrows(false);
+        return;
       }
-    }
-  };
+      const perPage = width >= 1024 ? 6 : 4;
+      setShowArrows(activeArtifacts.length > perPage);
+    };
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, [activeArtifacts.length]);
 
   const scroll = (direction: 'left' | 'right') => {
-    if (railRef.current) {
-      const { scrollLeft, clientWidth } = railRef.current;
-      const scrollAmount = clientWidth; 
-      
-      const targetScroll = direction === 'left' 
-        ? scrollLeft - scrollAmount 
-        : scrollLeft + scrollAmount;
-
-      railRef.current.scrollTo({
-        left: targetScroll,
-        behavior: 'smooth',
-      });
-    }
+    if (!railRef.current) return;
+    const { scrollLeft, clientWidth } = railRef.current;
+    const target =
+      direction === 'left' ? scrollLeft - clientWidth : scrollLeft + clientWidth;
+    railRef.current.scrollTo({ left: target, behavior: 'smooth' });
   };
 
   if (!activeArtifacts || activeArtifacts.length === 0) return null;
 
-  const formatIndex = (num: number) => String(num).padStart(2, '0');
-
   return (
-    /* 🎯 PARENT CONTAINER INTERSECTION BOUNDARY: Linked with containerRef to intercept screen viewport entry */
     <section ref={containerRef} className="w-full pb-0 relative group/rail z-20 px-8 md:px-16">
-      
-      {/* Scrollbar hidden styling core structure element */}
-      <style dangerouslySetInnerHTML={{__html: `
-        .no-scrollbar::-webkit-scrollbar { 
-          display: none !important; 
-        }
-      `}} />
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+        .no-scrollbar::-webkit-scrollbar { display: none !important; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      `,
+        }}
+      />
 
       <div className="w-full max-w-[1440px] mx-auto relative">
-        
-        {/* HEADER TRACK COMPONENT ROW 
-            🎯 REVEAL INJECTION: Transitions gracefully upward from vertical baseline shifts upon viewport intersection 
-        */}
-        <div className={`w-full flex items-center justify-between mb-4 transition-all duration-800 ease-out transform ${
-          hasEnteredScreen 
-            ? 'opacity-100 translate-y-0' 
-            : 'opacity-0 translate-y-4'
-        }`}>
+        <div
+          className={`w-full flex items-center justify-between mb-4 transition-all duration-800 ease-out transform ${
+            hasEnteredScreen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+          }`}
+        >
           <h3 className="font-sans font-bold text-[18px] text-white/90 tracking-tight capitalize whitespace-nowrap">
             {title}
           </h3>
-          
-          <div className="flex items-center gap-3">
-            {/* The counter numbers: Static layout always present on all devices */}
-            <span className="font-mono text-[14px] font-bold tracking-wider text-white/30 select-none bg-transparent py-1 px-1">
-              <span className="text-white/80">{formatIndex(currentPage + 1)}</span>
-              <span className="mx-1 text-white/20">/</span>
-              {formatIndex(totalPages)}
-            </span>
 
-            {/* 🎯 CONDITIONAL HARD DEMOLITION TERNARY: 
-                If device viewport is determined mobile (< 768px), this node layer is deleted completely */}
-            {!isMobile && (
-              <div className="flex items-center gap-1.5">
-                <button 
-                  onClick={() => scroll('left')} 
-                  className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/40 hover:text-white/80 transition-all duration-200 text-[16px] font-sans font-bold cursor-pointer pb-0.5"
-                >
-                  &lsaquo;
-                </button>
-                <button 
-                  onClick={() => scroll('right')} 
-                  className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/40 hover:text-white/80 transition-all duration-200 text-[16px] font-sans font-bold cursor-pointer pb-0.5"
-                >
-                  &rsaquo;
-                </button>
-              </div>
-            )}
-          </div>
+          {showArrows && (
+            <div className="flex items-center gap-1.5 select-none">
+              <button
+                type="button"
+                onClick={() => scroll('left')}
+                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/40 hover:text-white/80 transition-all duration-200 text-[16px] font-sans font-bold cursor-pointer pb-0.5"
+              >
+                &lsaquo;
+              </button>
+              <button
+                type="button"
+                onClick={() => scroll('right')}
+                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/40 hover:text-white/80 transition-all duration-200 text-[16px] font-sans font-bold cursor-pointer pb-0.5"
+              >
+                &rsaquo;
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* ARTIFACT CAROUSEL — flex + native touch scroll (matches FilmRail; avoids iOS grid scroll lock) */}
-        <div 
-          ref={railRef} 
-          onScroll={handleScroll}
-          className="no-scrollbar w-full flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory touch-pan-x gap-4 md:gap-5 lg:gap-6 overscroll-x-contain rounded-[8px]" 
-          style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-x pinch-zoom', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        <div
+          ref={railRef}
+          className="no-scrollbar w-full flex overflow-x-auto overflow-y-hidden snap-x snap-proximity touch-pan-x gap-4 md:gap-5 lg:gap-6 overscroll-x-contain rounded-[8px]"
+          style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-x' }}
         >
           {activeArtifacts.map((item, index) => {
             const artifact = item?.artifact ? item.artifact : item;
             const cardDelay = `${150 + index * 75}ms`;
 
             return (
-              <Link 
-                key={index} 
+              <Link
+                key={artifact.id || artifact.slug || index}
                 href={`/artifact/${artifact.slug}`}
                 draggable={false}
                 className={`shrink-0 snap-start group/card cursor-pointer block transition-all duration-700 ease-out transform
@@ -186,10 +120,10 @@ export default function ArtifactRail({ title, artifacts: rawArtifacts }: Artifac
                   md:w-[calc((100%-3.75rem)/4)] 
                   lg:w-[calc((100%-7.5rem)/6)]
                   ${
-                  hasEnteredScreen 
-                    ? 'opacity-100 translate-y-0 scale-100' 
-                    : 'opacity-0 translate-y-6 scale-[0.98]'
-                }`}
+                    hasEnteredScreen
+                      ? 'opacity-100 translate-y-0 scale-100'
+                      : 'opacity-0 translate-y-6 scale-[0.98]'
+                  }`}
                 style={{ transitionDelay: hasEnteredScreen ? cardDelay : '0ms' }}
               >
                 <div className="w-full aspect-[2/3] rounded-[8px] bg-zinc-900/40 border border-white/5 overflow-hidden relative transition-all duration-300 group-hover/card:scale-[1.02] shadow-xl flex items-center justify-center">
@@ -208,7 +142,6 @@ export default function ArtifactRail({ title, artifacts: rawArtifacts }: Artifac
             );
           })}
         </div>
-
       </div>
     </section>
   );

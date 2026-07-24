@@ -197,7 +197,7 @@ function SearchContent({
             value={query}
             onChange={handleInputChange}
             placeholder={tSearch('placeholder')}
-            className="w-full bg-white/5 rounded-[10px] h-14 pl-14 pr-12 font-sans font-medium text-[16px] text-white placeholder-white/30 focus:bg-white/10 focus:outline-none focus:ring-0 focus:ring-offset-0 transition-all duration-300 shadow-2xl"
+            className="w-full bg-white/5 rounded-[10px] h-14 pl-14 pr-12 font-sans font-semibold text-[16px] text-white placeholder-white/55 focus:bg-white/10 focus:outline-none focus:ring-0 focus:ring-offset-0 transition-all duration-300 shadow-2xl"
           />
           {query && (
             <button

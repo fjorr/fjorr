@@ -10,12 +10,9 @@ interface FilmRailProps {
 }
 
 export default function FilmRail({ title, films: rawFilms }: FilmRailProps) {
-  const containerRef = useRef<HTMLDivElement>(null); 
+  const containerRef = useRef<HTMLDivElement>(null);
   const railRef = useRef<HTMLDivElement>(null);
-  const [currentPage, setCurrentPage] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState(6);
-  const [isMobile, setIsMobile] = useState(false);
-  
+  const [showArrows, setShowArrows] = useState(false);
   const [hasEnteredScreen, setHasEnteredScreen] = useState(false);
   const activeFilms = rawFilms || [];
 
@@ -27,117 +24,91 @@ export default function FilmRail({ title, films: rawFilms }: FilmRailProps) {
           if (containerRef.current) observer.unobserve(containerRef.current);
         }
       },
-      { 
-        threshold: 0.1, 
-        rootMargin: '0px 0px -40px 0px' 
-      }
+      { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
     );
-    if (containerRef.current) {
-      observer.observe(containerRef.current);
-    }
+    if (containerRef.current) observer.observe(containerRef.current);
     return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
-    const handleResize = () => {
+    const update = () => {
+      // Arrows only on tablet/desktop when there’s more than one “page”
       const width = window.innerWidth;
-      setIsMobile(width < 768);
-      if (width >= 1024) setItemsPerPage(6);
-      else if (width >= 768) setItemsPerPage(4);
-      else setItemsPerPage(3);
-    };
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  const totalPages = Math.ceil(activeFilms.length / itemsPerPage);
-  const showNavigation = totalPages > 1;
-
-  const handleScroll = () => {
-    if (railRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = railRef.current;
-      if (scrollWidth > clientWidth) {
-        const currentGap = window.innerWidth >= 1024 ? 24 : window.innerWidth >= 768 ? 20 : 16;
-        const itemWidth = (scrollWidth + currentGap) / activeFilms.length;
-        const calculatedPage = Math.round(scrollLeft / (itemWidth * itemsPerPage));
-        const safePage = Math.max(0, Math.min(calculatedPage, totalPages - 1));
-        setCurrentPage(safePage);
+      if (width < 768) {
+        setShowArrows(false);
+        return;
       }
-    }
-  };
+      const perPage = width >= 1024 ? 6 : 4;
+      setShowArrows(activeFilms.length > perPage);
+    };
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, [activeFilms.length]);
 
   const scroll = (direction: 'left' | 'right') => {
-    if (railRef.current) {
-      const { scrollLeft, clientWidth } = railRef.current;
-      const scrollAmount = clientWidth; 
-      
-      const targetScroll = direction === 'left' ? scrollLeft - scrollAmount : scrollLeft + scrollAmount;
-      railRef.current.scrollTo({ left: targetScroll, behavior: 'smooth' });
-    }
+    if (!railRef.current) return;
+    const { scrollLeft, clientWidth } = railRef.current;
+    const target =
+      direction === 'left' ? scrollLeft - clientWidth : scrollLeft + clientWidth;
+    railRef.current.scrollTo({ left: target, behavior: 'smooth' });
   };
 
   if (activeFilms.length === 0) return null;
-  const formatIndex = (num: number) => String(num).padStart(2, '0');
 
   return (
     <section ref={containerRef} className="w-full pb-0 relative group/rail z-20 px-8 md:px-16">
-      <style dangerouslySetInnerHTML={{__html: `
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
         .no-scrollbar::-webkit-scrollbar { display: none !important; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-      `}} />
+      `,
+        }}
+      />
       <div className="w-full max-w-[1440px] mx-auto relative">
-        
-        {/* HEADER */}
-        <div className={`w-full flex items-center justify-between mb-4 transition-all duration-800 ease-out transform ${
-          hasEnteredScreen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-        }`}>
+        <div
+          className={`w-full flex items-center justify-between mb-4 transition-all duration-800 ease-out transform ${
+            hasEnteredScreen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+          }`}
+        >
           <h3 className="font-sans font-bold text-[18px] text-white/90 tracking-tight capitalize whitespace-nowrap">
             {title}
           </h3>
-          
-          {showNavigation && (
-            <div className="flex items-center gap-3">
-              <span className="font-mono text-[14px] font-bold tracking-wider text-white/30 select-none bg-transparent py-1 px-1">
-                <span className="text-white/80">{formatIndex(currentPage + 1)}</span>
-                <span className="mx-1 text-white/20">/</span>
-                {formatIndex(totalPages)}
-              </span>
-              {!isMobile && (
-                <div className="flex items-center gap-1.5 select-none">
-                  <button 
-                    onClick={() => scroll('left')} 
-                    className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/40 hover:text-white/80 transition-all duration-200 text-[16px] font-sans font-bold cursor-pointer pb-0.5"
-                  >
-                    &lsaquo;
-                  </button>
-                  <button 
-                    onClick={() => scroll('right')} 
-                    className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/40 hover:text-white/80 transition-all duration-200 text-[16px] font-sans font-bold cursor-pointer pb-0.5"
-                  >
-                    &rsaquo;
-                  </button>
-                </div>
-              )}
+
+          {showArrows && (
+            <div className="flex items-center gap-1.5 select-none">
+              <button
+                type="button"
+                onClick={() => scroll('left')}
+                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/40 hover:text-white/80 transition-all duration-200 text-[16px] font-sans font-bold cursor-pointer pb-0.5"
+              >
+                &lsaquo;
+              </button>
+              <button
+                type="button"
+                onClick={() => scroll('right')}
+                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/40 hover:text-white/80 transition-all duration-200 text-[16px] font-sans font-bold cursor-pointer pb-0.5"
+              >
+                &rsaquo;
+              </button>
             </div>
           )}
         </div>
 
-        {/* HORIZONTAL CAROUSEL CONTAINER */}
-        <div 
-          ref={railRef} 
-          onScroll={handleScroll}
-          className="no-scrollbar w-full flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory touch-pan-x gap-4 md:gap-5 lg:gap-6 overscroll-x-contain rounded-[8px]" 
-          style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-x pinch-zoom' }}
+        <div
+          ref={railRef}
+          className="no-scrollbar w-full flex overflow-x-auto overflow-y-hidden snap-x snap-proximity touch-pan-x gap-4 md:gap-5 lg:gap-6 overscroll-x-contain rounded-[8px]"
+          style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-x' }}
         >
           {activeFilms.map((film, index) => {
             const filmUrlParam = film.slug || film.id;
             const posterDelay = `${150 + index * 75}ms`;
-            
+
             return (
-              <Link 
-                key={index} 
-                href={`/film/${filmUrlParam}`} 
+              <Link
+                key={film.id || index}
+                href={`/film/${filmUrlParam}`}
                 draggable={false}
                 className={`shrink-0 snap-start group/card block transition-all duration-700 ease-out transform
                   w-[calc((100%-2rem)/3)] 
@@ -150,14 +121,17 @@ export default function FilmRail({ title, films: rawFilms }: FilmRailProps) {
                   {film.blok_tall ? (
                     <Image
                       src={film.blok_tall}
-                      alt={film.name || "Movie Poster"}
+                      alt={film.name || 'Movie Poster'}
                       fill
                       sizes="(max-width: 768px) 33vw, (max-width: 1024px) 25vw, 16vw"
                       className="object-cover pointer-events-none"
                       draggable={false}
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center p-4 text-center text-white/30 font-sans font-medium text-[11px]" style={{ background: 'linear-gradient(to bottom, #1C1C1E, #0A0A0C)' }}>
+                    <div
+                      className="w-full h-full flex items-center justify-center p-4 text-center text-white/30 font-sans font-medium text-[11px]"
+                      style={{ background: 'linear-gradient(to bottom, #1C1C1E, #0A0A0C)' }}
+                    >
                       {film.name}
                     </div>
                   )}
