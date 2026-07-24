@@ -1,24 +1,38 @@
 import React, { Suspense } from 'react';
-import { createClient } from '@/utils/supabase/server'; 
 import { notFound } from 'next/navigation';
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 import { ArtifactSidebar } from '@/components/ArtifactSidebar';
 import ServerSafeSkeleton from '@/components/ServerSafeSkeleton';
 import type { Metadata } from 'next';
 import { absoluteUrl } from '@/lib/site';
+import {
+  ARTIFACT_REVALIDATE_SECONDS,
+  getArtifactColorTokens,
+  getArtifactMetadata,
+  getArtifactPageData,
+  getArtifactSlugs,
+} from '@/lib/content/artifact';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = ARTIFACT_REVALIDATE_SECONDS;
 export const dynamicParams = true;
 
 interface ArtifactPageProps {
   params: Promise<{ slug: string }>;
 }
 
+export async function generateStaticParams() {
+  try {
+    const slugs = await getArtifactSlugs();
+    return slugs.map((slug) => ({ slug }));
+  } catch {
+    return [];
+  }
+}
+
 export async function generateMetadata({ params }: ArtifactPageProps): Promise<Metadata> {
   const { slug: urlSlug } = await params;
-  const supabase = await createClient();
-  const { data: artifact } = await supabase.from('artifact').select('name, teaser, slug, blok_ogrf').eq('slug', urlSlug).maybeSingle();
+  const artifact = await getArtifactMetadata(urlSlug);
   if (!artifact) return { title: 'Artifact Not Found' };
   const titleText = artifact.name;
   const descriptionText = artifact.teaser || 'Explore this cultural artifact on Fjorr.';
@@ -47,13 +61,7 @@ export async function generateMetadata({ params }: ArtifactPageProps): Promise<M
 
 export default async function DynamicArtifactPage({ params }: ArtifactPageProps) {
   const { slug } = await params;
-  const supabase = await createClient();
-
-  const { data: colorTokens } = await supabase
-    .from('artifact')
-    .select('primary_color, is_dark_bg')
-    .eq('slug', slug)
-    .maybeSingle();
+  const colorTokens = await getArtifactColorTokens(slug);
 
   const customBg = colorTokens?.primary_color || '#0B0B0C';
   const isDarkBg = colorTokens?.is_dark_bg ?? true;
@@ -63,8 +71,8 @@ export default async function DynamicArtifactPage({ params }: ArtifactPageProps)
   const borderClass = 'opacity-0 border-none !border-transparent';
 
   return (
-    <div 
-      style={{ 
+    <div
+      style={{
         backgroundColor: customBg,
         ['--page-bg-color' as string]: customBg,
       }}
@@ -72,25 +80,25 @@ export default async function DynamicArtifactPage({ params }: ArtifactPageProps)
     >
       <Navbar variant={isDarkBg ? 'light' : 'dark'} />
 
-      <Suspense 
+      <Suspense
         fallback={
           <main className="w-full lg:h-screen flex-grow flex flex-col lg:flex-row items-stretch lg:items-center relative z-0">
             <div className="w-full lg:w-[calc(100%-400px)] h-auto lg:h-full flex items-center justify-center p-0 md:p-10 lg:p-12 relative z-0 flex-grow">
               <div className="w-full max-w-[400px] md:max-w-4xl max-h-screen overflow-hidden transform lg:-translate-y-[35px] relative">
                 <div className="relative w-full aspect-[1/1.618] sm:aspect-[4/3] md:aspect-[16/10] z-10">
                   <div className="absolute inset-0 w-full h-full z-0">
-                    <ServerSafeSkeleton 
-                      variant="feature" 
-                      backgroundColor={customBg} 
-                      isDarkBg={isDarkBg} 
-                      dotOpacity={targetedDotOpacity} 
+                    <ServerSafeSkeleton
+                      variant="feature"
+                      backgroundColor={customBg}
+                      isDarkBg={isDarkBg}
+                      dotOpacity={targetedDotOpacity}
                     />
                   </div>
                 </div>
               </div>
             </div>
 
-            <ArtifactSidebar 
+            <ArtifactSidebar
               name=""
               label={null}
               creatorName=""
@@ -106,12 +114,18 @@ export default async function DynamicArtifactPage({ params }: ArtifactPageProps)
               subTextClass=""
               mutedTextClass=""
               borderClass={borderClass}
-              isLoader={true} 
+              isLoader={true}
             />
           </main>
         }
       >
-        <DeferredArtifactContent urlSlug={slug} customBg={customBg} isDarkBg={isDarkBg} textClass={textClass} borderClass={borderClass} />
+        <DeferredArtifactContent
+          urlSlug={slug}
+          customBg={customBg}
+          isDarkBg={isDarkBg}
+          textClass={textClass}
+          borderClass={borderClass}
+        />
       </Suspense>
 
       <Footer variant={isDarkBg ? 'light' : 'dark'} />
@@ -119,50 +133,23 @@ export default async function DynamicArtifactPage({ params }: ArtifactPageProps)
   );
 }
 
-async function DeferredArtifactContent({ 
-  urlSlug, 
-  customBg, 
+async function DeferredArtifactContent({
+  urlSlug,
+  customBg,
   isDarkBg,
   textClass,
-  borderClass
-}: { 
-  urlSlug: string; 
-  customBg: string; 
+  borderClass,
+}: {
+  urlSlug: string;
+  customBg: string;
   isDarkBg: boolean;
   textClass: string;
   borderClass: string;
 }) {
-  const supabase = await createClient();
+  const pageData = await getArtifactPageData(urlSlug);
+  if (!pageData) notFound();
 
-  // 1. Fetch core artifact metadata metrics
-  const { data: artifact, error } = await supabase
-    .from('artifact')
-    .select(`
-      id, name, slug, label, description, teaser, quote, primary_color, is_dark_bg, hero_clsx, hero_tall, blok_ogrf, link_cta, link, release_date,
-      film!film_artifact ( name, slug, runtime )
-    `)
-    .eq('slug', urlSlug)
-    .maybeSingle();
-
-  if (error || !artifact) {
-    notFound();
-  }
-
-  /* 🎯 THE BULLETPROOF FIX: 
-     Since the main join filter is dropped by the query engine parser, we run an 
-     isolated lookup query directly on creator_map using the resolved artifact.id.
-  */
-  const { data: mappingRows } = await supabase
-    .from('creator_map')
-    .select(`
-      creator ( name )
-    `)
-    .eq('artifact_id', artifact.id);
-
-  // Parse out the nested string securely from the mapping query rows
-  const rawCreatorObj = (mappingRows as any)?.[0]?.creator;
-  const creatorName = rawCreatorObj?.name || '';
-
+  const { artifact, creatorName } = pageData;
   const subTextClass = isDarkBg ? 'text-white/60' : 'text-black/60';
   const mutedTextClass = isDarkBg ? 'text-white/40' : 'text-black/40';
   const releaseYear = artifact.release_date ? new Date(artifact.release_date).getFullYear() : null;
@@ -174,32 +161,30 @@ async function DeferredArtifactContent({
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "CreativeWork",
-            "name": artifact.name,
-            "description": artifact.description || artifact.teaser,
-            "image": artifact.blok_ogrf || artifact.hero_tall || "https://www.fjorr.com/opengraph-image.png",
-            "dateCreated": artifact.release_date,
-            "creator": { "@type": "Person", "name": creatorName || "Fjorr Contributor" },
-            "publisher": { "@type": "Organization", "name": "Fjorr" }
-          })
+            '@context': 'https://schema.org',
+            '@type': 'CreativeWork',
+            name: artifact.name,
+            description: artifact.description || artifact.teaser,
+            image: artifact.blok_ogrf || artifact.hero_tall || 'https://www.fjorr.com/opengraph-image.png',
+            dateCreated: artifact.release_date,
+            creator: { '@type': 'Person', name: creatorName || 'Fjorr Contributor' },
+            publisher: { '@type': 'Organization', name: 'Fjorr' },
+          }),
         }}
       />
 
-      {/* LEFT MEDIA CANVAS COLUMN */}
       <div className="w-full lg:w-[calc(100%-400px)] h-auto lg:h-full flex items-center justify-center p-0 lg:p-12 relative z-0 flex-grow">
         <picture className="w-full max-w-4xl h-auto max-h-full flex items-center justify-center transform lg:-translate-y-[35px]">
           <source media="(min-width: 768px)" srcSet={artifact.hero_clsx || artifact.hero_tall || ''} />
-          <img 
-            src={artifact.hero_tall || artifact.hero_clsx || ''} 
-            alt={artifact.name || 'Fjorr Artifact Screen'} 
+          <img
+            src={artifact.hero_tall || artifact.hero_clsx || ''}
+            alt={artifact.name || 'Fjorr Artifact Screen'}
             className="w-full h-auto max-h-full object-contain block mx-auto"
           />
         </picture>
       </div>
 
-      {/* RIGHT METADATA PANEL CONTAINER */}
-      <ArtifactSidebar 
+      <ArtifactSidebar
         name={artifact.name || urlSlug.replace(/-/g, ' ')}
         label={artifact.label}
         creatorName={creatorName}
