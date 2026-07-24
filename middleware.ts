@@ -1,9 +1,11 @@
 import { updateSession } from "@/lib/supabase/proxy";
+import { isValidGateToken } from "@/lib/site-gate";
 import { NextResponse, type NextRequest } from "next/server";
 
 /**
  * Site password gate is opt-in via SITE_GATE_ENABLED=true (staging/preview).
  * Production should leave it unset/false so the site is public.
+ * When enabled, SITE_PASSWORD must be set; cookie value is an HMAC, not a forgeable flag.
  */
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -30,7 +32,9 @@ export async function middleware(request: NextRequest) {
   }
 
   if (gateEnabled) {
-    const isAuthenticated = request.cookies.has("site-auth");
+    const sitePassword = process.env.SITE_PASSWORD;
+    const gateCookie = request.cookies.get("site-auth")?.value;
+    const isAuthenticated = await isValidGateToken(gateCookie, sitePassword);
 
     if (pathname === "/password") {
       return await updateSession(request);

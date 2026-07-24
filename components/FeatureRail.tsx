@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import HeroPicture from '@/components/HeroPicture';
+import { sanitizeTitleArtSvg } from '@/lib/sanitize-svg';
 
 interface FilmAsset {
   id: string;
@@ -69,6 +70,7 @@ export default function FeatureRail({ films, activeIndex, onSlideChange, onPlayC
   const baselineWidth = 300; 
   const currentScale = currentFilm.title_art_scale || 1.0;
   const calculatedWidth = `${baselineWidth * currentScale}px`;
+  const titleArtSvg = sanitizeTitleArtSvg(currentFilm?.title_art_code);
 
   useEffect(() => {
     if (!isPlaying || isTheaterActive) return;
@@ -189,7 +191,7 @@ export default function FeatureRail({ films, activeIndex, onSlideChange, onPlayC
               </div>
             )}
 
-            {currentFilm.title_art_code ? (
+            {titleArtSvg ? (
               /* 🎯 ROCK-SOLID HORIZONTAL SCALE CONTAINER MATCHED */
               <div 
                 className="mb-4 w-full max-w-[240px] md:max-w-[380px] flex items-center justify-center md:justify-start [&>svg]:w-full [&>svg]:h-auto" 
@@ -201,7 +203,7 @@ export default function FeatureRail({ films, activeIndex, onSlideChange, onPlayC
                 {/* Responsive Width Override Block */}
                 <div 
                   className="w-full md:w-[var(--desktop-width)]"
-                  dangerouslySetInnerHTML={{ __html: currentFilm.title_art_code }}
+                  dangerouslySetInnerHTML={{ __html: titleArtSvg }}
                 />
               </div>
             ) : (

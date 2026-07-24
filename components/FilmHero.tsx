@@ -3,6 +3,7 @@
 import React from 'react';
 import { useTranslations } from 'next-intl';
 import HeroPicture from '@/components/HeroPicture';
+import { sanitizeTitleArtSvg } from '@/lib/sanitize-svg';
 
 interface FilmHeroProps {
   film: any;
@@ -44,6 +45,7 @@ export default function FilmHero({ film, onPlayClick }: FilmHeroProps) {
   };
 
   const sponsorName = getSponsorName();
+  const titleArtSvg = sanitizeTitleArtSvg(film.title_art_code);
 
   return (
     <section className="w-full flex justify-center">
@@ -77,7 +79,7 @@ export default function FilmHero({ film, onPlayClick }: FilmHeroProps) {
               </div>
             )}
 
-            {film.title_art_code ? (
+            {titleArtSvg ? (
               <>
                 {film.name && <h1 className="sr-only">{film.name}</h1>}
                 <div 
@@ -89,7 +91,7 @@ export default function FilmHero({ film, onPlayClick }: FilmHeroProps) {
                 >
                   <div 
                     className="w-full md:w-[var(--desktop-width)]"
-                    dangerouslySetInnerHTML={{ __html: film.title_art_code }}
+                    dangerouslySetInnerHTML={{ __html: titleArtSvg }}
                   />
                 </div>
               </>

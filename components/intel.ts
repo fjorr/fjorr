@@ -1,6 +1,6 @@
 'use server';
 
-import { createClient } from '@supabase/supabase-js';
+import { createPublicClient } from '@/lib/supabase/public';
 
 export type FormState = {
   status: 'idle' | 'success' | 'error';
@@ -29,16 +29,7 @@ export async function subscribeToNewsletter(
   }
 
   try {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseServiceKey =
-      process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-    if (!supabaseUrl || !supabaseServiceKey) {
-      console.error('Missing Supabase configuration environment keys.');
-      return { status: 'error', message: 'configError' };
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const supabase = createPublicClient();
 
     const { data: existingEntry, error: fetchError } = await supabase
       .from('intel_list')
@@ -64,7 +55,7 @@ export async function subscribeToNewsletter(
     ]);
 
     if (insertError) {
-      console.error('❌ Supabase Insertion Rejection Error Details:', insertError.message);
+      console.error('Supabase Insertion Rejection Error Details:', insertError.message);
       return { status: 'error', message: 'somethingWrong' };
     }
 
