@@ -19,7 +19,7 @@ interface FilmSpecsProps {
   film: any;
   audioLanguages: string[];
   subtitles: Array<{ name: string; code: string }>;
-  themes: string[];
+  tags: string[];
   transcripts: TranscriptRow[]; 
   creators?: CreatorMapRow[];
 }
@@ -28,7 +28,7 @@ export default function FilmSpecs({
   film, 
   audioLanguages, 
   subtitles, 
-  themes, 
+  tags, 
   transcripts, 
   creators = [] 
 }: FilmSpecsProps) {
@@ -105,12 +105,19 @@ export default function FilmSpecs({
             </div>
           )}
 
-          {themes.length > 0 && (
-            <div className="flex items-baseline gap-2">
-              <span className="text-white/40 font-medium">Themes</span>
-              <span className="text-white font-semibold">
-                {themes.join(', ')}
-              </span>
+          {tags.length > 0 && (
+            <div className="flex items-start gap-2">
+              <span className="text-white/40 font-medium shrink-0 pt-0.5">Tags</span>
+              <div className="flex flex-wrap gap-1.5">
+                {tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="bg-white/10 rounded-[4px] px-2 py-0.5 text-[12px] text-white font-semibold"
+                  >
+                    {tag.charAt(0).toUpperCase() + tag.slice(1)}
+                  </span>
+                ))}
+              </div>
             </div>
           )}
 

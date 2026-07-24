@@ -17,7 +17,7 @@ interface WrapperProps {
   recommendedFilms: any[];
   transcripts: any[];
   subtitlesData: any[];
-  finalThemesList: any[];
+  tags: string[];
   creatorRows: any[];
   displayLocation: string;
   isComingSoon: boolean;
@@ -29,7 +29,7 @@ export default function FilmPageContentWrapper({
   recommendedFilms,
   transcripts,
   subtitlesData,
-  finalThemesList,
+  tags,
   creatorRows,
   displayLocation,
   isComingSoon,
@@ -74,7 +74,7 @@ export default function FilmPageContentWrapper({
                 film={{ ...filmData, location: displayLocation }}
                 audioLanguages={['English']}
                 subtitles={subtitlesData}
-                themes={finalThemesList}
+                tags={tags}
                 transcripts={transcripts}
                 creators={creatorRows}
               />

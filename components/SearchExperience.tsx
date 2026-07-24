@@ -10,6 +10,7 @@ import SearchResultsGrid from '@/components/SearchResultsGrid';
 import SearchResultsMinimal from '@/components/SearchResultsMinimal';
 import SearchNadaView from '@/components/SearchNadaView';
 import DisplayModeToggle from '@/components/DisplayModeToggle';
+import { MinimalFilterButton, useMinimalFilterOptional } from '@/components/MinimalFilterContext';
 import { useDisplayMode } from '@/components/DisplayModeProvider';
 
 export interface SearchItem {
@@ -43,6 +44,7 @@ function SearchContent({
   className,
 }: SearchExperienceProps) {
   const { isMinimal } = useDisplayMode();
+  const minimalFilter = useMinimalFilterOptional();
   const tSearch = useTranslations('Search');
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -50,7 +52,6 @@ function SearchContent({
   const initialQuery = searchParams.get('q') || '';
 
   const [query, setQuery] = useState(initialQuery);
-  const [activeTab, setActiveTab] = useState<'all' | 'film' | 'artifact'>('all');
   const [rawResults, setRawResults] = useState<SearchItem[]>([]);
   const [filteredResults, setFilteredResults] = useState<SearchItem[]>([]);
   const [latestItems, setLatestItems] = useState<SearchItem[]>([]);
@@ -63,10 +64,22 @@ function SearchContent({
   );
 
   const isSearchActive = query.trim().length > 0;
+  const contentType = minimalFilter?.contentType ?? 'all';
+  const setFilterSearchActive = minimalFilter?.setSearchActive;
+  const setFilterContentType = minimalFilter?.setContentType;
 
   useEffect(() => {
     onSearchActiveChange?.(isSearchActive);
-  }, [isSearchActive, onSearchActiveChange]);
+    setFilterSearchActive?.(isSearchActive);
+    if (!isSearchActive) {
+      setFilterContentType?.('all');
+    }
+  }, [
+    isSearchActive,
+    onSearchActiveChange,
+    setFilterSearchActive,
+    setFilterContentType,
+  ]);
 
   const SEARCH_SELECT =
     'id, internal_id, item_type, slug, name, teaser, blok_tall, search_content, release_date, rating, theme, runtime, label, creator';
@@ -151,12 +164,12 @@ function SearchContent({
   }, [query]);
 
   useEffect(() => {
-    if (activeTab === 'all') {
+    if (contentType === 'all') {
       setFilteredResults(rawResults);
     } else {
-      setFilteredResults(rawResults.filter((item) => item.item_type === activeTab));
+      setFilteredResults(rawResults.filter((item) => item.item_type === contentType));
     }
-  }, [rawResults, activeTab]);
+  }, [rawResults, contentType]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -175,7 +188,7 @@ function SearchContent({
 
   const handleClearSearch = () => {
     setQuery('');
-    setActiveTab('all');
+    setFilterContentType?.('all');
     setLoading(false);
     const params = new URLSearchParams(window.location.search);
     params.delete('q');
@@ -211,38 +224,11 @@ function SearchContent({
           )}
         </div>
 
-        <DisplayModeToggle />
-      </div>
-
-      {isSearchActive && !loading && (
-        <div className="flex items-center gap-1 select-none animate-in fade-in zoom-in-95 duration-200">
-          <div className="pl-1 pr-1.5 text-white/30 flex items-center justify-center">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
-              <path d="M15.6 2.7a10 10 0 1 0 5.7 5.7" />
-              <circle cx="12" cy="12" r="2" />
-              <path d="M13.4 10.6 19 5" />
-            </svg>
-          </div>
-          <button
-            onClick={() => setActiveTab('all')}
-            className={`font-sans font-semibold text-sm px-3.5 py-1.5 rounded-[6px] transition-all duration-200 cursor-pointer ${activeTab === 'all' ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white/70'}`}
-          >
-            All
-          </button>
-          <button
-            onClick={() => setActiveTab('film')}
-            className={`font-sans font-semibold text-sm px-3.5 py-1.5 rounded-[6px] transition-all duration-200 cursor-pointer ${activeTab === 'film' ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white/70'}`}
-          >
-            Films
-          </button>
-          <button
-            onClick={() => setActiveTab('artifact')}
-            className={`font-sans font-semibold text-sm px-3.5 py-1.5 rounded-[6px] transition-all duration-200 cursor-pointer ${activeTab === 'artifact' ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white/70'}`}
-          >
-            Artifacts
-          </button>
+        <div className="flex items-center justify-center gap-2">
+          <DisplayModeToggle />
+          <MinimalFilterButton />
         </div>
-      )}
+      </div>
 
       {(() => {
         const idleNode =

@@ -2,29 +2,31 @@
 
 import React from 'react';
 import SearchExperience from '@/components/SearchExperience';
+import { MinimalFilterProvider } from '@/components/MinimalFilterContext';
 
 export default function SearchClient() {
   return (
-    <div className="w-full min-h-screen pt-6 pb-24 px-[10%] flex flex-col items-center">
-      {/* 🧠 STRUCTURED ACTION DATA: AI Search Engine Discovery Mapping */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'WebSite',
-            name: 'Fjorr Search',
-            url: 'https://www.fjorr.com/search',
-            potentialAction: {
-              '@type': 'SearchAction',
-              target: 'https://www.fjorr.com/search?q={search_term_string}',
-              'query-input': 'required name=search_term_string',
-            },
-          }),
-        }}
-      />
+    <MinimalFilterProvider>
+      <div className="w-full min-h-screen pt-6 pb-24 px-[10%] flex flex-col items-center">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'WebSite',
+              name: 'Fjorr Search',
+              url: 'https://www.fjorr.com/search',
+              potentialAction: {
+                '@type': 'SearchAction',
+                target: 'https://www.fjorr.com/search?q={search_term_string}',
+                'query-input': 'required name=search_term_string',
+              },
+            }),
+          }}
+        />
 
-      <SearchExperience />
-    </div>
+        <SearchExperience />
+      </div>
+    </MinimalFilterProvider>
   );
 }

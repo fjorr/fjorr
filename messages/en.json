@@ -25,6 +25,24 @@
     "comingSoon": "Coming Soon",
     "presents": "presents"
   },
+  "MinimalList": {
+    "filter": "Filter",
+    "sort": "Sort",
+    "show": "Show",
+    "theme": "Theme",
+    "type": "Type",
+    "films": "Films",
+    "artifacts": "Artifacts",
+    "newest": "Newest",
+    "az": "A–Z",
+    "runtime": "Runtime",
+    "all": "All",
+    "available": "Available",
+    "comingSoon": "Coming soon",
+    "allThemes": "All themes",
+    "noMatches": "No results match these filters.",
+    "clear": "Clear"
+  },
   "Search": {
     "placeholder": "Search"
   },

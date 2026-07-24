@@ -1,10 +1,16 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { createBrowserClient } from '@supabase/ssr';
+import { useTranslations } from 'next-intl';
 import type { SearchItem } from '@/components/SearchExperience';
+import { useMinimalFilter } from '@/components/MinimalFilterContext';
+import {
+  filterAndSortSearchItems,
+  themesFromSearchItems,
+} from '@/lib/filter-search-items';
 
 const CinemaTheater = dynamic(() => import('@/components/CinemaTheater'), {
   ssr: false,
@@ -21,12 +27,13 @@ function isComingSoon(releaseDate?: string | null) {
 }
 
 function MetaLine({ item }: { item: SearchItem }) {
+  const t = useTranslations('Film');
   const comingSoon = isComingSoon(item.release_date);
 
   if (item.item_type === 'film' && comingSoon) {
     return (
       <p className="font-sans text-[11px] font-medium uppercase tracking-wide text-white/30">
-        Coming Soon
+        {t('comingSoon')}
       </p>
     );
   }
@@ -56,8 +63,20 @@ function MetaLine({ item }: { item: SearchItem }) {
 }
 
 export default function SearchResultsMinimal({ results }: { results: SearchItem[] }) {
+  const t = useTranslations('Film');
+  const tf = useTranslations('MinimalList');
+  const { sort, show, theme, setThemes } = useMinimalFilter();
   const [showTheater, setShowTheater] = useState(false);
   const [selectedFilm, setSelectedFilm] = useState<any>(null);
+
+  useEffect(() => {
+    setThemes(themesFromSearchItems(results));
+  }, [results, setThemes]);
+
+  const visibleResults = useMemo(
+    () => filterAndSortSearchItems(results, { sort, show, theme }),
+    [results, sort, show, theme]
+  );
 
   const handlePlay = async (item: SearchItem) => {
     if (item.item_type !== 'film' || isComingSoon(item.release_date)) return;
@@ -74,7 +93,9 @@ export default function SearchResultsMinimal({ results }: { results: SearchItem[
       const supabase = createBrowserClient(url, key);
       const { data: verifiedFilm } = await supabase
         .from('film')
-        .select('id, name, slug, mux_playback_id, last_line, story_date, location, runtime, has_subtitles')
+        .select(
+          'id, name, slug, mux_playback_id, last_line, story_date, location, runtime, has_subtitles'
+        )
         .eq('slug', item.slug)
         .maybeSingle();
 
@@ -118,52 +139,56 @@ export default function SearchResultsMinimal({ results }: { results: SearchItem[
 
   return (
     <div className="w-full max-w-[600px] mx-auto flex flex-col divide-y divide-white/[0.06]">
-      {results.map((item) => {
-        const isFilm = item.item_type === 'film';
-        const comingSoon = isFilm && isComingSoon(item.release_date);
-        const infoHref = isFilm ? `/film/${item.slug}` : `/artifact/${item.slug}`;
-        const canPlay = isFilm && !comingSoon;
+      {visibleResults.length === 0 ? (
+        <p className="py-10 text-center font-sans text-[14px] text-white/40">{tf('noMatches')}</p>
+      ) : (
+        visibleResults.map((item) => {
+          const isFilm = item.item_type === 'film';
+          const comingSoon = isFilm && isComingSoon(item.release_date);
+          const infoHref = isFilm ? `/film/${item.slug}` : `/artifact/${item.slug}`;
+          const canPlay = isFilm && !comingSoon;
 
-        return (
-          <div
-            key={item.id}
-            className="w-full flex items-center justify-between gap-8 py-4 first:pt-0 last:pb-0"
-          >
-            <Link
-              href={infoHref}
-              className="min-w-0 flex-1 max-w-[380px] flex flex-col gap-1 pr-2 group"
+          return (
+            <div
+              key={item.id}
+              className="w-full flex items-center justify-between gap-8 py-4 first:pt-0 last:pb-0"
             >
-              <h2 className="font-sans text-[18px] font-bold tracking-tight text-white leading-tight group-hover:text-white/85 transition-colors">
-                {item.name}
-              </h2>
-              {item.teaser && (
-                <p className="font-sans text-[14px] font-normal text-white/70 leading-snug line-clamp-2">
-                  {item.teaser}
-                </p>
-              )}
-              <MetaLine item={item} />
-            </Link>
-
-            <div className="shrink-0 w-[132px] flex items-center justify-end gap-2">
-              {canPlay && (
-                <button
-                  type="button"
-                  onClick={() => handlePlay(item)}
-                  className="h-8 px-3 rounded-[6px] bg-white/15 font-sans text-[13px] font-semibold text-white hover:bg-white/25 transition-colors"
-                >
-                  Play
-                </button>
-              )}
               <Link
                 href={infoHref}
-                className="h-8 px-3 rounded-[6px] bg-white/5 font-sans text-[13px] font-semibold text-white/55 hover:text-white/80 hover:bg-white/10 transition-colors inline-flex items-center"
+                className="min-w-0 flex-1 max-w-[380px] flex flex-col gap-1 pr-2 group"
               >
-                Info
+                <h2 className="font-sans text-[18px] font-bold tracking-tight text-white leading-tight group-hover:text-white/85 transition-colors">
+                  {item.name}
+                </h2>
+                {item.teaser && (
+                  <p className="font-sans text-[14px] font-normal text-white/70 leading-snug line-clamp-2">
+                    {item.teaser}
+                  </p>
+                )}
+                <MetaLine item={item} />
               </Link>
+
+              <div className="shrink-0 w-[132px] flex items-center justify-end gap-2">
+                {canPlay && (
+                  <button
+                    type="button"
+                    onClick={() => handlePlay(item)}
+                    className="h-8 px-3 rounded-[6px] bg-white/15 font-sans text-[13px] font-semibold text-white hover:bg-white/25 transition-colors"
+                  >
+                    {t('playShort')}
+                  </button>
+                )}
+                <Link
+                  href={infoHref}
+                  className="h-8 px-3 rounded-[6px] bg-white/5 font-sans text-[13px] font-semibold text-white/55 hover:text-white/80 hover:bg-white/10 transition-colors inline-flex items-center"
+                >
+                  {t('info')}
+                </Link>
+              </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })
+      )}
 
       {showTheater && selectedFilm && (
         <CinemaTheater

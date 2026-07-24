@@ -109,13 +109,9 @@ async function DeferredPageContent({ urlSlug }: { urlSlug: string }) {
     };
   });
 
-  const mappedTags = tagRows.map((row: any) => row.tag?.name).filter(Boolean);
-  const finalThemesList =
-    mappedTags.length > 0
-      ? mappedTags
-      : filmData.theme?.name
-        ? [filmData.theme.name]
-        : [];
+  const tags = tagRows
+    .map((row: any) => row.tag?.name)
+    .filter((name: unknown): name is string => Boolean(name));
   // Computed per-request so "Coming Soon" flips even while film payload is cached.
   const isComingSoon = filmData.release_date
     ? new Date(filmData.release_date).getTime() > Date.now()
@@ -144,7 +140,7 @@ async function DeferredPageContent({ urlSlug }: { urlSlug: string }) {
         recommendedFilms={recommendedFilms}
         transcripts={transcripts}
         subtitlesData={subtitlesData}
-        finalThemesList={finalThemesList}
+        tags={tags}
         creatorRows={creatorRows}
         displayLocation={displayLocation}
         isComingSoon={isComingSoon}
