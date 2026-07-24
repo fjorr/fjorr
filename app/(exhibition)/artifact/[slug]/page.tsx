@@ -8,14 +8,14 @@ import ServerSafeSkeleton from '@/components/ServerSafeSkeleton';
 import type { Metadata } from 'next';
 import { absoluteUrl } from '@/lib/site';
 import {
-  ARTIFACT_REVALIDATE_SECONDS,
   getArtifactColorTokens,
   getArtifactMetadata,
   getArtifactPageData,
   getArtifactSlugs,
 } from '@/lib/content/artifact';
 
-export const revalidate = ARTIFACT_REVALIDATE_SECONDS;
+/** Must be a literal — Next.js cannot analyze imported revalidate values. */
+export const revalidate = 300;
 export const dynamicParams = true;
 
 interface ArtifactPageProps {

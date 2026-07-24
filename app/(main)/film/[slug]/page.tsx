@@ -5,13 +5,13 @@ import ServerSafeSkeleton from '@/components/ServerSafeSkeleton';
 import type { Metadata } from 'next';
 import { absoluteUrl } from '@/lib/site';
 import {
-  FILM_REVALIDATE_SECONDS,
   getFilmMetadata,
   getFilmPageData,
   getFilmSlugs,
 } from '@/lib/content/film';
 
-export const revalidate = FILM_REVALIDATE_SECONDS;
+/** Must be a literal — Next.js cannot analyze imported revalidate values. */
+export const revalidate = 60;
 export const dynamicParams = true;
 
 interface PageProps {
