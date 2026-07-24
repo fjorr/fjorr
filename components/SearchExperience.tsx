@@ -10,8 +10,10 @@ import SearchResultsGrid from '@/components/SearchResultsGrid';
 import SearchResultsMinimal from '@/components/SearchResultsMinimal';
 import SearchNadaView from '@/components/SearchNadaView';
 import DisplayModeToggle from '@/components/DisplayModeToggle';
-import { MinimalFilterButton, useMinimalFilterOptional } from '@/components/MinimalFilterContext';
+import ContentTypeToggle from '@/components/ContentTypeToggle';
+import { MinimalFilterButton, MixesButton, QueryStatusBar, useMinimalFilterOptional } from '@/components/MinimalFilterContext';
 import { useDisplayMode } from '@/components/DisplayModeProvider';
+import StickyQueryStrip from '@/components/StickyQueryStrip';
 
 export interface SearchItem {
   id: string;
@@ -67,6 +69,7 @@ function SearchContent({ onSearchActiveChange, className }: SearchExperienceProp
   const [activeIndex, setActiveIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const boxRef = useRef<HTMLDivElement>(null);
+  const controlsSentinelRef = useRef<HTMLDivElement>(null);
 
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -86,15 +89,10 @@ function SearchContent({ onSearchActiveChange, className }: SearchExperienceProp
   useEffect(() => {
     onSearchActiveChange?.(isSearchActive);
     setFilterSearchActive?.(isSearchActive);
-    if (!isSearchActive && contentType !== 'all') {
-      setFilterContentType?.('all');
-    }
   }, [
     isSearchActive,
-    contentType,
     onSearchActiveChange,
     setFilterSearchActive,
-    setFilterContentType,
   ]);
 
   const SEARCH_SELECT =
@@ -178,11 +176,7 @@ function SearchContent({ onSearchActiveChange, className }: SearchExperienceProp
   }, [query]);
 
   useEffect(() => {
-    if (contentType === 'all') {
-      setFilteredResults(rawResults);
-    } else {
-      setFilteredResults(rawResults.filter((item) => item.item_type === contentType));
-    }
+    setFilteredResults(rawResults.filter((item) => item.item_type === contentType));
   }, [rawResults, contentType]);
 
   const suggestions = useMemo(() => {
@@ -264,7 +258,6 @@ function SearchContent({ onSearchActiveChange, className }: SearchExperienceProp
 
   const handleClearSearch = () => {
     setQuery('');
-    setFilterContentType?.('all');
     setLoading(false);
     writeSearchParams('');
     setFocused(true);
@@ -370,11 +363,21 @@ function SearchContent({ onSearchActiveChange, className }: SearchExperienceProp
           )}
         </div>
 
-        <div className="relative z-0 flex items-center justify-center gap-2">
-          <DisplayModeToggle />
-          <MinimalFilterButton />
+        <div
+          ref={controlsSentinelRef}
+          className="relative z-0 flex flex-col items-center gap-3.5"
+        >
+          <div className="flex items-center justify-center gap-2">
+            <DisplayModeToggle />
+            <ContentTypeToggle />
+            <MixesButton />
+            <MinimalFilterButton />
+          </div>
+          <QueryStatusBar />
         </div>
       </div>
+
+      <StickyQueryStrip sentinelRef={controlsSentinelRef} />
 
       {!showIdle && (
         <div className="w-full mt-6 flex flex-col items-center">

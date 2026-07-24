@@ -15,8 +15,12 @@
     "language": "Langue"
   },
   "DisplayMode": {
-    "cinematic": "Cinéma",
-    "minimal": "Minimal"
+    "cinematic": "Cine",
+    "minimal": "Mini",
+    "cinematicFull": "Cinematic",
+    "minimalFull": "Minimal",
+    "film": "Film",
+    "artifact": "Afct"
   },
   "Film": {
     "play": "Lire {runtime}",
@@ -44,12 +48,16 @@
     "transcriptUnavailable": "Transcription indisponible pour cette langue."
   },
   "MinimalList": {
-    "filter": "Filtrer",
+    "filter": "Dials",
+    "mixes": "Mixes",
+    "allMixes": "All films",
+    "noMixes": "Sans mix",
     "sort": "Trier",
     "show": "Afficher",
     "theme": "Thème",
     "type": "Type",
     "films": "Films",
+    "artifact": "Artifact",
     "artifacts": "Artifacts",
     "newest": "Plus récents",
     "az": "A–Z",

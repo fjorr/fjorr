@@ -1,14 +1,15 @@
 import React, { Suspense } from 'react';
 import { cookies } from 'next/headers';
 import type { Metadata } from 'next';
-import FilmRailLoader from '@/components/FilmRailLoader';
-import ArtifactRailLoader from '@/components/ArtifactRailLoader';
 import PromoSplit from '@/components/PromoSplit';
 import FeatureRailLoader from '@/components/FeatureRailLoader';
+import FeatureRailGate from '@/components/FeatureRailGate';
+import CineHomeLoader from '@/components/CineHomeLoader';
 import MinimalHomeLoader from '@/components/MinimalHomeLoader';
 import HomeWithSearch from '@/components/HomeWithSearch';
 import ServerSafeSkeleton from '@/components/ServerSafeSkeleton';
 import { DISPLAY_MODE_COOKIE, parseDisplayMode } from '@/lib/display-mode';
+import { getHomeMixes } from '@/lib/content/home';
 import { SITE_ORIGIN, absoluteUrl } from '@/lib/site';
 
 export const metadata: Metadata = {
@@ -58,6 +59,7 @@ const siteJsonLd = {
 export default async function Home() {
   const cookieStore = await cookies();
   const mode = parseDisplayMode(cookieStore.get(DISPLAY_MODE_COOKIE)?.value);
+  const mixes = mode === 'cinematic' ? await getHomeMixes() : [];
 
   const jsonLd = (
     <script
@@ -82,28 +84,24 @@ export default async function Home() {
   return (
     <>
       {jsonLd}
-      <HomeWithSearch>
-        <div className="w-full mt-6 md:mt-10">
-          <Suspense fallback={<FeatureRailFallback />}>
-            <FeatureRailLoader />
-          </Suspense>
-        </div>
+      <HomeWithSearch mixes={mixes}>
+        <FeatureRailGate>
+          <div className="w-full mt-6 md:mt-10">
+            <Suspense fallback={<FeatureRailFallback />}>
+              <FeatureRailLoader />
+            </Suspense>
+          </div>
+        </FeatureRailGate>
 
-        <div className="w-full flex flex-col gap-6 md:gap-10 mt-6 md:mt-10">
-          <Suspense fallback={null}>
-            <FilmRailLoader title="Latest" />
-          </Suspense>
-          <Suspense fallback={null}>
-            <FilmRailLoader title="Coming Soon" />
-          </Suspense>
-          <Suspense fallback={null}>
-            <ArtifactRailLoader title="Film Artifacts" />
-          </Suspense>
-        </div>
+        <Suspense fallback={null}>
+          <CineHomeLoader />
+        </Suspense>
 
-        <div className="mt-12 md:mt-16">
-          <PromoSplit />
-        </div>
+        <FeatureRailGate>
+          <div className="mt-12 md:mt-16">
+            <PromoSplit />
+          </div>
+        </FeatureRailGate>
       </HomeWithSearch>
     </>
   );

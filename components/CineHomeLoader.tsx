@@ -1,10 +1,11 @@
 import React from 'react';
-import MinimalHomeBrowse from '@/components/MinimalHomeBrowse';
-import { type MinimalFilm } from '@/components/MinimalHomeList';
-import { type MinimalArtifact } from '@/components/MinimalArtifactList';
-import { getCineHomeArtifacts, getMinimalHomeFilms } from '@/lib/content/home';
+import CineHomeGrid, {
+  type CineGridArtifact,
+  type CineGridFilm,
+} from '@/components/CineHomeGrid';
+import { getCineHomeArtifacts, getCineHomeFilms } from '@/lib/content/home';
 
-function mapFilm(film: any): MinimalFilm {
+function mapFilm(film: any): CineGridFilm {
   return {
     id: film.id,
     name: film.name,
@@ -12,11 +13,7 @@ function mapFilm(film: any): MinimalFilm {
     teaser: film.teaser ?? null,
     runtime: film.runtime ?? null,
     release_date: film.release_date ?? null,
-    story_date:
-      typeof film.story_date === 'object'
-        ? film.story_date?.name ?? null
-        : film.story_date ?? null,
-    mux_playback_id: film.mux_playback_id ?? null,
+    blok_tall: film.blok_tall ?? null,
     rating:
       typeof film.rating === 'object' ? film.rating?.name ?? null : film.rating ?? null,
     theme:
@@ -24,19 +21,20 @@ function mapFilm(film: any): MinimalFilm {
   };
 }
 
-function mapArtifact(artifact: any): MinimalArtifact {
+function mapArtifact(artifact: any): CineGridArtifact {
   return {
     id: artifact.id,
     name: artifact.name,
     slug: String(artifact.slug || '').trim(),
     teaser: artifact.teaser ?? null,
+    blok_tall: artifact.blok_tall ?? null,
     created_at: artifact.created_at ?? null,
   };
 }
 
-export default async function MinimalHomeLoader() {
+export default async function CineHomeLoader() {
   const [filmRows, artifactRows] = await Promise.all([
-    getMinimalHomeFilms(),
+    getCineHomeFilms(),
     getCineHomeArtifacts(),
   ]);
   const films = filmRows.map(mapFilm).filter((f) => f.slug);
@@ -44,11 +42,11 @@ export default async function MinimalHomeLoader() {
 
   if (films.length === 0 && artifacts.length === 0) {
     return (
-      <div className="w-full min-h-screen bg-[#1F1F1F] flex items-center justify-center text-white/40 font-sans text-sm">
+      <div className="w-full py-16 text-center text-white/40 font-sans text-sm">
         No titles available.
       </div>
     );
   }
 
-  return <MinimalHomeBrowse films={films} artifacts={artifacts} />;
+  return <CineHomeGrid films={films} artifacts={artifacts} />;
 }

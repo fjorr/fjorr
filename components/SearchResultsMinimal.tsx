@@ -11,6 +11,7 @@ import {
   filterAndSortSearchItems,
   themesFromSearchItems,
 } from '@/lib/filter-search-items';
+import SearchNadaView from '@/components/SearchNadaView';
 
 const CinemaTheater = dynamic(() => import('@/components/CinemaTheater'), {
   ssr: false,
@@ -64,8 +65,7 @@ function MetaLine({ item }: { item: SearchItem }) {
 
 export default function SearchResultsMinimal({ results }: { results: SearchItem[] }) {
   const t = useTranslations('Film');
-  const tf = useTranslations('MinimalList');
-  const { sort, show, theme, setThemes } = useMinimalFilter();
+  const { sort, theme, setThemes } = useMinimalFilter();
   const [showTheater, setShowTheater] = useState(false);
   const [selectedFilm, setSelectedFilm] = useState<any>(null);
 
@@ -74,8 +74,8 @@ export default function SearchResultsMinimal({ results }: { results: SearchItem[
   }, [results, setThemes]);
 
   const visibleResults = useMemo(
-    () => filterAndSortSearchItems(results, { sort, show, theme }),
-    [results, sort, show, theme]
+    () => filterAndSortSearchItems(results, { sort, theme }),
+    [results, sort, theme]
   );
 
   const handlePlay = async (item: SearchItem) => {
@@ -140,7 +140,9 @@ export default function SearchResultsMinimal({ results }: { results: SearchItem[
   return (
     <div className="w-full max-w-[600px] mx-auto flex flex-col divide-y divide-white/[0.06]">
       {visibleResults.length === 0 ? (
-        <p className="py-10 text-center font-sans text-[14px] text-white/40">{tf('noMatches')}</p>
+        <div className="flex w-full justify-center py-6">
+          <SearchNadaView />
+        </div>
       ) : (
         visibleResults.map((item) => {
           const isFilm = item.item_type === 'film';

@@ -1,6 +1,5 @@
 import type { SearchItem } from '@/components/SearchExperience';
 import type {
-  MinimalShowMode,
   MinimalSortMode,
 } from '@/components/MinimalFilterContext';
 
@@ -26,26 +25,14 @@ export function filterAndSortSearchItems(
   results: SearchItem[],
   {
     sort,
-    show,
     theme,
   }: {
     sort: MinimalSortMode;
-    show: MinimalShowMode;
     theme: string;
   }
 ): SearchItem[] {
   let next = [...results];
 
-  if (show === 'available') {
-    next = next.filter(
-      (item) => item.item_type !== 'film' || !isComingSoon(item.release_date)
-    );
-  }
-  if (show === 'comingSoon') {
-    next = next.filter(
-      (item) => item.item_type === 'film' && isComingSoon(item.release_date)
-    );
-  }
   if (theme !== 'all') {
     next = next.filter(
       (item) => item.item_type === 'film' && item.theme === theme

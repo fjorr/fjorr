@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic';
 import { createBrowserClient } from '@supabase/ssr';
 import { useTranslations } from 'next-intl';
 import { useMinimalFilter } from '@/components/MinimalFilterContext';
+import SearchNadaView from '@/components/SearchNadaView';
 
 const CinemaTheater = dynamic(() => import('@/components/CinemaTheater'), {
   ssr: false,
@@ -72,8 +73,7 @@ function MetaLine({ film }: { film: MinimalFilm }) {
 
 export default function MinimalHomeList({ films }: { films: MinimalFilm[] }) {
   const t = useTranslations('Film');
-  const tf = useTranslations('MinimalList');
-  const { sort, show, theme, setThemes } = useMinimalFilter();
+  const { sort, theme, mix, mixes, setThemes } = useMinimalFilter();
   const [showTheater, setShowTheater] = useState(false);
   const [selectedFilm, setSelectedFilm] = useState<any>(null);
 
@@ -88,8 +88,16 @@ export default function MinimalHomeList({ films }: { films: MinimalFilm[] }) {
   const visibleFilms = useMemo(() => {
     let next = [...films];
 
-    if (show === 'available') next = next.filter((f) => !isComingSoon(f));
-    if (show === 'comingSoon') next = next.filter((f) => isComingSoon(f));
+    if (mix === 'coming-soon') {
+      next = next.filter((f) => isComingSoon(f));
+    } else if (mix !== 'all') {
+      const selected = mixes.find((m) => m.slug === mix);
+      if (selected) {
+        const idSet = new Set(selected.filmIds);
+        next = next.filter((f) => idSet.has(f.id));
+      }
+    }
+
     if (theme !== 'all') next = next.filter((f) => f.theme === theme);
 
     next.sort((a, b) => {
@@ -103,7 +111,7 @@ export default function MinimalHomeList({ films }: { films: MinimalFilm[] }) {
     });
 
     return next;
-  }, [films, sort, show, theme]);
+  }, [films, mix, mixes, sort, theme]);
 
   const handlePlay = async (film: MinimalFilm) => {
     try {
@@ -166,7 +174,9 @@ export default function MinimalHomeList({ films }: { films: MinimalFilm[] }) {
     <div className="w-full pb-8">
       <div className="w-full max-w-[600px] mx-auto px-5 pt-2 flex flex-col divide-y divide-white/[0.06]">
         {visibleFilms.length === 0 ? (
-          <p className="py-10 text-center font-sans text-[14px] text-white/40">{tf('noMatches')}</p>
+          <div className="flex w-full justify-center py-6">
+            <SearchNadaView />
+          </div>
         ) : (
           visibleFilms.map((film) => {
             const comingSoon = isComingSoon(film);

@@ -3,41 +3,50 @@
 import React, { useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useTranslations } from 'next-intl';
 import type { SearchItem } from '@/components/SearchExperience';
 import { useMinimalFilter } from '@/components/MinimalFilterContext';
 import {
   filterAndSortSearchItems,
   themesFromSearchItems,
 } from '@/lib/filter-search-items';
+import SearchNadaView from '@/components/SearchNadaView';
 
 interface ResultsGridProps {
   results: SearchItem[];
+  /** Cine browse: posters only — titles live in Mini / search. */
+  postersOnly?: boolean;
 }
 
-export default function SearchResultsGrid({ results }: ResultsGridProps) {
-  const tf = useTranslations('MinimalList');
-  const { sort, show, theme, setThemes } = useMinimalFilter();
+export default function SearchResultsGrid({ results, postersOnly = false }: ResultsGridProps) {
+  const { sort, theme, setThemes } = useMinimalFilter();
 
   useEffect(() => {
+    // Cine browse seeds themes from the full catalog; don't overwrite with a filtered subset.
+    if (postersOnly) return;
     setThemes(themesFromSearchItems(results));
-  }, [results, setThemes]);
+  }, [results, setThemes, postersOnly]);
 
   const visibleResults = useMemo(
-    () => filterAndSortSearchItems(results, { sort, show, theme }),
-    [results, sort, show, theme]
+    () => filterAndSortSearchItems(results, { sort, theme }),
+    [results, sort, theme]
   );
 
   if (visibleResults.length === 0) {
     return (
-      <p className="py-10 text-center font-sans text-[14px] text-white/40">
-        {tf('noMatches')}
-      </p>
+      <div className="flex w-full justify-center py-6">
+        <SearchNadaView />
+      </div>
     );
   }
 
   return (
-    <div className="w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-6 gap-y-12 text-left">
+    <div
+      className={`w-full grid grid-cols-2 sm:grid-cols-3 text-left ${
+        postersOnly
+          ? 'md:grid-cols-5 gap-3 sm:gap-4 md:gap-5'
+          : 'md:grid-cols-4 gap-x-6 gap-y-12'
+      }`}
+    >
       {visibleResults.map((item, index) => {
         const isFilm = item.item_type === 'film';
         const targetHref = isFilm ? `/film/${item.slug}` : `/artifact/${item.slug}`;
@@ -60,7 +69,9 @@ export default function SearchResultsGrid({ results }: ResultsGridProps) {
           <Link
             key={item.id}
             href={targetHref}
-            className="flex flex-col gap-3.5 group cursor-pointer animate-in fade-in zoom-in-95 duration-400 fill-mode-both"
+            className={`group cursor-pointer animate-in fade-in zoom-in-95 duration-400 fill-mode-both ${
+              postersOnly ? 'block' : 'flex flex-col gap-3.5'
+            }`}
             style={{
               animationDelay: gridStaggerDelay,
             }}
@@ -81,44 +92,46 @@ export default function SearchResultsGrid({ results }: ResultsGridProps) {
               )}
             </div>
 
-            <div className="flex flex-col gap-1 pl-0.5">
-              <h2 className="font-sans font-black text-base leading-normal text-white transition-opacity group-hover:opacity-80">
-                {item.name}
-              </h2>
+            {!postersOnly && (
+              <div className="flex flex-col gap-1 pl-0.5">
+                <h2 className="font-sans font-black text-base leading-normal text-white transition-opacity group-hover:opacity-80">
+                  {item.name}
+                </h2>
 
-              <div className="font-sans font-medium text-[11px] tracking-normal capitalize text-white/40 flex items-center min-h-[16px] truncate">
-                {isFilm ? (
-                  isFutureRelease ? (
-                    <span className="text-[#6db7f8] font-semibold">Film &nbsp;Coming Soon</span>
+                <div className="font-sans font-medium text-[11px] tracking-normal capitalize text-white/40 flex items-center min-h-[16px] truncate">
+                  {isFilm ? (
+                    isFutureRelease ? (
+                      <span className="text-[#6db7f8] font-semibold">Film &nbsp;Coming Soon</span>
+                    ) : (
+                      <div className="flex items-center gap-x-1.5 dynamic-meta-row capitalize truncate">
+                        <span className="font-extrabold text-white/70">Film</span>
+                        {item.theme && <span className="truncate max-w-[90px]">{item.theme}</span>}
+                        {runtimeMinutes && <span>{runtimeMinutes}</span>}
+                      </div>
+                    )
                   ) : (
-                    <div className="flex items-center gap-x-1.5 dynamic-meta-row capitalize truncate">
-                      <span className="font-extrabold text-white/70">Film</span>
-                      {item.theme && <span className="truncate max-w-[90px]">{item.theme}</span>}
-                      {runtimeMinutes && <span>{runtimeMinutes}</span>}
+                    <div className="flex items-center gap-x-1.5 capitalize truncate">
+                      {item.label && (
+                        <span className="font-extrabold text-white/70 truncate max-w-[90px]">
+                          {item.label}
+                        </span>
+                      )}
+                      {item.creator && (
+                        <span className="truncate max-w-[90px]">{item.creator}</span>
+                      )}
+                      {displayYear && <span>{displayYear}</span>}
+                      {!item.label && !item.creator && !displayYear && (
+                        <span className="text-white/30">Artifact</span>
+                      )}
                     </div>
-                  )
-                ) : (
-                  <div className="flex items-center gap-x-1.5 capitalize truncate">
-                    {item.label && (
-                      <span className="font-extrabold text-white/70 truncate max-w-[90px]">
-                        {item.label}
-                      </span>
-                    )}
-                    {item.creator && (
-                      <span className="truncate max-w-[90px]">{item.creator}</span>
-                    )}
-                    {displayYear && <span>{displayYear}</span>}
-                    {!item.label && !item.creator && !displayYear && (
-                      <span className="text-white/30">Artifact</span>
-                    )}
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
 
-              <p className="font-sans font-medium text-[13px] leading-snug text-white/60 tracking-normal line-clamp-2 mt-0.5">
-                {item.teaser || 'No contextual reference details configured.'}
-              </p>
-            </div>
+                <p className="font-sans font-medium text-[13px] leading-snug text-white/60 tracking-normal line-clamp-2 mt-0.5">
+                  {item.teaser || 'No contextual reference details configured.'}
+                </p>
+              </div>
+            )}
           </Link>
         );
       })}
