@@ -7,6 +7,16 @@ import { NextResponse, type NextRequest } from "next/server";
  */
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const host = request.headers.get("host")?.split(":")[0]?.toLowerCase();
+
+  // Canonical host: apex → www (301). Prefer www to match live Vercel primary.
+  if (host === "fjorr.com") {
+    const url = request.nextUrl.clone();
+    url.host = "www.fjorr.com";
+    url.protocol = "https:";
+    return NextResponse.redirect(url, 301);
+  }
+
   const gateEnabled = process.env.SITE_GATE_ENABLED === "true";
 
   if (

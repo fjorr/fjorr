@@ -95,7 +95,7 @@ export default function NominateClient() {
             '@type': 'ContactPage',
             name: 'Nominate | Fjorr',
             description: t('description'),
-            url: 'https://fjorr.com/nominate',
+            url: 'https://www.fjorr.com/nominate',
           }),
         }}
       />

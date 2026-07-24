@@ -5,10 +5,11 @@ import TermsClient from './TermsClient'; // 🛠️ Points directly to your layo
 export const metadata: Metadata = {
   title: 'Terms of Use', // Automatically transforms to "Terms of Use | Fjorr" via layout.tsx
   description: 'Read the conditions, rules, and rules of engagement we play by.',
+  alternates: { canonical: '/terms' },
   openGraph: {
     title: 'Terms of Use | Fjorr',
     description: 'Read the conditions, rules, and rules of engagement we play by.',
-    url: 'https://fjorr.com/terms',
+    url: 'https://www.fjorr.com/terms',
     type: 'website',
   },
   twitter: {

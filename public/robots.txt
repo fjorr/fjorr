@@ -3,9 +3,7 @@ User-agent: *
 Allow: /
 Disallow: /api/
 Disallow: /_next/
+Disallow: /debug-db
+Disallow: /auth/
 
-# Host profile definition
-Host: https://fjorr.com
-
-# 🗺️ Point them directly to your dynamic sitemap matrix
-Sitemap: https://fjorr.com/sitemap.xml
+Sitemap: https://www.fjorr.com/sitemap.xml

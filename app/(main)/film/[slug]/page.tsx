@@ -5,6 +5,7 @@ import FilmPageContentWrapper from '@/components/FilmPageContentWrapper';
 // 🎯 IMPORT YOUR NEW SERVER-SAFE BRIDGE FILE
 import ServerSafeSkeleton from '@/components/ServerSafeSkeleton';
 import type { Metadata } from 'next';
+import { absoluteUrl } from '@/lib/site';
 
 export const dynamic = 'force-dynamic';
 export const dynamicParams = true;
@@ -13,7 +14,6 @@ interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
-// === KEEP YOUR EXISTING generateMetadata ENGINE HERE UNTOUCHED ===
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug: urlSlug } = await params;
   const supabase = await createClient();
@@ -21,12 +21,26 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!film) return { title: 'Film Not Found' };
   const titleText = film.name;
   const descriptionText = film.teaser || 'Watch this short film on Fjorr.';
-  const ogImageUrl = film.blok_ogrf || 'https://fjorr.com/opengraph-image.png';
+  const canonical = absoluteUrl(`/film/${film.slug}`);
+  const ogImageUrl = film.blok_ogrf || absoluteUrl('/opengraph-image.png');
   return {
     title: titleText,
     description: descriptionText,
-    openGraph: { title: `${titleText} | Fjorr`, description: descriptionText, url: `https://fjorr.com/film/${film.slug}`, siteName: 'Fjorr', type: 'video.movie', images: [{ url: ogImageUrl, width: 1200, height: 630, alt: `Short film poster for ${film.name}` }] },
-    twitter: { card: 'summary_large_image', title: `${titleText} | Fjorr`, description: descriptionText, images: [ogImageUrl] },
+    alternates: { canonical },
+    openGraph: {
+      title: `${titleText} | Fjorr`,
+      description: descriptionText,
+      url: canonical,
+      siteName: 'Fjorr',
+      type: 'video.movie',
+      images: [{ url: ogImageUrl, width: 1200, height: 630, alt: `Short film poster for ${film.name}` }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${titleText} | Fjorr`,
+      description: descriptionText,
+      images: [ogImageUrl],
+    },
   };
 }
 
@@ -113,7 +127,7 @@ async function DeferredPageContent({ urlSlug }: { urlSlug: string }) {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ "@context": "https://schema.org", "@type": "Movie", "name": filmData.name, "description": filmData.teaser, "image": filmData.blok_ogrf || "https://fjorr.com/opengraph-image.png", "datePublished": filmData.release_date, "productionCompany": { "@type": "Organization", "name": "Fjorr" } }) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ "@context": "https://schema.org", "@type": "Movie", "name": filmData.name, "description": filmData.teaser, "image": filmData.blok_ogrf || "https://www.fjorr.com/opengraph-image.png", "datePublished": filmData.release_date, "productionCompany": { "@type": "Organization", "name": "Fjorr" } }) }} />
       
       <FilmPageContentWrapper 
         filmData={filmData}

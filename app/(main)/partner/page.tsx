@@ -5,10 +5,11 @@ import PartnerClient from './PartnerClient'; // 🛠️ Points directly to your 
 export const metadata: Metadata = {
   title: 'Partner', // Automatically transforms to "Partner | Fjorr" via layout.tsx
   description: 'We work with brands, studios, and individuals who believe stories shape people. Collaborate with Fjorr to bring meaningful ideas to life.',
+  alternates: { canonical: '/partner' },
   openGraph: {
     title: "Partner with Fjorr",
     description: 'We work with brands, studios, and individuals who believe stories shape people. Collaborate with Fjorr to bring meaningful ideas to life.',
-    url: 'https://fjorr.com/partner',
+    url: 'https://www.fjorr.com/partner',
     type: 'website',
   },
   twitter: {

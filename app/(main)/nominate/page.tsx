@@ -5,10 +5,11 @@ import NominateClient from './NominateClient'; // 🛠️ Points straight to you
 export const metadata: Metadata = {
   title: 'Nominate', // Becomes "Nominate | Fjorr" automatically via layout.tsx
   description: 'Know a story the world needs to hear? Nominate a piece of history, a fictional adventure, or a forgotten legend to have your name stamped on the film.',
+  alternates: { canonical: '/nominate' },
   openGraph: {
     title: 'Nominate | Fjorr',
     description: 'Know a story the world needs to hear? Nominate a piece of history, a fictional adventure, or a forgotten legend to have your name stamped on the film.',
-    url: 'https://fjorr.com/nominate',
+    url: 'https://www.fjorr.com/nominate',
     type: 'website',
   },
   twitter: {

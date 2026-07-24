@@ -14,10 +14,10 @@ export default function SearchClient() {
             '@context': 'https://schema.org',
             '@type': 'WebSite',
             name: 'Fjorr Search',
-            url: 'https://fjorr.com/search',
+            url: 'https://www.fjorr.com/search',
             potentialAction: {
               '@type': 'SearchAction',
-              target: 'https://fjorr.com/search?q={search_term_string}',
+              target: 'https://www.fjorr.com/search?q={search_term_string}',
               'query-input': 'required name=search_term_string',
             },
           }),

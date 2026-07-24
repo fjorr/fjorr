@@ -4,9 +4,10 @@ import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import "./globals.css";
 import { DisplayModeProvider } from "@/components/DisplayModeProvider";
+import { SITE_ORIGIN } from "@/lib/site";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://fjorr.com"),
+  metadataBase: new URL(SITE_ORIGIN),
   title: {
     default: "Fjorr",
     template: "%s | Fjorr",
@@ -15,10 +16,13 @@ export const metadata: Metadata = {
   keywords: ["cinematic films", "myth engine", "historical artifacts", "stories", "short films"],
   authors: [{ name: "Fjorr Team" }],
   creator: "Fjorr",
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
     title: "Fjorr",
     description: "Short films about the world’s greatest stories.",
-    url: "https://fjorr.com",
+    url: SITE_ORIGIN,
     siteName: "Fjorr",
     type: "website",
     images: [

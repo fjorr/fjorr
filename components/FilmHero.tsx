@@ -68,18 +68,21 @@ export default function FilmHero({ film, onPlayClick }: FilmHeroProps) {
             )}
 
             {film.title_art_code ? (
-              <div 
-                className="mb-4 w-full max-w-[200px] md:max-w-none flex items-center justify-center md:justify-start [&>svg]:w-full [&>svg]:h-auto" 
-                style={{ 
-                  color: film.title_art_hex || '#FFFFFF',
-                  '--desktop-width': calculatedWidth
-                } as React.CSSProperties}
-              >
+              <>
+                {film.name && <h1 className="sr-only">{film.name}</h1>}
                 <div 
-                  className="w-full md:w-[var(--desktop-width)]"
-                  dangerouslySetInnerHTML={{ __html: film.title_art_code }}
-                />
-              </div>
+                  className="mb-4 w-full max-w-[200px] md:max-w-none flex items-center justify-center md:justify-start [&>svg]:w-full [&>svg]:h-auto" 
+                  style={{ 
+                    color: film.title_art_hex || '#FFFFFF',
+                    '--desktop-width': calculatedWidth
+                  } as React.CSSProperties}
+                >
+                  <div 
+                    className="w-full md:w-[var(--desktop-width)]"
+                    dangerouslySetInnerHTML={{ __html: film.title_art_code }}
+                  />
+                </div>
+              </>
             ) : (
               film.name && <h1 className="text-[28px] md:text-[36px] font-sans font-black uppercase tracking-tight leading-none text-white mb-3">{film.name}</h1>
             )}

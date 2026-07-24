@@ -158,7 +158,7 @@ export default function AboutClient() {
             "publisher": {
               "@type": "Organization",
               "name": "Fjorr",
-              "url": "https://fjorr.com"
+              "url": "https://www.fjorr.com"
             }
           })
         }}

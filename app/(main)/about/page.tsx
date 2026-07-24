@@ -5,10 +5,11 @@ import AboutClient from './AboutClient'; // 🛠️ Points directly to your GSAP
 export const metadata: Metadata = {
   title: 'About', // Automatically transforms to "About | Fjorr" via layout.tsx
   description: 'Short films of the world’s greatest stories. Designed to form imagination, character, and cultural literacy.',
+  alternates: { canonical: '/about' },
   openGraph: {
     title: 'About | Fjorr',
     description: 'Short films of the world’s greatest stories.',
-    url: 'https://fjorr.com/about',
+    url: 'https://www.fjorr.com/about',
     type: 'website',
   },
   twitter: {

@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
 export default async function sitemap() {
-  const baseUrl = 'https://fjorr.com';
+  const baseUrl = 'https://www.fjorr.com';
 
   const staticRoutes = [
     '',

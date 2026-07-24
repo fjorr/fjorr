@@ -15,6 +15,7 @@ export default function HomeWithSearch({ children }: { children: ReactNode }) {
 
   return (
     <div className="w-full min-h-screen bg-dark-01 pb-24">
+      <h1 className="sr-only">Fjorr — Short films of the world&apos;s greatest stories</h1>
       <section className="w-full pt-4 pb-4 px-[10%] flex flex-col items-center">
         <SearchExperience
           className="w-full max-w-4xl flex flex-col items-center gap-8"

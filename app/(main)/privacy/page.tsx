@@ -5,10 +5,11 @@ import PrivacyClient from './PrivacyClient'; // 🛠️ Points directly to your 
 export const metadata: Metadata = {
   title: 'Privacy Policy', // Automatically transforms to "Privacy Policy | Fjorr" via layout.tsx
   description: 'Read our commitment to your absolute digital privacy.',
+  alternates: { canonical: '/privacy' },
   openGraph: {
     title: 'Privacy Policy | Fjorr',
     description: 'Read our commitment to your absolute digital privacy.',
-    url: 'https://fjorr.com/privacy',
+    url: 'https://www.fjorr.com/privacy',
     type: 'website',
   },
   twitter: {

@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import { ArtifactSidebar } from '@/components/ArtifactSidebar';
 import ServerSafeSkeleton from '@/components/ServerSafeSkeleton';
 import type { Metadata } from 'next';
+import { absoluteUrl } from '@/lib/site';
 
 export const dynamic = 'force-dynamic';
 export const dynamicParams = true;
@@ -21,12 +22,26 @@ export async function generateMetadata({ params }: ArtifactPageProps): Promise<M
   if (!artifact) return { title: 'Artifact Not Found' };
   const titleText = artifact.name;
   const descriptionText = artifact.teaser || 'Explore this cultural artifact on Fjorr.';
-  const ogImageUrl = artifact.blok_ogrf || 'https://fjorr.com/opengraph-image.png';
+  const canonical = absoluteUrl(`/artifact/${artifact.slug}`);
+  const ogImageUrl = artifact.blok_ogrf || absoluteUrl('/opengraph-image.png');
   return {
     title: titleText,
     description: descriptionText,
-    openGraph: { title: `${titleText} | Fjorr`, description: descriptionText, url: `https://fjorr.com/artifact/${artifact.slug}`, siteName: 'Fjorr', type: 'article', images: [{ url: ogImageUrl, width: 1200, height: 630, alt: `Archive preview for ${artifact.name}` }] },
-    twitter: { card: 'summary_large_image', title: `${titleText} | Fjorr`, description: descriptionText, images: [ogImageUrl] },
+    alternates: { canonical },
+    openGraph: {
+      title: `${titleText} | Fjorr`,
+      description: descriptionText,
+      url: canonical,
+      siteName: 'Fjorr',
+      type: 'article',
+      images: [{ url: ogImageUrl, width: 1200, height: 630, alt: `Archive preview for ${artifact.name}` }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${titleText} | Fjorr`,
+      description: descriptionText,
+      images: [ogImageUrl],
+    },
   };
 }
 
@@ -163,7 +178,7 @@ async function DeferredArtifactContent({
             "@type": "CreativeWork",
             "name": artifact.name,
             "description": artifact.description || artifact.teaser,
-            "image": artifact.blok_ogrf || artifact.hero_tall || "https://fjorr.com/opengraph-image.png",
+            "image": artifact.blok_ogrf || artifact.hero_tall || "https://www.fjorr.com/opengraph-image.png",
             "dateCreated": artifact.release_date,
             "creator": { "@type": "Person", "name": creatorName || "Fjorr Contributor" },
             "publisher": { "@type": "Organization", "name": "Fjorr" }
