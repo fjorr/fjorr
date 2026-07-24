@@ -138,8 +138,11 @@ export default function MinimalHomeList({ films }: { films: MinimalFilm[] }) {
             key={film.id}
             className="w-full flex items-center justify-between gap-8 py-4 first:pt-0 last:pb-0"
           >
-            <div className="min-w-0 flex-1 max-w-[380px] flex flex-col gap-1 pr-2">
-              <h2 className="font-sans text-[18px] font-bold tracking-tight text-white leading-tight">
+            <Link
+              href={`/film/${film.slug}`}
+              className="min-w-0 flex-1 max-w-[380px] flex flex-col gap-1 pr-2 group"
+            >
+              <h2 className="font-sans text-[18px] font-bold tracking-tight text-white leading-tight group-hover:text-white/85 transition-colors">
                 {film.name}
               </h2>
               {film.teaser && (
@@ -148,7 +151,7 @@ export default function MinimalHomeList({ films }: { films: MinimalFilm[] }) {
                 </p>
               )}
               <MetaLine film={film} />
-            </div>
+            </Link>
 
             <div className="shrink-0 w-[132px] flex items-center justify-end gap-2">
               {!comingSoon && (
