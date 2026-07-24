@@ -35,7 +35,15 @@ interface FeatureRailProps {
 
 const RAIL_SCROLLBAR_CSS = `
   .fjorr-feature-scroll::-webkit-scrollbar { display: none !important; }
-  .fjorr-feature-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+  .fjorr-feature-scroll {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    overflow-x: scroll;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x;
+    overscroll-behavior-x: contain;
+  }
 `;
 
 export default function FeatureRail({
@@ -159,11 +167,11 @@ export default function FeatureRail({
     <section className="w-full flex justify-center bg-[#1F1F1F]">
       <style dangerouslySetInnerHTML={{ __html: RAIL_SCROLLBAR_CSS }} />
 
-      <div className="w-full max-w-[1440px] relative group/rail overflow-hidden rounded-none min-[1440px]:rounded-xl">
+      {/* Avoid overflow-hidden here — it breaks nested horizontal swipe on iOS Safari. */}
+      <div className="w-full max-w-[1440px] relative group/rail rounded-none min-[1440px]:rounded-xl">
         <div
           ref={railRef}
-          className="fjorr-feature-scroll flex w-full overflow-x-auto overflow-y-hidden snap-x snap-mandatory overscroll-x-contain"
-          style={{ WebkitOverflowScrolling: 'touch' }}
+          className="fjorr-feature-scroll flex w-full min-w-0 snap-x snap-mandatory"
         >
           {films.map((film, index) => {
             const sponsorName = getSponsorName(film);

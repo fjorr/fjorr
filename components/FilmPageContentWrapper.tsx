@@ -142,8 +142,8 @@ export default function FilmPageContentWrapper({
           shareSeconds={shareSeconds}
         />
 
-        <div className="w-full bg-[#1F1F1F] pt-8 pb-24 flex flex-col items-center gap-0">
-          <div className="w-full flex flex-col space-y-6">
+        <div className="w-full bg-[#1F1F1F] pt-8 pb-24 flex flex-col gap-0">
+          <div className="w-full min-w-0 flex flex-col space-y-6">
             {relatedArtifacts.length > 0 && (
               <ArtifactRail title="Related Artifacts" artifacts={relatedArtifacts} />
             )}

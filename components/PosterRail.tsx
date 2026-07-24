@@ -18,18 +18,32 @@ type PosterRailProps = {
 
 const RAIL_CSS = `
   .fjorr-poster-rail::-webkit-scrollbar { display: none !important; }
-  .fjorr-poster-rail { -ms-overflow-style: none; scrollbar-width: none; }
+  .fjorr-poster-rail {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    /* iOS: scroll (not auto) + touch-action so horizontal pans aren't stolen by the page */
+    overflow-x: scroll;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x;
+    overscroll-behavior-x: contain;
+  }
+  .fjorr-poster-rail a {
+    touch-action: pan-x;
+    -webkit-user-drag: none;
+  }
 `;
 
 /**
  * Full-bleed poster rail.
  * Left inset is measured from the title so the first card stays locked under
- * the headline at scrollLeft=0. No mandatory snap (it was eating that inset).
+ * the headline at scrollLeft=0.
  */
 export default function PosterRail({ title, items }: PosterRailProps) {
   const containerRef = useRef<HTMLElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const railRef = useRef<HTMLDivElement>(null);
+  const insetRef = useRef(32);
   const [inset, setInset] = useState(32);
   const [showArrows, setShowArrows] = useState(false);
   const [hasEnteredScreen, setHasEnteredScreen] = useState(false);
@@ -44,8 +58,10 @@ export default function PosterRail({ title, items }: PosterRailProps) {
         0,
         Math.round(titleEl.getBoundingClientRect().left - railEl.getBoundingClientRect().left)
       );
+      // Ignore 1px jitter from iOS URL-bar resize so we don't re-render mid-swipe.
+      if (Math.abs(next - insetRef.current) < 2 && !isFirstSync) return;
+      insetRef.current = next;
       setInset(next);
-      // Only pin to start on first layout — mandatory snap used to eat this inset.
       if (isFirstSync) {
         railEl.scrollLeft = 0;
         isFirstSync = false;
@@ -55,7 +71,7 @@ export default function PosterRail({ title, items }: PosterRailProps) {
     syncInset();
     window.addEventListener('resize', syncInset);
     const ro = new ResizeObserver(syncInset);
-    ro.observe(document.documentElement);
+    if (railRef.current) ro.observe(railRef.current);
     return () => {
       window.removeEventListener('resize', syncInset);
       ro.disconnect();
@@ -102,12 +118,12 @@ export default function PosterRail({ title, items }: PosterRailProps) {
   if (items.length === 0) return null;
 
   return (
-    <section ref={containerRef} className="w-full min-w-0 pb-0 relative group/rail z-20">
+    <section ref={containerRef} className="w-full max-w-full min-w-0 pb-0 relative group/rail z-20">
       <style dangerouslySetInnerHTML={{ __html: RAIL_CSS }} />
 
       <div
-        className={`w-full max-w-[1440px] mx-auto flex items-center justify-between mb-4 px-8 md:px-16 transition-all duration-800 ease-out transform ${
-          hasEnteredScreen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+        className={`w-full max-w-[1440px] mx-auto flex items-center justify-between mb-4 px-8 md:px-16 transition-opacity duration-800 ease-out ${
+          hasEnteredScreen ? 'opacity-100' : 'opacity-0'
         }`}
       >
         <h3
@@ -139,10 +155,8 @@ export default function PosterRail({ title, items }: PosterRailProps) {
 
       <div
         ref={railRef}
-        className="fjorr-poster-rail flex w-full min-w-0 overflow-x-auto overflow-y-hidden overscroll-x-contain pb-1"
-        style={{ WebkitOverflowScrolling: 'touch' }}
+        className="fjorr-poster-rail flex w-full max-w-full min-w-0 pb-1"
       >
-        {/* Spacer locks first poster under the title (no gap after — gap was shifting posters right). */}
         <div className="shrink-0" style={{ width: inset }} aria-hidden />
 
         {items.map((item, index) => {
@@ -153,22 +167,23 @@ export default function PosterRail({ title, items }: PosterRailProps) {
               key={item.key}
               href={item.href}
               draggable={false}
-              className={`shrink-0 group/card block mr-3 sm:mr-4 md:mr-5 lg:mr-6 transition-all duration-700 ease-out transform
+              onDragStart={(e) => e.preventDefault()}
+              className={`shrink-0 group/card block mr-3 sm:mr-4 md:mr-5 lg:mr-6 transition-opacity duration-700 ease-out
                 w-[42vw] max-w-[200px]
                 sm:w-[28vw] sm:max-w-none
                 md:w-[22vw] md:max-w-[220px]
                 lg:w-[14vw] lg:max-w-[240px]
-                ${hasEnteredScreen ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-6 scale-[0.98]'}`}
+                ${hasEnteredScreen ? 'opacity-100' : 'opacity-0'}`}
               style={{ transitionDelay: hasEnteredScreen ? delay : '0ms' }}
             >
-              <div className="w-full aspect-[2/3] rounded-[8px] bg-zinc-900/40 border border-white/5 overflow-hidden relative transition-all duration-300 group-hover/card:scale-[1.02] shadow-xl flex items-center justify-center">
+              <div className="w-full aspect-[2/3] rounded-[8px] bg-zinc-900/40 border border-white/5 overflow-hidden relative shadow-xl flex items-center justify-center [@media(hover:hover)_and_(pointer:fine)]:transition-transform [@media(hover:hover)_and_(pointer:fine)]:duration-300 [@media(hover:hover)_and_(pointer:fine)]:group-hover/card:scale-[1.02]">
                 {item.image ? (
                   <Image
                     src={item.image}
                     alt={item.label || 'Poster'}
                     fill
                     sizes="(max-width: 640px) 42vw, (max-width: 768px) 28vw, (max-width: 1024px) 22vw, 14vw"
-                    className="object-cover pointer-events-none"
+                    className="object-cover pointer-events-none select-none"
                     draggable={false}
                   />
                 ) : (
