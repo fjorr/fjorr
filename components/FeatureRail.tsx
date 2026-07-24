@@ -253,7 +253,7 @@ export default function FeatureRail({
                         typeof film.rating === 'object' ? film.rating?.name : film.rating;
                       if (!ratingVal) return null;
                       return (
-                        <span className="px-1 py-0.25 border border-white/60 rounded-[4px] text-white/60 font-semibold text-[12px] uppercase">
+                        <span className="px-1 py-0.25 border border-white/60 rounded-[4px] text-white/60 font-semibold text-[12px] capitalize">
                           {ratingVal}
                         </span>
                       );

@@ -86,7 +86,7 @@ export function ArtifactSidebar({
       style={{ backgroundColor: customBg }}
       className={`w-full lg:w-[400px] shrink-0 flex flex-col justify-start p-8 md:p-10 lg:pt-[110px] h-full ${textClass} border-none !border-0`}
     >
-      <span className={`text-[11px] uppercase font-mono tracking-[0.2em] font-bold mb-2 ${mutedTextClass}`}>
+      <span className={`text-[11px] capitalize font-mono tracking-normal font-bold mb-2 ${mutedTextClass}`}>
         Film Artifact
       </span>
 

@@ -33,7 +33,7 @@ function MetaLine({ item }: { item: SearchItem }) {
 
   if (item.item_type === 'film' && comingSoon) {
     return (
-      <p className="font-sans text-[11px] font-medium uppercase tracking-wide text-white/30">
+      <p className="font-sans text-[11px] font-medium capitalize tracking-normal text-white/30">
         {t('comingSoon')}
       </p>
     );
@@ -50,14 +50,14 @@ function MetaLine({ item }: { item: SearchItem }) {
 
   if (parts.length === 0) {
     return (
-      <p className="font-sans text-[11px] font-medium uppercase tracking-wide text-white/30">
+      <p className="font-sans text-[11px] font-medium capitalize tracking-normal text-white/30">
         {item.item_type === 'film' ? 'Film' : 'Artifact'}
       </p>
     );
   }
 
   return (
-    <p className="font-sans text-[11px] font-medium uppercase tracking-wide text-white/30">
+    <p className="font-sans text-[11px] font-medium capitalize tracking-normal text-white/30">
       {parts.join(' - ')}
     </p>
   );

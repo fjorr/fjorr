@@ -81,7 +81,12 @@ export const getCineHomeArtifacts = unstable_cache(
     const supabase = createPublicClient();
     const { data, error } = await supabase
       .from('artifact')
-      .select('id, slug, name, blok_tall, teaser, created_at')
+      .select(
+        `
+        id, slug, name, blok_tall, teaser, created_at, label, release_date,
+        creator_map ( creator ( name ) )
+      `
+      )
       .order('created_at', { ascending: false })
       .limit(80);
 
@@ -90,9 +95,25 @@ export const getCineHomeArtifacts = unstable_cache(
       return [];
     }
 
-    return data;
+    return data.map((row) => {
+      const maps = Array.isArray(row.creator_map) ? row.creator_map : [];
+      const creator =
+        (maps[0] as { creator?: { name?: string } | null } | undefined)?.creator
+          ?.name?.trim() || null;
+      return {
+        id: row.id,
+        slug: row.slug,
+        name: row.name,
+        blok_tall: row.blok_tall,
+        teaser: row.teaser,
+        created_at: row.created_at,
+        label: row.label ?? null,
+        release_date: row.release_date ?? null,
+        creator,
+      };
+    });
   },
-  ['home-cine-artifacts'],
+  ['home-cine-artifacts-v2'],
   { revalidate: HOME_ARTIFACT_REVALIDATE_SECONDS, tags: ['artifact', 'home'] }
 );
 

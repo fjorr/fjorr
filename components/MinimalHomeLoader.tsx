@@ -31,6 +31,9 @@ function mapArtifact(artifact: any): MinimalArtifact {
     slug: String(artifact.slug || '').trim(),
     teaser: artifact.teaser ?? null,
     created_at: artifact.created_at ?? null,
+    label: artifact.label ?? null,
+    creator: artifact.creator ?? null,
+    release_date: artifact.release_date ?? null,
   };
 }
 

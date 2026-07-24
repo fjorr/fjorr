@@ -108,8 +108,15 @@ export default function StickyQueryStrip({
     >
       <div ref={stripRef} className="relative pointer-events-auto w-fit max-w-[calc(100vw-2rem)]">
         <div
-          className="flex items-center justify-center gap-1 px-4 py-2.5 rounded-[10px] border border-white/10 bg-[#1F1F1F]/78 backdrop-blur-[28px] shadow-[0_12px_40px_rgba(0,0,0,0.35)]"
-          style={{ WebkitBackdropFilter: 'blur(28px) saturate(1.4)' }}
+          className="flex items-center justify-center gap-1 px-4 py-2.5 rounded-[10px] border"
+          style={{
+            backgroundColor:
+              'color-mix(in srgb, var(--page-bg-color, #1F1F1F) 72%, transparent)',
+            borderColor: 'rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(24px) saturate(1.4)',
+            WebkitBackdropFilter: 'blur(24px) saturate(1.4)',
+            transform: 'translateZ(0)',
+          }}
         >
           <Chip
             onClick={() => setMode(mode === 'minimal' ? 'cinematic' : 'minimal')}

@@ -51,7 +51,7 @@ function MetaLine({ film }: { film: MinimalFilm }) {
   const year = formatYear(film);
   if (isComingSoon(film)) {
     return (
-      <p className="font-sans text-[11px] font-medium uppercase tracking-wide text-white/30">
+      <p className="font-sans text-[11px] font-medium capitalize tracking-normal text-white/30">
         {t('comingSoon')}
         {year ? ` · ${year}` : ''}
       </p>
@@ -65,7 +65,7 @@ function MetaLine({ film }: { film: MinimalFilm }) {
   if (parts.length === 0) return null;
 
   return (
-    <p className="font-sans text-[11px] font-medium uppercase tracking-wide text-white/30">
+    <p className="font-sans text-[11px] font-medium capitalize tracking-normal text-white/30">
       {parts.join(' - ')}
     </p>
   );
@@ -171,58 +171,56 @@ export default function MinimalHomeList({ films }: { films: MinimalFilm[] }) {
   };
 
   return (
-    <div className="w-full pb-8">
-      <div className="w-full max-w-[600px] mx-auto px-5 pt-2 flex flex-col divide-y divide-white/[0.06]">
-        {visibleFilms.length === 0 ? (
-          <div className="flex w-full justify-center py-6">
-            <SearchNadaView />
-          </div>
-        ) : (
-          visibleFilms.map((film) => {
-            const comingSoon = isComingSoon(film);
+    <>
+      {visibleFilms.length === 0 ? (
+        <div className="flex w-full justify-center py-6">
+          <SearchNadaView />
+        </div>
+      ) : (
+        visibleFilms.map((film) => {
+          const comingSoon = isComingSoon(film);
 
-            return (
-              <div
-                key={film.id}
-                className="w-full flex items-center justify-between gap-8 py-4 first:pt-0 last:pb-0"
+          return (
+            <div
+              key={film.id}
+              className="w-full flex items-center justify-between gap-8 py-4 first:pt-0 last:pb-0"
+            >
+              <Link
+                href={`/film/${film.slug}`}
+                className="min-w-0 flex-1 max-w-[380px] flex flex-col gap-1 pr-2 group"
               >
+                <h2 className="font-sans text-[18px] font-bold tracking-tight text-white leading-tight group-hover:text-white/85 transition-colors">
+                  {film.name}
+                </h2>
+                {film.teaser && (
+                  <p className="font-sans text-[14px] font-normal text-white/70 leading-snug line-clamp-2">
+                    {film.teaser}
+                  </p>
+                )}
+                <MetaLine film={film} />
+              </Link>
+
+              <div className="shrink-0 w-[132px] flex items-center justify-end gap-2">
+                {!comingSoon && (
+                  <button
+                    type="button"
+                    onClick={() => handlePlay(film)}
+                    className="h-8 px-3 rounded-[6px] bg-white/15 font-sans text-[13px] font-semibold text-white hover:bg-white/25 transition-colors"
+                  >
+                    {t('playShort')}
+                  </button>
+                )}
                 <Link
                   href={`/film/${film.slug}`}
-                  className="min-w-0 flex-1 max-w-[380px] flex flex-col gap-1 pr-2 group"
+                  className="h-8 px-3 rounded-[6px] bg-white/5 font-sans text-[13px] font-semibold text-white/55 hover:text-white/80 hover:bg-white/10 transition-colors inline-flex items-center"
                 >
-                  <h2 className="font-sans text-[18px] font-bold tracking-tight text-white leading-tight group-hover:text-white/85 transition-colors">
-                    {film.name}
-                  </h2>
-                  {film.teaser && (
-                    <p className="font-sans text-[14px] font-normal text-white/70 leading-snug line-clamp-2">
-                      {film.teaser}
-                    </p>
-                  )}
-                  <MetaLine film={film} />
+                  {t('info')}
                 </Link>
-
-                <div className="shrink-0 w-[132px] flex items-center justify-end gap-2">
-                  {!comingSoon && (
-                    <button
-                      type="button"
-                      onClick={() => handlePlay(film)}
-                      className="h-8 px-3 rounded-[6px] bg-white/15 font-sans text-[13px] font-semibold text-white hover:bg-white/25 transition-colors"
-                    >
-                      {t('playShort')}
-                    </button>
-                  )}
-                  <Link
-                    href={`/film/${film.slug}`}
-                    className="h-8 px-3 rounded-[6px] bg-white/5 font-sans text-[13px] font-semibold text-white/55 hover:text-white/80 hover:bg-white/10 transition-colors inline-flex items-center"
-                  >
-                    {t('info')}
-                  </Link>
-                </div>
               </div>
-            );
-          })
-        )}
-      </div>
+            </div>
+          );
+        })
+      )}
 
       {showTheater && selectedFilm && (
         <CinemaTheater
@@ -233,6 +231,6 @@ export default function MinimalHomeList({ films }: { films: MinimalFilm[] }) {
           }}
         />
       )}
-    </div>
+    </>
   );
 }
