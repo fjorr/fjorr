@@ -47,7 +47,7 @@ const siteJsonLd = {
         '@type': 'SearchAction',
         target: {
           '@type': 'EntryPoint',
-          urlTemplate: `${SITE_ORIGIN}/search?q={search_term_string}`,
+          urlTemplate: `${SITE_ORIGIN}/?q={search_term_string}`,
         },
         'query-input': 'required name=search_term_string',
       },

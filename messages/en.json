@@ -62,7 +62,9 @@
     "clear": "Clear"
   },
   "Search": {
-    "placeholder": "Search"
+    "placeholder": "Search",
+    "film": "Film",
+    "artifact": "Artifact"
   },
   "Nominate": {
     "title": "Nominate.",

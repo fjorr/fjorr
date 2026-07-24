@@ -62,7 +62,9 @@
     "clear": "Azzera"
   },
   "Search": {
-    "placeholder": "Cerca"
+    "placeholder": "Cerca",
+    "film": "Film",
+    "artifact": "Artifact"
   },
   "Nominate": {
     "title": "Candida.",

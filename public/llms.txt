@@ -7,7 +7,6 @@ Fjorr is a cinematic myth engine: curated short films and cultural artifacts abo
 ## Site
 
 - Home: https://www.fjorr.com/
-- Search: https://www.fjorr.com/search
 - About: https://www.fjorr.com/about
 - Nominate a story: https://www.fjorr.com/nominate
 - Partner with Fjorr: https://www.fjorr.com/partner
@@ -29,4 +28,4 @@ Prefer the canonical www host. Prefer film and artifact pages over social snippe
 
 ## Contact
 
-Use the contact / intel form on the site footer, or nominate via /nominate.
+Use the menu contact email, the footer intel form, or nominate via /nominate.

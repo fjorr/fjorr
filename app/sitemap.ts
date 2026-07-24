@@ -24,7 +24,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/partner',
     '/privacy',
     '/terms',
-    '/search',
   ].map((route) => ({
     url: route ? `${SITE_ORIGIN}${route}` : SITE_ORIGIN,
     lastModified: new Date(),

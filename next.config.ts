@@ -36,6 +36,11 @@ const nextConfig: NextConfig = {
         destination: "/",
         permanent: true,
       },
+      {
+        source: "/search",
+        destination: "/",
+        permanent: true,
+      },
     ];
   },
 };
