@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import "./globals.css";
 import { DisplayModeProvider } from "@/components/DisplayModeProvider";
+import TypekitLoader from "@/components/TypekitLoader";
 import { SITE_ORIGIN } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -77,9 +78,10 @@ export default async function RootLayout({
   return (
     <html lang={locale} className={`${fontVariables} dark`}>
       <head>
-        <link rel="stylesheet" href="https://use.typekit.net/xyf8acw.css" />
+        <link rel="preload" href="https://use.typekit.net/xyf8acw.css" as="style" />
       </head>
       <body className="font-sans antialiased text-light-01 min-h-screen">
+        <TypekitLoader />
         <NextIntlClientProvider locale={locale} messages={messages}>
           <DisplayModeProvider>{children}</DisplayModeProvider>
         </NextIntlClientProvider>

@@ -1,5 +1,6 @@
 import React, { Suspense } from 'react';
 import { notFound } from 'next/navigation';
+import Image from 'next/image';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { ArtifactSidebar } from '@/components/ArtifactSidebar';
@@ -175,12 +176,20 @@ async function DeferredArtifactContent({
 
       <div className="w-full lg:w-[calc(100%-400px)] h-auto lg:h-full flex items-center justify-center p-0 lg:p-12 relative z-0 flex-grow">
         <picture className="w-full max-w-4xl h-auto max-h-full flex items-center justify-center transform lg:-translate-y-[35px]">
-          <source media="(min-width: 768px)" srcSet={artifact.hero_clsx || artifact.hero_tall || ''} />
-          <img
-            src={artifact.hero_tall || artifact.hero_clsx || ''}
-            alt={artifact.name || 'Fjorr Artifact Screen'}
-            className="w-full h-auto max-h-full object-contain block mx-auto"
-          />
+          {(artifact.hero_clsx || artifact.hero_tall) && (
+            <source media="(min-width: 768px)" srcSet={artifact.hero_clsx || artifact.hero_tall || ''} />
+          )}
+          {(artifact.hero_tall || artifact.hero_clsx) && (
+            <Image
+              src={artifact.hero_tall || artifact.hero_clsx || ''}
+              alt={artifact.name || 'Fjorr Artifact Screen'}
+              width={1600}
+              height={2400}
+              priority
+              sizes="(max-width: 1024px) 100vw, 55vw"
+              className="w-full h-auto max-h-full object-contain block mx-auto"
+            />
+          )}
         </picture>
       </div>
 

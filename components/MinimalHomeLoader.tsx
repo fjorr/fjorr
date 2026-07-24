@@ -1,19 +1,6 @@
 import React from 'react';
-import { createClient } from '@/utils/supabase/server';
 import MinimalHomeList, { type MinimalFilm } from '@/components/MinimalHomeList';
-
-const FILM_SELECT = `
-  id,
-  name,
-  slug,
-  teaser,
-  runtime,
-  release_date,
-  story_date,
-  mux_playback_id,
-  rating ( name ),
-  theme ( name )
-`;
+import { getMinimalHomeFilms } from '@/lib/content/home';
 
 function mapFilm(film: any): MinimalFilm {
   return {
@@ -36,35 +23,8 @@ function mapFilm(film: any): MinimalFilm {
 }
 
 export default async function MinimalHomeLoader() {
-  const supabase = await createClient();
-  const currentIsoString = new Date().toISOString();
-
-  const [released, comingSoon] = await Promise.all([
-    supabase
-      .from('film')
-      .select(FILM_SELECT)
-      .lte('release_date', currentIsoString)
-      .order('release_date', { ascending: false })
-      .limit(50),
-    supabase
-      .from('film')
-      .select(FILM_SELECT)
-      .gt('release_date', currentIsoString)
-      .order('release_date', { ascending: true })
-      .limit(50),
-  ]);
-
-  if (released.error) {
-    console.error('Minimal home released films failed:', released.error);
-  }
-  if (comingSoon.error) {
-    console.error('Minimal home coming soon films failed:', comingSoon.error);
-  }
-
-  const films: MinimalFilm[] = [
-    ...(released.data || []).map(mapFilm),
-    ...(comingSoon.data || []).map(mapFilm),
-  ];
+  const rows = await getMinimalHomeFilms();
+  const films: MinimalFilm[] = rows.map(mapFilm);
 
   if (films.length === 0) {
     return (

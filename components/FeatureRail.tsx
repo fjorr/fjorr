@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+import HeroPicture from '@/components/HeroPicture';
 
 interface FilmAsset {
   id: string;
@@ -155,23 +156,23 @@ export default function FeatureRail({ films, activeIndex, onSlideChange, onPlayC
               background: 'linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0) 100%)'
             }}
           >
-            <picture key={currentFilm.id} className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none group-hover/rail:scale-[1.01] transition-transform duration-700 animate-slide-fade">
-              <source media="(min-width: 1024px)" srcSet={currentFilm.hero_wide} />
-              <source media="(min-width: 768px)" srcSet={currentFilm.hero_clsx || currentFilm.hero_wide} />
-              <img 
-                src={currentFilm.hero_tall || currentFilm.hero_clsx || currentFilm.hero_wide} 
-                alt={currentFilm.name || "Featured Film Asset"} 
-                className="w-full h-full object-cover"
-                fetchPriority="high"
-                decoding="async"
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none';
-                  if (e.currentTarget.parentElement?.parentElement) {
-                    e.currentTarget.parentElement.style.background = fallbackBg;
-                  }
-                }}
-              />
-            </picture>
+            <HeroPicture
+              key={currentFilm.id}
+              wide={currentFilm.hero_wide}
+              clsx={currentFilm.hero_clsx}
+              tall={currentFilm.hero_tall}
+              alt={currentFilm.name || 'Featured Film Asset'}
+              priority
+              className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none group-hover/rail:scale-[1.01] transition-transform duration-700 animate-slide-fade"
+              imgClassName="object-cover"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+                const link = e.currentTarget.closest('a');
+                if (link instanceof HTMLElement) {
+                  link.style.background = fallbackBg;
+                }
+              }}
+            />
 
             <div 
               className="absolute inset-x-0 bottom-0 h-1/2 z-10 pointer-events-none"

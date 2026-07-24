@@ -17,7 +17,7 @@
 html, body {
   background-color: #1F1F1F !important;
   color: #F5F5F7 !important;
-  font-family: 'Inter', -apple-system, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
   margin: 0;
   padding: 0;
 }

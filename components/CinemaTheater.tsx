@@ -568,7 +568,7 @@ export default function CinemaTheater({ film, onClose, backUrl }: CinemaTheaterP
             <video
               ref={logoPlayerRef}
               src={LOGO_SOURCE}
-              preload="auto"
+              preload="metadata"
               playsInline
               onCanPlay={handlePlayerReady}
               onVolumeChange={handleVolumeChange}

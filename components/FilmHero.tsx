@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import { Play } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import HeroPicture from '@/components/HeroPicture';
 
 interface FilmHeroProps {
   film: any;
@@ -50,11 +50,21 @@ export default function FilmHero({ film, onPlayClick }: FilmHeroProps) {
       <div className="w-full relative overflow-hidden rounded-none shadow-2xl">
         <div className="w-full block aspect-[1/1.618] md:aspect-[4/3] lg:aspect-[16/9] flex flex-col justify-end px-8 md:px-12 pb-8 md:pb-12 pt-[220px] relative bg-cover bg-center transition-all duration-500 select-none" style={{ backgroundImage: `linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0) 100%)` }}>
           
-          <picture className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none">
-            <source media="(min-width: 1024px)" srcSet={film.hero_wide} />
-            <source media="(min-width: 768px)" srcSet={film.hero_clsx || film.hero_wide} />
-            <img src={film.hero_tall || film.hero_clsx || film.hero_wide} alt={film.name || "Featured Film Asset"} className="w-full h-full object-cover object-center" onError={(e) => { e.currentTarget.style.display = 'none'; if (e.currentTarget.parentElement?.parentElement) { e.currentTarget.parentElement.style.background = fallbackBg; } }} />
-          </picture>
+          <HeroPicture
+            wide={film.hero_wide}
+            clsx={film.hero_clsx}
+            tall={film.hero_tall}
+            alt={film.name || 'Featured Film Asset'}
+            priority
+            className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+              const shell = e.currentTarget.parentElement?.parentElement;
+              if (shell instanceof HTMLElement) {
+                shell.style.background = fallbackBg;
+              }
+            }}
+          />
 
           <div className="absolute inset-x-0 bottom-0 h-1/2 z-10 pointer-events-none" style={{ background: 'linear-gradient(to top, #000000BF 0%, #00000000 100%)' }} />
 
