@@ -35,10 +35,11 @@ function Navbar({ variant = 'light' }: NavbarProps) {
     ? {
         backgroundColor:
           variant === 'light'
-            ? 'color-mix(in srgb, var(--page-bg-color, #1F1F1F) 55%, transparent)'
-            : 'color-mix(in srgb, var(--page-bg-color, #EDE8DF) 72%, transparent)',
+            ? 'color-mix(in srgb, var(--page-bg-color, #1F1F1F) 78%, transparent)'
+            : 'color-mix(in srgb, var(--page-bg-color, #EDE8DF) 82%, transparent)',
         backdropFilter: 'blur(28px) saturate(1.4)',
         WebkitBackdropFilter: 'blur(28px) saturate(1.4)',
+        transform: 'translateZ(0)',
       }
     : undefined;
   const openGlassClass =
@@ -108,11 +109,11 @@ function Navbar({ variant = 'light' }: NavbarProps) {
         <div
           style={openGlassStyle}
           className={`
-            absolute left-0 right-0 flex flex-col border overflow-hidden
+            absolute left-0 right-0 flex flex-col border
             transition-[top,padding,border-radius,background-color,border-color,backdrop-filter] duration-300 ease-out
             ${isMenuOpen
-              ? `${openGlassClass} -top-9 pt-9 rounded-b-[10px] rounded-t-none`
-              : `top-0 rounded-[10px] border-transparent ${glassAnimClass}`}
+              ? `${openGlassClass} -top-9 pt-9 rounded-b-[10px] rounded-t-none overflow-hidden`
+              : `top-0 rounded-[10px] overflow-visible ${glassAnimClass}`}
           `}
         >
           <div className="flex h-[50px] px-[30px] items-center gap-[20px]">
@@ -246,6 +247,23 @@ function Navbar({ variant = 'light' }: NavbarProps) {
       </div>
 
       <style dangerouslySetInnerHTML={{ __html: `
+        /* Always-on glass — iOS Safari does not support scroll-driven animations */
+        .animate-nav-glass {
+          background-color: color-mix(in srgb, var(--page-bg-color, #1F1F1F) 72%, transparent);
+          border-color: rgba(255, 255, 255, 0.1);
+          -webkit-backdrop-filter: blur(24px) saturate(1.4);
+          backdrop-filter: blur(24px) saturate(1.4);
+          transform: translateZ(0);
+        }
+
+        .animate-nav-glass-light {
+          background-color: color-mix(in srgb, var(--page-bg-color, #EDE8DF) 78%, transparent);
+          border-color: rgba(0, 0, 0, 0.06);
+          -webkit-backdrop-filter: blur(24px) saturate(1.4);
+          backdrop-filter: blur(24px) saturate(1.4);
+          transform: translateZ(0);
+        }
+
         @keyframes revealGlass {
           from {
             background-color: transparent;
@@ -254,10 +272,10 @@ function Navbar({ variant = 'light' }: NavbarProps) {
             -webkit-backdrop-filter: blur(0px);
           }
           to {
-            background-color: color-mix(in srgb, var(--page-bg-color, #1F1F1F) 40%, transparent);
-            border-color: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(20px) saturate(1.3);
-            -webkit-backdrop-filter: blur(20px) saturate(1.3);
+            background-color: color-mix(in srgb, var(--page-bg-color, #1F1F1F) 72%, transparent);
+            border-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(24px) saturate(1.4);
+            -webkit-backdrop-filter: blur(24px) saturate(1.4);
           }
         }
 
@@ -269,23 +287,34 @@ function Navbar({ variant = 'light' }: NavbarProps) {
             -webkit-backdrop-filter: blur(0px);
           }
           to {
-            background-color: color-mix(in srgb, var(--page-bg-color, #EDE8DF) 55%, transparent);
-            border-color: rgba(0, 0, 0, 0.05);
-            backdrop-filter: blur(20px) saturate(1.3);
-            -webkit-backdrop-filter: blur(20px) saturate(1.3);
+            background-color: color-mix(in srgb, var(--page-bg-color, #EDE8DF) 78%, transparent);
+            border-color: rgba(0, 0, 0, 0.06);
+            backdrop-filter: blur(24px) saturate(1.4);
+            -webkit-backdrop-filter: blur(24px) saturate(1.4);
           }
         }
 
-        .animate-nav-glass {
-          animation: revealGlass linear both;
-          animation-timeline: scroll(root);
-          animation-range: 60px 100px;
-        }
+        /* Desktop/Chrome: fade glass in as you scroll */
+        @supports (animation-timeline: scroll()) {
+          .animate-nav-glass {
+            background-color: transparent;
+            border-color: transparent;
+            backdrop-filter: blur(0px);
+            -webkit-backdrop-filter: blur(0px);
+            animation: revealGlass linear both;
+            animation-timeline: scroll(root);
+            animation-range: 40px 90px;
+          }
 
-        .animate-nav-glass-light {
-          animation: revealGlassLight linear both;
-          animation-timeline: scroll(root);
-          animation-range: 60px 100px;
+          .animate-nav-glass-light {
+            background-color: transparent;
+            border-color: transparent;
+            backdrop-filter: blur(0px);
+            -webkit-backdrop-filter: blur(0px);
+            animation: revealGlassLight linear both;
+            animation-timeline: scroll(root);
+            animation-range: 40px 90px;
+          }
         }
       `}} />
     </header>
