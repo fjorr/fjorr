@@ -224,7 +224,7 @@ export default function FilmTranscript({
               <path d="M17 10h-2a2 2 0 0 0-2 2v0a2 2 0 0 0 2 2h2" />
             </svg>
             <span>
-              {isOpen ? `${t('transcript')} · ${languageLabel}` : t('transcript')}
+              {isOpen ? languageLabel : t('transcript')}
             </span>
             {subtitles.length > 1 && (
               <svg className="w-3.5 h-3.5 opacity-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
