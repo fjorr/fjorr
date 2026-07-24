@@ -18,10 +18,11 @@ interface CreatorMapRow {
 interface FilmSpecsProps {
   film: any;
   audioLanguages: string[];
-  subtitles: Array<{ name: string; code: string }>;
+  subtitles: Array<{ name: string; code: string; vtt_url?: string }>;
   tags: string[];
   transcripts: TranscriptRow[]; 
   creators?: CreatorMapRow[];
+  onSeek?: (seconds: number) => void;
 }
 
 export default function FilmSpecs({ 
@@ -30,7 +31,8 @@ export default function FilmSpecs({
   subtitles, 
   tags, 
   transcripts, 
-  creators = [] 
+  creators = [],
+  onSeek,
 }: FilmSpecsProps) {
   const releaseYear = film.release_date ? new Date(film.release_date).getFullYear() : '2026';
   const displayRuntime = film.runtime ? `${Math.ceil(film.runtime / 60)} min` : '1 min';
@@ -55,7 +57,12 @@ export default function FilmSpecs({
 
         {subtitles.length > 0 && (
           <div className="mt-6">
-            <FilmTranscript subtitles={subtitles} transcripts={transcripts} />
+            <FilmTranscript
+              subtitles={subtitles}
+              transcripts={transcripts}
+              filmSlug={film.slug}
+              onSeek={onSeek}
+            />
           </div>
         )}
       </div>

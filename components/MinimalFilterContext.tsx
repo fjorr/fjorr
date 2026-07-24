@@ -10,6 +10,7 @@ import React, {
   useState,
   type ReactNode,
 } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useDisplayMode } from '@/components/DisplayModeProvider';
 
@@ -36,20 +37,93 @@ type MinimalFilterContextValue = {
 
 const MinimalFilterContext = createContext<MinimalFilterContextValue | null>(null);
 
+function parseSort(value: string | null): MinimalSortMode {
+  if (value === 'az' || value === 'runtime' || value === 'newest') return value;
+  return 'newest';
+}
+
+function parseShow(value: string | null): MinimalShowMode {
+  if (value === 'available' || value === 'comingSoon' || value === 'all') return value;
+  return 'all';
+}
+
+function parseContentType(value: string | null): MinimalContentType {
+  if (value === 'film' || value === 'artifact' || value === 'all') return value;
+  return 'all';
+}
+
 export function MinimalFilterProvider({ children }: { children: ReactNode }) {
-  const [sort, setSort] = useState<MinimalSortMode>('newest');
-  const [show, setShow] = useState<MinimalShowMode>('all');
-  const [theme, setTheme] = useState('all');
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const sort = parseSort(searchParams.get('sort'));
+  const show = parseShow(searchParams.get('show'));
+  const theme = searchParams.get('theme') || 'all';
+  const contentType = parseContentType(searchParams.get('type'));
+
   const [themes, setThemes] = useState<string[]>([]);
-  const [contentType, setContentType] = useState<MinimalContentType>('all');
   const [searchActive, setSearchActive] = useState(false);
 
+  const replaceFilterParams = useCallback(
+    (updates: Record<string, string | null>) => {
+      const params = new URLSearchParams(searchParams.toString());
+      let changed = false;
+      for (const [key, value] of Object.entries(updates)) {
+        const current = params.get(key);
+        if (value == null || value === '') {
+          if (current != null) {
+            params.delete(key);
+            changed = true;
+          }
+        } else if (current !== value) {
+          params.set(key, value);
+          changed = true;
+        }
+      }
+      if (!changed) return;
+      const qs = params.toString();
+      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+    },
+    [pathname, router, searchParams]
+  );
+
+  const setSort = useCallback(
+    (value: MinimalSortMode) => {
+      replaceFilterParams({ sort: value === 'newest' ? null : value });
+    },
+    [replaceFilterParams]
+  );
+
+  const setShow = useCallback(
+    (value: MinimalShowMode) => {
+      replaceFilterParams({ show: value === 'all' ? null : value });
+    },
+    [replaceFilterParams]
+  );
+
+  const setTheme = useCallback(
+    (value: string) => {
+      replaceFilterParams({ theme: value === 'all' ? null : value });
+    },
+    [replaceFilterParams]
+  );
+
+  const setContentType = useCallback(
+    (value: MinimalContentType) => {
+      replaceFilterParams({ type: value === 'all' ? null : value });
+    },
+    [replaceFilterParams]
+  );
+
   const clearFilters = useCallback(() => {
-    setSort('newest');
-    setShow('all');
-    setTheme('all');
-    setContentType('all');
-  }, []);
+    replaceFilterParams({
+      sort: null,
+      show: null,
+      theme: null,
+      type: null,
+    });
+  }, [replaceFilterParams]);
 
   const filtersActive =
     sort !== 'newest' || show !== 'all' || theme !== 'all' || contentType !== 'all';
@@ -71,7 +145,20 @@ export function MinimalFilterProvider({ children }: { children: ReactNode }) {
       filtersActive,
       clearFilters,
     }),
-    [sort, show, theme, themes, contentType, searchActive, filtersActive, clearFilters]
+    [
+      sort,
+      setSort,
+      show,
+      setShow,
+      theme,
+      setTheme,
+      themes,
+      contentType,
+      setContentType,
+      searchActive,
+      filtersActive,
+      clearFilters,
+    ]
   );
 
   return (

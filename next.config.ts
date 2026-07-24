@@ -15,6 +15,20 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async headers() {
+    return [
+      {
+        // Allow partner sites to iframe /embed/* (omit X-Frame-Options; CSP controls this).
+        source: '/embed/:path*',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: 'frame-ancestors *',
+          },
+        ],
+      },
+    ];
+  },
   async redirects() {
     return [
       {

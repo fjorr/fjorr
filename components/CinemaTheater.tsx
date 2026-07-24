@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import type Hls from 'hls.js';
 import { parseLocale } from '@/i18n/config';
+import { absoluteUrl } from '@/lib/site';
 
 interface CinemaTheaterProps {
   film: {
@@ -23,16 +24,34 @@ interface CinemaTheaterProps {
   };
   onClose: () => void;
   backUrl?: string; // Optional destination link to handle historical redirects
+  /** Seek here after the film is ready (skips studio bumper when > 0). */
+  startAt?: number;
+  /** External seek requests (e.g. transcript dock). */
+  seekTo?: number | null;
+  onSeekHandled?: () => void;
+  onTimeUpdate?: (seconds: number) => void;
+  /** Embed fills an iframe and uses the same Fjorr player chrome. */
+  mode?: 'theater' | 'embed';
 }
 
-export default function CinemaTheater({ film, onClose, backUrl }: CinemaTheaterProps) {
+export default function CinemaTheater({
+  film,
+  onClose,
+  backUrl,
+  startAt,
+  seekTo = null,
+  onSeekHandled,
+  onTimeUpdate,
+  mode = 'theater',
+}: CinemaTheaterProps) {
   const router = useRouter();
   const locale = parseLocale(useLocale());
+  const isEmbed = mode === 'embed';
 
   // --- UPDATE LAYER STATE ARCHITECTURE ---
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false); 
-  const [controlsVisible, setControlsVisible] = useState(false);
+  const [controlsVisible, setControlsVisible] = useState(isEmbed);
   const [isEnded, setIsEnded] = useState(false);
   const [showCCMenu, setShowCCMenu] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -43,8 +62,12 @@ export default function CinemaTheater({ film, onClose, backUrl }: CinemaTheaterP
   const [isScrubbing, setIsScrubbing] = useState(false);
 
   // 🎬 BUMPER ENGINE ARCHITECTURE STATE
-  const [isPlayingLogo, setIsPlayingLogo] = useState(true);
+  const skipBumper = isEmbed || (typeof startAt === 'number' && startAt > 0);
+  const [isPlayingLogo, setIsPlayingLogo] = useState(!skipBumper);
   const LOGO_SOURCE = "https://media.fjorr.com/assets/studio-logo/fjorr-studio-logo-04.mp4";
+  const didApplyStartAtRef = useRef(false);
+
+  const watchOnFjorrUrl = `${absoluteUrl(`/film/${film?.slug}`)}?utm_source=embed&utm_medium=iframe&utm_campaign=${encodeURIComponent(String(film?.slug || ''))}`;
 
   // --- CUSTOM REACT SUBTITLE STATE ---
   const [selectedLangCode, setSelectedLangCode] = useState<string>(
@@ -64,6 +87,10 @@ export default function CinemaTheater({ film, onClose, backUrl }: CinemaTheaterP
   const hlsRef = useRef<Hls | null>(null);
 
   const handleCloseNavigation = () => {
+    if (isEmbed) {
+      window.open(watchOnFjorrUrl, '_blank', 'noopener,noreferrer');
+      return;
+    }
     if (backUrl) {
       router.push(backUrl);
     } else {
@@ -73,6 +100,8 @@ export default function CinemaTheater({ film, onClose, backUrl }: CinemaTheaterP
 
   // 🎯 MOBILE SCROLL CONTAINMENT LIFECYCLE HOOK
   useEffect(() => {
+    if (isEmbed) return;
+
     window.dispatchEvent(new CustomEvent('fjorr_hide_main_navbar'));
     
     const originalBodyOverflow = document.body.style.overflow;
@@ -89,7 +118,7 @@ export default function CinemaTheater({ film, onClose, backUrl }: CinemaTheaterP
       document.body.style.height = originalBodyHeight;
       document.documentElement.style.overflow = originalHtmlOverflow;
     };
-  }, []);
+  }, [isEmbed]);
 
   // Secure substrate cache layer mapping parameters cleanly on initialization
   useEffect(() => {
@@ -333,6 +362,37 @@ export default function CinemaTheater({ film, onClose, backUrl }: CinemaTheaterP
     setCurrentSubtitleText(activeCue ? activeCue.text : '');
   }, [currentTime, parsedCues, selectedLangCode]);
 
+  // Apply deep-link / transcript start time once film media is ready.
+  useEffect(() => {
+    if (isPlayingLogo || didApplyStartAtRef.current) return;
+    if (typeof startAt !== 'number' || startAt <= 0) return;
+    const player = filmPlayerRef.current;
+    if (!player) return;
+
+    const apply = () => {
+      if (didApplyStartAtRef.current || !filmPlayerRef.current) return;
+      filmPlayerRef.current.currentTime = startAt;
+      setCurrentTime(startAt);
+      didApplyStartAtRef.current = true;
+    };
+
+    if (player.readyState >= 1) apply();
+    else player.addEventListener('loadedmetadata', apply, { once: true });
+    return () => player.removeEventListener('loadedmetadata', apply);
+  }, [isPlayingLogo, startAt, film?.id]);
+
+  // External seeks from the transcript dock.
+  useEffect(() => {
+    if (seekTo == null || isPlayingLogo) return;
+    const player = filmPlayerRef.current;
+    if (!player) return;
+    player.currentTime = seekTo;
+    setCurrentTime(seekTo);
+    setIsEnded(false);
+    player.play().catch(() => {});
+    onSeekHandled?.();
+  }, [seekTo, isPlayingLogo, onSeekHandled]);
+
   useEffect(() => {
     const player = filmPlayerRef.current;
     if (!player) return;
@@ -511,10 +571,11 @@ export default function CinemaTheater({ film, onClose, backUrl }: CinemaTheaterP
     <div 
       ref={containerRef}
       id="fjorr-theater-root"
-      /* 🎯 FIXED OVERLAY CANVAS HEIGHT:
-         Changed from 'h-full bottom-0' to a modern dynamic lock 'h-[100dvh] lg:h-full lg:bottom-0'.
-         This enforces strict system window boundaries, blocking background leakage without dropping layout alignment. */
-      className="fixed inset-0 w-full h-[100dvh] lg:h-full lg:bottom-0 bg-[#000000] text-[#F5F5F7] select-none overflow-hidden touch-none flex flex-col justify-between font-sans z-[99999] will-change-transform animate-in fade-in duration-300"
+      className={
+        isEmbed
+          ? 'absolute inset-0 w-full h-full bg-[#000000] text-[#F5F5F7] select-none overflow-hidden touch-none flex flex-col justify-between font-sans z-10 will-change-transform'
+          : "fixed inset-0 w-full h-[100dvh] lg:h-full lg:bottom-0 bg-[#000000] text-[#F5F5F7] select-none overflow-hidden touch-none flex flex-col justify-between font-sans z-[99999] will-change-transform animate-in fade-in duration-300"
+      }
     >
       
      {/* 🎬 DYNAMIC THEATER PILL NAVBAR HEADER */}
@@ -540,17 +601,25 @@ export default function CinemaTheater({ film, onClose, backUrl }: CinemaTheaterP
           {/* Center: Slogan Display */}
           <div className="flex items-center shrink-0">
             <span className="font-sans text-xs font-medium tracking-normal select-none whitespace-nowrap text-white/80">
-              Short films of the greatest stories
+              {isEmbed ? 'Watch on Fjorr' : 'Short films of the greatest stories'}
             </span>
           </div>
 
-          {/* Right: Close icon */}
+          {/* Right: Close (theater) or open film page (embed) */}
           <button 
             onClick={handleCloseNavigation} 
             className="w-[18px] h-[18px] flex items-center justify-center cursor-pointer shrink-0 text-white bg-transparent border-0 p-0 outline-none transition-opacity hover:opacity-70"
-            title="Close Theater"
+            title={isEmbed ? 'Watch on Fjorr' : 'Close Theater'}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            {isEmbed ? (
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                <polyline points="15 3 21 3 21 9" />
+                <line x1="10" y1="14" x2="21" y2="3" />
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            )}
           </button>
 
         </div>
@@ -561,7 +630,7 @@ export default function CinemaTheater({ film, onClose, backUrl }: CinemaTheaterP
           Added 'flex-grow h-full items-center justify-center' configuration settings directly to this frame wrapper.
           This pulls the player back to absolute dead center vertically on Mobile Safari regardless of dynamic UI layouts! */}
       <div className="flex-grow w-full h-full flex items-center justify-center relative z-10">
-        <div className={`relative w-full max-w-[1200px] aspect-video overflow-hidden bg-black transition-all duration-500 z-10 flex flex-col justify-end ${isFullscreen ? 'max-w-none h-screen rounded-none border-0' : 'xl:rounded-[12px]'}`}>
+        <div className={`relative w-full max-w-[1200px] aspect-video overflow-hidden bg-black transition-all duration-500 z-10 flex flex-col justify-end ${isFullscreen ? 'max-w-none h-screen rounded-none border-0' : isEmbed ? 'max-w-none h-full rounded-none border-0 aspect-auto' : 'xl:rounded-[12px]'}`}>
           
           {/* PLAYER CONTAINER 1: LOGO BUMPER INTRO */}
           {isPlayingLogo && (
@@ -588,7 +657,12 @@ export default function CinemaTheater({ film, onClose, backUrl }: CinemaTheaterP
             onVolumeChange={handleVolumeChange}
             className="w-full h-full object-contain absolute inset-0 z-0 bg-black"
             style={{ filter: isEnded ? 'blur(20px) brightness(0.3)' : 'blur(0px)' }}
-            onTimeUpdate={(e) => { if (!isScrubbing) setCurrentTime(e.currentTarget.currentTime); }}
+            onTimeUpdate={(e) => {
+              if (isScrubbing) return;
+              const t = e.currentTarget.currentTime;
+              setCurrentTime(t);
+              onTimeUpdate?.(t);
+            }}
             onDurationChange={(e) => setDuration(e.currentTarget.duration)}
             onPlaying={() => { setIsPlaying(true); setIsEnded(false); setIsLoading(false); }}
             onPause={() => setIsPlaying(false)}
@@ -734,11 +808,24 @@ export default function CinemaTheater({ film, onClose, backUrl }: CinemaTheaterP
               onClick={handleCloseNavigation} 
               className="flex items-center gap-2 hover:text-[#f5f5f7] transition-colors group bg-transparent border-0 outline-none cursor-pointer font-sans"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-              Close
+              {isEmbed ? (
+                <>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                    <polyline points="15 3 21 3 21 9" />
+                    <line x1="10" y1="14" x2="21" y2="3" />
+                  </svg>
+                  Watch on Fjorr
+                </>
+              ) : (
+                <>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                  Close
+                </>
+              )}
             </button>
 
             <button 

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, Suspense, type ReactNode } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import { useTranslations } from 'next-intl';
 
@@ -48,20 +48,26 @@ function SearchContent({
   const tSearch = useTranslations('Search');
   const searchParams = useSearchParams();
   const router = useRouter();
+  const pathname = usePathname();
 
-  const initialQuery = searchParams.get('q') || '';
-
-  const [query, setQuery] = useState(initialQuery);
+  const urlQuery = searchParams.get('q') || '';
+  const [query, setQuery] = useState(urlQuery);
   const [rawResults, setRawResults] = useState<SearchItem[]>([]);
   const [filteredResults, setFilteredResults] = useState<SearchItem[]>([]);
   const [latestItems, setLatestItems] = useState<SearchItem[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(Boolean(urlQuery.trim()));
   const inputRef = useRef<HTMLInputElement>(null);
 
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
+
+  // Keep input in sync with the URL (browser back/forward).
+  useEffect(() => {
+    setQuery(urlQuery);
+    if (!urlQuery.trim()) setLoading(false);
+  }, [urlQuery]);
 
   const isSearchActive = query.trim().length > 0;
   const contentType = minimalFilter?.contentType ?? 'all';
@@ -71,11 +77,12 @@ function SearchContent({
   useEffect(() => {
     onSearchActiveChange?.(isSearchActive);
     setFilterSearchActive?.(isSearchActive);
-    if (!isSearchActive) {
+    if (!isSearchActive && contentType !== 'all') {
       setFilterContentType?.('all');
     }
   }, [
     isSearchActive,
+    contentType,
     onSearchActiveChange,
     setFilterSearchActive,
     setFilterContentType,
@@ -171,28 +178,31 @@ function SearchContent({
     }
   }, [rawResults, contentType]);
 
+  const writeSearchParams = (nextQuery: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (nextQuery.trim()) {
+      params.set('q', nextQuery);
+    } else {
+      params.delete('q');
+      params.delete('type');
+    }
+    const qs = params.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setQuery(val);
-
-    const params = new URLSearchParams(window.location.search);
-    if (val.trim()) {
-      params.set('q', val);
-      setLoading(true);
-    } else {
-      params.delete('q');
-      setLoading(false);
-    }
-    router.replace(`?${params.toString()}`);
+    if (val.trim()) setLoading(true);
+    else setLoading(false);
+    writeSearchParams(val);
   };
 
   const handleClearSearch = () => {
     setQuery('');
     setFilterContentType?.('all');
     setLoading(false);
-    const params = new URLSearchParams(window.location.search);
-    params.delete('q');
-    router.replace(`?${params.toString()}`);
+    writeSearchParams('');
   };
 
   return (
