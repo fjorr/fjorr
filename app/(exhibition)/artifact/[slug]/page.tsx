@@ -7,6 +7,7 @@ import { ArtifactSidebar } from '@/components/ArtifactSidebar';
 import ServerSafeSkeleton from '@/components/ServerSafeSkeleton';
 import type { Metadata } from 'next';
 import { absoluteUrl } from '@/lib/site';
+import { resolveSocialOgImage } from '@/lib/og';
 import {
   getArtifactColorTokens,
   getArtifactMetadata,
@@ -38,7 +39,7 @@ export async function generateMetadata({ params }: ArtifactPageProps): Promise<M
   const titleText = artifact.name;
   const descriptionText = artifact.teaser || 'Explore this cultural artifact on Fjorr.';
   const canonical = absoluteUrl(`/artifact/${artifact.slug}`);
-  const ogImageUrl = artifact.blok_ogrf || absoluteUrl('/opengraph-image.png');
+  const ogImageUrl = await resolveSocialOgImage(artifact.blok_ogrf);
   return {
     title: titleText,
     description: descriptionText,

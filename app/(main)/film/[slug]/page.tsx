@@ -4,6 +4,7 @@ import FilmPageContentWrapper from '@/components/FilmPageContentWrapper';
 import ServerSafeSkeleton from '@/components/ServerSafeSkeleton';
 import type { Metadata } from 'next';
 import { absoluteUrl } from '@/lib/site';
+import { resolveSocialOgImage } from '@/lib/og';
 import {
   getFilmMetadata,
   getFilmPageData,
@@ -34,7 +35,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const titleText = film.name;
   const descriptionText = film.teaser || 'Watch this short film on Fjorr.';
   const canonical = absoluteUrl(`/film/${film.slug}`);
-  const ogImageUrl = film.blok_ogrf || absoluteUrl('/opengraph-image.png');
+  const ogImageUrl = await resolveSocialOgImage(film.blok_ogrf);
   return {
     title: titleText,
     description: descriptionText,
