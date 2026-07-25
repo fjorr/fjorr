@@ -15,6 +15,7 @@ export type MinimalArtifact = {
   label: string | null;
   creator: string | null;
   release_date: string | null;
+  blok_tall?: string | null;
 };
 
 function formatYear(releaseDate: string | null) {

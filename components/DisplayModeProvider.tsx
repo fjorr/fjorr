@@ -12,6 +12,8 @@ type DisplayModeContextValue = {
   mode: DisplayMode;
   setMode: (mode: DisplayMode) => void;
   isMinimal: boolean;
+  isTimeline: boolean;
+  isListMode: boolean;
 };
 
 const DisplayModeContext = createContext<DisplayModeContextValue | null>(null);
@@ -41,7 +43,13 @@ export function DisplayModeProvider({
 
   return (
     <DisplayModeContext.Provider
-      value={{ mode, setMode, isMinimal: mode === 'minimal' }}
+      value={{
+        mode,
+        setMode,
+        isMinimal: mode === 'minimal',
+        isTimeline: mode === 'timeline',
+        isListMode: mode === 'minimal' || mode === 'timeline',
+      }}
     >
       {children}
     </DisplayModeContext.Provider>

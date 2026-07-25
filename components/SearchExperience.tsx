@@ -53,7 +53,7 @@ function highlightName(name: string, query: string) {
 }
 
 function SearchContent({ onSearchActiveChange, className }: SearchExperienceProps) {
-  const { isMinimal } = useDisplayMode();
+  const { isListMode } = useDisplayMode();
   const minimalFilter = useMinimalFilterOptional();
   const tSearch = useTranslations('Search');
   const searchParams = useSearchParams();
@@ -382,7 +382,7 @@ function SearchContent({ onSearchActiveChange, className }: SearchExperienceProp
       {!showIdle && (
         <div className="w-full mt-6 flex flex-col items-center">
           {loading ? (
-            isMinimal ? (
+            isListMode ? (
               <div className="w-full max-w-[600px] flex flex-col gap-6 animate-pulse">
                 {[1, 2, 3].map((n) => (
                   <div key={n} className="flex flex-col gap-2">
@@ -404,7 +404,7 @@ function SearchContent({ onSearchActiveChange, className }: SearchExperienceProp
               </div>
             )
           ) : filteredResults.length > 0 ? (
-            isMinimal ? (
+            isListMode ? (
               <SearchResultsMinimal results={filteredResults} />
             ) : (
               <SearchResultsGrid results={filteredResults} />

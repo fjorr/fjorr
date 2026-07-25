@@ -101,8 +101,10 @@ export default function CineHomeGrid({
   }, [artifacts, contentType, films, mix, mixes]);
 
   return (
-    <div className="w-full max-w-[1440px] mx-auto px-8 md:px-16 mt-8 md:mt-12">
-      <SearchResultsGrid results={items} postersOnly />
+    <div className="w-full px-8 md:px-16 mt-8 md:mt-12">
+      <div className="w-full max-w-[1440px] mx-auto">
+        <SearchResultsGrid results={items} postersOnly />
+      </div>
     </div>
   );
 }

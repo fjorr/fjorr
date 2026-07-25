@@ -2,9 +2,17 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useTranslations } from 'next-intl';
-import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { usePathname, useRouter } from 'next/navigation';
+import { useLocale, useTranslations } from 'next-intl';
+import { Icon } from '@/components/ui/Icons';
+import AccountNavLink from '@/components/AccountNavLink';
+import SignInForm from '@/components/SignInForm';
+import {
+  LOCALE_COOKIE,
+  localeLabels,
+  locales,
+  type AppLocale,
+} from '@/i18n/config';
 
 interface NavbarProps {
   variant?: 'light' | 'dark';
@@ -17,21 +25,28 @@ const EXPLORE_LINKS = [
   { href: '/about', labelKey: 'about' as const },
 ];
 
+type PanelMode = 'closed' | 'nav' | 'lang' | 'auth';
+
 function Navbar({ variant = 'light' }: NavbarProps) {
   const t = useTranslations('Nav');
+  const locale = useLocale() as AppLocale;
+  const router = useRouter();
   const pathname = usePathname() || '';
   const [isTheaterOpen, setIsTheaterOpen] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [panel, setPanel] = useState<PanelMode>('closed');
+  const [authNextPath, setAuthNextPath] = useState('/account');
   const [emailCopied, setEmailCopied] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
   const contactEmail = 'scout@fjorr.com';
 
+  const isOpen = panel !== 'closed';
+  const showCloseIcon = panel === 'nav' || panel === 'auth';
   const textColor = variant === 'light' ? 'text-white' : 'text-black';
   const subTextColor = variant === 'light' ? 'text-white/80' : 'text-black/80';
-  const mutedLabel = variant === 'light' ? 'text-white/55' : 'text-black/55';
-  // Tint glass with --page-bg-color (set on artifact pages) so it stays near the page hue.
-  // Falls back to site defaults on non-artifact routes.
-  const openGlassStyle = isMenuOpen
+  const iconColor = variant === 'light' ? 'text-white/55' : 'text-black/45';
+  const mutedLabel = variant === 'light' ? 'text-white/50' : 'text-black/50';
+
+  const openGlassStyle = isOpen
     ? {
         backgroundColor:
           variant === 'light'
@@ -49,35 +64,68 @@ function Navbar({ variant = 'light' }: NavbarProps) {
   const glassAnimClass =
     variant === 'light' ? 'animate-nav-glass' : 'animate-nav-glass-light';
 
+  const closePanel = () => setPanel('closed');
+
+  const toggleNav = () => {
+    setPanel((current) =>
+      current === 'nav' || current === 'auth' ? 'closed' : 'nav',
+    );
+  };
+
+  const toggleLang = () => {
+    setPanel((current) => (current === 'lang' ? 'closed' : 'lang'));
+  };
+
+  const openAuth = (nextPath = '/account') => {
+    setAuthNextPath(nextPath);
+    setPanel('auth');
+  };
+
+  const setLocale = (next: AppLocale) => {
+    if (next === locale) {
+      setPanel('closed');
+      return;
+    }
+    document.cookie = `${LOCALE_COOKIE}=${next}; path=/; max-age=31536000; SameSite=Lax`;
+    setPanel('closed');
+    router.refresh();
+  };
+
   useEffect(() => {
-    if (!isMenuOpen) setEmailCopied(false);
-  }, [isMenuOpen]);
+    if (panel !== 'nav') setEmailCopied(false);
+  }, [panel]);
 
   useEffect(() => {
     const handleHide = () => {
       setIsTheaterOpen(true);
-      setIsMenuOpen(false);
+      setPanel('closed');
     };
     const handleShow = () => setIsTheaterOpen(false);
+    const handleOpenSignIn = (event: Event) => {
+      const detail = (event as CustomEvent<{ nextPath?: string }>).detail;
+      openAuth(detail?.nextPath || '/account');
+    };
 
     window.addEventListener('fjorr_hide_main_navbar', handleHide);
     window.addEventListener('fjorr_show_main_navbar', handleShow);
+    window.addEventListener('fjorr_open_signin', handleOpenSignIn);
     return () => {
       window.removeEventListener('fjorr_hide_main_navbar', handleHide);
       window.removeEventListener('fjorr_show_main_navbar', handleShow);
+      window.removeEventListener('fjorr_open_signin', handleOpenSignIn);
     };
   }, []);
 
   useEffect(() => {
-    if (!isMenuOpen) return;
+    if (!isOpen) return;
 
     const onPointerDown = (event: MouseEvent) => {
       if (panelRef.current && !panelRef.current.contains(event.target as Node)) {
-        setIsMenuOpen(false);
+        setPanel('closed');
       }
     };
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setIsMenuOpen(false);
+      if (event.key === 'Escape') setPanel('closed');
     };
 
     document.addEventListener('mousedown', onPointerDown);
@@ -86,14 +134,13 @@ function Navbar({ variant = 'light' }: NavbarProps) {
       document.removeEventListener('mousedown', onPointerDown);
       document.removeEventListener('keydown', onKeyDown);
     };
-  }, [isMenuOpen]);
+  }, [isOpen]);
 
   if (isTheaterOpen) return null;
 
   return (
     <header className="sticky top-0 z-50 w-full h-[70px] pt-[20px] px-4 flex justify-center pointer-events-none overflow-visible">
       <div ref={panelRef} className="relative h-[50px] pointer-events-auto">
-        {/* In-flow width lock — keeps header height fixed while menu floats */}
         <div
           className="flex h-[50px] px-[30px] items-center gap-[20px] opacity-0 pointer-events-none select-none"
           aria-hidden
@@ -102,24 +149,23 @@ function Navbar({ variant = 'light' }: NavbarProps) {
           <span className="font-sans text-xs font-medium tracking-normal whitespace-nowrap">
             {t('tagline')}
           </span>
-          <div className="w-[18px] shrink-0" />
+          <div className="w-[48px] shrink-0" />
         </div>
 
-        {/* Floating glass panel — expands over page content; open state runs off top of screen */}
         <div
           style={openGlassStyle}
           className={`
             absolute left-0 right-0 flex flex-col border
             transition-[top,padding,border-radius,background-color,border-color,backdrop-filter] duration-300 ease-out
-            ${isMenuOpen
-              ? `${openGlassClass} -top-9 pt-9 rounded-b-[10px] rounded-t-none overflow-hidden`
+            ${isOpen
+              ? `${openGlassClass} -top-9 pt-9 rounded-b-[10px] rounded-t-none overflow-visible`
               : `top-0 rounded-[10px] overflow-visible ${glassAnimClass}`}
           `}
         >
           <div className="flex h-[50px] px-[30px] items-center gap-[20px]">
             <Link
               href="/"
-              onClick={() => setIsMenuOpen(false)}
+              onClick={closePanel}
               className={`w-[50px] flex items-center cursor-pointer shrink-0 ${textColor}`}
             >
               <svg viewBox="0 0 143 81" className="w-full h-auto" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -133,7 +179,7 @@ function Navbar({ variant = 'light' }: NavbarProps) {
 
             <Link
               href="/about"
-              onClick={() => setIsMenuOpen(false)}
+              onClick={closePanel}
               className="flex items-center shrink-0 cursor-pointer transition-opacity hover:opacity-80"
             >
               <span className={`font-sans text-xs font-medium tracking-normal select-none whitespace-nowrap ${subTextColor}`}>
@@ -141,113 +187,168 @@ function Navbar({ variant = 'light' }: NavbarProps) {
               </span>
             </Link>
 
-            <button
-              type="button"
-              aria-label={isMenuOpen ? t('closeMenu') : t('openMenu')}
-              aria-expanded={isMenuOpen}
-              onClick={() => setIsMenuOpen((open) => !open)}
-              className={`relative w-[18px] h-[18px] cursor-pointer shrink-0 transition-opacity hover:opacity-70 ${textColor}`}
-            >
-              <span
-                className={`absolute left-1/2 top-1/2 block w-[14px] h-[1.5px] rounded-full bg-current transition-transform duration-300 ease-out origin-center
-                  ${isMenuOpen ? '-translate-x-1/2 -translate-y-1/2 rotate-45' : '-translate-x-1/2 -translate-y-[3.5px]'}`}
-              />
-              <span
-                className={`absolute left-1/2 top-1/2 block w-[14px] h-[1.5px] rounded-full bg-current transition-transform duration-300 ease-out origin-center
-                  ${isMenuOpen ? '-translate-x-1/2 -translate-y-1/2 -rotate-45' : '-translate-x-1/2 translate-y-[3.5px]'}`}
-              />
-            </button>
+            <div className="flex items-center gap-3 shrink-0">
+              <button
+                type="button"
+                aria-label={showCloseIcon ? t('closeMenu') : t('openMenu')}
+                aria-expanded={showCloseIcon}
+                onClick={toggleNav}
+                className={`relative w-[18px] h-[18px] cursor-pointer shrink-0 transition-opacity hover:opacity-80 ${iconColor}`}
+              >
+                <span
+                  className={`absolute left-1/2 top-1/2 block w-[14px] h-[1.5px] rounded-full bg-current transition-transform duration-300 ease-out origin-center
+                    ${showCloseIcon ? '-translate-x-1/2 -translate-y-1/2 rotate-45' : '-translate-x-1/2 -translate-y-[3.5px]'}`}
+                />
+                <span
+                  className={`absolute left-1/2 top-1/2 block w-[14px] h-[1.5px] rounded-full bg-current transition-transform duration-300 ease-out origin-center
+                    ${showCloseIcon ? '-translate-x-1/2 -translate-y-1/2 -rotate-45' : '-translate-x-1/2 translate-y-[3.5px]'}`}
+                />
+              </button>
+
+              <button
+                type="button"
+                aria-label={t('language')}
+                aria-expanded={panel === 'lang'}
+                onClick={toggleLang}
+                className={`w-[18px] h-[18px] flex items-center justify-center shrink-0 transition-opacity hover:opacity-80 ${iconColor}`}
+              >
+                <Icon name="globe" className="w-[18px] h-[18px]" />
+              </button>
+            </div>
           </div>
 
           <div
             className={`grid transition-[grid-template-rows] duration-300 ease-out ${
-              isMenuOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+              isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
             }`}
           >
             <div className="overflow-hidden min-h-0">
-              <div className="px-[30px] pb-11 pt-4 flex flex-col gap-5">
-                <div className="flex flex-col gap-2">
-                  <p className={`font-sans text-xs font-medium ${mutedLabel}`}>{t('explore')}</p>
+              {panel === 'lang' ? (
+                <div className="px-[30px] pb-11 pt-4 flex flex-col gap-2">
+                  <p className={`font-sans text-[13px] font-medium ${mutedLabel}`}>
+                    {t('languages')}
+                  </p>
                   <nav className="flex flex-col gap-1.5">
-                    {EXPLORE_LINKS.map((item) => {
-                      const isActive =
-                        item.href === '/'
-                          ? pathname === '/'
-                          : pathname === item.href || pathname.startsWith(`${item.href}/`);
-                      const activeMuted =
-                        variant === 'light' ? 'text-white/35' : 'text-black/35';
-                      const label = t(item.labelKey);
-
-                      if (isActive) {
-                        return (
-                          <span
-                            key={item.href}
-                            aria-current="page"
-                            className={`font-sans text-[15px] font-semibold tracking-tight cursor-default select-none ${activeMuted}`}
-                          >
-                            {label}
-                          </span>
-                        );
-                      }
-
-                      return (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          onClick={() => setIsMenuOpen(false)}
-                          className={`font-sans text-[15px] font-semibold tracking-tight transition-opacity hover:opacity-70 ${textColor}`}
-                        >
-                          {label}
-                        </Link>
-                      );
-                    })}
+                    {locales.map((code) => (
+                      <button
+                        key={code}
+                        type="button"
+                        onClick={() => setLocale(code)}
+                        className={`text-left font-sans text-[15px] font-semibold tracking-tight transition-opacity hover:opacity-70 ${
+                          locale === code
+                            ? variant === 'light'
+                              ? 'text-white/35 cursor-default'
+                              : 'text-black/35 cursor-default'
+                            : textColor
+                        }`}
+                      >
+                        {localeLabels[code]}
+                      </button>
+                    ))}
                   </nav>
                 </div>
+              ) : panel === 'auth' ? (
+                <div className="px-[30px] pb-11 pt-4">
+                  <SignInForm
+                    key={authNextPath}
+                    nextPath={authNextPath}
+                    layout="menu"
+                    variant={variant}
+                  />
+                </div>
+              ) : (
+                <div className="px-[30px] pb-11 pt-4 flex flex-col gap-5">
+                  <div className="flex flex-col gap-2">
+                    <nav className="flex flex-col gap-1.5">
+                      {EXPLORE_LINKS.map((item) => {
+                        const isActive =
+                          item.href === '/'
+                            ? pathname === '/'
+                            : pathname === item.href || pathname.startsWith(`${item.href}/`);
+                        const activeMuted =
+                          variant === 'light' ? 'text-white/35' : 'text-black/35';
+                        const label = t(item.labelKey);
 
-                <div className="flex flex-col gap-2">
-                  <p className={`font-sans text-xs font-medium ${mutedLabel}`}>{t('contact')}</p>
-                  <p className={`font-sans text-[13px] font-medium leading-snug ${
-                    variant === 'light' ? 'text-white/50' : 'text-black/50'
-                  }`}>
-                    {t('contactBlurb')}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      try {
-                        await navigator.clipboard.writeText(contactEmail);
-                        setEmailCopied(true);
-                        window.setTimeout(() => setEmailCopied(false), 3500);
-                      } catch (err) {
-                        console.error('Clipboard copy failed:', err);
-                      }
-                    }}
-                    className={`mt-1 self-start h-8 px-3 rounded-[6px] font-sans text-[13px] font-semibold transition-colors ${
-                      emailCopied
-                        ? variant === 'light'
-                          ? 'bg-white/10 text-white/55 cursor-default'
-                          : 'bg-black/8 text-black/50 cursor-default'
-                        : variant === 'light'
-                          ? 'bg-white/15 text-white hover:bg-white/22'
-                          : 'bg-black/10 text-black hover:bg-black/15'
+                        if (isActive) {
+                          return (
+                            <span
+                              key={item.href}
+                              aria-current="page"
+                              className={`font-sans text-[15px] font-semibold tracking-tight cursor-default select-none ${activeMuted}`}
+                            >
+                              {label}
+                            </span>
+                          );
+                        }
+
+                        return (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            onClick={closePanel}
+                            className={`font-sans text-[15px] font-semibold tracking-tight transition-opacity hover:opacity-70 ${textColor}`}
+                          >
+                            {label}
+                          </Link>
+                        );
+                      })}
+                    </nav>
+                  </div>
+
+                  <div
+                    className={`pt-5 border-t ${
+                      variant === 'light' ? 'border-white/10' : 'border-black/8'
                     }`}
                   >
-                    {emailCopied ? t('emailCopied') : t('letsTalk')}
-                  </button>
-                </div>
+                    <AccountNavLink
+                      onNavigate={closePanel}
+                      onSignIn={() => openAuth('/account')}
+                      className={`font-sans text-[15px] font-semibold tracking-tight transition-opacity hover:opacity-70 ${textColor}`}
+                    />
+                  </div>
 
-                <div className="flex flex-col gap-2">
-                  <p className={`font-sans text-xs font-medium ${mutedLabel}`}>{t('language')}</p>
-                  <LanguageSwitcher variant={variant} />
+                  <div
+                    className={`pt-5 flex flex-col gap-2 border-t ${
+                      variant === 'light' ? 'border-white/10' : 'border-black/8'
+                    }`}
+                  >
+                    <p className={`font-sans text-[13px] font-medium leading-snug ${mutedLabel}`}>
+                      {t('contactBlurb')}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          await navigator.clipboard.writeText(contactEmail);
+                          setEmailCopied(true);
+                          window.setTimeout(() => setEmailCopied(false), 3500);
+                        } catch (err) {
+                          console.error('Clipboard copy failed:', err);
+                        }
+                      }}
+                      className={`mt-1 self-start h-8 px-3 rounded-[6px] font-sans text-[13px] font-semibold transition-colors ${
+                        emailCopied
+                          ? variant === 'light'
+                            ? 'bg-white/10 text-white/55 cursor-default'
+                            : 'bg-black/8 text-black/50 cursor-default'
+                          : variant === 'light'
+                            ? 'bg-white/15 text-white hover:bg-white/22'
+                            : 'bg-black/10 text-black hover:bg-black/15'
+                      }`}
+                    >
+                      {emailCopied ? t('emailCopied') : t('letsTalk')}
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
       </div>
 
-      <style dangerouslySetInnerHTML={{ __html: `
-        /* Always-on glass — iOS Safari does not support scroll-driven animations */
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
         .animate-nav-glass {
           background-color: color-mix(in srgb, var(--page-bg-color, #1F1F1F) 72%, transparent);
           border-color: rgba(255, 255, 255, 0.1);
@@ -294,7 +395,6 @@ function Navbar({ variant = 'light' }: NavbarProps) {
           }
         }
 
-        /* Desktop/Chrome: fade glass in as you scroll */
         @supports (animation-timeline: scroll()) {
           .animate-nav-glass {
             background-color: transparent;
@@ -316,7 +416,9 @@ function Navbar({ variant = 'light' }: NavbarProps) {
             animation-range: 40px 90px;
           }
         }
-      `}} />
+      `,
+        }}
+      />
     </header>
   );
 }

@@ -30,6 +30,8 @@ interface CinemaTheaterProps {
   seekTo?: number | null;
   onSeekHandled?: () => void;
   onTimeUpdate?: (seconds: number) => void;
+  /** Fired when the main film reaches the end (not the studio bumper). */
+  onEnded?: () => void;
   /** Embed fills an iframe and uses the same Fjorr player chrome. */
   mode?: 'theater' | 'embed';
 }
@@ -42,6 +44,7 @@ export default function CinemaTheater({
   seekTo = null,
   onSeekHandled,
   onTimeUpdate,
+  onEnded,
   mode = 'theater',
 }: CinemaTheaterProps) {
   const router = useRouter();
@@ -558,6 +561,7 @@ export default function CinemaTheater({
       setIsEnded(true);
       setIsPlaying(false);
       setControlsVisible(false);
+      onEnded?.();
     }
   };
 

@@ -11,6 +11,8 @@ import {
   themesFromSearchItems,
 } from '@/lib/filter-search-items';
 import SearchNadaView from '@/components/SearchNadaView';
+import { useWatchProgressMap } from '@/components/useWatchProgress';
+import { formatResumeClock } from '@/lib/watch-progress';
 
 interface ResultsGridProps {
   results: SearchItem[];
@@ -18,9 +20,17 @@ interface ResultsGridProps {
   postersOnly?: boolean;
 }
 
+const glassBadgeStyle: React.CSSProperties = {
+  backgroundColor: 'color-mix(in srgb, var(--page-bg-color, #1F1F1F) 72%, transparent)',
+  backdropFilter: 'blur(24px) saturate(1.4)',
+  WebkitBackdropFilter: 'blur(24px) saturate(1.4)',
+  transform: 'translateZ(0)',
+};
+
 export default function SearchResultsGrid({ results, postersOnly = false }: ResultsGridProps) {
   const t = useTranslations('Film');
   const { sort, theme, setThemes } = useMinimalFilter();
+  const watchProgress = useWatchProgressMap();
 
   useEffect(() => {
     // Cine browse seeds themes from the full catalog; don't overwrite with a filtered subset.
@@ -56,6 +66,8 @@ export default function SearchResultsGrid({ results, postersOnly = false }: Resu
         const isFutureRelease = item.release_date
           ? new Date(item.release_date).getTime() > Date.now()
           : false;
+
+        const resume = isFilm && !isFutureRelease ? watchProgress[item.id] : null;
 
         const displayYear = item.release_date
           ? new Date(item.release_date).getFullYear()
@@ -95,15 +107,17 @@ export default function SearchResultsGrid({ results, postersOnly = false }: Resu
               {isFilm && isFutureRelease && (
                 <span
                   className="absolute left-2 bottom-2 z-10 max-w-[calc(100%-1rem)] truncate rounded-[6px] border border-white/10 px-2 py-1 font-sans text-[10px] font-semibold capitalize tracking-normal text-white/90 shadow-[0_8px_24px_rgba(0,0,0,0.25)]"
-                  style={{
-                    backgroundColor:
-                      'color-mix(in srgb, var(--page-bg-color, #1F1F1F) 72%, transparent)',
-                    backdropFilter: 'blur(24px) saturate(1.4)',
-                    WebkitBackdropFilter: 'blur(24px) saturate(1.4)',
-                    transform: 'translateZ(0)',
-                  }}
+                  style={glassBadgeStyle}
                 >
                   {t('comingSoon')}
+                </span>
+              )}
+              {resume && (
+                <span
+                  className="absolute left-2 bottom-2 z-10 max-w-[calc(100%-1rem)] truncate rounded-[6px] border border-white/10 px-2 py-1 font-sans text-[10px] font-semibold capitalize tracking-normal text-white/90 shadow-[0_8px_24px_rgba(0,0,0,0.25)]"
+                  style={glassBadgeStyle}
+                >
+                  {t('resume', { time: formatResumeClock(resume.seconds) })}
                 </span>
               )}
             </div>

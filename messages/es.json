@@ -12,19 +12,31 @@
     "contactBlurb": "Ideas, alianzas o algo que valga la pena hacer. Estamos aquí.",
     "openMenu": "Abrir menú",
     "closeMenu": "Cerrar menú",
-    "language": "Idioma"
+    "language": "Idioma",
+    "languages": "Idiomas",
+    "signIn": "Iniciar sesión o registrarse",
+    "account": "Cuenta"
   },
   "DisplayMode": {
     "cinematic": "Cine",
     "minimal": "Mini",
+    "timeline": "Time",
     "cinematicFull": "Cinematic",
     "minimalFull": "Minimal",
+    "timelineFull": "Cronología",
+    "timelineFilmsOnly": "Cronología: solo films",
     "film": "Film",
     "artifact": "Afct"
+  },
+  "Timeline": {
+    "undated": "Sin fecha",
+    "scrollEarlier": "Antes",
+    "scrollLater": "Después"
   },
   "Film": {
     "play": "Reproducir {runtime}",
     "playShort": "Reproducir",
+    "resume": "Continuar · {time}",
     "info": "Info",
     "comingSoon": "Próximamente",
     "presents": "presenta",
@@ -68,6 +80,28 @@
     "allThemes": "Todos los temas",
     "noMatches": "Ningún resultado coincide.",
     "clear": "Limpiar"
+  },
+  "Account": {
+    "modalTitle": "Iniciar sesión o registrarse",
+    "close": "Cerrar",
+    "signInTitle": "Bienvenido a Fjorr",
+    "signInBody": "Te enviamos un enlace mágico. Sin contraseña.",
+    "email": "Correo",
+    "emailPlaceholder": "tu@ejemplo.com",
+    "sendLink": "Enviar enlace",
+    "sending": "Enviando…",
+    "checkEmailTitle": "Revisa tu correo",
+    "checkEmailBody": "Enviamos un enlace de acceso a {email}.",
+    "useDifferentEmail": "Usar otro correo",
+    "accountTitle": "Tu cuenta",
+    "accountBody": "Membresía tranquila — luego sincronizamos progreso y Mixes.",
+    "displayName": "Nombre",
+    "displayNamePlaceholder": "Cómo apareces como Scout",
+    "save": "Guardar",
+    "saving": "Guardando…",
+    "saved": "Guardado",
+    "signOut": "Cerrar sesión",
+    "errorGeneric": "Algo salió mal. Inténtalo de nuevo."
   },
   "Search": {
     "placeholder": "Buscar",

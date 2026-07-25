@@ -5,14 +5,22 @@ import { useTranslations } from 'next-intl';
 import HeroPicture from '@/components/HeroPicture';
 import FilmSendSheet from '@/components/FilmSendSheet';
 import { sanitizeTitleArtSvg } from '@/lib/sanitize-svg';
+import { formatResumeClock } from '@/lib/watch-progress';
 
 interface FilmHeroProps {
   film: any;
   onPlayClick: () => void;
   shareSeconds?: number | null;
+  /** Saved watch position — swaps Play label to Resume. */
+  resumeSeconds?: number | null;
 }
 
-export default function FilmHero({ film, onPlayClick, shareSeconds = null }: FilmHeroProps) {
+export default function FilmHero({
+  film,
+  onPlayClick,
+  shareSeconds = null,
+  resumeSeconds = null,
+}: FilmHeroProps) {
   const t = useTranslations('Film');
   const [sendOpen, setSendOpen] = useState(false);
   const fallbackBg = 'linear-gradient(to bottom, #4C7A57, #36593E)';
@@ -147,7 +155,11 @@ export default function FilmHero({ film, onPlayClick, shareSeconds = null }: Fil
                     className="w-5 h-5 select-none object-contain translate-y-[0.5px]"
                     alt="Play"
                   />
-                  <span>{t('play', { runtime: getRuntimeDisplay() })}</span>
+                  <span>
+                    {resumeSeconds != null && resumeSeconds > 0
+                      ? t('resume', { time: formatResumeClock(resumeSeconds) })
+                      : t('play', { runtime: getRuntimeDisplay() })}
+                  </span>
                 </button>
               ) : (
                 <div className="h-10 px-6 inline-flex items-center justify-center gap-2 bg-white/20 backdrop-blur-md text-white/80 font-sans font-bold text-sm tracking-normal rounded-full border border-white/5 select-none">

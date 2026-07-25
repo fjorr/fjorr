@@ -6,6 +6,7 @@ import FeatureRailLoader from '@/components/FeatureRailLoader';
 import FeatureRailGate from '@/components/FeatureRailGate';
 import CineHomeLoader from '@/components/CineHomeLoader';
 import MinimalHomeLoader from '@/components/MinimalHomeLoader';
+import TimelineHomeLoader from '@/components/TimelineHomeLoader';
 import HomeWithSearch from '@/components/HomeWithSearch';
 import ServerSafeSkeleton from '@/components/ServerSafeSkeleton';
 import { DISPLAY_MODE_COOKIE, parseDisplayMode } from '@/lib/display-mode';
@@ -75,6 +76,19 @@ export default async function Home() {
         <HomeWithSearch>
           <Suspense fallback={null}>
             <MinimalHomeLoader />
+          </Suspense>
+        </HomeWithSearch>
+      </>
+    );
+  }
+
+  if (mode === 'timeline') {
+    return (
+      <>
+        {jsonLd}
+        <HomeWithSearch>
+          <Suspense fallback={null}>
+            <TimelineHomeLoader />
           </Suspense>
         </HomeWithSearch>
       </>

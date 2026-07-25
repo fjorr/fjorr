@@ -3,15 +3,14 @@
 import React from 'react';
 import { useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { LOCALE_COOKIE, locales, type AppLocale } from '@/i18n/config';
+import {
+  LOCALE_COOKIE,
+  localeLabels,
+  locales,
+  type AppLocale,
+} from '@/i18n/config';
 
-const LABELS: Record<AppLocale, string> = {
-  en: 'EN',
-  fr: 'FR',
-  es: 'ES',
-  it: 'IT',
-};
-
+/** Compact inline language chips (legacy). Prefer the navbar language panel. */
 export default function LanguageSwitcher({
   variant = 'light',
 }: {
@@ -29,20 +28,18 @@ export default function LanguageSwitcher({
   };
 
   return (
-    <div className="flex items-center gap-2" role="group" aria-label="Language">
-      {locales.map((code, index) => (
-        <React.Fragment key={code}>
-          {index > 0 && <span className={`${muted} text-[11px]`}>│</span>}
-          <button
-            type="button"
-            onClick={() => setLocale(code)}
-            className={`font-sans text-[11px] font-semibold tracking-wide transition-colors ${
-              locale === code ? active : `${muted} ${hover}`
-            }`}
-          >
-            {LABELS[code]}
-          </button>
-        </React.Fragment>
+    <div className="flex flex-wrap items-center gap-x-2 gap-y-1" role="group" aria-label="Language">
+      {locales.map((code) => (
+        <button
+          key={code}
+          type="button"
+          onClick={() => setLocale(code)}
+          className={`font-sans text-[12px] font-semibold tracking-wide transition-colors ${
+            locale === code ? active : `${muted} ${hover}`
+          }`}
+        >
+          {localeLabels[code]}
+        </button>
       ))}
     </div>
   );

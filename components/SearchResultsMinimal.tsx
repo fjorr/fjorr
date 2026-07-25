@@ -12,6 +12,12 @@ import {
   themesFromSearchItems,
 } from '@/lib/filter-search-items';
 import SearchNadaView from '@/components/SearchNadaView';
+import {
+  clearWatchProgress,
+  getWatchProgress,
+  isWatchableProgress,
+  trackWatchProgress,
+} from '@/lib/watch-progress';
 
 const CinemaTheater = dynamic(() => import('@/components/CinemaTheater'), {
   ssr: false,
@@ -68,6 +74,7 @@ export default function SearchResultsMinimal({ results }: { results: SearchItem[
   const { sort, theme, setThemes } = useMinimalFilter();
   const [showTheater, setShowTheater] = useState(false);
   const [selectedFilm, setSelectedFilm] = useState<any>(null);
+  const [startAt, setStartAt] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     setThemes(themesFromSearchItems(results));
@@ -81,12 +88,20 @@ export default function SearchResultsMinimal({ results }: { results: SearchItem[
   const handlePlay = async (item: SearchItem) => {
     if (item.item_type !== 'film' || isComingSoon(item.release_date)) return;
 
+    const openWith = (payload: any, duration?: number | null) => {
+      const saved = getWatchProgress(payload.id || item.id);
+      setStartAt(
+        isWatchableProgress(saved, duration ?? item.runtime) ? saved.seconds : undefined
+      );
+      setSelectedFilm(payload);
+      setShowTheater(true);
+    };
+
     try {
       const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
       const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
       if (!url || !key) {
-        setSelectedFilm({ slug: item.slug, name: item.name });
-        setShowTheater(true);
+        openWith({ id: item.id, slug: item.slug, name: item.name, runtime: item.runtime });
         return;
       }
 
@@ -100,8 +115,7 @@ export default function SearchResultsMinimal({ results }: { results: SearchItem[
         .maybeSingle();
 
       if (!verifiedFilm) {
-        setSelectedFilm({ slug: item.slug, name: item.name });
-        setShowTheater(true);
+        openWith({ id: item.id, slug: item.slug, name: item.name, runtime: item.runtime });
         return;
       }
 
@@ -126,14 +140,15 @@ export default function SearchResultsMinimal({ results }: { results: SearchItem[
         }));
       }
 
-      setSelectedFilm({
-        ...verifiedFilm,
-        language_subtitle: flattenedTracks,
-      });
-      setShowTheater(true);
+      openWith(
+        {
+          ...verifiedFilm,
+          language_subtitle: flattenedTracks,
+        },
+        verifiedFilm.runtime
+      );
     } catch {
-      setSelectedFilm({ slug: item.slug, name: item.name });
-      setShowTheater(true);
+      openWith({ id: item.id, slug: item.slug, name: item.name, runtime: item.runtime });
     }
   };
 
@@ -195,9 +210,23 @@ export default function SearchResultsMinimal({ results }: { results: SearchItem[
       {showTheater && selectedFilm && (
         <CinemaTheater
           film={selectedFilm}
+          startAt={startAt}
+          onTimeUpdate={(seconds) => {
+            if (!selectedFilm?.id || !selectedFilm?.slug) return;
+            trackWatchProgress({
+              filmId: selectedFilm.id,
+              slug: selectedFilm.slug,
+              seconds,
+              duration: selectedFilm.runtime,
+            });
+          }}
+          onEnded={() => {
+            if (selectedFilm?.id) clearWatchProgress(selectedFilm.id);
+          }}
           onClose={() => {
             setShowTheater(false);
             setSelectedFilm(null);
+            setStartAt(undefined);
           }}
         />
       )}

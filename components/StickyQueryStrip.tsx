@@ -8,6 +8,7 @@ import {
   useMinimalFilter,
   useQueryStatusLabels,
 } from '@/components/MinimalFilterContext';
+import { nextDisplayMode } from '@/lib/display-mode';
 
 const COMING_SOON_MIX_SLUG = 'coming-soon';
 /** Navbar occupies 70px; leave 10px air before the sticky glass. */
@@ -119,7 +120,7 @@ export default function StickyQueryStrip({
           }}
         >
           <Chip
-            onClick={() => setMode(mode === 'minimal' ? 'cinematic' : 'minimal')}
+            onClick={() => setMode(nextDisplayMode(mode))}
             title="Toggle display mode"
           >
             {modeLabel}

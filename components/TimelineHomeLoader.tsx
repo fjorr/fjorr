@@ -1,5 +1,5 @@
 import React from 'react';
-import MinimalHomeBrowse from '@/components/MinimalHomeBrowse';
+import TimelineHomeList from '@/components/TimelineHomeList';
 import { type MinimalFilm } from '@/components/MinimalHomeList';
 import { type MinimalArtifact } from '@/components/MinimalArtifactList';
 import { getCineHomeArtifacts, getMinimalHomeFilms } from '@/lib/content/home';
@@ -39,7 +39,7 @@ function mapArtifact(artifact: any): MinimalArtifact {
   };
 }
 
-export default async function MinimalHomeLoader() {
+export default async function TimelineHomeLoader() {
   const [filmRows, artifactRows] = await Promise.all([
     getMinimalHomeFilms(),
     getCineHomeArtifacts(),
@@ -49,11 +49,11 @@ export default async function MinimalHomeLoader() {
 
   if (films.length === 0 && artifacts.length === 0) {
     return (
-      <div className="w-full min-h-screen bg-[#1F1F1F] flex items-center justify-center text-white/40 font-sans text-sm">
+      <div className="w-full min-h-[40vh] bg-[#1F1F1F] flex items-center justify-center text-white/40 font-sans text-sm">
         No titles available.
       </div>
     );
   }
 
-  return <MinimalHomeBrowse films={films} artifacts={artifacts} />;
+  return <TimelineHomeList films={films} artifacts={artifacts} />;
 }

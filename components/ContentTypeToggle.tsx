@@ -4,7 +4,7 @@ import React from 'react';
 import { useTranslations } from 'next-intl';
 import { useMinimalFilter } from '@/components/MinimalFilterContext';
 
-/** Film / Afct switch — to the right of Cine / Mini. */
+/** Film / Afct switch — to the right of Cine / Mini / Time. */
 export default function ContentTypeToggle() {
   const t = useTranslations('DisplayMode');
   const { contentType, setContentType } = useMinimalFilter();

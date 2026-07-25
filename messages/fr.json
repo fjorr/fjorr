@@ -12,19 +12,31 @@
     "contactBlurb": "Idées, partenariats, ou quelque chose qui mérite d'être fait. On est là.",
     "openMenu": "Ouvrir le menu",
     "closeMenu": "Fermer le menu",
-    "language": "Langue"
+    "language": "Langue",
+    "languages": "Langues",
+    "signIn": "Se connecter ou s'inscrire",
+    "account": "Compte"
   },
   "DisplayMode": {
     "cinematic": "Cine",
     "minimal": "Mini",
+    "timeline": "Time",
     "cinematicFull": "Cinematic",
     "minimalFull": "Minimal",
+    "timelineFull": "Chronologie",
+    "timelineFilmsOnly": "Chronologie : films uniquement",
     "film": "Film",
     "artifact": "Afct"
+  },
+  "Timeline": {
+    "undated": "Sans date",
+    "scrollEarlier": "Plus tôt",
+    "scrollLater": "Plus tard"
   },
   "Film": {
     "play": "Lire {runtime}",
     "playShort": "Lire",
+    "resume": "Reprendre · {time}",
     "info": "Infos",
     "comingSoon": "Bientôt",
     "presents": "présente",
@@ -68,6 +80,28 @@
     "allThemes": "Tous les thèmes",
     "noMatches": "Aucun résultat ne correspond.",
     "clear": "Effacer"
+  },
+  "Account": {
+    "modalTitle": "Connexion ou inscription",
+    "close": "Fermer",
+    "signInTitle": "Bienvenue sur Fjorr",
+    "signInBody": "Nous vous envoyons un lien magique. Pas de mot de passe.",
+    "email": "E-mail",
+    "emailPlaceholder": "vous@exemple.com",
+    "sendLink": "Envoyer le lien",
+    "sending": "Envoi…",
+    "checkEmailTitle": "Vérifiez votre e-mail",
+    "checkEmailBody": "Nous avons envoyé un lien de connexion à {email}.",
+    "useDifferentEmail": "Utiliser un autre e-mail",
+    "accountTitle": "Votre compte",
+    "accountBody": "Adhésion discrète — la sync progress/Mixes arrive ensuite.",
+    "displayName": "Nom affiché",
+    "displayNamePlaceholder": "Votre nom de Scout",
+    "save": "Enregistrer",
+    "saving": "Enregistrement…",
+    "saved": "Enregistré",
+    "signOut": "Se déconnecter",
+    "errorGeneric": "Une erreur est survenue. Réessayez."
   },
   "Search": {
     "placeholder": "Rechercher",

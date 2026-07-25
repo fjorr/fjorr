@@ -7,6 +7,13 @@ import ArtifactRail from './ArtifactRail';
 import FilmRail from './FilmRail';
 import FilmSpecs from './FilmSpecs';
 import FilmTranscript from './FilmTranscript';
+import { useWatchProgress } from '@/components/useWatchProgress';
+import {
+  clearWatchProgress,
+  getWatchProgress,
+  isWatchableProgress,
+  trackWatchProgress,
+} from '@/lib/watch-progress';
 
 const CinemaTheater = dynamic(() => import('@/components/CinemaTheater'), {
   ssr: false,
@@ -41,6 +48,7 @@ export default function FilmPageContentWrapper({
   const [playbackTime, setPlaybackTime] = useState(0);
   const [shareSeconds, setShareSeconds] = useState<number | null>(null);
   const theaterOpenRef = React.useRef(false);
+  const resumeProgress = useWatchProgress(filmData?.id, filmData?.runtime);
 
   useEffect(() => {
     theaterOpenRef.current = showTheater;
@@ -84,15 +92,33 @@ export default function FilmPageContentWrapper({
   }, []);
 
   const handlePlayClick = useCallback(() => {
-    setStartAt(undefined);
+    const saved = getWatchProgress(filmData.id);
+    const resumeAt = isWatchableProgress(saved, filmData.runtime)
+      ? saved.seconds
+      : undefined;
+    setStartAt(resumeAt);
     setSeekTo(null);
     setShowTheater(true);
-  }, []);
+  }, [filmData.id, filmData.runtime]);
 
-  const handleTimeUpdate = useCallback((seconds: number) => {
-    setPlaybackTime(seconds);
-    if (seconds >= 1) setShareSeconds(seconds);
-  }, []);
+  const handleTimeUpdate = useCallback(
+    (seconds: number) => {
+      setPlaybackTime(seconds);
+      if (seconds >= 1) setShareSeconds(seconds);
+      if (!filmData?.id || !filmData?.slug) return;
+      trackWatchProgress({
+        filmId: filmData.id,
+        slug: filmData.slug,
+        seconds,
+        duration: filmData.runtime,
+      });
+    },
+    [filmData.id, filmData.runtime, filmData.slug]
+  );
+
+  const handleEnded = useCallback(() => {
+    if (filmData?.id) clearWatchProgress(filmData.id);
+  }, [filmData?.id]);
 
   return (
     <div className="w-full relative bg-[#1F1F1F]">
@@ -104,6 +130,7 @@ export default function FilmPageContentWrapper({
             seekTo={seekTo}
             onSeekHandled={() => setSeekTo(null)}
             onTimeUpdate={handleTimeUpdate}
+            onEnded={handleEnded}
             film={{
               id: filmData.id,
               name: filmData.name,
@@ -140,6 +167,7 @@ export default function FilmPageContentWrapper({
           film={filmData}
           onPlayClick={handlePlayClick}
           shareSeconds={shareSeconds}
+          resumeSeconds={resumeProgress?.seconds ?? null}
         />
 
         <div className="w-full bg-[#1F1F1F] pt-8 pb-24 flex flex-col gap-0">

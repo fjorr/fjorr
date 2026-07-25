@@ -262,6 +262,7 @@ const MINIMAL_FILM_SELECT = `
   release_date,
   story_date,
   mux_playback_id,
+  blok_tall,
   rating ( name ),
   theme ( name )
 `;
@@ -291,6 +292,6 @@ export const getMinimalHomeFilms = unstable_cache(
 
     return [...(released.data || []), ...(comingSoon.data || [])];
   },
-  ['home-minimal'],
+  ['home-minimal-v2'],
   { revalidate: HOME_FILM_REVALIDATE_SECONDS, tags: ['film', 'home'] }
 );

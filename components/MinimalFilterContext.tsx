@@ -146,7 +146,7 @@ export function MinimalFilterProvider({
     [replaceFilterParams]
   );
 
-  const { isMinimal, setMode } = useDisplayMode();
+  const { isMinimal, isTimeline, setMode } = useDisplayMode();
 
   const clearFilters = useCallback(() => {
     replaceFilterParams({
@@ -165,13 +165,17 @@ export function MinimalFilterProvider({
       type: null,
       mix: null,
     });
-    if (isMinimal) setMode('cinematic');
-  }, [isMinimal, replaceFilterParams, setMode]);
+    if (isMinimal || isTimeline) setMode('cinematic');
+  }, [isMinimal, isTimeline, replaceFilterParams, setMode]);
 
   const filtersActive = sort !== 'newest' || theme !== 'all';
 
   const queryActive =
-    filtersActive || mix !== 'all' || contentType !== 'film' || isMinimal;
+    filtersActive ||
+    mix !== 'all' ||
+    contentType !== 'film' ||
+    isMinimal ||
+    isTimeline;
 
   const value = useMemo(
     () => ({
@@ -268,7 +272,7 @@ export function capitalizeLabel(value: string) {
 export function useQueryStatusLabels() {
   const tf = useTranslations('MinimalList');
   const tDisplay = useTranslations('DisplayMode');
-  const { isMinimal } = useDisplayMode();
+  const { isMinimal, isTimeline } = useDisplayMode();
   const { mix, mixes, sort, theme, contentType, queryActive, clearAll } =
     useMinimalFilter();
 
@@ -277,7 +281,11 @@ export function useQueryStatusLabels() {
       ? capitalizeLabel(tf('comingSoon'))
       : mixes.find((m) => m.slug === mix)?.name;
 
-  const modeLabel = isMinimal ? tDisplay('minimalFull') : tDisplay('cinematicFull');
+  const modeLabel = isTimeline
+    ? tDisplay('timelineFull')
+    : isMinimal
+      ? tDisplay('minimalFull')
+      : tDisplay('cinematicFull');
   const typeLabel = contentType === 'artifact' ? tf('artifact') : tDisplay('film');
   const mixLabel = mix !== 'all' && mixName ? capitalizeLabel(mixName) : tf('noMixes');
   const dialLabels: string[] = [];
@@ -292,6 +300,7 @@ export function useQueryStatusLabels() {
     queryActive,
     clearAll,
     isMinimal,
+    isTimeline,
     contentType,
     mix,
     sort,
