@@ -8,6 +8,7 @@ import { useTranslations } from 'next-intl';
 
 import SearchResultsGrid from '@/components/SearchResultsGrid';
 import SearchResultsMinimal from '@/components/SearchResultsMinimal';
+import SearchResultsTimeline from '@/components/SearchResultsTimeline';
 import SearchNadaView from '@/components/SearchNadaView';
 import DisplayModeToggle from '@/components/DisplayModeToggle';
 import ContentTypeToggle from '@/components/ContentTypeToggle';
@@ -53,7 +54,7 @@ function highlightName(name: string, query: string) {
 }
 
 function SearchContent({ onSearchActiveChange, className }: SearchExperienceProps) {
-  const { isListMode } = useDisplayMode();
+  const { isMinimal, isTimeline } = useDisplayMode();
   const minimalFilter = useMinimalFilterOptional();
   const tSearch = useTranslations('Search');
   const searchParams = useSearchParams();
@@ -379,41 +380,64 @@ function SearchContent({ onSearchActiveChange, className }: SearchExperienceProp
 
       <StickyQueryStrip sentinelRef={controlsSentinelRef} />
 
-      {!showIdle && (
-        <div className="w-full mt-6 flex flex-col items-center">
-          {loading ? (
-            isListMode ? (
-              <div className="w-full max-w-[600px] flex flex-col gap-6 animate-pulse">
-                {[1, 2, 3].map((n) => (
-                  <div key={n} className="flex flex-col gap-2">
-                    <div className="h-5 bg-white/10 rounded w-1/3" />
-                    <div className="h-4 bg-white/5 rounded w-2/3" />
-                    <div className="h-3 bg-white/5 rounded w-1/4" />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-6 gap-y-10 animate-pulse">
+      {!showIdle &&
+        (isTimeline ? (
+          // Break out of max-w-4xl / px-[10%] so search Time matches home rail.
+          <div className="w-screen relative left-1/2 right-auto -translate-x-1/2 mt-6">
+            {loading ? (
+              <div className="w-full flex gap-8 animate-pulse overflow-hidden px-5">
                 {[1, 2, 3, 4].map((n) => (
-                  <div key={n} className="flex flex-col gap-3">
-                    <div className="w-full aspect-[2/3] bg-white/5 rounded-[8px]" />
-                    <div className="h-4 bg-white/10 rounded w-2/3" />
-                    <div className="h-3 bg-white/5 rounded w-full" />
+                  <div key={n} className="w-[180px] shrink-0 flex flex-col gap-4">
+                    <div className="h-5 bg-white/10 rounded w-1/2" />
+                    <div className="h-px bg-white/10 w-full" />
+                    <div className="h-4 bg-white/10 rounded w-3/4" />
+                    <div className="h-12 bg-white/5 rounded w-full" />
                   </div>
                 ))}
               </div>
-            )
-          ) : filteredResults.length > 0 ? (
-            isListMode ? (
-              <SearchResultsMinimal results={filteredResults} />
+            ) : filteredResults.length > 0 ? (
+              <SearchResultsTimeline results={filteredResults} />
             ) : (
-              <SearchResultsGrid results={filteredResults} />
-            )
-          ) : (
-            <SearchNadaView />
-          )}
-        </div>
-      )}
+              <div className="flex w-full justify-center py-6">
+                <SearchNadaView />
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="w-full mt-6 flex flex-col items-center">
+            {loading ? (
+              isMinimal ? (
+                <div className="w-full max-w-[600px] flex flex-col gap-6 animate-pulse">
+                  {[1, 2, 3].map((n) => (
+                    <div key={n} className="flex flex-col gap-2">
+                      <div className="h-5 bg-white/10 rounded w-1/3" />
+                      <div className="h-4 bg-white/5 rounded w-2/3" />
+                      <div className="h-3 bg-white/5 rounded w-1/4" />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-6 gap-y-10 animate-pulse">
+                  {[1, 2, 3, 4].map((n) => (
+                    <div key={n} className="flex flex-col gap-3">
+                      <div className="w-full aspect-[2/3] bg-white/5 rounded-[8px]" />
+                      <div className="h-4 bg-white/10 rounded w-2/3" />
+                      <div className="h-3 bg-white/5 rounded w-full" />
+                    </div>
+                  ))}
+                </div>
+              )
+            ) : filteredResults.length > 0 ? (
+              isMinimal ? (
+                <SearchResultsMinimal results={filteredResults} />
+              ) : (
+                <SearchResultsGrid results={filteredResults} />
+              )
+            ) : (
+              <SearchNadaView />
+            )}
+          </div>
+        ))}
     </div>
   );
 }
