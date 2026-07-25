@@ -1,6 +1,13 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useRef, Suspense } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useRef,
+  Suspense,
+  type ReactNode,
+} from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
@@ -34,6 +41,10 @@ export interface SearchItem {
 }
 
 type SearchExperienceProps = {
+  /** Home browse rails / lists — shown when the query is empty. */
+  browseContent?: ReactNode;
+  /** Hide chrome while the cinema theater is open. */
+  theaterOpen?: boolean;
   /** Called whenever search goes from empty ↔ active (trimmed query length > 0). */
   onSearchActiveChange?: (active: boolean) => void;
   className?: string;
@@ -53,7 +64,12 @@ function highlightName(name: string, query: string) {
   );
 }
 
-function SearchContent({ onSearchActiveChange, className }: SearchExperienceProps) {
+function SearchContent({
+  browseContent,
+  theaterOpen = false,
+  onSearchActiveChange,
+  className,
+}: SearchExperienceProps) {
   const { isMinimal, isTimeline } = useDisplayMode();
   const minimalFilter = useMinimalFilterOptional();
   const tSearch = useTranslations('Search');
@@ -85,7 +101,6 @@ function SearchContent({ onSearchActiveChange, className }: SearchExperienceProp
   const isSearchActive = query.trim().length > 0;
   const contentType = minimalFilter?.contentType ?? 'all';
   const setFilterSearchActive = minimalFilter?.setSearchActive;
-  const setFilterContentType = minimalFilter?.setContentType;
 
   useEffect(() => {
     onSearchActiveChange?.(isSearchActive);
@@ -288,157 +303,180 @@ function SearchContent({ onSearchActiveChange, className }: SearchExperienceProp
 
   const showIdle = !isSearchActive && !loading;
 
-  return (
-    <div className={className ?? 'w-full max-w-4xl flex flex-col items-center gap-8'}>
-      <div className="w-full flex flex-col items-center gap-4">
-        <div
-          ref={boxRef}
-          className="relative z-50 group w-full max-w-sm animate-in fade-in slide-in-from-top-3 duration-500 fill-mode-both"
-        >
-          <span className="absolute left-5 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none transition-colors group-focus-within:text-white/80 z-10">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </span>
-          <input
-            ref={inputRef}
-            type="text"
-            value={query}
-            onChange={handleInputChange}
-            onFocus={() => setFocused(true)}
-            onKeyDown={handleKeyDown}
-            placeholder={tSearch('placeholder')}
-            role="combobox"
-            aria-expanded={showSuggestions}
-            aria-controls="search-suggestions"
-            aria-autocomplete="list"
-            className="w-full bg-white/5 rounded-[10px] h-14 pl-14 pr-12 font-sans font-semibold text-[16px] text-white placeholder-white/55 focus:bg-white/10 focus:outline-none focus:ring-0 focus:ring-offset-0 transition-all duration-300 shadow-2xl relative z-[1]"
-          />
-          {query && (
-            <button
-              onClick={handleClearSearch}
-              className="absolute right-5 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors z-10"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          )}
-
-          {showSuggestions && (
-            <ul
-              id="search-suggestions"
-              role="listbox"
-              className="absolute left-0 right-0 top-[calc(100%+8px)] z-50 rounded-[10px] border border-white/10 bg-[#1F1F1F] shadow-[0_16px_48px_rgba(0,0,0,0.55)] py-1.5 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150"
-            >
-              {suggestions.map((item, index) => (
-                <li key={item.id} role="option" aria-selected={index === activeIndex}>
-                  <Link
-                    href={hrefFor(item)}
-                    onMouseEnter={() => setActiveIndex(index)}
-                    className={`flex items-center justify-between gap-3 px-4 py-2.5 transition-colors ${
-                      index === activeIndex ? 'bg-white/10' : 'hover:bg-white/5'
-                    }`}
-                  >
-                    <span className="min-w-0 flex flex-col gap-0.5">
-                      <span className="font-sans font-semibold text-[15px] text-white/75 truncate">
-                        {highlightName(item.name, query)}
-                      </span>
-                      {(() => {
-                        const hint = suggestionHint(item);
-                        if (!hint) return null;
-                        return (
-                          <span className="font-sans text-[12px] text-white/35 truncate">
-                            {hint}
-                          </span>
-                        );
-                      })()}
-                    </span>
-                    <span className="shrink-0 font-sans text-[11px] font-medium uppercase tracking-wide text-white/35">
-                      {item.item_type === 'film' ? tSearch('film') : tSearch('artifact')}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-
-        <div
-          ref={controlsSentinelRef}
-          className="relative z-0 flex flex-col items-center gap-3.5"
-        >
-          <div className="flex items-center justify-center gap-2">
-            <DisplayModeToggle />
-            <ContentTypeToggle />
-            <MixesButton />
-            <MinimalFilterButton />
+  const resultsBody = loading ? (
+    isTimeline ? (
+      <div className="w-full flex gap-8 animate-pulse overflow-hidden px-5 mt-2">
+        {[1, 2, 3, 4].map((n) => (
+          <div key={n} className="w-[180px] shrink-0 flex flex-col gap-4">
+            <div className="h-5 bg-white/10 rounded w-1/2" />
+            <div className="h-px bg-white/10 w-full" />
+            <div className="h-4 bg-white/10 rounded w-3/4" />
+            <div className="h-12 bg-white/5 rounded w-full" />
           </div>
-          <QueryStatusBar />
-        </div>
+        ))}
       </div>
+    ) : isMinimal ? (
+      <div className="w-full max-w-[600px] flex flex-col gap-6 animate-pulse">
+        {[1, 2, 3].map((n) => (
+          <div key={n} className="flex flex-col gap-2">
+            <div className="h-5 bg-white/10 rounded w-1/3" />
+            <div className="h-4 bg-white/5 rounded w-2/3" />
+            <div className="h-3 bg-white/5 rounded w-1/4" />
+          </div>
+        ))}
+      </div>
+    ) : (
+      <div className="w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-6 gap-y-10 animate-pulse">
+        {[1, 2, 3, 4].map((n) => (
+          <div key={n} className="flex flex-col gap-3">
+            <div className="w-full aspect-[2/3] bg-white/5 rounded-[8px]" />
+            <div className="h-4 bg-white/10 rounded w-2/3" />
+            <div className="h-3 bg-white/5 rounded w-full" />
+          </div>
+        ))}
+      </div>
+    )
+  ) : filteredResults.length > 0 ? (
+    isTimeline ? (
+      <SearchResultsTimeline results={filteredResults} />
+    ) : isMinimal ? (
+      <SearchResultsMinimal results={filteredResults} />
+    ) : (
+      <SearchResultsGrid results={filteredResults} />
+    )
+  ) : (
+    <div className="flex w-full justify-center py-6">
+      <SearchNadaView />
+    </div>
+  );
 
-      <StickyQueryStrip sentinelRef={controlsSentinelRef} />
+  return (
+    <>
+      <section
+        className={`relative z-30 w-full pt-4 pb-4 px-[10%] flex flex-col items-center ${
+          theaterOpen ? 'invisible pointer-events-none' : ''
+        }`}
+        aria-hidden={theaterOpen}
+      >
+        <div
+          className={
+            className ?? 'w-full max-w-4xl flex flex-col items-center gap-4'
+          }
+        >
+          <div
+            ref={boxRef}
+            className="relative z-50 group w-full max-w-sm animate-in fade-in slide-in-from-top-3 duration-500 fill-mode-both"
+          >
+            <span className="absolute left-5 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none transition-colors group-focus-within:text-white/80 z-10">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </span>
+            <input
+              ref={inputRef}
+              type="text"
+              value={query}
+              onChange={handleInputChange}
+              onFocus={() => setFocused(true)}
+              onKeyDown={handleKeyDown}
+              placeholder={tSearch('placeholder')}
+              role="combobox"
+              aria-expanded={showSuggestions}
+              aria-controls="search-suggestions"
+              aria-autocomplete="list"
+              className="w-full bg-white/5 rounded-[10px] h-14 pl-14 pr-12 font-sans font-semibold text-[16px] text-white placeholder-white/55 focus:bg-white/10 focus:outline-none focus:ring-0 focus:ring-offset-0 transition-all duration-300 shadow-2xl relative z-[1]"
+            />
+            {query && (
+              <button
+                onClick={handleClearSearch}
+                className="absolute right-5 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors z-10"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
+
+            {showSuggestions && (
+              <ul
+                id="search-suggestions"
+                role="listbox"
+                className="absolute left-0 right-0 top-[calc(100%+8px)] z-50 rounded-[10px] border border-white/10 bg-[#1F1F1F] shadow-[0_16px_48px_rgba(0,0,0,0.55)] py-1.5 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150"
+              >
+                {suggestions.map((item, index) => (
+                  <li key={item.id} role="option" aria-selected={index === activeIndex}>
+                    <Link
+                      href={hrefFor(item)}
+                      onMouseEnter={() => setActiveIndex(index)}
+                      className={`flex items-center justify-between gap-3 px-4 py-2.5 transition-colors ${
+                        index === activeIndex ? 'bg-white/10' : 'hover:bg-white/5'
+                      }`}
+                    >
+                      <span className="min-w-0 flex flex-col gap-0.5">
+                        <span className="font-sans font-semibold text-[15px] text-white/75 truncate">
+                          {highlightName(item.name, query)}
+                        </span>
+                        {(() => {
+                          const hint = suggestionHint(item);
+                          if (!hint) return null;
+                          return (
+                            <span className="font-sans text-[12px] text-white/35 truncate">
+                              {hint}
+                            </span>
+                          );
+                        })()}
+                      </span>
+                      <span className="shrink-0 font-sans text-[11px] font-medium uppercase tracking-wide text-white/35">
+                        {item.item_type === 'film' ? tSearch('film') : tSearch('artifact')}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <div
+            ref={controlsSentinelRef}
+            className="relative z-0 flex flex-col items-center gap-3.5"
+          >
+            <div className="flex items-center justify-center gap-2">
+              <DisplayModeToggle />
+              <ContentTypeToggle />
+              <MixesButton />
+              <MinimalFilterButton />
+            </div>
+            <QueryStatusBar />
+          </div>
+        </div>
+
+        <StickyQueryStrip sentinelRef={controlsSentinelRef} />
+      </section>
+
+      <div
+        className={`relative z-0 w-full ${
+          showIdle
+            ? theaterOpen
+              ? 'invisible pointer-events-none'
+              : 'animate-in fade-in duration-300'
+            : 'hidden'
+        }`}
+        aria-hidden={!showIdle || theaterOpen}
+      >
+        {browseContent}
+      </div>
 
       {!showIdle &&
         (isTimeline ? (
-          // Break out of max-w-4xl / px-[10%] so search Time matches home rail.
-          <div className="w-screen relative left-1/2 right-auto -translate-x-1/2 mt-6">
-            {loading ? (
-              <div className="w-full flex gap-8 animate-pulse overflow-hidden px-5">
-                {[1, 2, 3, 4].map((n) => (
-                  <div key={n} className="w-[180px] shrink-0 flex flex-col gap-4">
-                    <div className="h-5 bg-white/10 rounded w-1/2" />
-                    <div className="h-px bg-white/10 w-full" />
-                    <div className="h-4 bg-white/10 rounded w-3/4" />
-                    <div className="h-12 bg-white/5 rounded w-full" />
-                  </div>
-                ))}
-              </div>
-            ) : filteredResults.length > 0 ? (
-              <SearchResultsTimeline results={filteredResults} />
-            ) : (
-              <div className="flex w-full justify-center py-6">
-                <SearchNadaView />
-              </div>
-            )}
-          </div>
+          <div className="relative z-0 w-full">{resultsBody}</div>
         ) : (
-          <div className="w-full mt-6 flex flex-col items-center">
-            {loading ? (
-              isMinimal ? (
-                <div className="w-full max-w-[600px] flex flex-col gap-6 animate-pulse">
-                  {[1, 2, 3].map((n) => (
-                    <div key={n} className="flex flex-col gap-2">
-                      <div className="h-5 bg-white/10 rounded w-1/3" />
-                      <div className="h-4 bg-white/5 rounded w-2/3" />
-                      <div className="h-3 bg-white/5 rounded w-1/4" />
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-6 gap-y-10 animate-pulse">
-                  {[1, 2, 3, 4].map((n) => (
-                    <div key={n} className="flex flex-col gap-3">
-                      <div className="w-full aspect-[2/3] bg-white/5 rounded-[8px]" />
-                      <div className="h-4 bg-white/10 rounded w-2/3" />
-                      <div className="h-3 bg-white/5 rounded w-full" />
-                    </div>
-                  ))}
-                </div>
-              )
-            ) : filteredResults.length > 0 ? (
-              isMinimal ? (
-                <SearchResultsMinimal results={filteredResults} />
-              ) : (
-                <SearchResultsGrid results={filteredResults} />
-              )
-            ) : (
-              <SearchNadaView />
-            )}
+          <div className="relative z-0 w-full px-[10%] flex flex-col items-center mt-2">
+            <div className="w-full max-w-4xl flex flex-col items-center">
+              {resultsBody}
+            </div>
           </div>
         ))}
-    </div>
+    </>
   );
 }
 

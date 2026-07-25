@@ -142,9 +142,9 @@ export default function TimelineRail({
   const edgePad = 'max(1.25rem, calc((100% - 24rem) / 2))';
 
   return (
-    <div className="w-full mt-8 md:mt-10">
+    <div className="w-full mt-4">
       {showArrows && (
-        <div className="hidden md:flex items-center justify-center gap-1.5 mb-8 select-none">
+        <div className="hidden md:flex items-center justify-center gap-1.5 mb-6 select-none">
           <button
             type="button"
             aria-label={tTime('scrollEarlier')}
