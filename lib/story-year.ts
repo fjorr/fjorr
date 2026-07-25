@@ -72,7 +72,7 @@ export function groupByStoryYear<T>(
     else map.set(key, [item]);
   }
 
-  const dated = [...map.entries()]
+  const dated: StoryYearGroup<T>[] = [...map.entries()]
     .filter((entry): entry is [number, T[]] => entry[0] !== 'undated')
     .sort((a, b) => a[0] - b[0])
     .map(([year, films]) => ({
