@@ -41,7 +41,9 @@ const RAIL_SCROLLBAR_CSS = `
     overflow-x: scroll;
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
-    touch-action: pan-x;
+    /* pan-y: vertical page scroll must work when the gesture starts on the hero.
+       Horizontal slides are handled with a JS axis lock (see touch handlers). */
+    touch-action: pan-y;
     overscroll-behavior-x: contain;
   }
 `;
@@ -120,6 +122,65 @@ export default function FeatureRail({
       window.clearTimeout(timeout);
     };
   }, [activeIndex, films.length, onSlideChange]);
+
+  // Touch axis lock: vertical → page scroll; horizontal → change slide.
+  useEffect(() => {
+    const el = railRef.current;
+    if (!el || films.length < 2) return;
+
+    let startX = 0;
+    let startY = 0;
+    let axis: 'x' | 'y' | null = null;
+
+    const onTouchStart = (event: TouchEvent) => {
+      const touch = event.touches[0];
+      if (!touch) return;
+      startX = touch.clientX;
+      startY = touch.clientY;
+      axis = null;
+    };
+
+    const onTouchMove = (event: TouchEvent) => {
+      const touch = event.touches[0];
+      if (!touch) return;
+      const dx = touch.clientX - startX;
+      const dy = touch.clientY - startY;
+
+      if (axis === null) {
+        if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
+        axis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+      }
+
+      // Claim the gesture only for clear horizontal swipes.
+      if (axis === 'x') {
+        event.preventDefault();
+      }
+    };
+
+    const onTouchEnd = (event: TouchEvent) => {
+      if (axis !== 'x') return;
+      const touch = event.changedTouches[0];
+      if (!touch) return;
+      const dx = touch.clientX - startX;
+      if (Math.abs(dx) < 48) {
+        scrollToIndex(activeIndex);
+        return;
+      }
+      goTo(activeIndex + (dx < 0 ? 1 : -1));
+    };
+
+    el.addEventListener('touchstart', onTouchStart, { passive: true });
+    el.addEventListener('touchmove', onTouchMove, { passive: false });
+    el.addEventListener('touchend', onTouchEnd, { passive: true });
+    el.addEventListener('touchcancel', onTouchEnd, { passive: true });
+
+    return () => {
+      el.removeEventListener('touchstart', onTouchStart);
+      el.removeEventListener('touchmove', onTouchMove);
+      el.removeEventListener('touchend', onTouchEnd);
+      el.removeEventListener('touchcancel', onTouchEnd);
+    };
+  }, [activeIndex, films.length, goTo, scrollToIndex]);
 
   useEffect(() => {
     if (!isPlaying || isTheaterActive || films.length < 2) return;
@@ -200,7 +261,7 @@ export default function FeatureRail({
                     tall={film.hero_tall}
                     alt={film.name || 'Featured Film Asset'}
                     priority={index === 0}
-                    className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none group-hover/rail:scale-[1.01] transition-transform duration-700"
+                    className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none"
                     imgClassName="object-cover"
                     onError={(e) => {
                       e.currentTarget.style.display = 'none';

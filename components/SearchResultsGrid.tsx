@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import type { SearchItem } from '@/components/SearchExperience';
 import { useMinimalFilter } from '@/components/MinimalFilterContext';
 import {
@@ -18,6 +19,7 @@ interface ResultsGridProps {
 }
 
 export default function SearchResultsGrid({ results, postersOnly = false }: ResultsGridProps) {
+  const t = useTranslations('Film');
   const { sort, theme, setThemes } = useMinimalFilter();
 
   useEffect(() => {
@@ -89,6 +91,20 @@ export default function SearchResultsGrid({ results, postersOnly = false }: Resu
                 <div className="w-full h-full flex items-center justify-center bg-emerald-500/20 text-emerald-400 font-mono text-[10px] tracking-widest uppercase">
                   [ {item.item_type} ]
                 </div>
+              )}
+              {isFilm && isFutureRelease && (
+                <span
+                  className="absolute left-2 bottom-2 z-10 max-w-[calc(100%-1rem)] truncate rounded-[6px] border border-white/10 px-2 py-1 font-sans text-[10px] font-semibold capitalize tracking-normal text-white/90 shadow-[0_8px_24px_rgba(0,0,0,0.25)]"
+                  style={{
+                    backgroundColor:
+                      'color-mix(in srgb, var(--page-bg-color, #1F1F1F) 72%, transparent)',
+                    backdropFilter: 'blur(24px) saturate(1.4)',
+                    WebkitBackdropFilter: 'blur(24px) saturate(1.4)',
+                    transform: 'translateZ(0)',
+                  }}
+                >
+                  {t('comingSoon')}
+                </span>
               )}
             </div>
 
