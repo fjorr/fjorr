@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { createBrowserClient } from '@supabase/ssr';
 import { useTranslations } from 'next-intl';
 import type { SearchItem } from '@/components/SearchExperience';
 import { useMinimalFilter } from '@/components/MinimalFilterContext';
+import PrefetchLink from '@/components/PrefetchLink';
+import TheaterOpenShell from '@/components/TheaterOpenShell';
 import {
   filterAndSortSearchItems,
   themesFromSearchItems,
@@ -17,10 +18,13 @@ import {
   getWatchProgress,
   isWatchableProgress,
   trackWatchProgress,
+  formatResumeClock,
 } from '@/lib/watch-progress';
+import { useWatchProgressMap } from '@/components/useWatchProgress';
 
 const CinemaTheater = dynamic(() => import('@/components/CinemaTheater'), {
   ssr: false,
+  loading: () => <TheaterOpenShell />,
 });
 
 function formatRuntime(runtime: number | null | undefined) {
@@ -72,6 +76,7 @@ function MetaLine({ item }: { item: SearchItem }) {
 export default function SearchResultsMinimal({ results }: { results: SearchItem[] }) {
   const t = useTranslations('Film');
   const { sort, theme, mix, mixes, setThemes } = useMinimalFilter();
+  const watchProgress = useWatchProgressMap();
   const [showTheater, setShowTheater] = useState(false);
   const [selectedFilm, setSelectedFilm] = useState<any>(null);
   const [startAt, setStartAt] = useState<number | undefined>(undefined);
@@ -164,13 +169,17 @@ export default function SearchResultsMinimal({ results }: { results: SearchItem[
           const comingSoon = isFilm && isComingSoon(item.release_date);
           const infoHref = isFilm ? `/film/${item.slug}` : `/artifact/${item.slug}`;
           const canPlay = isFilm && !comingSoon;
+          const filmId = item.internal_id || item.id;
+          const resume = canPlay
+            ? watchProgress[filmId] || watchProgress[item.id] || null
+            : null;
 
           return (
             <div
               key={item.id}
               className="w-full flex items-center justify-between gap-8 py-4 first:pt-0 last:pb-0"
             >
-              <Link
+              <PrefetchLink
                 href={infoHref}
                 className="min-w-0 flex-1 max-w-[380px] flex flex-col gap-1 pr-2 group"
               >
@@ -183,24 +192,26 @@ export default function SearchResultsMinimal({ results }: { results: SearchItem[
                   </p>
                 )}
                 <MetaLine item={item} />
-              </Link>
+              </PrefetchLink>
 
-              <div className="shrink-0 w-[132px] flex items-center justify-end gap-2">
+              <div className="shrink-0 flex items-center justify-end gap-2">
                 {canPlay && (
                   <button
                     type="button"
                     onClick={() => handlePlay(item)}
-                    className="h-8 px-3 rounded-[6px] bg-white/15 font-sans text-[13px] font-semibold text-white hover:bg-white/25 transition-colors"
+                    className="h-8 px-3 rounded-[6px] bg-white/15 font-sans text-[13px] font-semibold text-white hover:bg-white/25 transition-colors whitespace-nowrap"
                   >
-                    {t('playShort')}
+                    {resume
+                      ? t('resume', { time: formatResumeClock(resume.seconds) })
+                      : t('playShort')}
                   </button>
                 )}
-                <Link
+                <PrefetchLink
                   href={infoHref}
                   className="h-8 px-3 rounded-[6px] bg-white/5 font-sans text-[13px] font-semibold text-white/55 hover:text-white/80 hover:bg-white/10 transition-colors inline-flex items-center"
                 >
                   {t('info')}
-                </Link>
+                </PrefetchLink>
               </div>
             </div>
           );

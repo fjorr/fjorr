@@ -1,7 +1,6 @@
 'use client';
 
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import {
   type DisplayMode,
   readDisplayModeCookie,
@@ -25,21 +24,17 @@ export function DisplayModeProvider({
   children: React.ReactNode;
   initialMode?: DisplayMode;
 }) {
-  const router = useRouter();
   const [mode, setModeState] = useState<DisplayMode>(initialMode);
 
   useEffect(() => {
     setModeState(readDisplayModeCookie());
   }, []);
 
-  const setMode = useCallback(
-    (next: DisplayMode) => {
-      setModeState(next);
-      writeDisplayModeCookie(next);
-      router.refresh();
-    },
-    [router]
-  );
+  const setMode = useCallback((next: DisplayMode) => {
+    setModeState(next);
+    writeDisplayModeCookie(next);
+    // No router.refresh — home keeps all browse modes mounted for instant switch.
+  }, []);
 
   return (
     <DisplayModeContext.Provider

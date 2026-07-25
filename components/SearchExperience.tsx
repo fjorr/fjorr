@@ -17,9 +17,8 @@ import SearchResultsGrid from '@/components/SearchResultsGrid';
 import SearchResultsMinimal from '@/components/SearchResultsMinimal';
 import SearchResultsTimeline from '@/components/SearchResultsTimeline';
 import SearchNadaView from '@/components/SearchNadaView';
-import DisplayModeToggle from '@/components/DisplayModeToggle';
-import ContentTypeToggle from '@/components/ContentTypeToggle';
-import { MinimalFilterButton, MixesButton, QueryStatusBar, useMinimalFilterOptional } from '@/components/MinimalFilterContext';
+import BrowseControlBar from '@/components/BrowseControlBar';
+import { useMinimalFilterOptional } from '@/components/MinimalFilterContext';
 import { useDisplayMode } from '@/components/DisplayModeProvider';
 import StickyQueryStrip from '@/components/StickyQueryStrip';
 
@@ -451,18 +450,7 @@ function SearchContent({
             )}
           </div>
 
-          <div
-            ref={controlsSentinelRef}
-            className="relative z-0 flex flex-col items-center gap-3.5"
-          >
-            <div className="flex items-center justify-center gap-2">
-              <DisplayModeToggle />
-              <ContentTypeToggle />
-              <MixesButton />
-              <MinimalFilterButton />
-            </div>
-            <QueryStatusBar />
-          </div>
+          <BrowseControlBar sentinelRef={controlsSentinelRef} />
         </div>
 
         <StickyQueryStrip sentinelRef={controlsSentinelRef} />

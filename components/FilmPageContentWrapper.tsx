@@ -8,6 +8,7 @@ import FilmRail from './FilmRail';
 import FilmSpecs from './FilmSpecs';
 import FilmTranscript from './FilmTranscript';
 import { useWatchProgress } from '@/components/useWatchProgress';
+import TheaterOpenShell from '@/components/TheaterOpenShell';
 import {
   clearWatchProgress,
   getWatchProgress,
@@ -17,6 +18,7 @@ import {
 
 const CinemaTheater = dynamic(() => import('@/components/CinemaTheater'), {
   ssr: false,
+  loading: () => <TheaterOpenShell />,
 });
 
 interface WrapperProps {

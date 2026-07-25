@@ -3,6 +3,8 @@
 import React, { useCallback, useState } from 'react';
 import dynamic from 'next/dynamic';
 import FeatureRail from './FeatureRail';
+import TheaterOpenShell from '@/components/TheaterOpenShell';
+import { useDisplayMode } from '@/components/DisplayModeProvider';
 import { createBrowserClient } from '@supabase/ssr';
 import {
   clearWatchProgress,
@@ -13,13 +15,16 @@ import {
 
 const CinemaTheater = dynamic(() => import('@/components/CinemaTheater'), {
   ssr: false,
+  loading: () => <TheaterOpenShell />,
 });
 
 export default function FeatureRailClient({ films }: { films: any[] }) {
+  const { mode } = useDisplayMode();
   const [activeIndex, setActiveIndex] = useState(0);
   const [showTheater, setShowTheater] = useState(false);
   const [selectedFilm, setSelectedFilm] = useState<any>(null);
   const [startAt, setStartAt] = useState<number | undefined>(undefined);
+  const isBrowseActive = mode === 'cinematic';
 
   const handlePlayClick = async (filmAsset: any) => {
     try {
@@ -124,6 +129,7 @@ export default function FeatureRailClient({ films }: { films: any[] }) {
         onSlideChange={setActiveIndex}
         onPlayClick={handlePlayClick}
         isTheaterActive={showTheater}
+        isBrowseActive={isBrowseActive}
       />
 
       {showTheater && selectedFilm && (

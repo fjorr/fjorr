@@ -2,9 +2,11 @@
 
 import React, { useEffect, useMemo, useRef } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import SearchNadaView from '@/components/SearchNadaView';
+import PrefetchLink from '@/components/PrefetchLink';
+import { useWatchProgressMap } from '@/components/useWatchProgress';
+import { formatResumeClock } from '@/lib/watch-progress';
 import { groupByStoryYear } from '@/lib/story-year';
 
 export type TimelineRailItem = {
@@ -14,6 +16,11 @@ export type TimelineRailItem = {
   href: string;
   sortDate: string | null;
   image?: string | null;
+  /** Film id for continue-watching lookup / resume. */
+  filmId?: string | null;
+  slug?: string | null;
+  runtime?: number | null;
+  canResume?: boolean;
 };
 
 function readScroll(key: string): number {
@@ -44,17 +51,22 @@ function splitYearLabel(label: string): { primary: string; secondary: string | n
 
 /**
  * Vertical Time rail — centered spine, posters left, titles right.
+ * Resume only (no Play) when continue-watching progress exists.
  */
 export default function TimelineRail({
   items,
   storageKey,
   groupKeyPrefix = 't',
+  onResume,
 }: {
   items: TimelineRailItem[];
   storageKey: string;
   groupKeyPrefix?: string;
+  onResume?: (item: TimelineRailItem) => void;
 }) {
   const tTime = useTranslations('Timeline');
+  const tFilm = useTranslations('Film');
+  const watchProgress = useWatchProgressMap();
   const storageKeyRef = useRef(storageKey);
   const restoredRef = useRef(false);
 
@@ -143,41 +155,73 @@ export default function TimelineRail({
             </div>
 
             <ul className="flex flex-col gap-12 md:gap-14 pb-6 md:pb-8">
-              {group.films.map((item) => (
-                <li key={item.id}>
-                  <Link
-                    href={item.href}
-                    onClick={rememberScroll}
-                    className="group grid grid-cols-2 gap-x-8 md:gap-x-10 items-start w-full"
-                  >
-                    <div className="flex justify-end">
-                      {item.image ? (
-                        <Image
-                          src={item.image}
-                          alt=""
-                          width={160}
-                          height={240}
-                          sizes="80px"
-                          className="w-[72px] sm:w-[80px] h-auto rounded-[10px] transition-opacity duration-300 group-hover:opacity-90"
-                        />
-                      ) : (
-                        <div className="w-[72px] sm:w-[80px] aspect-[2/3] rounded-[10px] bg-white/10" />
-                      )}
-                    </div>
+              {group.films.map((item) => {
+                const filmId = item.filmId || item.id;
+                const resume =
+                  item.canResume && onResume
+                    ? watchProgress[filmId] || watchProgress[item.id] || null
+                    : null;
 
-                    <div className="min-w-0 pt-0.5">
-                      <h3 className="font-sans text-[16px] md:text-[17px] font-bold tracking-tight text-white leading-snug group-hover:text-white/85 transition-colors">
-                        {item.name}
-                      </h3>
-                      {item.teaser ? (
-                        <p className="mt-2 font-sans text-[13px] font-normal text-white/45 leading-relaxed line-clamp-4">
-                          {item.teaser}
-                        </p>
-                      ) : null}
+                return (
+                  <li
+                    key={item.id}
+                    className="[content-visibility:auto] [contain-intrinsic-size:auto_240px]"
+                  >
+                    <div className="grid grid-cols-2 gap-x-8 md:gap-x-10 items-start w-full">
+                      <PrefetchLink
+                        href={item.href}
+                        onClick={rememberScroll}
+                        className="flex justify-end group"
+                      >
+                        {item.image ? (
+                          <Image
+                            src={item.image}
+                            alt=""
+                            width={160}
+                            height={240}
+                            sizes="80px"
+                            className="w-[72px] sm:w-[80px] h-auto rounded-[10px] transition-opacity duration-300 group-hover:opacity-90"
+                          />
+                        ) : (
+                          <div className="w-[72px] sm:w-[80px] aspect-[2/3] rounded-[10px] bg-white/10" />
+                        )}
+                      </PrefetchLink>
+
+                      <div className="min-w-0 pt-0.5 flex flex-col gap-2.5">
+                        <PrefetchLink
+                          href={item.href}
+                          onClick={rememberScroll}
+                          className="group flex flex-col gap-2 min-w-0"
+                        >
+                          <h3 className="font-sans text-[16px] md:text-[17px] font-bold tracking-tight text-white leading-snug group-hover:text-white/85 transition-colors">
+                            {item.name}
+                          </h3>
+                          {item.teaser ? (
+                            <p className="font-sans text-[13px] font-normal text-white/45 leading-relaxed line-clamp-4">
+                              {item.teaser}
+                            </p>
+                          ) : null}
+                        </PrefetchLink>
+
+                        {resume && onResume ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              rememberScroll();
+                              onResume(item);
+                            }}
+                            className="self-start h-8 px-3 rounded-[6px] bg-white/15 font-sans text-[13px] font-semibold text-white hover:bg-white/25 transition-colors whitespace-nowrap"
+                          >
+                            {tFilm('resume', {
+                              time: formatResumeClock(resume.seconds),
+                            })}
+                          </button>
+                        ) : null}
+                      </div>
                     </div>
-                  </Link>
-                </li>
-              ))}
+                  </li>
+                );
+              })}
             </ul>
           </section>
         ))}

@@ -1,16 +1,15 @@
 'use client';
 
-import React, { useEffect, useMemo, useRef, useState, type RefObject } from 'react';
+import React, { useEffect, useRef, useState, type RefObject } from 'react';
 import { useTranslations } from 'next-intl';
 import { useDisplayMode } from '@/components/DisplayModeProvider';
 import {
-  capitalizeLabel,
   useMinimalFilter,
   useQueryStatusLabels,
 } from '@/components/MinimalFilterContext';
+import { DialsPanel, MixesPanel } from '@/components/BrowseFilterPanels';
 import { nextDisplayMode } from '@/lib/display-mode';
 
-const COMING_SOON_MIX_SLUG = 'coming-soon';
 /** Navbar occupies 70px; leave 10px air before the sticky glass. */
 const STICKY_TOP_PX = 80;
 
@@ -19,6 +18,7 @@ type Panel = 'mixes' | 'dials' | null;
 /**
  * Compact sticky query strip — appears under the navbar once the in-flow
  * controls leave the viewport. Chips toggle mode/type or open Mixes / Dials.
+ * Open panels match search-bar width and sit centered below the strip.
  */
 export default function StickyQueryStrip({
   sentinelRef,
@@ -27,19 +27,7 @@ export default function StickyQueryStrip({
 }) {
   const tf = useTranslations('MinimalList');
   const { mode, setMode, isTimeline } = useDisplayMode();
-  const {
-    mix,
-    setMix,
-    mixes,
-    sort,
-    setSort,
-    theme,
-    setTheme,
-    themes,
-    contentType,
-    setContentType,
-    clearFilters,
-  } = useMinimalFilter();
+  const { mix, theme, sort, contentType, setContentType } = useMinimalFilter();
   const {
     modeLabel,
     typeLabel,
@@ -86,17 +74,6 @@ export default function StickyQueryStrip({
     };
   }, [panel]);
 
-  const mixItems = useMemo(() => {
-    const comingSoonLabel = capitalizeLabel(tf('comingSoon'));
-    const fromDb = mixes
-      .filter((m) => m.slug !== COMING_SOON_MIX_SLUG)
-      .map((m) => ({ ...m, name: capitalizeLabel(m.name) }));
-    return [
-      { slug: COMING_SOON_MIX_SLUG, name: comingSoonLabel, filmIds: [] as string[] },
-      ...fromDb,
-    ];
-  }, [mixes, tf]);
-
   const mixesDisabled = contentType === 'artifact';
   const dialsActive = isTimeline
     ? theme !== 'all'
@@ -109,9 +86,12 @@ export default function StickyQueryStrip({
       className="fixed left-0 right-0 z-40 px-4 flex justify-center pointer-events-none animate-in fade-in slide-in-from-top-2 duration-200"
       style={{ top: STICKY_TOP_PX }}
     >
-      <div ref={stripRef} className="relative pointer-events-auto w-fit max-w-[calc(100vw-2rem)]">
+      <div
+        ref={stripRef}
+        className="pointer-events-auto w-full max-w-sm flex flex-col items-center gap-2"
+      >
         <div
-          className="flex items-center justify-center gap-1 px-4 py-2.5 rounded-[10px] border"
+          className="flex items-center justify-center gap-1 px-4 py-2.5 rounded-[10px] border w-fit max-w-full"
           style={{
             backgroundColor:
               'color-mix(in srgb, var(--page-bg-color, #1F1F1F) 72%, transparent)',
@@ -174,91 +154,10 @@ export default function StickyQueryStrip({
           )}
         </div>
 
-      {panel === 'mixes' && !mixesDisabled && (
-        <div className="absolute left-1/2 -translate-x-1/2 top-[calc(100%+8px)] z-30 w-[min(100vw-2.5rem,280px)] rounded-[10px] border border-white/10 bg-[#1F1F1F]/95 backdrop-blur-xl shadow-[0_16px_48px_rgba(0,0,0,0.45)] p-3 flex flex-col gap-1 max-h-[min(60vh,360px)] overflow-y-auto">
-          <PanelOption
-            active={mix === 'all'}
-            onClick={() => {
-              setMix('all');
-              setPanel(null);
-            }}
-          >
-            {capitalizeLabel(tf('allMixes'))}
-          </PanelOption>
-          {mixItems.map((item) => (
-            <PanelOption
-              key={item.slug}
-              active={mix === item.slug}
-              onClick={() => {
-                setMix(item.slug);
-                setPanel(null);
-              }}
-            >
-              {item.name}
-            </PanelOption>
-          ))}
-        </div>
-      )}
-
-      {panel === 'dials' && (
-        <div className="absolute left-1/2 -translate-x-1/2 top-[calc(100%+8px)] z-30 w-[min(100vw-2.5rem,320px)] rounded-[10px] border border-white/10 bg-[#1F1F1F]/95 backdrop-blur-xl shadow-[0_16px_48px_rgba(0,0,0,0.45)] p-4 flex flex-col gap-4">
-          {!isTimeline && (
-            <div className="flex flex-col gap-2">
-              <p className="font-sans text-[11px] font-semibold uppercase tracking-wide text-white/35">
-                {tf('sort')}
-              </p>
-              <div className="flex flex-wrap gap-1.5">
-                <OptionPill active={sort === 'newest'} onClick={() => setSort('newest')}>
-                  {tf('newest')}
-                </OptionPill>
-                <OptionPill active={sort === 'az'} onClick={() => setSort('az')}>
-                  {tf('az')}
-                </OptionPill>
-                {contentType === 'film' && (
-                  <OptionPill
-                    active={sort === 'runtime'}
-                    onClick={() => setSort('runtime')}
-                  >
-                    {tf('runtime')}
-                  </OptionPill>
-                )}
-              </div>
-            </div>
-          )}
-
-          {contentType === 'film' && (
-            <div className="flex flex-col gap-2">
-              <p className="font-sans text-[11px] font-semibold uppercase tracking-wide text-white/35">
-                {tf('theme')}
-              </p>
-              <div className="flex flex-wrap gap-1.5">
-                <OptionPill active={theme === 'all'} onClick={() => setTheme('all')}>
-                  {tf('allThemes')}
-                </OptionPill>
-                {themes.map((name) => (
-                  <OptionPill
-                    key={name}
-                    active={theme === name}
-                    onClick={() => setTheme(name)}
-                  >
-                    {name.charAt(0).toUpperCase() + name.slice(1)}
-                  </OptionPill>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {dialsActive && (
-            <button
-              type="button"
-              onClick={() => clearFilters()}
-              className="self-start font-sans text-[12px] font-semibold text-white/40 hover:text-white/70 transition-colors"
-            >
-              {tf('clear')}
-            </button>
-          )}
-        </div>
-      )}
+        {panel === 'mixes' && !mixesDisabled && (
+          <MixesPanel onDone={() => setPanel(null)} />
+        )}
+        {panel === 'dials' && <DialsPanel />}
       </div>
     </div>
   );
@@ -297,54 +196,6 @@ function Chip({
             : muted
               ? 'text-white/35 hover:text-white/70'
               : 'text-white/55 hover:text-white'
-      }`}
-    >
-      {children}
-    </button>
-  );
-}
-
-function PanelOption({
-  children,
-  active,
-  onClick,
-}: {
-  children: React.ReactNode;
-  active: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`text-left h-9 px-3 rounded-[6px] font-sans text-[13px] font-semibold transition-colors ${
-        active
-          ? 'bg-white/15 text-white'
-          : 'text-white/55 hover:text-white/85 hover:bg-white/10'
-      }`}
-    >
-      {children}
-    </button>
-  );
-}
-
-function OptionPill({
-  children,
-  active,
-  onClick,
-}: {
-  children: React.ReactNode;
-  active: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`h-8 px-3 rounded-[6px] font-sans text-[12px] font-semibold transition-colors ${
-        active
-          ? 'bg-white/20 text-white'
-          : 'bg-white/5 text-white/50 hover:text-white/80 hover:bg-white/10'
       }`}
     >
       {children}

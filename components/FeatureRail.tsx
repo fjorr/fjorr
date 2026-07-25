@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import HeroPicture from '@/components/HeroPicture';
+import PrefetchLink from '@/components/PrefetchLink';
 import { sanitizeTitleArtSvg } from '@/lib/sanitize-svg';
 
 interface FilmAsset {
@@ -31,6 +31,8 @@ interface FeatureRailProps {
   onSlideChange: (index: number) => void;
   onPlayClick: (film: FilmAsset) => void;
   isTheaterActive?: boolean;
+  /** False when Cine browse is hidden — pauses autoplay timer. */
+  isBrowseActive?: boolean;
 }
 
 const RAIL_SCROLLBAR_CSS = `
@@ -54,6 +56,7 @@ export default function FeatureRail({
   onSlideChange,
   onPlayClick,
   isTheaterActive = false,
+  isBrowseActive = true,
 }: FeatureRailProps) {
   const t = useTranslations('Film');
   const fallbackBg = 'linear-gradient(to bottom, #4C7A57, #36593E)';
@@ -183,7 +186,7 @@ export default function FeatureRail({
   }, [activeIndex, films.length, goTo, scrollToIndex]);
 
   useEffect(() => {
-    if (!isPlaying || isTheaterActive || films.length < 2) return;
+    if (!isPlaying || !isBrowseActive || isTheaterActive || films.length < 2) return;
 
     const timer = setInterval(() => {
       setProgress((prevProgress) => {
@@ -197,7 +200,7 @@ export default function FeatureRail({
     }, TICK_RATE);
 
     return () => clearInterval(timer);
-  }, [isPlaying, activeIndex, films.length, goTo, isTheaterActive]);
+  }, [isPlaying, isBrowseActive, activeIndex, films.length, goTo, isTheaterActive]);
 
   useEffect(() => {
     setProgress(0);
@@ -246,7 +249,7 @@ export default function FeatureRail({
                 key={film.id || index}
                 className="relative w-full min-w-full shrink-0 snap-center snap-always aspect-[1/1.618] md:aspect-[4/3] lg:aspect-[16/9] select-none"
               >
-                <Link
+                <PrefetchLink
                   href={`/film/${film.slug || ''}`}
                   className="absolute inset-0 w-full h-full block z-0 cursor-pointer"
                   style={{
@@ -276,7 +279,7 @@ export default function FeatureRail({
                     className="absolute inset-x-0 bottom-0 h-1/2 z-10 pointer-events-none"
                     style={{ background: 'linear-gradient(to top, #000000BF 0%, #00000000 100%)' }}
                   />
-                </Link>
+                </PrefetchLink>
 
                 <div className="absolute inset-x-0 bottom-0 px-8 md:px-12 pb-14 md:pb-16 pt-16 md:pt-32 z-20 max-w-2xl w-full flex flex-col text-center md:text-left items-center md:items-start mx-auto md:mx-0 pointer-events-none">
                   {sponsorName && (

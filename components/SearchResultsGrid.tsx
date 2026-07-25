@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
+import PrefetchLink from '@/components/PrefetchLink';
 import { useTranslations } from 'next-intl';
 import type { SearchItem } from '@/components/SearchExperience';
 import { useMinimalFilter } from '@/components/MinimalFilterContext';
@@ -84,7 +84,7 @@ export default function SearchResultsGrid({ results, postersOnly = false }: Resu
         const gridStaggerDelay = `${index * 40}ms`;
 
         return (
-          <Link
+          <PrefetchLink
             key={item.id}
             href={targetHref}
             className={`group cursor-pointer animate-in fade-in zoom-in-95 duration-400 fill-mode-both ${
@@ -100,7 +100,13 @@ export default function SearchResultsGrid({ results, postersOnly = false }: Resu
                   src={item.blok_tall}
                   alt={item.name}
                   fill
-                  sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
+                  sizes={
+                    postersOnly
+                      ? '(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 20vw, 18vw'
+                      : '(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw'
+                  }
+                  priority={index < 6}
+                  fetchPriority={index < 6 ? 'high' : 'auto'}
                   className="object-cover group-hover:scale-[1.01] transition-transform duration-500 pointer-events-none"
                 />
               ) : (
@@ -166,7 +172,7 @@ export default function SearchResultsGrid({ results, postersOnly = false }: Resu
                 </p>
               </div>
             )}
-          </Link>
+          </PrefetchLink>
         );
       })}
     </div>

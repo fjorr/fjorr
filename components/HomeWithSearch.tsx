@@ -4,6 +4,7 @@ import React, { Suspense, useEffect, useState, type ReactNode } from 'react';
 import SearchExperience from '@/components/SearchExperience';
 import { MinimalFilterProvider } from '@/components/MinimalFilterContext';
 import type { HomeMix } from '@/lib/home-mix';
+import { preloadCinemaTheater } from '@/lib/cinema-theater';
 
 /**
  * Home shell: search chrome at top; browse content below hides while searching.
@@ -28,6 +29,32 @@ export default function HomeWithSearch({
       window.removeEventListener('fjorr_hide_main_navbar', hide);
       window.removeEventListener('fjorr_show_main_navbar', show);
     };
+  }, []);
+
+  // Warm the theater chunk so first Play/Resume feels instant.
+  useEffect(() => {
+    const warm = () => {
+      void preloadCinemaTheater();
+    };
+
+    const ric = (
+      window as Window & {
+        requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+        cancelIdleCallback?: (id: number) => void;
+      }
+    ).requestIdleCallback;
+
+    if (typeof ric === 'function') {
+      const id = ric(warm, { timeout: 2500 });
+      return () => {
+        (
+          window as Window & { cancelIdleCallback?: (id: number) => void }
+        ).cancelIdleCallback?.(id);
+      };
+    }
+
+    const t = window.setTimeout(warm, 800);
+    return () => window.clearTimeout(t);
   }, []);
 
   return (

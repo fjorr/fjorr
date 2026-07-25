@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
+import { cookies } from "next/headers";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import "./globals.css";
 import { DisplayModeProvider } from "@/components/DisplayModeProvider";
 import TypekitLoader from "@/components/TypekitLoader";
+import { DISPLAY_MODE_COOKIE, parseDisplayMode } from "@/lib/display-mode";
 import { SITE_ORIGIN } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -74,6 +76,10 @@ export default async function RootLayout({
 }>) {
   const locale = await getLocale();
   const messages = await getMessages();
+  const cookieStore = await cookies();
+  const initialMode = parseDisplayMode(
+    cookieStore.get(DISPLAY_MODE_COOKIE)?.value
+  );
 
   return (
     <html lang={locale} className={`${fontVariables} dark`}>
@@ -83,7 +89,9 @@ export default async function RootLayout({
       <body className="font-sans antialiased text-light-01 min-h-screen">
         <TypekitLoader />
         <NextIntlClientProvider locale={locale} messages={messages}>
-          <DisplayModeProvider>{children}</DisplayModeProvider>
+          <DisplayModeProvider initialMode={initialMode}>
+            {children}
+          </DisplayModeProvider>
         </NextIntlClientProvider>
       </body>
     </html>

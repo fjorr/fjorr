@@ -1,5 +1,4 @@
 import React, { Suspense } from 'react';
-import { cookies } from 'next/headers';
 import type { Metadata } from 'next';
 import PromoSplit from '@/components/PromoSplit';
 import FeatureRailLoader from '@/components/FeatureRailLoader';
@@ -8,8 +7,8 @@ import CineHomeLoader from '@/components/CineHomeLoader';
 import MinimalHomeLoader from '@/components/MinimalHomeLoader';
 import TimelineHomeLoader from '@/components/TimelineHomeLoader';
 import HomeWithSearch from '@/components/HomeWithSearch';
+import HomeBrowseModes from '@/components/HomeBrowseModes';
 import ServerSafeSkeleton from '@/components/ServerSafeSkeleton';
-import { DISPLAY_MODE_COOKIE, parseDisplayMode } from '@/lib/display-mode';
 import { getHomeMixes } from '@/lib/content/home';
 import { SITE_ORIGIN, absoluteUrl } from '@/lib/site';
 
@@ -35,8 +34,8 @@ const siteJsonLd = {
       '@id': `${SITE_ORIGIN}/#organization`,
       name: 'Fjorr',
       url: SITE_ORIGIN,
-      logo: absoluteUrl('/opengraph-image.png'),
       description: 'Short films of the world’s greatest stories.',
+      logo: absoluteUrl('/opengraph-image.png'),
     },
     {
       '@type': 'WebSite',
@@ -58,9 +57,8 @@ const siteJsonLd = {
 };
 
 export default async function Home() {
-  const cookieStore = await cookies();
-  const mode = parseDisplayMode(cookieStore.get(DISPLAY_MODE_COOKIE)?.value);
-  // Mixes must load for every display mode — search + Mini/Time all use them.
+  // Cookie still seeds DisplayModeProvider; all three browse trees mount so
+  // mode switches stay client-side and instant.
   const mixes = await getHomeMixes();
 
   const jsonLd = (
@@ -70,53 +68,43 @@ export default async function Home() {
     />
   );
 
-  if (mode === 'minimal') {
-    return (
-      <>
-        {jsonLd}
-        <HomeWithSearch mixes={mixes}>
-          <Suspense fallback={null}>
-            <MinimalHomeLoader />
-          </Suspense>
-        </HomeWithSearch>
-      </>
-    );
-  }
-
-  if (mode === 'timeline') {
-    return (
-      <>
-        {jsonLd}
-        <HomeWithSearch mixes={mixes}>
-          <Suspense fallback={null}>
-            <TimelineHomeLoader />
-          </Suspense>
-        </HomeWithSearch>
-      </>
-    );
-  }
-
   return (
     <>
       {jsonLd}
       <HomeWithSearch mixes={mixes}>
-        <FeatureRailGate>
-          <div className="w-full mt-6 md:mt-10">
-            <Suspense fallback={<FeatureRailFallback />}>
-              <FeatureRailLoader />
+        <HomeBrowseModes
+          cinematic={
+            <>
+              <FeatureRailGate>
+                <div className="w-full mt-6 md:mt-10">
+                  <Suspense fallback={<FeatureRailFallback />}>
+                    <FeatureRailLoader />
+                  </Suspense>
+                </div>
+              </FeatureRailGate>
+
+              <Suspense fallback={null}>
+                <CineHomeLoader />
+              </Suspense>
+
+              <FeatureRailGate>
+                <div className="mt-12 md:mt-16">
+                  <PromoSplit />
+                </div>
+              </FeatureRailGate>
+            </>
+          }
+          minimal={
+            <Suspense fallback={null}>
+              <MinimalHomeLoader />
             </Suspense>
-          </div>
-        </FeatureRailGate>
-
-        <Suspense fallback={null}>
-          <CineHomeLoader />
-        </Suspense>
-
-        <FeatureRailGate>
-          <div className="mt-12 md:mt-16">
-            <PromoSplit />
-          </div>
-        </FeatureRailGate>
+          }
+          timeline={
+            <Suspense fallback={null}>
+              <TimelineHomeLoader />
+            </Suspense>
+          }
+        />
       </HomeWithSearch>
     </>
   );
