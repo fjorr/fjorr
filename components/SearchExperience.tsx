@@ -305,15 +305,30 @@ function SearchContent({
 
   const resultsBody = loading ? (
     isTimeline ? (
-      <div className="w-full flex gap-8 animate-pulse overflow-hidden px-5 mt-2">
-        {[1, 2, 3, 4].map((n) => (
-          <div key={n} className="w-[180px] shrink-0 flex flex-col gap-4">
-            <div className="h-5 bg-white/10 rounded w-1/2" />
-            <div className="h-px bg-white/10 w-full" />
-            <div className="h-4 bg-white/10 rounded w-3/4" />
-            <div className="h-12 bg-white/5 rounded w-full" />
+      <div className="relative w-full mt-6 animate-pulse">
+        <div
+          className="pointer-events-none absolute left-1/2 top-0 bottom-0 w-px -translate-x-1/2 bg-white/10"
+          aria-hidden
+        />
+        <div className="mx-auto w-full max-w-sm">
+          <div className="flex justify-center py-10">
+            <div className="h-6 w-16 rounded bg-white/10" />
           </div>
-        ))}
+          <div className="flex flex-col gap-12">
+            {[1, 2, 3].map((n) => (
+              <div key={n} className="grid grid-cols-2 gap-x-8 md:gap-x-10 items-start">
+                <div className="flex justify-end">
+                  <div className="w-[72px] sm:w-[80px] aspect-[2/3] rounded-[10px] bg-white/10" />
+                </div>
+                <div className="flex flex-col gap-2 pt-1">
+                  <div className="h-4 bg-white/10 rounded w-3/4" />
+                  <div className="h-3 bg-white/5 rounded w-full" />
+                  <div className="h-3 bg-white/5 rounded w-5/6" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     ) : isMinimal ? (
       <div className="w-full max-w-[600px] flex flex-col gap-6 animate-pulse">

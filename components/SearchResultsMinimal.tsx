@@ -71,7 +71,7 @@ function MetaLine({ item }: { item: SearchItem }) {
 
 export default function SearchResultsMinimal({ results }: { results: SearchItem[] }) {
   const t = useTranslations('Film');
-  const { sort, theme, setThemes } = useMinimalFilter();
+  const { sort, theme, mix, mixes, setThemes } = useMinimalFilter();
   const [showTheater, setShowTheater] = useState(false);
   const [selectedFilm, setSelectedFilm] = useState<any>(null);
   const [startAt, setStartAt] = useState<number | undefined>(undefined);
@@ -81,8 +81,8 @@ export default function SearchResultsMinimal({ results }: { results: SearchItem[
   }, [results, setThemes]);
 
   const visibleResults = useMemo(
-    () => filterAndSortSearchItems(results, { sort, theme }),
-    [results, sort, theme]
+    () => filterAndSortSearchItems(results, { sort, theme, mix, mixes }),
+    [mix, mixes, results, sort, theme]
   );
 
   const handlePlay = async (item: SearchItem) => {

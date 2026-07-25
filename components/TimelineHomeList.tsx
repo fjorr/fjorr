@@ -50,6 +50,7 @@ export default function TimelineHomeList({
         teaser: a.teaser,
         href: `/artifact/${a.slug}`,
         sortDate: releaseYearString(a.release_date || a.created_at),
+        image: a.blok_tall ?? null,
       }));
     }
 
@@ -73,6 +74,7 @@ export default function TimelineHomeList({
       teaser: f.teaser,
       href: `/film/${f.slug}`,
       sortDate: f.story_date,
+      image: f.blok_tall ?? null,
     }));
   }, [artifacts, films, mix, mixes, showingArtifacts, theme]);
 

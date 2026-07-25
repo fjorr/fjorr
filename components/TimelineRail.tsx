@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import SearchNadaView from '@/components/SearchNadaView';
@@ -12,6 +13,7 @@ export type TimelineRailItem = {
   teaser: string | null;
   href: string;
   sortDate: string | null;
+  image?: string | null;
 };
 
 function readScroll(key: string): number {
@@ -24,16 +26,24 @@ function readScroll(key: string): number {
   }
 }
 
-function writeScroll(key: string, scrollLeft: number) {
+function writeScroll(key: string, scrollY: number) {
   try {
-    sessionStorage.setItem(key, String(Math.max(0, scrollLeft)));
+    sessionStorage.setItem(key, String(Math.max(0, scrollY)));
   } catch {
     // ignore
   }
 }
 
+/** "44 BC" → numbers on top, letters smaller below. Pure numbers stay single-line. */
+function splitYearLabel(label: string): { primary: string; secondary: string | null } {
+  if (!/[A-Za-z]/.test(label)) return { primary: label, secondary: null };
+  const match = label.match(/^(-?\d[\d,]*)\s+(.+)$/);
+  if (match) return { primary: match[1], secondary: match[2] };
+  return { primary: label, secondary: null };
+}
+
 /**
- * Shared horizontal Time rail — years above the line, titles below.
+ * Vertical Time rail — centered spine, posters left, titles right.
  */
 export default function TimelineRail({
   items,
@@ -45,10 +55,8 @@ export default function TimelineRail({
   groupKeyPrefix?: string;
 }) {
   const tTime = useTranslations('Timeline');
-  const scrollerRef = useRef<HTMLDivElement>(null);
   const storageKeyRef = useRef(storageKey);
   const restoredRef = useRef(false);
-  const [showArrows, setShowArrows] = useState(false);
 
   const groups = useMemo(
     () => groupByStoryYear(items, (item) => item.sortDate, tTime('undated')),
@@ -56,37 +64,18 @@ export default function TimelineRail({
   );
 
   useEffect(() => {
-    const update = () => {
-      const el = scrollerRef.current;
-      setShowArrows(Boolean(el && el.scrollWidth > el.clientWidth + 8));
-    };
-    update();
-    const raf = requestAnimationFrame(update);
-    window.addEventListener('resize', update);
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener('resize', update);
-    };
-  }, [groups.length, storageKey]);
-
-  useEffect(() => {
-    const el = scrollerRef.current;
-    if (!el) return;
-
     const keyChanged = storageKeyRef.current !== storageKey;
     if (keyChanged) {
       storageKeyRef.current = storageKey;
       restoredRef.current = false;
-      el.scrollLeft = 0;
       writeScroll(storageKey, 0);
+      window.scrollTo(0, 0);
     } else if (!restoredRef.current && groups.length > 0) {
       restoredRef.current = true;
       const saved = readScroll(storageKey);
-      const apply = () => {
-        el.scrollLeft = saved;
-        setShowArrows(el.scrollWidth > el.clientWidth + 8);
-      };
-      requestAnimationFrame(() => requestAnimationFrame(apply));
+      requestAnimationFrame(() => {
+        window.scrollTo(0, saved);
+      });
     }
 
     let ticking = false;
@@ -95,40 +84,16 @@ export default function TimelineRail({
       ticking = true;
       requestAnimationFrame(() => {
         ticking = false;
-        writeScroll(storageKey, el.scrollLeft);
+        writeScroll(storageKey, window.scrollY);
       });
     };
 
-    el.addEventListener('scroll', onScroll, { passive: true });
-    return () => el.removeEventListener('scroll', onScroll);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, [storageKey, groups.length]);
 
-  useEffect(() => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    const onWheel = (event: WheelEvent) => {
-      if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
-      if (el.scrollWidth <= el.clientWidth) return;
-      event.preventDefault();
-      el.scrollLeft += event.deltaY;
-    };
-    el.addEventListener('wheel', onWheel, { passive: false });
-    return () => el.removeEventListener('wheel', onWheel);
-  }, []);
-
-  const scroll = (direction: 'left' | 'right') => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    const amount = Math.round(el.clientWidth * 0.7);
-    el.scrollBy({
-      left: direction === 'left' ? -amount : amount,
-      behavior: 'smooth',
-    });
-  };
-
   const rememberScroll = () => {
-    const el = scrollerRef.current;
-    if (el) writeScroll(storageKey, el.scrollLeft);
+    writeScroll(storageKey, window.scrollY);
   };
 
   if (items.length === 0) {
@@ -139,86 +104,83 @@ export default function TimelineRail({
     );
   }
 
-  const edgePad = 'max(1.25rem, calc((100% - 24rem) / 2))';
-
   return (
-    <div className="w-full mt-4">
-      {showArrows && (
-        <div className="hidden md:flex items-center justify-center gap-1.5 mb-6 select-none">
-          <button
-            type="button"
-            aria-label={tTime('scrollEarlier')}
-            onClick={() => scroll('left')}
-            className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/40 hover:text-white/80 transition-all duration-200 text-[16px] font-sans font-bold cursor-pointer pb-0.5"
-          >
-            &lsaquo;
-          </button>
-          <button
-            type="button"
-            aria-label={tTime('scrollLater')}
-            onClick={() => scroll('right')}
-            className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/40 hover:text-white/80 transition-all duration-200 text-[16px] font-sans font-bold cursor-pointer pb-0.5"
-          >
-            &rsaquo;
-          </button>
-        </div>
-      )}
-
+    <div className="relative w-full mt-6 pb-24">
+      {/* Viewport-centered spine */}
       <div
-        ref={scrollerRef}
-        className="w-full overflow-x-auto overflow-y-hidden overscroll-x-contain pt-2 pb-20 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden touch-pan-x"
-      >
-        <div
-          className="relative flex w-max items-start"
-          style={{
-            paddingLeft: edgePad,
-            paddingRight: edgePad,
-          }}
-        >
-          <div
-            className="pointer-events-none absolute left-0 right-0 h-px bg-white/20"
-            style={{ top: '2.5rem' }}
-            aria-hidden
-          />
+        className="pointer-events-none absolute left-1/2 top-0 bottom-0 w-px -translate-x-1/2 bg-white/20"
+        aria-hidden
+      />
 
-          {groups.map((group, index) => (
-            <section
-              key={`${groupKeyPrefix}-${group.year ?? 'undated'}`}
-              className={`relative w-[180px] shrink-0 ${
-                index < groups.length - 1 ? 'mr-12' : ''
-              }`}
-            >
-              <p className="h-8 font-mono text-[17px] font-semibold tracking-tight text-white/40 leading-none">
-                {group.label}
-              </p>
+      {/* Match search bar width (max-w-sm) so text ends at its right edge */}
+      <div className="relative z-10 mx-auto w-full max-w-sm flex flex-col">
+        {groups.map((group) => (
+          <section
+            key={`${groupKeyPrefix}-${group.year ?? 'undated'}`}
+            className="w-full"
+          >
+            <div className="flex justify-center py-10 md:py-12">
+              {(() => {
+                const { primary, secondary } = splitYearLabel(group.label);
+                return (
+                  <h2
+                    className="relative z-10 px-3 py-2 flex flex-col items-center gap-1 text-white/40"
+                    style={{
+                      backgroundColor: 'var(--page-bg-color, #1F1F1F)',
+                    }}
+                  >
+                    <span className="font-mono text-[22px] md:text-[26px] font-semibold tracking-tight leading-none">
+                      {primary}
+                    </span>
+                    {secondary ? (
+                      <span className="font-mono text-[10px] md:text-[11px] font-medium uppercase tracking-[0.14em] leading-none text-white/35">
+                        {secondary}
+                      </span>
+                    ) : null}
+                  </h2>
+                );
+              })()}
+            </div>
 
-              <span
-                className="absolute left-0 top-10 w-1.5 h-1.5 -translate-y-1/2 rounded-full bg-white/55"
-                aria-hidden
-              />
-
-              <div className="mt-8 flex flex-col gap-6">
-                {group.films.map((item) => (
+            <ul className="flex flex-col gap-12 md:gap-14 pb-6 md:pb-8">
+              {group.films.map((item) => (
+                <li key={item.id}>
                   <Link
-                    key={item.id}
                     href={item.href}
                     onClick={rememberScroll}
-                    className="group flex flex-col gap-2.5 min-w-0"
+                    className="group grid grid-cols-2 gap-x-8 md:gap-x-10 items-start w-full"
                   >
-                    <h2 className="font-sans text-[15px] font-bold tracking-tight text-white leading-relaxed group-hover:text-white/85 transition-colors">
-                      {item.name}
-                    </h2>
-                    {item.teaser && (
-                      <p className="font-sans text-[13px] font-normal text-white/45 leading-relaxed line-clamp-3">
-                        {item.teaser}
-                      </p>
-                    )}
+                    <div className="flex justify-end">
+                      {item.image ? (
+                        <Image
+                          src={item.image}
+                          alt=""
+                          width={160}
+                          height={240}
+                          sizes="80px"
+                          className="w-[72px] sm:w-[80px] h-auto rounded-[10px] transition-opacity duration-300 group-hover:opacity-90"
+                        />
+                      ) : (
+                        <div className="w-[72px] sm:w-[80px] aspect-[2/3] rounded-[10px] bg-white/10" />
+                      )}
+                    </div>
+
+                    <div className="min-w-0 pt-0.5">
+                      <h3 className="font-sans text-[16px] md:text-[17px] font-bold tracking-tight text-white leading-snug group-hover:text-white/85 transition-colors">
+                        {item.name}
+                      </h3>
+                      {item.teaser ? (
+                        <p className="mt-2 font-sans text-[13px] font-normal text-white/45 leading-relaxed line-clamp-4">
+                          {item.teaser}
+                        </p>
+                      ) : null}
+                    </div>
                   </Link>
-                ))}
-              </div>
-            </section>
-          ))}
-        </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
       </div>
     </div>
   );

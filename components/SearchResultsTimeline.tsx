@@ -26,13 +26,13 @@ function storyDateLabel(raw: unknown): string | null {
   return text || null;
 }
 
-/** Search results rendered in the horizontal Time rail. */
+/** Search results rendered in the vertical Time rail. */
 export default function SearchResultsTimeline({
   results,
 }: {
   results: SearchItem[];
 }) {
-  const { sort, theme, setThemes, contentType } = useMinimalFilter();
+  const { theme, mix, mixes, setThemes, contentType } = useMinimalFilter();
   const [storyDates, setStoryDates] = useState<Record<string, string | null>>({});
 
   useEffect(() => {
@@ -45,8 +45,14 @@ export default function SearchResultsTimeline({
         ? item.item_type === 'artifact'
         : item.item_type === 'film',
     );
-    return filterAndSortSearchItems(byType, { sort, theme });
-  }, [contentType, results, sort, theme]);
+    // Time is chronological — ignore sort dials.
+    return filterAndSortSearchItems(byType, {
+      sort: 'newest',
+      theme,
+      mix,
+      mixes,
+    });
+  }, [contentType, mix, mixes, results, theme]);
 
   // Enrich films with story_date so search Time matches home Time.
   useEffect(() => {
@@ -110,6 +116,7 @@ export default function SearchResultsTimeline({
             ? `/artifact/${item.slug}`
             : `/film/${item.slug}`,
         sortDate,
+        image: item.blok_tall || null,
       };
     });
   }, [storyDates, typed]);

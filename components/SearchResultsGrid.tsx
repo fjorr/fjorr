@@ -29,7 +29,7 @@ const glassBadgeStyle: React.CSSProperties = {
 
 export default function SearchResultsGrid({ results, postersOnly = false }: ResultsGridProps) {
   const t = useTranslations('Film');
-  const { sort, theme, setThemes } = useMinimalFilter();
+  const { sort, theme, mix, mixes, setThemes } = useMinimalFilter();
   const watchProgress = useWatchProgressMap();
 
   useEffect(() => {
@@ -39,8 +39,12 @@ export default function SearchResultsGrid({ results, postersOnly = false }: Resu
   }, [results, setThemes, postersOnly]);
 
   const visibleResults = useMemo(
-    () => filterAndSortSearchItems(results, { sort, theme }),
-    [results, sort, theme]
+    () =>
+      // Cine browse already applies mix upstream; search results need it here.
+      postersOnly
+        ? filterAndSortSearchItems(results, { sort, theme })
+        : filterAndSortSearchItems(results, { sort, theme, mix, mixes }),
+    [mix, mixes, postersOnly, results, sort, theme]
   );
 
   if (visibleResults.length === 0) {

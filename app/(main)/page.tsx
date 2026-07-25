@@ -60,7 +60,8 @@ const siteJsonLd = {
 export default async function Home() {
   const cookieStore = await cookies();
   const mode = parseDisplayMode(cookieStore.get(DISPLAY_MODE_COOKIE)?.value);
-  const mixes = mode === 'cinematic' ? await getHomeMixes() : [];
+  // Mixes must load for every display mode — search + Mini/Time all use them.
+  const mixes = await getHomeMixes();
 
   const jsonLd = (
     <script
@@ -73,7 +74,7 @@ export default async function Home() {
     return (
       <>
         {jsonLd}
-        <HomeWithSearch>
+        <HomeWithSearch mixes={mixes}>
           <Suspense fallback={null}>
             <MinimalHomeLoader />
           </Suspense>
@@ -86,7 +87,7 @@ export default async function Home() {
     return (
       <>
         {jsonLd}
-        <HomeWithSearch>
+        <HomeWithSearch mixes={mixes}>
           <Suspense fallback={null}>
             <TimelineHomeLoader />
           </Suspense>

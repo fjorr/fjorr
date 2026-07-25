@@ -1,7 +1,6 @@
 import type { SearchItem } from '@/components/SearchExperience';
-import type {
-  MinimalSortMode,
-} from '@/components/MinimalFilterContext';
+import type { MinimalSortMode } from '@/components/MinimalFilterContext';
+import type { HomeMix } from '@/lib/home-mix';
 
 function isComingSoon(releaseDate?: string | null) {
   if (!releaseDate) return false;
@@ -11,6 +10,10 @@ function isComingSoon(releaseDate?: string | null) {
 function releaseTime(item: SearchItem) {
   if (!item.release_date) return 0;
   return new Date(item.release_date).getTime();
+}
+
+function filmId(item: SearchItem) {
+  return item.internal_id || item.id;
 }
 
 export function themesFromSearchItems(results: SearchItem[]): string[] {
@@ -26,12 +29,32 @@ export function filterAndSortSearchItems(
   {
     sort,
     theme,
+    mix = 'all',
+    mixes = [],
   }: {
     sort: MinimalSortMode;
     theme: string;
+    mix?: string;
+    mixes?: HomeMix[];
   }
 ): SearchItem[] {
   let next = [...results];
+
+  if (mix === 'coming-soon') {
+    next = next.filter(
+      (item) => item.item_type === 'film' && isComingSoon(item.release_date)
+    );
+  } else if (mix !== 'all') {
+    const selected = mixes.find((m) => m.slug === mix);
+    if (selected) {
+      const idSet = new Set(selected.filmIds);
+      next = next.filter(
+        (item) =>
+          item.item_type === 'film' &&
+          (idSet.has(filmId(item)) || idSet.has(item.id))
+      );
+    }
+  }
 
   if (theme !== 'all') {
     next = next.filter(

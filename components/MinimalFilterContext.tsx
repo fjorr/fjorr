@@ -148,6 +148,13 @@ export function MinimalFilterProvider({
 
   const { isMinimal, isTimeline, setMode } = useDisplayMode();
 
+  // Time owns chronology — drop residual sort params from other modes.
+  useEffect(() => {
+    if (isTimeline && sort !== 'newest') {
+      replaceFilterParams({ sort: null });
+    }
+  }, [isTimeline, replaceFilterParams, sort]);
+
   const clearFilters = useCallback(() => {
     replaceFilterParams({
       sort: null,
@@ -168,7 +175,9 @@ export function MinimalFilterProvider({
     if (isMinimal || isTimeline) setMode('cinematic');
   }, [isMinimal, isTimeline, replaceFilterParams, setMode]);
 
-  const filtersActive = sort !== 'newest' || theme !== 'all';
+  const filtersActive = isTimeline
+    ? theme !== 'all'
+    : sort !== 'newest' || theme !== 'all';
 
   const queryActive =
     filtersActive ||
@@ -289,7 +298,7 @@ export function useQueryStatusLabels() {
   const typeLabel = contentType === 'artifact' ? tf('artifact') : tDisplay('film');
   const mixLabel = mix !== 'all' && mixName ? capitalizeLabel(mixName) : tf('noMixes');
   const dialLabels: string[] = [];
-  if (sort !== 'newest') dialLabels.push(tf(sort));
+  if (!isTimeline && sort !== 'newest') dialLabels.push(tf(sort));
   if (theme !== 'all') dialLabels.push(theme);
 
   return {
@@ -451,6 +460,7 @@ export function MixesButton() {
 /** Dials control — sits next to Mixes / the cine·mini toggle. */
 export function MinimalFilterButton() {
   const tf = useTranslations('MinimalList');
+  const { isTimeline } = useDisplayMode();
   const {
     sort,
     setSort,
@@ -481,7 +491,10 @@ export function MinimalFilterButton() {
     };
   }, [open]);
 
-  const dialsActive = sort !== 'newest' || theme !== 'all';
+  // Time is chronological — sort dials don't apply.
+  const dialsActive = isTimeline
+    ? theme !== 'all'
+    : sort !== 'newest' || theme !== 'all';
 
   return (
     <div ref={panelRef} className="relative">
@@ -503,24 +516,26 @@ export function MinimalFilterButton() {
 
       {open && (
         <div className="absolute left-1/2 -translate-x-1/2 top-[calc(100%+8px)] z-30 w-[min(100vw-2.5rem,320px)] rounded-[10px] border border-white/10 bg-[#1F1F1F]/95 backdrop-blur-xl shadow-[0_16px_48px_rgba(0,0,0,0.45)] p-4 flex flex-col gap-4">
-          <div className="flex flex-col gap-2">
-            <p className="font-sans text-[11px] font-semibold uppercase tracking-wide text-white/35">
-              {tf('sort')}
-            </p>
-            <div className="flex flex-wrap gap-1.5">
-              <OptionButton active={sort === 'newest'} onClick={() => setSort('newest')}>
-                {tf('newest')}
-              </OptionButton>
-              <OptionButton active={sort === 'az'} onClick={() => setSort('az')}>
-                {tf('az')}
-              </OptionButton>
-              {contentType === 'film' && (
-                <OptionButton active={sort === 'runtime'} onClick={() => setSort('runtime')}>
-                  {tf('runtime')}
+          {!isTimeline && (
+            <div className="flex flex-col gap-2">
+              <p className="font-sans text-[11px] font-semibold uppercase tracking-wide text-white/35">
+                {tf('sort')}
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                <OptionButton active={sort === 'newest'} onClick={() => setSort('newest')}>
+                  {tf('newest')}
                 </OptionButton>
-              )}
+                <OptionButton active={sort === 'az'} onClick={() => setSort('az')}>
+                  {tf('az')}
+                </OptionButton>
+                {contentType === 'film' && (
+                  <OptionButton active={sort === 'runtime'} onClick={() => setSort('runtime')}>
+                    {tf('runtime')}
+                  </OptionButton>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           {contentType === 'film' && (
             <div className="flex flex-col gap-2">

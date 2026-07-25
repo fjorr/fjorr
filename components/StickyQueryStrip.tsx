@@ -26,7 +26,7 @@ export default function StickyQueryStrip({
   sentinelRef: RefObject<HTMLElement | null>;
 }) {
   const tf = useTranslations('MinimalList');
-  const { mode, setMode } = useDisplayMode();
+  const { mode, setMode, isTimeline } = useDisplayMode();
   const {
     mix,
     setMix,
@@ -98,7 +98,9 @@ export default function StickyQueryStrip({
   }, [mixes, tf]);
 
   const mixesDisabled = contentType === 'artifact';
-  const dialsActive = sort !== 'newest' || theme !== 'all';
+  const dialsActive = isTimeline
+    ? theme !== 'all'
+    : sort !== 'newest' || theme !== 'all';
 
   if (!stuck) return null;
 
@@ -200,27 +202,29 @@ export default function StickyQueryStrip({
 
       {panel === 'dials' && (
         <div className="absolute left-1/2 -translate-x-1/2 top-[calc(100%+8px)] z-30 w-[min(100vw-2.5rem,320px)] rounded-[10px] border border-white/10 bg-[#1F1F1F]/95 backdrop-blur-xl shadow-[0_16px_48px_rgba(0,0,0,0.45)] p-4 flex flex-col gap-4">
-          <div className="flex flex-col gap-2">
-            <p className="font-sans text-[11px] font-semibold uppercase tracking-wide text-white/35">
-              {tf('sort')}
-            </p>
-            <div className="flex flex-wrap gap-1.5">
-              <OptionPill active={sort === 'newest'} onClick={() => setSort('newest')}>
-                {tf('newest')}
-              </OptionPill>
-              <OptionPill active={sort === 'az'} onClick={() => setSort('az')}>
-                {tf('az')}
-              </OptionPill>
-              {contentType === 'film' && (
-                <OptionPill
-                  active={sort === 'runtime'}
-                  onClick={() => setSort('runtime')}
-                >
-                  {tf('runtime')}
+          {!isTimeline && (
+            <div className="flex flex-col gap-2">
+              <p className="font-sans text-[11px] font-semibold uppercase tracking-wide text-white/35">
+                {tf('sort')}
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                <OptionPill active={sort === 'newest'} onClick={() => setSort('newest')}>
+                  {tf('newest')}
                 </OptionPill>
-              )}
+                <OptionPill active={sort === 'az'} onClick={() => setSort('az')}>
+                  {tf('az')}
+                </OptionPill>
+                {contentType === 'film' && (
+                  <OptionPill
+                    active={sort === 'runtime'}
+                    onClick={() => setSort('runtime')}
+                  >
+                    {tf('runtime')}
+                  </OptionPill>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           {contentType === 'film' && (
             <div className="flex flex-col gap-2">
