@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useLocale } from 'next-intl';
+import { useRouter } from '@/i18n/navigation';
+import { useLocale, useTranslations } from 'next-intl';
 import type Hls from 'hls.js';
 import { parseLocale } from '@/i18n/config';
 import { absoluteUrl } from '@/lib/site';
@@ -49,6 +49,8 @@ export default function CinemaTheater({
 }: CinemaTheaterProps) {
   const router = useRouter();
   const locale = parseLocale(useLocale());
+  const t = useTranslations('Theater');
+  const tNav = useTranslations('Nav');
   const isEmbed = mode === 'embed';
 
   // --- UPDATE LAYER STATE ARCHITECTURE ---
@@ -566,9 +568,9 @@ export default function CinemaTheater({
   };
 
   const currentProgress = duration ? (currentTime / duration) * 100 : 0;
-  const playIcon = isPlaying ? <img src="/icons/pause.svg" className="w-8 h-8 invert" alt="Pause" /> : <img src="/icons/play.svg" className="w-8 h-8 ml-0.5 invert" alt="Play" />;
-  const fullscreenIcon = isFullscreen ? <img src="/icons/compress.svg" className="w-6 h-6 invert" alt="Exit Fullscreen" /> : <img src="/icons/expand.svg" className="w-6 h-6 invert" alt="Enter Fullscreen" />;
-  const volumeIcon = isMuted ? <img src="/icons/mute.svg" className="w-6 h-6 invert" alt="Unmute" /> : <img src="/icons/volume.svg" className="w-6 h-6 invert" alt="Mute" />;
+  const playIcon = isPlaying ? <img src="/icons/pause.svg" className="w-8 h-8 invert" alt={t('pause')} /> : <img src="/icons/play.svg" className="w-8 h-8 ml-0.5 invert" alt={t('play')} />;
+  const fullscreenIcon = isFullscreen ? <img src="/icons/compress.svg" className="w-6 h-6 invert" alt={t('exitFullscreen')} /> : <img src="/icons/expand.svg" className="w-6 h-6 invert" alt={t('enterFullscreen')} />;
+  const volumeIcon = isMuted ? <img src="/icons/mute.svg" className="w-6 h-6 invert" alt={t('unmute')} /> : <img src="/icons/volume.svg" className="w-6 h-6 invert" alt={t('mute')} />;
   const currentLanguageTracks = cachedSubtitles.length > 0 ? cachedSubtitles : (film?.language_subtitle || []);
 
   return (
@@ -605,7 +607,7 @@ export default function CinemaTheater({
           {/* Center: Slogan Display */}
           <div className="flex items-center shrink-0">
             <span className="font-sans text-xs font-medium tracking-normal select-none whitespace-nowrap text-white/80">
-              {isEmbed ? 'Watch on Fjorr' : 'Short films of the greatest stories'}
+              {isEmbed ? t('watchOnFjorr') : tNav('tagline')}
             </span>
           </div>
 
@@ -613,7 +615,7 @@ export default function CinemaTheater({
           <button 
             onClick={handleCloseNavigation} 
             className="w-[18px] h-[18px] flex items-center justify-center cursor-pointer shrink-0 text-white bg-transparent border-0 p-0 outline-none transition-opacity hover:opacity-70"
-            title={isEmbed ? 'Watch on Fjorr' : 'Close Theater'}
+            title={isEmbed ? t('watchOnFjorr') : t('closeTheater')}
           >
             {isEmbed ? (
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full">
@@ -683,7 +685,7 @@ export default function CinemaTheater({
           )}
 
           {isLoading && (
-            <div className="absolute inset-0 bg-black flex items-center justify-center text-sm font-sans font-bold tracking-normal text-white/0 z-30">Rolling...</div>
+            <div className="absolute inset-0 bg-black flex items-center justify-center text-sm font-sans font-bold tracking-normal text-white/0 z-30">{t('rolling')}</div>
           )}
         </div>
       </div>
@@ -702,7 +704,7 @@ export default function CinemaTheater({
               const dateVal = film?.story_date || '';
               const locationVal = film?.location || '';
               if (dateVal && locationVal) return `${dateVal} · ${locationVal}`;
-              return dateVal || locationVal || 'Theatrical Feature';
+              return dateVal || locationVal || t('fallbackMeta');
             })()}
           </p>
         </div>
@@ -713,7 +715,7 @@ export default function CinemaTheater({
               onClick={() => handleSubtitleSelection('none', 'Off')} 
               className={`text-xs font-bold tracking-normal transition-colors bg-transparent border-0 outline-none cursor-pointer uppercase ${selectedLangCode === 'none' ? 'text-[#ffd446]' : 'text-white/40 hover:text-white/80'}`}
             >
-              Off
+              {t('ccOff')}
             </button>
             {(() => {
               if (!Array.isArray(currentLanguageTracks)) return null;
@@ -738,16 +740,16 @@ export default function CinemaTheater({
         )}
 
         <div className="flex items-center gap-2 h-10 relative justify-center">
-          <button onClick={togglePlay} className="w-12 h-12 flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity bg-transparent border-0 outline-none cursor-pointer" title={isPlaying ? "Pause" : "Play"}>
+          <button onClick={togglePlay} className="w-12 h-12 flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity bg-transparent border-0 outline-none cursor-pointer" title={isPlaying ? t('pause') : t('play')}>
             {playIcon}
           </button>
-          <button onClick={() => { const p = filmPlayerRef.current; if (p) p.currentTime = Math.max(0, currentTime - 10); }} className="w-10 h-10 flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity bg-transparent border-0 outline-none cursor-pointer" title="Rewind 10s"><img src="/icons/back10.svg" className="w-6 h-6 invert" alt="Rewind 10s" /></button>
-          <button onClick={() => { const p = filmPlayerRef.current; if (p) p.currentTime = Math.min(duration, currentTime + 10); }} className="w-10 h-10 flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity bg-transparent border-0 outline-none cursor-pointer" title="Fast Forward 10s"><img src="/icons/forward10.svg" className="w-6 h-6 invert" alt="Fast Forward 10s" /></button>
-          <button onClick={() => setShowCCMenu(!showCCMenu)} className={`w-10 h-10 flex items-center justify-center transition-opacity bg-transparent border-0 outline-none cursor-pointer ${showCCMenu ? 'opacity-100' : 'opacity-70 hover:opacity-100'}`} title="Captions"><img src="/icons/cc.svg" className="w-6 h-6" alt="Captions" style={{ filter: 'invert(100%)' }} /></button>
-          <button onClick={toggleFullscreen} className="w-10 h-10 flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity bg-transparent border-0 outline-none cursor-pointer" title="Fullscreen">
+          <button onClick={() => { const p = filmPlayerRef.current; if (p) p.currentTime = Math.max(0, currentTime - 10); }} className="w-10 h-10 flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity bg-transparent border-0 outline-none cursor-pointer" title={t('rewind')}><img src="/icons/back10.svg" className="w-6 h-6 invert" alt={t('rewind')} /></button>
+          <button onClick={() => { const p = filmPlayerRef.current; if (p) p.currentTime = Math.min(duration, currentTime + 10); }} className="w-10 h-10 flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity bg-transparent border-0 outline-none cursor-pointer" title={t('fastForward')}><img src="/icons/forward10.svg" className="w-6 h-6 invert" alt={t('fastForward')} /></button>
+          <button onClick={() => setShowCCMenu(!showCCMenu)} className={`w-10 h-10 flex items-center justify-center transition-opacity bg-transparent border-0 outline-none cursor-pointer ${showCCMenu ? 'opacity-100' : 'opacity-70 hover:opacity-100'}`} title={t('captions')}><img src="/icons/cc.svg" className="w-6 h-6" alt={t('captions')} style={{ filter: 'invert(100%)' }} /></button>
+          <button onClick={toggleFullscreen} className="w-10 h-10 flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity bg-transparent border-0 outline-none cursor-pointer" title={t('fullscreen')}>
             {fullscreenIcon}
           </button>
-          <button onClick={toggleMute} className="w-10 h-10 flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity bg-transparent border-0 outline-none cursor-pointer" title={isMuted ? "Unmute" : "Mute"}>
+          <button onClick={toggleMute} className="w-10 h-10 flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity bg-transparent border-0 outline-none cursor-pointer" title={isMuted ? t('unmute') : t('mute')}>
             {volumeIcon}
           </button>
         </div>
@@ -805,7 +807,7 @@ export default function CinemaTheater({
       {/* REPLAY FILM END SCREEN OVERLAY */}
       <div id="end-screen" data-ui-control="true" className="absolute inset-0 bg-[#000000] backdrop-blur-sm flex flex-col items-center justify-center transition-all duration-500 ease-in-out z-40" style={{ opacity: isEnded ? 1 : 0, pointerEvents: isEnded ? 'auto' : 'none' }}>
         <div className="max-w-2xl text-center flex flex-col items-center gap-8 px-6 relative">
-          <p className="font-sans text-lg font-semibold text-[#F5F5F7]/90 leading-relaxed max-w-lg">{film?.last_line || 'Fin.'}</p>
+          <p className="font-sans text-lg font-semibold text-[#F5F5F7]/90 leading-relaxed max-w-lg">{film?.last_line || t('fin')}</p>
           
           <div className="flex items-center gap-6 text-white/50 font-sans font-semibold text-sm">
             <button 
@@ -819,7 +821,7 @@ export default function CinemaTheater({
                     <polyline points="15 3 21 3 21 9" />
                     <line x1="10" y1="14" x2="21" y2="3" />
                   </svg>
-                  Watch on Fjorr
+                  {t('watchOnFjorr')}
                 </>
               ) : (
                 <>
@@ -827,7 +829,7 @@ export default function CinemaTheater({
                     <line x1="18" y1="6" x2="6" y2="18"></line>
                     <line x1="6" y1="6" x2="18" y2="18"></line>
                   </svg>
-                  Close
+                  {t('close')}
                 </>
               )}
             </button>
@@ -839,7 +841,7 @@ export default function CinemaTheater({
                   navigator.share(shareData).catch(() => {}); 
                 } else { 
                   navigator.clipboard.writeText(shareData.url); 
-                  alert('Link copied to clipboard'); 
+                  alert(t('linkCopied')); 
                 }
               }}
               className="flex items-center gap-2 hover:text-[#f5f5f7] transition-colors group bg-transparent border-0 outline-none cursor-pointer font-sans normal-case"
@@ -851,11 +853,11 @@ export default function CinemaTheater({
                   <line x1="12" y1="2" x2="12" y2="15" />
                 </g>
               </svg>
-              Share
+              {t('share')}
             </button>
 
             <button onClick={handleCloseNavigation} className="flex items-center gap-2 hover:text-[#f5f5f7] transition-colors group bg-transparent border-0 outline-none cursor-pointer font-sans">
-              Onward 
+              {t('onward')} 
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 group-translate-x-1 transition-transform">
                 <path d="M5 12h14" />
                 <path d="m12 5 7 7-7 7" />

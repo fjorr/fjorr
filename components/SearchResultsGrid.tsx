@@ -29,6 +29,7 @@ const glassBadgeStyle: React.CSSProperties = {
 
 export default function SearchResultsGrid({ results, postersOnly = false }: ResultsGridProps) {
   const t = useTranslations('Film');
+  const tSearch = useTranslations('Search');
   const { sort, theme, mix, mixes, setThemes } = useMinimalFilter();
   const watchProgress = useWatchProgressMap();
 
@@ -141,10 +142,10 @@ export default function SearchResultsGrid({ results, postersOnly = false }: Resu
                 <div className="font-sans font-medium text-[11px] tracking-normal capitalize text-white/40 flex items-center min-h-[16px] truncate">
                   {isFilm ? (
                     isFutureRelease ? (
-                      <span className="text-[#6db7f8] font-semibold">Film &nbsp;Coming Soon</span>
+                      <span className="text-[#6db7f8] font-semibold">{tSearch('filmComingSoon')}</span>
                     ) : (
                       <div className="flex items-center gap-x-1.5 dynamic-meta-row capitalize truncate">
-                        <span className="font-extrabold text-white/70">Film</span>
+                        <span className="font-extrabold text-white/70">{tSearch('film')}</span>
                         {item.theme && <span className="truncate max-w-[90px]">{item.theme}</span>}
                         {runtimeMinutes && <span>{runtimeMinutes}</span>}
                       </div>
@@ -161,14 +162,14 @@ export default function SearchResultsGrid({ results, postersOnly = false }: Resu
                       )}
                       {displayYear && <span>{displayYear}</span>}
                       {!item.label && !item.creator && !displayYear && (
-                        <span className="text-white/30">Artifact</span>
+                        <span className="text-white/30">{tSearch('artifact')}</span>
                       )}
                     </div>
                   )}
                 </div>
 
                 <p className="font-sans font-medium text-[13px] leading-snug text-white/60 tracking-normal line-clamp-2 mt-0.5">
-                  {item.teaser || 'No contextual reference details configured.'}
+                  {item.teaser || tSearch('noTeaser')}
                 </p>
               </div>
             )}

@@ -12,11 +12,17 @@ function supabaseAnonKey() {
 /**
  * Refresh the Supabase auth session cookie when present.
  * Does NOT force anonymous visitors to /auth/login — the public site is open.
+ * Pass an existing response (e.g. from next-intl) so auth cookies merge onto it.
  */
-export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
-  });
+export async function updateSession(
+  request: NextRequest,
+  existingResponse?: NextResponse,
+) {
+  let supabaseResponse =
+    existingResponse ??
+    NextResponse.next({
+      request,
+    });
 
   if (!hasEnvVars) {
     return supabaseResponse;
@@ -34,12 +40,20 @@ export async function updateSession(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value),
           );
-          supabaseResponse = NextResponse.next({
-            request,
-          });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options),
-          );
+          if (existingResponse) {
+            // Preserve next-intl redirects/rewrites; only attach cookies.
+            cookiesToSet.forEach(({ name, value, options }) =>
+              existingResponse.cookies.set(name, value, options),
+            );
+            supabaseResponse = existingResponse;
+          } else {
+            supabaseResponse = NextResponse.next({
+              request,
+            });
+            cookiesToSet.forEach(({ name, value, options }) =>
+              supabaseResponse.cookies.set(name, value, options),
+            );
+          }
         },
       },
     },

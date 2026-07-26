@@ -9,7 +9,8 @@ import React, {
   useState,
   type ReactNode,
 } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
+import { usePathname, useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { useDisplayMode } from '@/components/DisplayModeProvider';
 import type { HomeMix } from '@/lib/home-mix';
@@ -18,6 +19,9 @@ export type MinimalSortMode = 'newest' | 'az' | 'runtime';
 export type MinimalShowMode = 'all' | 'available' | 'comingSoon';
 export type MinimalContentType = 'film' | 'artifact';
 
+/** Stable dial key is `slug`; `name` is locale display copy. */
+export type ThemeOption = { slug: string; name: string };
+
 type MinimalFilterContextValue = {
   sort: MinimalSortMode;
   setSort: (value: MinimalSortMode) => void;
@@ -25,8 +29,8 @@ type MinimalFilterContextValue = {
   setShow: (value: MinimalShowMode) => void;
   theme: string;
   setTheme: (value: string) => void;
-  themes: string[];
-  setThemes: (themes: string[]) => void;
+  themes: ThemeOption[];
+  setThemes: (themes: ThemeOption[]) => void;
   contentType: MinimalContentType;
   setContentType: (value: MinimalContentType) => void;
   mix: string;
@@ -75,7 +79,7 @@ export function MinimalFilterProvider({
   const contentType = parseContentType(searchParams.get('type'));
   const mix = searchParams.get('mix') || 'all';
 
-  const [themes, setThemes] = useState<string[]>([]);
+  const [themes, setThemes] = useState<ThemeOption[]>([]);
   const [mixes, setMixes] = useState<HomeMix[]>(initialMixes);
   const [searchActive, setSearchActive] = useState(false);
 
@@ -257,7 +261,7 @@ export function useQueryStatusLabels() {
   const tf = useTranslations('MinimalList');
   const tDisplay = useTranslations('DisplayMode');
   const { isMinimal, isTimeline } = useDisplayMode();
-  const { mix, mixes, sort, theme, contentType, queryActive, clearAll } =
+  const { mix, mixes, sort, theme, themes, contentType, queryActive, clearAll } =
     useMinimalFilter();
 
   const mixName =
@@ -274,7 +278,10 @@ export function useQueryStatusLabels() {
   const mixLabel = mix !== 'all' && mixName ? capitalizeLabel(mixName) : tf('noMixes');
   const dialLabels: string[] = [];
   if (!isTimeline && sort !== 'newest') dialLabels.push(tf(sort));
-  if (theme !== 'all') dialLabels.push(theme);
+  if (theme !== 'all') {
+    const themeName = themes.find((t) => t.slug === theme)?.name || theme;
+    dialLabels.push(themeName);
+  }
 
   return {
     modeLabel,

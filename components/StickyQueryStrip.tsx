@@ -26,6 +26,7 @@ export default function StickyQueryStrip({
   sentinelRef: RefObject<HTMLElement | null>;
 }) {
   const tf = useTranslations('MinimalList');
+  const td = useTranslations('DisplayMode');
   const { mode, setMode, isTimeline } = useDisplayMode();
   const { mix, theme, sort, contentType, setContentType } = useMinimalFilter();
   const {
@@ -103,7 +104,7 @@ export default function StickyQueryStrip({
         >
           <Chip
             onClick={() => setMode(nextDisplayMode(mode))}
-            title="Toggle display mode"
+            title={td('toggleMode')}
           >
             {modeLabel}
           </Chip>
@@ -112,7 +113,7 @@ export default function StickyQueryStrip({
             onClick={() =>
               setContentType(contentType === 'film' ? 'artifact' : 'film')
             }
-            title="Toggle content type"
+            title={td('toggleType')}
           >
             {typeLabel}
           </Chip>

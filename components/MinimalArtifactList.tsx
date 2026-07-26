@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import { useMinimalFilter } from '@/components/MinimalFilterContext';
 import SearchNadaView from '@/components/SearchNadaView';
 
@@ -69,7 +69,7 @@ export default function MinimalArtifactList({ artifacts }: { artifacts: MinimalA
         >
           <Link
             href={`/artifact/${item.slug}`}
-            className="min-w-0 flex-1 max-w-[380px] flex flex-col gap-1 pr-2 group"
+            className="min-w-0 flex-1 max-w-none sm:max-w-[380px] flex flex-col gap-1 group"
           >
             <h2 className="font-sans text-[18px] font-bold tracking-tight text-white leading-tight group-hover:text-white/85 transition-colors">
               {item.name}
@@ -81,8 +81,8 @@ export default function MinimalArtifactList({ artifacts }: { artifacts: MinimalA
             )}
             <MetaLine item={item} />
           </Link>
-          {/* Match film list action column so text column stays put when toggling. */}
-          <div className="shrink-0 w-[132px]" aria-hidden />
+          {/* Desktop: reserve film action column width so columns stay aligned when toggling. */}
+          <div className="hidden sm:block shrink-0 w-[132px]" aria-hidden />
         </div>
       ))}
     </>

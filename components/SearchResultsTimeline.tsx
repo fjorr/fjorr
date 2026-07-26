@@ -2,7 +2,6 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { createBrowserClient } from '@supabase/ssr';
 import type { SearchItem } from '@/components/SearchExperience';
 import TimelineRail, { type TimelineRailItem } from '@/components/TimelineRail';
 import TheaterOpenShell from '@/components/TheaterOpenShell';
@@ -13,10 +12,10 @@ import {
 } from '@/lib/filter-search-items';
 import {
   clearWatchProgress,
-  getWatchProgress,
-  isWatchableProgress,
   trackWatchProgress,
 } from '@/lib/watch-progress';
+import { createClient } from '@/lib/supabase/client';
+import { openTheaterFromFilm } from '@/lib/theater-open';
 
 const CinemaTheater = dynamic(() => import('@/components/CinemaTheater'), {
   ssr: false,
@@ -95,11 +94,7 @@ export default function SearchResultsTimeline({
     }
 
     let cancelled = false;
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (!url || !key) return;
-
-    const supabase = createBrowserClient(url, key);
+    const supabase = createClient();
     supabase
       .from('film')
       .select('id, story_date')
@@ -142,85 +137,20 @@ export default function SearchResultsTimeline({
     });
   }, [storyDates, typed]);
 
-  const handleResume = async (item: TimelineRailItem) => {
+  const handleResume = (item: TimelineRailItem) => {
     if (!item.canResume || !item.slug) return;
-
-    const openWith = (payload: any, duration?: number | null) => {
-      const saved = getWatchProgress(payload.id || item.filmId || item.id);
-      if (!isWatchableProgress(saved, duration ?? item.runtime)) return;
-      setStartAt(saved.seconds);
-      setSelectedFilm(payload);
-      setShowTheater(true);
-    };
-
-    try {
-      const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-      const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-      if (!url || !key) {
-        openWith({
-          id: item.filmId || item.id,
-          slug: item.slug,
-          name: item.name,
-          runtime: item.runtime,
-        });
-        return;
-      }
-
-      const supabase = createBrowserClient(url, key);
-      const { data: verifiedFilm } = await supabase
-        .from('film')
-        .select(
-          'id, name, slug, mux_playback_id, last_line, story_date, location, runtime, has_subtitles'
-        )
-        .eq('slug', item.slug)
-        .maybeSingle();
-
-      if (!verifiedFilm) {
-        openWith({
-          id: item.filmId || item.id,
-          slug: item.slug,
-          name: item.name,
-          runtime: item.runtime,
-        });
-        return;
-      }
-
-      let flattenedTracks: { code: string; name: string; vtt_url: string }[] = [];
-
-      if (verifiedFilm.has_subtitles !== false) {
-        const { data: junctionTracks } = await supabase
-          .from('language_subtitle')
-          .select(`
-            vtt_url,
-            language (
-              code,
-              name
-            )
-          `)
-          .eq('film_id', verifiedFilm.id);
-
-        flattenedTracks = (junctionTracks || []).map((track: any) => ({
-          code: track.language?.code || 'en',
-          name: track.language?.name || 'English',
-          vtt_url: track.vtt_url || '',
-        }));
-      }
-
-      openWith(
-        {
-          ...verifiedFilm,
-          language_subtitle: flattenedTracks,
-        },
-        verifiedFilm.runtime
-      );
-    } catch {
-      openWith({
+    openTheaterFromFilm({
+      film: {
         id: item.filmId || item.id,
-        slug: item.slug,
         name: item.name,
+        slug: item.slug,
         runtime: item.runtime,
-      });
-    }
+      },
+      setSelectedFilm,
+      setStartAt,
+      setShowTheater,
+      requireProgress: true,
+    });
   };
 
   return (

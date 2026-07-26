@@ -1,12 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
-import { cookies } from "next/headers";
-import { NextIntlClientProvider } from "next-intl";
-import { getLocale, getMessages } from "next-intl/server";
 import "./globals.css";
-import { DisplayModeProvider } from "@/components/DisplayModeProvider";
-import TypekitLoader from "@/components/TypekitLoader";
-import { DISPLAY_MODE_COOKIE, parseDisplayMode } from "@/lib/display-mode";
 import { SITE_ORIGIN } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -53,47 +46,11 @@ export const metadata: Metadata = {
   },
 };
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-sans",
-  weight: ["400", "500", "700", "800"],
-  display: "swap",
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-mono",
-  weight: ["400", "500", "700"],
-  display: "swap",
-});
-
-const fontVariables = `${inter.variable} ${jetbrainsMono.variable}`;
-
-export default async function RootLayout({
+/** Thin root — `[locale]` / embed / gate own the html shell + providers. */
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const locale = await getLocale();
-  const messages = await getMessages();
-  const cookieStore = await cookies();
-  const initialMode = parseDisplayMode(
-    cookieStore.get(DISPLAY_MODE_COOKIE)?.value
-  );
-
-  return (
-    <html lang={locale} className={`${fontVariables} dark`}>
-      <head>
-        <link rel="preload" href="https://use.typekit.net/xyf8acw.css" as="style" />
-      </head>
-      <body className="font-sans antialiased text-light-01 min-h-screen">
-        <TypekitLoader />
-        <NextIntlClientProvider locale={locale} messages={messages}>
-          <DisplayModeProvider initialMode={initialMode}>
-            {children}
-          </DisplayModeProvider>
-        </NextIntlClientProvider>
-      </body>
-    </html>
-  );
+  return children;
 }

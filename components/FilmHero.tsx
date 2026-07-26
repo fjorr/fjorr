@@ -1,11 +1,15 @@
 'use client';
 
 import React, { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 import HeroPicture from '@/components/HeroPicture';
-import FilmSendSheet from '@/components/FilmSendSheet';
 import { sanitizeTitleArtSvg } from '@/lib/sanitize-svg';
 import { formatResumeClock } from '@/lib/watch-progress';
+
+const FilmSendSheet = dynamic(() => import('@/components/FilmSendSheet'), {
+  ssr: false,
+});
 
 interface FilmHeroProps {
   film: any;
@@ -66,7 +70,7 @@ export default function FilmHero({
             wide={film.hero_wide}
             clsx={film.hero_clsx}
             tall={film.hero_tall}
-            alt={film.name || 'Featured Film Asset'}
+            alt={film.name || t('featuredAlt')}
             priority
             className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none"
             onError={(e) => {
@@ -153,7 +157,7 @@ export default function FilmHero({
                   <img
                     src="/icons/play.svg"
                     className="w-5 h-5 select-none object-contain translate-y-[0.5px]"
-                    alt="Play"
+                    alt={t('playShort')}
                   />
                   <span>
                     {resumeSeconds != null && resumeSeconds > 0
@@ -191,12 +195,14 @@ export default function FilmHero({
         </div>
       </div>
 
-      <FilmSendSheet
-        open={sendOpen}
-        onClose={() => setSendOpen(false)}
-        film={film}
-        shareSeconds={shareSeconds}
-      />
+      {sendOpen ? (
+        <FilmSendSheet
+          open={sendOpen}
+          onClose={() => setSendOpen(false)}
+          film={film}
+          shareSeconds={shareSeconds}
+        />
+      ) : null}
     </section>
   );
 }

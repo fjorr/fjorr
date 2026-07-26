@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import React from 'react';
+import mediaImageLoader from '@/lib/image-loader';
 
 type HeroPictureProps = {
   wide?: string | null;
@@ -15,9 +16,18 @@ type HeroPictureProps = {
   onError?: React.ReactEventHandler<HTMLImageElement>;
 };
 
+const WIDE_WIDTHS = [1280, 1600, 1920, 2560];
+const CLSX_WIDTHS = [768, 1024, 1280, 1600];
+
+function buildSrcSet(src: string, widths: number[]) {
+  return widths
+    .map((width) => `${mediaImageLoader({ src, width })} ${width}w`)
+    .join(', ');
+}
+
 /**
  * Art-directed hero with next/image for priority/lazy semantics.
- * Media URLs pass through the custom loader (Cloudflare AVIF already).
+ * `<source>` srcSets go through the same Cloudflare-aware loader as Image.
  */
 export default function HeroPicture({
   wide,
@@ -32,11 +42,17 @@ export default function HeroPicture({
   const fallback = tall || clsx || wide;
   if (!fallback) return null;
 
+  const wideSrcSet = wide ? buildSrcSet(wide, WIDE_WIDTHS) : null;
+  const midSrc = clsx || wide;
+  const clsxSrcSet = midSrc ? buildSrcSet(midSrc, CLSX_WIDTHS) : null;
+
   return (
     <picture className={className}>
-      {wide ? <source media="(min-width: 1024px)" srcSet={wide} /> : null}
-      {clsx || wide ? (
-        <source media="(min-width: 768px)" srcSet={clsx || wide || undefined} />
+      {wideSrcSet ? (
+        <source media="(min-width: 1024px)" srcSet={wideSrcSet} sizes="100vw" />
+      ) : null}
+      {clsxSrcSet ? (
+        <source media="(min-width: 768px)" srcSet={clsxSrcSet} sizes="100vw" />
       ) : null}
       <Image
         src={fallback}
@@ -45,6 +61,7 @@ export default function HeroPicture({
         sizes="100vw"
         priority={priority}
         fetchPriority={priority ? 'high' : 'auto'}
+        loading={priority ? 'eager' : 'lazy'}
         decoding="async"
         className={imgClassName}
         onError={onError}

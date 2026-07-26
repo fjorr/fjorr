@@ -8,19 +8,22 @@ import React, {
   Suspense,
   type ReactNode,
 } from 'react';
-import Link from 'next/link';
-import { useSearchParams, useRouter, usePathname } from 'next/navigation';
-import { createBrowserClient } from '@supabase/ssr';
-import { useTranslations } from 'next-intl';
+import { Link, usePathname, useRouter } from '@/i18n/navigation';
+import dynamic from 'next/dynamic';
+import { useSearchParams } from 'next/navigation';
+import { useTranslations, useLocale } from 'next-intl';
+import { parseLocale } from '@/i18n/config';
 
-import SearchResultsGrid from '@/components/SearchResultsGrid';
-import SearchResultsMinimal from '@/components/SearchResultsMinimal';
-import SearchResultsTimeline from '@/components/SearchResultsTimeline';
 import SearchNadaView from '@/components/SearchNadaView';
 import BrowseControlBar from '@/components/BrowseControlBar';
 import { useMinimalFilterOptional } from '@/components/MinimalFilterContext';
 import { useDisplayMode } from '@/components/DisplayModeProvider';
 import StickyQueryStrip from '@/components/StickyQueryStrip';
+import { createClient } from '@/lib/supabase/client';
+
+const SearchResultsGrid = dynamic(() => import('@/components/SearchResultsGrid'));
+const SearchResultsMinimal = dynamic(() => import('@/components/SearchResultsMinimal'));
+const SearchResultsTimeline = dynamic(() => import('@/components/SearchResultsTimeline'));
 
 export interface SearchItem {
   id: string;
@@ -30,10 +33,13 @@ export interface SearchItem {
   name: string;
   teaser: string;
   blok_tall: string;
-  search_content: string;
+  search_content?: string;
   release_date: string;
   rating?: string;
   theme?: string;
+  /** CamelCase (home browse) or snake_case (Supabase search rows). */
+  themeSlug?: string;
+  theme_slug?: string;
   runtime?: number;
   label?: string;
   creator?: string;
@@ -63,6 +69,28 @@ function highlightName(name: string, query: string) {
   );
 }
 
+/** True when the query looks like a typo of `name` (not a substring/prefix hit). */
+function isTypoOnlyMatch(query: string, name: string) {
+  const q = query.trim().toLowerCase();
+  const n = (name || '').toLowerCase();
+  if (q.length < 3 || !n) return false;
+  if (n.includes(q)) return false;
+  return true;
+}
+
+/** Keep a short window around the first query hit for suggestion underlines. */
+function snippetAroundMatch(text: string, query: string, radius = 40): string {
+  const trimmed = text.trim();
+  if (!trimmed || !query) return '';
+  const lower = trimmed.toLowerCase();
+  const idx = lower.indexOf(query);
+  if (idx < 0) return '';
+  const start = Math.max(0, idx - radius);
+  const end = Math.min(trimmed.length, idx + query.length + radius);
+  const piece = trimmed.slice(start, end).trim();
+  return `${start > 0 ? '…' : ''}${piece}${end < trimmed.length ? '…' : ''}`;
+}
+
 function SearchContent({
   browseContent,
   theaterOpen = false,
@@ -72,6 +100,7 @@ function SearchContent({
   const { isMinimal, isTimeline } = useDisplayMode();
   const minimalFilter = useMinimalFilterOptional();
   const tSearch = useTranslations('Search');
+  const locale = parseLocale(useLocale());
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -80,17 +109,20 @@ function SearchContent({
   const [query, setQuery] = useState(urlQuery);
   const [rawResults, setRawResults] = useState<SearchItem[]>([]);
   const [filteredResults, setFilteredResults] = useState<SearchItem[]>([]);
+  const [didYouMean, setDidYouMean] = useState<{
+    name: string;
+    slug: string;
+    item_type: 'film' | 'artifact';
+  } | null>(null);
+
   const [loading, setLoading] = useState(Boolean(urlQuery.trim()));
   const [focused, setFocused] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const boxRef = useRef<HTMLDivElement>(null);
   const controlsSentinelRef = useRef<HTMLDivElement>(null);
-
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  const urlWriteTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const supabase = useMemo(() => createClient(), []);
 
   useEffect(() => {
     setQuery(urlQuery);
@@ -110,9 +142,6 @@ function SearchContent({
     setFilterSearchActive,
   ]);
 
-  const SEARCH_SELECT =
-    'id, internal_id, item_type, slug, name, teaser, blok_tall, search_content, release_date, rating, theme, runtime, label, creator';
-
   useEffect(() => {
     if (inputRef.current) inputRef.current.focus();
   }, []);
@@ -120,6 +149,7 @@ function SearchContent({
   useEffect(() => {
     if (!query.trim()) {
       setRawResults([]);
+      setDidYouMean(null);
       setLoading(false);
       return;
     }
@@ -127,68 +157,82 @@ function SearchContent({
     setLoading(true);
 
     const delayDebounceFn = setTimeout(async () => {
-      const { data, error } = await supabase
-        .from('search')
-        .select(SEARCH_SELECT)
-        .or(
-          [
-            `name.ilike.%${query}%`,
-            `teaser.ilike.%${query}%`,
-            `search_content.ilike.%${query}%`,
-            `theme.ilike.%${query}%`,
-            `label.ilike.%${query}%`,
-            `creator.ilike.%${query}%`,
-            `rating.ilike.%${query}%`,
-          ].join(',')
-        )
-        .limit(40);
+      const cleanQuery = query.toLowerCase().trim();
+      const term = query.trim();
+      const { data, error } = await supabase.rpc('search_items', {
+        search_term: term,
+        p_locale: locale,
+      });
 
       if (!error && data) {
-        const cleanQuery = query.toLowerCase().trim();
-        const rankedResults = (data as SearchItem[]).sort((a, b) => {
-          let scoreA = 0;
-          let scoreB = 0;
-          const nameA = (a.name || '').toLowerCase();
-          const nameB = (b.name || '').toLowerCase();
-          const teaserA = (a.teaser || '').toLowerCase();
-          const teaserB = (b.teaser || '').toLowerCase();
-          const contentA = (a.search_content || '').toLowerCase();
-          const contentB = (b.search_content || '').toLowerCase();
-
-          if (nameA === cleanQuery) scoreA += 100;
-          if (nameB === cleanQuery) scoreB += 100;
-          if (nameA.startsWith(cleanQuery)) scoreA += 60;
-          if (nameB.startsWith(cleanQuery)) scoreB += 60;
-          if (nameA.includes(cleanQuery)) scoreA += 30;
-          if (nameB.includes(cleanQuery)) scoreB += 30;
-          if ((a.theme || '').toLowerCase().includes(cleanQuery)) scoreA += 20;
-          if ((b.theme || '').toLowerCase().includes(cleanQuery)) scoreB += 20;
-          if ((a.label || '').toLowerCase().includes(cleanQuery)) scoreA += 18;
-          if ((b.label || '').toLowerCase().includes(cleanQuery)) scoreB += 18;
-          if ((a.creator || '').toLowerCase().includes(cleanQuery)) scoreA += 18;
-          if ((b.creator || '').toLowerCase().includes(cleanQuery)) scoreB += 18;
-          if (teaserA.includes(cleanQuery)) scoreA += 15;
-          if (teaserB.includes(cleanQuery)) scoreB += 15;
-          if (contentA.includes(cleanQuery)) scoreA += 5;
-          if (contentB.includes(cleanQuery)) scoreB += 5;
-
-          if (scoreA === scoreB) {
-            const timeA = a.release_date ? new Date(a.release_date).getTime() : 0;
-            const timeB = b.release_date ? new Date(b.release_date).getTime() : 0;
-            return timeB - timeA;
-          }
-          return scoreB - scoreA;
-        });
-
+        const rankedResults = (data as SearchItem[]).map((item) => ({
+          ...item,
+          themeSlug: item.themeSlug || item.theme_slug || undefined,
+          // Keep only a short window around the hit for suggestion hints.
+          search_content: snippetAroundMatch(item.search_content || '', cleanQuery),
+        }));
         setRawResults(rankedResults);
+
+        let suggestion: {
+          name: string;
+          slug: string;
+          item_type: 'film' | 'artifact';
+        } | null = null;
+
+        const asSuggestion = (item: {
+          name?: string | null;
+          slug?: string | null;
+          item_type?: string | null;
+        }) => {
+          if (
+            !item.name ||
+            !item.slug ||
+            (item.item_type !== 'film' && item.item_type !== 'artifact')
+          ) {
+            return null;
+          }
+          if (!isTypoOnlyMatch(term, item.name)) return null;
+          return {
+            name: item.name,
+            slug: item.slug,
+            item_type: item.item_type as 'film' | 'artifact',
+          };
+        };
+
+        if (rankedResults.length > 0) {
+          const preferred =
+            rankedResults.find((item) => item.item_type === contentType) ||
+            rankedResults[0];
+          suggestion = asSuggestion(preferred);
+        } else if (term.length >= 3) {
+          const { data: sug } = await supabase.rpc('search_suggest', {
+            search_term: term,
+            p_locale: locale,
+          });
+          const row = Array.isArray(sug) ? sug[0] : null;
+          if (row) suggestion = asSuggestion(row);
+          // Prefer matching the active Film/Artifact dial when possible
+          if (
+            suggestion &&
+            suggestion.item_type !== contentType &&
+            Array.isArray(sug) &&
+            sug.length > 1
+          ) {
+            const sameType = sug.find((s) => s.item_type === contentType);
+            if (sameType) suggestion = asSuggestion(sameType);
+          }
+        }
+        setDidYouMean(suggestion);
       } else {
+        if (error) console.error('search_items failed:', error.message);
         setRawResults([]);
+        setDidYouMean(null);
       }
       setLoading(false);
     }, 250);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [query]);
+  }, [query, locale, contentType, supabase]);
 
   useEffect(() => {
     setFilteredResults(rawResults.filter((item) => item.item_type === contentType));
@@ -197,7 +241,7 @@ function SearchContent({
   const suggestions = useMemo(() => {
     const cleanQuery = query.trim().toLowerCase();
     if (cleanQuery.length < 2) return [];
-    // Use full ranked results (name, teaser, search_content / transcript, theme, etc.)
+    // Use full ranked results (name, teaser, theme, etc.)
     return filteredResults.slice(0, 5);
   }, [filteredResults, query]);
 
@@ -251,17 +295,32 @@ function SearchContent({
     return () => document.removeEventListener('mousedown', onPointerDown);
   }, [showSuggestions]);
 
-  const writeSearchParams = (nextQuery: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (nextQuery.trim()) {
-      params.set('q', nextQuery);
-    } else {
-      params.delete('q');
-      params.delete('type');
+  const writeSearchParams = (nextQuery: string, immediate = false) => {
+    const commit = () => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (nextQuery.trim()) {
+        params.set('q', nextQuery);
+      } else {
+        params.delete('q');
+        params.delete('type');
+      }
+      const qs = params.toString();
+      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+    };
+
+    if (urlWriteTimer.current) clearTimeout(urlWriteTimer.current);
+    if (immediate) {
+      commit();
+      return;
     }
-    const qs = params.toString();
-    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+    urlWriteTimer.current = setTimeout(commit, 300);
   };
+
+  useEffect(() => {
+    return () => {
+      if (urlWriteTimer.current) clearTimeout(urlWriteTimer.current);
+    };
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -273,13 +332,23 @@ function SearchContent({
 
   const handleClearSearch = () => {
     setQuery('');
+    setDidYouMean(null);
     setLoading(false);
-    writeSearchParams('');
+    writeSearchParams('', true);
     setFocused(true);
     inputRef.current?.focus();
   };
 
-  const hrefFor = (item: SearchItem) =>
+  const applyDidYouMean = (item: {
+    name: string;
+    slug: string;
+    item_type: 'film' | 'artifact';
+  }) => {
+    setDidYouMean(null);
+    router.push(hrefFor(item));
+  };
+
+  const hrefFor = (item: { slug: string; item_type: 'film' | 'artifact' }) =>
     item.item_type === 'film' ? `/film/${item.slug}` : `/artifact/${item.slug}`;
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -450,6 +519,18 @@ function SearchContent({
             )}
           </div>
 
+          {didYouMean && !loading && isSearchActive && (
+            <p className="font-sans text-[13px] text-white/45 -mt-1">
+              <button
+                type="button"
+                onClick={() => applyDidYouMean(didYouMean)}
+                className="hover:text-white/80 transition-colors underline-offset-2 hover:underline"
+              >
+                {tSearch('didYouMean', { name: didYouMean.name })}
+              </button>
+            </p>
+          )}
+
           <BrowseControlBar sentinelRef={controlsSentinelRef} />
         </div>
 
@@ -483,15 +564,18 @@ function SearchContent({
   );
 }
 
+function SearchLoadingFallback() {
+  const t = useTranslations('Search');
+  return (
+    <div className="text-white/20 font-sans text-sm mt-12 animate-pulse">
+      {t('loading')}
+    </div>
+  );
+}
+
 export default function SearchExperience(props: SearchExperienceProps) {
   return (
-    <Suspense
-      fallback={
-        <div className="text-white/20 font-sans text-sm mt-12 animate-pulse">
-          Loading search…
-        </div>
-      }
-    >
+    <Suspense fallback={<SearchLoadingFallback />}>
       <SearchContent {...props} />
     </Suspense>
   );

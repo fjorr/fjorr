@@ -2,9 +2,11 @@
 
 import React from 'react';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import { ContactPill } from '@/components/ui/contact-pill'; 
 
 export default function PromoSplit() {
+  const t = useTranslations('Partner');
   return (
     /* 🌟 LOCKED LAYOUT PARAMETERS: Matches rails outer horizontal gutter parameters exactly */
     <section className="w-full pb-16 px-8 md:px-16">
@@ -27,7 +29,7 @@ export default function PromoSplit() {
             <div className="hidden lg:block absolute inset-0 pointer-events-none">
               <Image
                 src="https://media.fjorr.com/assets/fjorr-partner-promo-crowd-f1v04.avif"
-                alt="Partnerships Background"
+                alt={t('bgAlt')}
                 fill
                 sizes="50vw"
                 className="object-cover opacity-40 mix-blend-luminosity rounded-[8px]"
@@ -38,7 +40,7 @@ export default function PromoSplit() {
             {/* 💥 FIXED: Changed 'absolute inset-0 z-10' to 'relative z-10 flex flex-col' for fluid stacking */}
             <div className="relative z-10 flex flex-col items-center justify-center text-center p-8 md:p-12 lg:p-12 rounded-[8px]">
               <span className="font-sans font-bold text-[11px] uppercase tracking-[0.25em] text-white/50 mb-4">
-                Partnerships
+                {t('eyebrow')}
               </span>
               
               <h2 className="font-futura font-extrabold uppercase tracking-[-0.05em] mb-4 max-w-3xl mx-auto text-center
@@ -47,7 +49,7 @@ export default function PromoSplit() {
                 lg:text-6xl lg:leading-[0.75]"
               >
                 {/* LINE 1 */}
-                <span className="block mb-1">Make</span>
+                <span className="block mb-1">{t('headlineLine1')}</span>
                 
                 {/* LINE 2 */}
                 <span className="block">
@@ -55,14 +57,14 @@ export default function PromoSplit() {
                   {/* 💥 THE CHROMATIC STAGE
                       🎯 OPTICAL BALANCE: Reset margin to ml-1.5 so they look like naturally spaced adjacent words without colliding.
                   */}
-                  <span data-text="feel." className="spiderverse-accurate-word relative inline-block ml-1.5">
-                    feel.
+                  <span data-text={t('headlineFeel')} className="spiderverse-accurate-word relative inline-block ml-1.5">
+                    {t('headlineFeel')}
                   </span>
                 </span>
               </h2>
               
               <p className="font-sans font-medium text-base md:text-base leading-[1.5em] text-white/70 max-w-[350px] mb-6 tracking-normal">
-                We work with brands, studios, and people who believe stories shape people and culture — and want to make work that does more than entertain.
+                {t('promoBody')}
               </p>
               
               {/* ANIMATION ENTRY BOX */}
@@ -76,7 +78,7 @@ export default function PromoSplit() {
           <div className="w-full lg:w-1/2 aspect-[4/3] lg:aspect-square bg-transparent drop-shadow-[0_10px_20px_rgba(0,0,0,0.4)] relative">
             <Image
               src="https://media.fjorr.com/assets/fjorr-partner-promo-crowd-f2v04.avif"
-              alt="Crowd Feeling Stories"
+              alt={t('crowdAlt')}
               fill
               sizes="(max-width: 1024px) 100vw, 50vw"
               className="object-cover filter grayscale rounded-[8px]"

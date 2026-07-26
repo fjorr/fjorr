@@ -2,7 +2,7 @@
 
 import React, { useRef, useState, useEffect, useLayoutEffect } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 
 export type PosterRailItem = {
   key: string;

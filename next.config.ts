@@ -30,6 +30,7 @@ const nextConfig: NextConfig = {
     ];
   },
   async redirects() {
+    const localePrefix = "/:locale(es|fr|it|de|pt|sv|hi|ko|ja|zh-tw)";
     return [
       {
         source: "/contact",
@@ -37,8 +38,18 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
+        source: `${localePrefix}/contact`,
+        destination: "/:locale",
+        permanent: true,
+      },
+      {
         source: "/search",
         destination: "/",
+        permanent: true,
+      },
+      {
+        source: `${localePrefix}/search`,
+        destination: "/:locale",
         permanent: true,
       },
     ];

@@ -1,18 +1,19 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { useLocale, useTranslations } from 'next-intl';
 import { Icon } from '@/components/ui/Icons';
 import AccountNavLink from '@/components/AccountNavLink';
-import SignInForm from '@/components/SignInForm';
-import {
-  LOCALE_COOKIE,
-  localeLabels,
-  locales,
-  type AppLocale,
-} from '@/i18n/config';
+import { localeLabels, locales, stripLocalePrefix, type AppLocale } from '@/i18n/config';
+import { Link, usePathname, useRouter } from '@/i18n/navigation';
+
+const SignInForm = dynamic(() => import('@/components/SignInForm'), {
+  ssr: false,
+  loading: () => (
+    <div className="h-40 w-full animate-pulse rounded-lg bg-white/5" aria-hidden />
+  ),
+});
 
 interface NavbarProps {
   variant?: 'light' | 'dark';
@@ -86,9 +87,14 @@ function Navbar({ variant = 'light' }: NavbarProps) {
       setPanel('closed');
       return;
     }
-    document.cookie = `${LOCALE_COOKIE}=${next}; path=/; max-age=31536000; SameSite=Lax`;
     setPanel('closed');
-    router.refresh();
+    // Prefer the real URL, then strip any locale prefix. Hook pathname can
+    // still include a prefix if client locale briefly disagrees with the URL
+    // (which produced paths like /es/de).
+    const raw =
+      typeof window !== 'undefined' ? window.location.pathname : pathname;
+    const href = stripLocalePrefix(raw || '/') || '/';
+    router.replace(href, { locale: next });
   };
 
   useEffect(() => {

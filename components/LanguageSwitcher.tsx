@@ -1,14 +1,14 @@
 'use client';
 
 import React from 'react';
-import { useLocale } from 'next-intl';
-import { useRouter } from 'next/navigation';
+import { useLocale, useTranslations } from 'next-intl';
 import {
-  LOCALE_COOKIE,
   localeLabels,
   locales,
+  stripLocalePrefix,
   type AppLocale,
 } from '@/i18n/config';
+import { usePathname, useRouter } from '@/i18n/navigation';
 
 /** Compact inline language chips (legacy). Prefer the navbar language panel. */
 export default function LanguageSwitcher({
@@ -17,18 +17,23 @@ export default function LanguageSwitcher({
   variant?: 'light' | 'dark';
 }) {
   const locale = useLocale() as AppLocale;
+  const t = useTranslations('Nav');
   const router = useRouter();
+  const pathname = usePathname();
   const muted = variant === 'light' ? 'text-white/40' : 'text-black/40';
   const active = variant === 'light' ? 'text-white' : 'text-black';
   const hover = variant === 'light' ? 'hover:text-white/80' : 'hover:text-black/80';
 
   const setLocale = (next: AppLocale) => {
-    document.cookie = `${LOCALE_COOKIE}=${next}; path=/; max-age=31536000; SameSite=Lax`;
-    router.refresh();
+    if (next === locale) return;
+    const raw =
+      typeof window !== 'undefined' ? window.location.pathname : pathname;
+    const href = stripLocalePrefix(raw || '/') || '/';
+    router.replace(href, { locale: next });
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-x-2 gap-y-1" role="group" aria-label="Language">
+    <div className="flex flex-wrap items-center gap-x-2 gap-y-1" role="group" aria-label={t('language')}>
       {locales.map((code) => (
         <button
           key={code}

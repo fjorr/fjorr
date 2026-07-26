@@ -1,9 +1,12 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
+import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 
 export default function SearchNadaView() {
+  const t = useTranslations('Search');
+  const tNav = useTranslations('Nav');
   return (
     <div className="w-full py-6 flex flex-col items-center justify-center text-center max-w-xl animate-in fade-in duration-500">
       
@@ -38,7 +41,7 @@ export default function SearchNadaView() {
       
       {/* TEXT BLOCKS */}
       <p className="font-sans font-medium text-base leading-normal text-white/60 max-w-xs mb-8 tracking-normal animate-in fade-in slide-in-from-bottom-2 duration-700 delay-300 fill-mode-both">
-        We're building though. Know a story the worlds needs to hear? Nominate it and get your name in the credits.
+        {t('emptyBody')}
       </p>
 
       {/* NOMINATE CALL TO ACTION */}
@@ -46,7 +49,7 @@ export default function SearchNadaView() {
         href="/nominate"
         className="px-8 h-12 inline-flex items-center justify-center font-sans font-bold text-base tracking-normal bg-white text-black hover:bg-white/90 rounded-full transition-all shadow-xl active:scale-95 duration-150 animate-in fade-in slide-in-from-bottom-2 duration-700 delay-500 fill-mode-both"
       >
-        Nominate
+        {tNav('nominate')}
       </Link>
     </div>
   );

@@ -3,6 +3,7 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import CinemaTheater from '@/components/CinemaTheater';
 import { absoluteUrl } from '@/lib/site';
 
@@ -30,6 +31,8 @@ type EmbedFilmPlayerProps = {
 };
 
 export default function EmbedFilmPlayer({ film, startAt = 0 }: EmbedFilmPlayerProps) {
+  const t = useTranslations('Film');
+  const tTheater = useTranslations('Theater');
   const poster = film.hero_clsx || film.hero_wide || film.blok_tall || null;
   const isComingSoon = film.release_date
     ? new Date(film.release_date).getTime() > Date.now()
@@ -46,7 +49,7 @@ export default function EmbedFilmPlayer({ film, startAt = 0 }: EmbedFilmPlayerPr
         <div className="absolute inset-x-0 bottom-0 p-5 flex items-end justify-between gap-3">
           <div className="min-w-0">
             <p className="font-bold text-[16px] leading-tight truncate">{film.name}</p>
-            <p className="text-[12px] text-white/70 mt-1">Coming soon on Fjorr</p>
+            <p className="text-[12px] text-white/70 mt-1">{t('comingSoonOnFjorr')}</p>
           </div>
           <Link
             href={watchUrl}
@@ -54,7 +57,7 @@ export default function EmbedFilmPlayer({ film, startAt = 0 }: EmbedFilmPlayerPr
             rel="noopener noreferrer"
             className="shrink-0 h-9 px-3 rounded-full bg-white/15 hover:bg-white/25 text-[12px] font-semibold inline-flex items-center"
           >
-            Watch on Fjorr
+            {tTheater('watchOnFjorr')}
           </Link>
         </div>
       </div>

@@ -20,6 +20,7 @@ export type TimelineRailItem = {
   filmId?: string | null;
   slug?: string | null;
   runtime?: number | null;
+  mux_playback_id?: string | null;
   canResume?: boolean;
 };
 
@@ -124,8 +125,8 @@ export default function TimelineRail({
         aria-hidden
       />
 
-      {/* Match search bar width (max-w-sm) so text ends at its right edge */}
-      <div className="relative z-10 mx-auto w-full max-w-sm flex flex-col">
+      {/* Match search bar width (max-w-sm); inset on small screens so text clears the edge */}
+      <div className="relative z-10 mx-auto w-full max-w-sm px-4 sm:px-5 flex flex-col">
         {groups.map((group) => (
           <section
             key={`${groupKeyPrefix}-${group.year ?? 'undated'}`}

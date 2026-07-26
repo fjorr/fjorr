@@ -1,11 +1,16 @@
-"use client";
+'use client';
 
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Icon } from './ui/Icons';
-import Link from 'next/link';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { IntelForm } from './IntelForm';
-import { usePathname } from 'next/navigation';
+import { Link, usePathname, useRouter } from '@/i18n/navigation';
+import {
+  localeLabels,
+  locales,
+  stripLocalePrefix,
+  type AppLocale,
+} from '@/i18n/config';
 
 interface FooterProps {
   variant?: 'light' | 'dark';
@@ -13,8 +18,13 @@ interface FooterProps {
 
 export default function Footer({ variant }: FooterProps) {
   const t = useTranslations('Footer');
+  const tNav = useTranslations('Nav');
   const pathname = usePathname();
+  const router = useRouter();
+  const locale = useLocale() as AppLocale;
   const isAboutPage = pathname === '/about';
+  const [langOpen, setLangOpen] = useState(false);
+  const langRef = useRef<HTMLDivElement>(null);
 
   const isCustomVariant = variant === 'light' || variant === 'dark';
   const isDarkBg = variant === 'light' || isAboutPage;
@@ -37,6 +47,38 @@ export default function Footer({ variant }: FooterProps) {
     return 'bg-[#F5F5F7] dark:bg-[#1F1F1F]';
   };
 
+  const setLocale = (next: AppLocale) => {
+    if (next === locale) {
+      setLangOpen(false);
+      return;
+    }
+    const raw =
+      typeof window !== 'undefined' ? window.location.pathname : pathname;
+    const href = stripLocalePrefix(raw || '/') || '/';
+    setLangOpen(false);
+    router.replace(href, { locale: next });
+  };
+
+  useEffect(() => {
+    if (!langOpen) return;
+    const onPointerDown = (event: MouseEvent | TouchEvent) => {
+      if (!langRef.current?.contains(event.target as Node)) {
+        setLangOpen(false);
+      }
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setLangOpen(false);
+    };
+    document.addEventListener('mousedown', onPointerDown);
+    document.addEventListener('touchstart', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown);
+      document.removeEventListener('touchstart', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [langOpen]);
+
   return (
     <footer
       className={`
@@ -45,6 +87,53 @@ export default function Footer({ variant }: FooterProps) {
         ${textColor}
       `}
     >
+      <div ref={langRef} className="relative mb-4 flex flex-col items-center">
+        <button
+          type="button"
+          aria-label={tNav('language')}
+          aria-expanded={langOpen}
+          aria-haspopup="listbox"
+          onClick={() => setLangOpen((open) => !open)}
+          className={`inline-flex items-center gap-1.5 font-sans text-[14px] font-semibold transition-colors hover:opacity-80 ${subTextColor}`}
+        >
+          <Icon name="globe" className="w-3.5 h-3.5" />
+          <span>
+            {localeLabels[locale]}{' '}
+            <span className={mutedTextColor}>({locale})</span>
+          </span>
+        </button>
+
+        {langOpen && (
+          <div
+            role="listbox"
+            aria-label={tNav('languages')}
+            className={`absolute bottom-full mb-2 z-20 min-w-[10rem] rounded-[10px] border py-1.5 text-left shadow-[0_12px_32px_rgba(0,0,0,0.35)] ${
+              isDarkBg
+                ? 'border-white/10 bg-[#1F1F1F]'
+                : 'border-black/10 bg-white'
+            }`}
+          >
+            {locales.map((code) => (
+              <button
+                key={code}
+                type="button"
+                role="option"
+                aria-selected={locale === code}
+                onClick={() => setLocale(code)}
+                className={`flex w-full items-center justify-between gap-3 px-3 py-1.5 font-sans text-[14px] font-semibold transition-colors ${
+                  locale === code
+                    ? mutedTextColor
+                    : `${textColor} hover:opacity-70`
+                } ${isDarkBg ? 'hover:bg-white/5' : 'hover:bg-black/5'}`}
+              >
+                <span>{localeLabels[code]}</span>
+                <span className={mutedTextColor}>{code}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
       <div className="w-full max-w-64 mb-6">
         <IntelForm
           variant={isAboutPage ? 'light' : variant}

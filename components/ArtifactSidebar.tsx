@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
+import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 
 interface FilmItem {
   name?: string | null;
@@ -46,7 +47,8 @@ export function ArtifactSidebar({
   borderClass,
   isLoader = false, 
 }: ArtifactSidebarProps) {
-  
+  const t = useTranslations('Artifact');
+
   const formatExternalUrl = (url: string | null | undefined): string => {
     if (!url) return '#';
     const trimmed = url.trim();
@@ -87,7 +89,7 @@ export function ArtifactSidebar({
       className={`w-full lg:w-[400px] shrink-0 flex flex-col justify-start p-8 md:p-10 lg:pt-[110px] h-full ${textClass} border-none !border-0`}
     >
       <span className={`text-[11px] capitalize font-mono tracking-normal font-bold mb-2 ${mutedTextClass}`}>
-        Film Artifact
+        {t('label')}
       </span>
 
       <h1 className={`font-sans text-2xl capitalize tracking-tighter leading-none font-black mb-4 ${textClass}`}>
@@ -135,11 +137,11 @@ export function ArtifactSidebar({
       {filmConnections.length > 0 && (
         <div className="pt-4 flex flex-col gap-0">
           <span className={`text-sm capitalize font-sans tracking-normal font-medium ${mutedTextClass}`}>
-            Related Films
+            {t('relatedFilms')}
           </span>
           <div className="flex flex-col gap-2 mt-1">
             {filmConnections.map((movie, idx) => {
-              const displayTitle = movie.name || 'Untitled Connection';
+              const displayTitle = movie.name || t('untitled');
               
               let displayRuntime = '--';
               if (movie.runtime !== undefined && movie.runtime !== null) {

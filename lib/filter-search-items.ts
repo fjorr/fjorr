@@ -1,5 +1,5 @@
 import type { SearchItem } from '@/components/SearchExperience';
-import type { MinimalSortMode } from '@/components/MinimalFilterContext';
+import type { MinimalSortMode, ThemeOption } from '@/components/MinimalFilterContext';
 import type { HomeMix } from '@/lib/home-mix';
 
 function isComingSoon(releaseDate?: string | null) {
@@ -16,12 +16,36 @@ function filmId(item: SearchItem) {
   return item.internal_id || item.id;
 }
 
-export function themesFromSearchItems(results: SearchItem[]): string[] {
-  const set = new Set<string>();
+/** Theme dial key: prefer slug; fall back to EN name from the search table. */
+function themeKey(item: SearchItem): string | null {
+  return item.themeSlug || item.theme_slug || item.theme || null;
+}
+
+export function themesFromSearchItems(results: SearchItem[]): ThemeOption[] {
+  const bySlug = new Map<string, string>();
   for (const item of results) {
-    if (item.item_type === 'film' && item.theme) set.add(item.theme);
+    if (item.item_type !== 'film') continue;
+    const slug = themeKey(item);
+    const name = item.theme || slug;
+    if (slug && name && !bySlug.has(slug)) bySlug.set(slug, name);
   }
-  return Array.from(set).sort((a, b) => a.localeCompare(b));
+  return Array.from(bySlug.entries())
+    .map(([slug, name]) => ({ slug, name }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+export function themesFromFilms(
+  films: { theme?: string | null; themeSlug?: string | null }[]
+): ThemeOption[] {
+  const bySlug = new Map<string, string>();
+  for (const film of films) {
+    const slug = film.themeSlug || film.theme;
+    const name = film.theme || slug;
+    if (slug && name && !bySlug.has(slug)) bySlug.set(slug, name);
+  }
+  return Array.from(bySlug.entries())
+    .map(([slug, name]) => ({ slug, name }))
+    .sort((a, b) => a.name.localeCompare(b.name));
 }
 
 export function filterAndSortSearchItems(
@@ -58,7 +82,7 @@ export function filterAndSortSearchItems(
 
   if (theme !== 'all') {
     next = next.filter(
-      (item) => item.item_type === 'film' && item.theme === theme
+      (item) => item.item_type === 'film' && themeKey(item) === theme
     );
   }
 

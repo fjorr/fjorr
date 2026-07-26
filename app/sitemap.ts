@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { createClient } from '@supabase/supabase-js';
+import { defaultLocale, locales, type AppLocale } from '@/i18n/config';
 import { SITE_ORIGIN } from '@/lib/site';
 
 /** Next.js App Router — served at /sitemap.xml */
@@ -16,20 +17,43 @@ function lastMod(value: string | null | undefined): Date {
   return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
 }
 
+function localizedPath(locale: AppLocale, path: string): string {
+  const normalized = path.startsWith('/') ? path : `/${path}`;
+  if (locale === defaultLocale) return normalized === '/' ? '' : normalized;
+  return normalized === '/' ? `/${locale}` : `/${locale}${normalized}`;
+}
+
+function entry(
+  path: string,
+  lastModified: Date,
+  changeFrequency: MetadataRoute.Sitemap[number]['changeFrequency'],
+  priority: number
+): MetadataRoute.Sitemap[number] {
+  const languages: Record<string, string> = {};
+  for (const locale of locales) {
+    languages[locale] = `${SITE_ORIGIN}${localizedPath(locale, path) || ''}`;
+  }
+  languages['x-default'] = `${SITE_ORIGIN}${path === '/' ? '' : path}`;
+
+  return {
+    url: `${SITE_ORIGIN}${path === '/' ? '' : path}`,
+    lastModified,
+    changeFrequency,
+    priority,
+    alternates: { languages },
+  };
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const staticRoutes: MetadataRoute.Sitemap = [
-    '',
-    '/about',
-    '/nominate',
-    '/partner',
-    '/privacy',
-    '/terms',
-  ].map((route) => ({
-    url: route ? `${SITE_ORIGIN}${route}` : SITE_ORIGIN,
-    lastModified: new Date(),
-    changeFrequency: route === '' ? 'daily' : 'monthly',
-    priority: route === '' ? 1 : 0.6,
-  }));
+  const staticPaths = ['/', '/about', '/nominate', '/partner', '/privacy', '/terms'];
+  const staticRoutes: MetadataRoute.Sitemap = staticPaths.map((path) =>
+    entry(
+      path,
+      new Date(),
+      path === '/' ? 'daily' : 'monthly',
+      path === '/' ? 1 : 0.6
+    )
+  );
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -57,21 +81,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const filmRoutes: MetadataRoute.Sitemap = ((filmsResponse.data || []) as SlugRow[])
     .filter((film) => Boolean(film.slug))
-    .map((film) => ({
-      url: `${SITE_ORIGIN}/film/${film.slug}`,
-      lastModified: lastMod(film.updated_at),
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    }));
+    .map((film) =>
+      entry(
+        `/film/${film.slug}`,
+        lastMod(film.updated_at),
+        'weekly',
+        0.8
+      )
+    );
 
   const artifactRoutes: MetadataRoute.Sitemap = ((artifactsResponse.data || []) as SlugRow[])
     .filter((art) => Boolean(art.slug))
-    .map((art) => ({
-      url: `${SITE_ORIGIN}/artifact/${art.slug}`,
-      lastModified: lastMod(art.updated_at),
-      changeFrequency: 'weekly',
-      priority: 0.7,
-    }));
+    .map((art) =>
+      entry(
+        `/artifact/${art.slug}`,
+        lastMod(art.updated_at),
+        'weekly',
+        0.7
+      )
+    );
 
   return [...staticRoutes, ...filmRoutes, ...artifactRoutes];
 }

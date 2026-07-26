@@ -2,20 +2,19 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { createBrowserClient } from '@supabase/ssr';
 import { useTranslations } from 'next-intl';
 import { useMinimalFilter } from '@/components/MinimalFilterContext';
 import TheaterOpenShell from '@/components/TheaterOpenShell';
 import PrefetchLink from '@/components/PrefetchLink';
 import SearchNadaView from '@/components/SearchNadaView';
+import { themesFromFilms } from '@/lib/filter-search-items';
 import {
   clearWatchProgress,
-  getWatchProgress,
-  isWatchableProgress,
   trackWatchProgress,
   formatResumeClock,
 } from '@/lib/watch-progress';
 import { useWatchProgressMap } from '@/components/useWatchProgress';
+import { openTheaterFromFilm } from '@/lib/theater-open';
 
 const CinemaTheater = dynamic(() => import('@/components/CinemaTheater'), {
   ssr: false,
@@ -33,6 +32,7 @@ export type MinimalFilm = {
   mux_playback_id: string | null;
   rating?: string | null;
   theme?: string | null;
+  themeSlug?: string | null;
   blok_tall?: string | null;
 };
 
@@ -91,11 +91,7 @@ export default function MinimalHomeList({ films }: { films: MinimalFilm[] }) {
   const [startAt, setStartAt] = useState<number | undefined>(undefined);
 
   useEffect(() => {
-    const set = new Set<string>();
-    for (const film of films) {
-      if (film.theme) set.add(film.theme);
-    }
-    setThemes(Array.from(set).sort((a, b) => a.localeCompare(b)));
+    setThemes(themesFromFilms(films));
   }, [films, setThemes]);
 
   const visibleFilms = useMemo(() => {
@@ -111,7 +107,9 @@ export default function MinimalHomeList({ films }: { films: MinimalFilm[] }) {
       }
     }
 
-    if (theme !== 'all') next = next.filter((f) => f.theme === theme);
+    if (theme !== 'all') {
+      next = next.filter((f) => (f.themeSlug || f.theme) === theme);
+    }
 
     next.sort((a, b) => {
       if (sort === 'az') return a.name.localeCompare(b.name);
@@ -126,69 +124,20 @@ export default function MinimalHomeList({ films }: { films: MinimalFilm[] }) {
     return next;
   }, [films, mix, mixes, sort, theme]);
 
-  const handlePlay = async (film: MinimalFilm) => {
-    const openWith = (payload: any, duration?: number | null) => {
-      const saved = getWatchProgress(payload.id || film.id);
-      setStartAt(
-        isWatchableProgress(saved, duration ?? film.runtime) ? saved.seconds : undefined
-      );
-      setSelectedFilm(payload);
-      setShowTheater(true);
-    };
-
-    try {
-      const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-      const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-      if (!url || !key) {
-        openWith(film);
-        return;
-      }
-
-      const supabase = createBrowserClient(url, key);
-      const { data: verifiedFilm } = await supabase
-        .from('film')
-        .select(
-          'id, name, slug, mux_playback_id, last_line, story_date, location, runtime, has_subtitles'
-        )
-        .eq('slug', film.slug)
-        .maybeSingle();
-
-      if (!verifiedFilm) {
-        openWith(film);
-        return;
-      }
-
-      let flattenedTracks: { code: string; name: string; vtt_url: string }[] = [];
-
-      if (verifiedFilm.has_subtitles !== false) {
-        const { data: junctionTracks } = await supabase
-          .from('language_subtitle')
-          .select(`
-            vtt_url,
-            language (
-              code,
-              name
-            )
-          `)
-          .eq('film_id', verifiedFilm.id);
-
-        flattenedTracks = (junctionTracks || []).map((track: any) => ({
-          code: track.language?.code || 'en',
-          name: track.language?.name || 'English',
-          vtt_url: track.vtt_url || '',
-        }));
-      }
-
-      openWith(
-        {
-          ...verifiedFilm,
-          language_subtitle: flattenedTracks,
-        },
-        verifiedFilm.runtime
-      );
-    } catch {
-      openWith(film);
-    }
+  const handlePlay = (film: MinimalFilm) => {
+    openTheaterFromFilm({
+      film: {
+        id: film.id,
+        name: film.name,
+        slug: film.slug,
+        mux_playback_id: film.mux_playback_id,
+        runtime: film.runtime,
+        story_date: film.story_date,
+      },
+      setSelectedFilm,
+      setStartAt,
+      setShowTheater,
+    });
   };
 
   return (

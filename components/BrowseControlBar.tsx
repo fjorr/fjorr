@@ -69,7 +69,7 @@ export default function BrowseControlBar({
       }}
       className="relative z-0 w-full max-w-sm flex flex-col items-center gap-3.5"
     >
-      <div className="flex items-center justify-center gap-2 flex-wrap">
+      <div className="flex w-full items-center justify-center gap-1 sm:gap-2 flex-nowrap">
         <DisplayModeToggle />
         <ContentTypeToggle />
 
@@ -80,7 +80,7 @@ export default function BrowseControlBar({
             if (mixesDisabled) return;
             toggle('mixes');
           }}
-          className={`h-8 px-3 rounded-[6px] font-sans text-xs font-semibold transition-colors inline-flex items-center gap-1.5 ${
+          className={`h-7 sm:h-8 px-2 sm:px-3 shrink-0 rounded-[6px] font-sans text-[11px] sm:text-xs font-semibold transition-colors inline-flex items-center gap-1 sm:gap-1.5 ${
             mixesDisabled
               ? 'bg-white/[0.03] text-white/25 cursor-not-allowed'
               : panel === 'mixes' || mix !== 'all'
@@ -99,7 +99,7 @@ export default function BrowseControlBar({
         <button
           type="button"
           onClick={() => toggle('dials')}
-          className={`h-8 px-3 rounded-[6px] font-sans text-xs font-semibold transition-colors inline-flex items-center gap-1.5 ${
+          className={`h-7 sm:h-8 px-2 sm:px-3 shrink-0 rounded-[6px] font-sans text-[11px] sm:text-xs font-semibold transition-colors inline-flex items-center gap-1 sm:gap-1.5 ${
             panel === 'dials' || dialsHaveValue
               ? 'bg-white/15 text-white'
               : 'bg-white/5 text-white/55 hover:text-white/80 hover:bg-white/10'
@@ -114,9 +114,15 @@ export default function BrowseControlBar({
       </div>
 
       {panel === 'mixes' && !mixesDisabled && (
-        <MixesPanel onDone={() => setPanel(null)} />
+        <div className="w-full self-stretch">
+          <MixesPanel onDone={() => setPanel(null)} />
+        </div>
       )}
-      {panel === 'dials' && <DialsPanel />}
+      {panel === 'dials' && (
+        <div className="w-full self-stretch">
+          <DialsPanel />
+        </div>
+      )}
 
       <QueryStatusBar />
     </div>

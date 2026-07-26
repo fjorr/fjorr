@@ -11,7 +11,7 @@ import {
 const COMING_SOON_MIX_SLUG = 'coming-soon';
 
 const panelShellClass =
-  'w-full rounded-[10px] border border-white/10 bg-[#1F1F1F]/95 backdrop-blur-xl shadow-[0_16px_48px_rgba(0,0,0,0.45)] p-4 flex flex-col gap-3 max-h-[min(60vh,420px)] overflow-y-auto';
+  'w-full rounded-[10px] border border-white/10 bg-[#1F1F1F]/95 backdrop-blur-xl shadow-[0_16px_48px_rgba(0,0,0,0.45)] px-[30px] py-5 flex flex-col gap-3 max-h-[min(60vh,420px)] overflow-y-auto';
 
 function OptionChip({
   active,
@@ -37,31 +37,7 @@ function OptionChip({
   );
 }
 
-function OptionRow({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`text-left w-full h-10 px-3 rounded-[6px] font-sans text-[13px] font-semibold transition-colors ${
-        active
-          ? 'bg-white/15 text-white'
-          : 'text-white/55 hover:text-white/85 hover:bg-white/10'
-      }`}
-    >
-      {children}
-    </button>
-  );
-}
-
-/** Mix list for the shared browse control panel. */
+/** Mix list for the shared browse control panel — denser, menu-style. */
 export function MixesPanel({ onDone }: { onDone?: () => void }) {
   const tf = useTranslations('MinimalList');
   const { mix, setMix, mixes } = useMinimalFilter();
@@ -72,35 +48,45 @@ export function MixesPanel({ onDone }: { onDone?: () => void }) {
       .filter((m) => m.slug !== COMING_SOON_MIX_SLUG)
       .map((m) => ({ ...m, name: capitalizeLabel(m.name) }));
     return [
-      { slug: COMING_SOON_MIX_SLUG, name: comingSoonLabel, filmIds: [] as string[] },
-      ...fromDb,
+      { slug: 'all' as const, name: capitalizeLabel(tf('allMixes')) },
+      { slug: COMING_SOON_MIX_SLUG, name: comingSoonLabel },
+      ...fromDb.map((m) => ({ slug: m.slug, name: m.name })),
     ];
   }, [mixes, tf]);
 
   return (
-    <div className={panelShellClass}>
-      <OptionRow
-        active={mix === 'all'}
-        onClick={() => {
-          setMix('all');
-          onDone?.();
-        }}
-      >
-        {capitalizeLabel(tf('allMixes'))}
-      </OptionRow>
-      {listItems.map((item) => (
-        <OptionRow
-          key={item.slug}
-          active={mix === item.slug}
-          onClick={() => {
-            setMix(item.slug);
-            onDone?.();
-          }}
-        >
-          {item.name}
-        </OptionRow>
-      ))}
-    </div>
+    <nav
+      className="w-full max-h-[min(42vh,260px)] overflow-y-auto overscroll-contain rounded-[10px] border border-white/10 bg-[#1F1F1F]/95 backdrop-blur-xl shadow-[0_16px_48px_rgba(0,0,0,0.45)] px-[30px] py-5 flex flex-col gap-1.5"
+      aria-label={tf('mixes')}
+    >
+      {listItems.map((item) => {
+        const active = mix === item.slug;
+        if (active) {
+          return (
+            <span
+              key={item.slug}
+              aria-current="true"
+              className="font-sans text-[15px] font-semibold tracking-tight text-white/35 cursor-default select-none leading-tight py-0.5"
+            >
+              {item.name}
+            </span>
+          );
+        }
+        return (
+          <button
+            key={item.slug}
+            type="button"
+            onClick={() => {
+              setMix(item.slug);
+              onDone?.();
+            }}
+            className="text-left font-sans text-[15px] font-semibold tracking-tight text-white leading-tight py-0.5 transition-opacity hover:opacity-70"
+          >
+            {item.name}
+          </button>
+        );
+      })}
+    </nav>
   );
 }
 
@@ -154,13 +140,13 @@ export function DialsPanel() {
             <OptionChip active={theme === 'all'} onClick={() => setTheme('all')}>
               {tf('allThemes')}
             </OptionChip>
-            {themes.map((name) => (
+            {themes.map((option) => (
               <OptionChip
-                key={name}
-                active={theme === name}
-                onClick={() => setTheme(name)}
+                key={option.slug}
+                active={theme === option.slug}
+                onClick={() => setTheme(option.slug)}
               >
-                {name.charAt(0).toUpperCase() + name.slice(1)}
+                {option.name.charAt(0).toUpperCase() + option.name.slice(1)}
               </OptionChip>
             ))}
           </div>

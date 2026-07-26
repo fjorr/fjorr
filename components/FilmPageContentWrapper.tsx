@@ -2,11 +2,11 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
+import { useTranslations } from 'next-intl';
 import FilmHero from './FilmHero';
 import ArtifactRail from './ArtifactRail';
 import FilmRail from './FilmRail';
 import FilmSpecs from './FilmSpecs';
-import FilmTranscript from './FilmTranscript';
 import { useWatchProgress } from '@/components/useWatchProgress';
 import TheaterOpenShell from '@/components/TheaterOpenShell';
 import {
@@ -21,11 +21,14 @@ const CinemaTheater = dynamic(() => import('@/components/CinemaTheater'), {
   loading: () => <TheaterOpenShell />,
 });
 
+const FilmTranscriptLazy = dynamic(() => import('@/components/FilmTranscriptLazy'), {
+  ssr: false,
+});
+
 interface WrapperProps {
   filmData: any;
   relatedArtifacts: any[];
   recommendedFilms: any[];
-  transcripts: any[];
   subtitlesData: any[];
   tags: string[];
   creatorRows: any[];
@@ -37,13 +40,13 @@ export default function FilmPageContentWrapper({
   filmData,
   relatedArtifacts,
   recommendedFilms,
-  transcripts,
   subtitlesData,
   tags,
   creatorRows,
   displayLocation,
   isComingSoon,
 }: WrapperProps) {
+  const t = useTranslations('Film');
   const [showTheater, setShowTheater] = useState(false);
   const [startAt, setStartAt] = useState<number | undefined>(undefined);
   const [seekTo, setSeekTo] = useState<number | null>(null);
@@ -147,10 +150,10 @@ export default function FilmPageContentWrapper({
 
           {subtitlesData.length > 0 && (
             <aside className="fixed top-0 right-0 z-[85] hidden lg:flex w-[min(360px,34vw)] h-[100svh] flex-col border-l border-white/10 bg-[#1a1a1a]/95 backdrop-blur-xl pt-16 pb-6 px-4">
-              <FilmTranscript
+              <FilmTranscriptLazy
                 variant="dock"
                 subtitles={subtitlesData}
-                transcripts={transcripts}
+                transcripts={[]}
                 filmSlug={filmData.slug}
                 activeTime={playbackTime}
                 onSeek={(seconds) => {
@@ -175,11 +178,11 @@ export default function FilmPageContentWrapper({
         <div className="w-full bg-[#1F1F1F] pt-8 pb-24 flex flex-col gap-0">
           <div className="w-full min-w-0 flex flex-col space-y-6">
             {relatedArtifacts.length > 0 && (
-              <ArtifactRail title="Related Artifacts" artifacts={relatedArtifacts} />
+              <ArtifactRail title={t('relatedArtifacts')} artifacts={relatedArtifacts} />
             )}
 
             {recommendedFilms.length > 0 && (
-              <FilmRail title="More Short Films" films={recommendedFilms} />
+              <FilmRail title={t('moreFilms')} films={recommendedFilms} />
             )}
           </div>
 
@@ -190,7 +193,6 @@ export default function FilmPageContentWrapper({
                 audioLanguages={['English']}
                 subtitles={subtitlesData}
                 tags={tags}
-                transcripts={transcripts}
                 creators={creatorRows}
                 onSeek={openFromTime}
               />

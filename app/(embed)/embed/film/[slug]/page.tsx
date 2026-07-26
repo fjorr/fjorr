@@ -5,15 +5,10 @@ import EmbedFilmPlayer from '@/components/EmbedFilmPlayer';
 import { getFilmPageData, getFilmSlugs } from '@/lib/content/film';
 import { absoluteUrl } from '@/lib/site';
 import { socialOgImageUrl } from '@/lib/og';
+import { getLocale } from 'next-intl/server';
+import { parseLocale } from '@/i18n/config';
 
 export const revalidate = 60;
-
-const languageNameMap: Record<string, string> = {
-  en: 'English',
-  es: 'Spanish',
-  fr: 'French',
-  it: 'Italian',
-};
 
 export async function generateStaticParams() {
   const slugs = await getFilmSlugs();
@@ -26,7 +21,8 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const page = await getFilmPageData(slug);
+  const locale = parseLocale(await getLocale());
+  const page = await getFilmPageData(slug, locale);
   if (!page) return { title: 'Embed' };
   const { filmData } = page;
   return {
@@ -51,27 +47,17 @@ export default async function EmbedFilmPage({
 }) {
   const { slug } = await params;
   const { t } = await searchParams;
-  const page = await getFilmPageData(slug);
+  const locale = parseLocale(await getLocale());
+  const page = await getFilmPageData(slug, locale);
   if (!page) notFound();
 
-  const { filmData, transcripts } = page;
+  const { filmData, subtitleTracks } = page;
   const startAt = t && Number.isFinite(Number(t)) ? Math.max(0, Number(t)) : 0;
 
   const displayLocation =
     Array.isArray(filmData.location) && filmData.location.length > 0
       ? filmData.location[0]
       : filmData.location || '';
-
-  const languageSubtitle = (transcripts || []).map(
-    (row: { language_code?: string; content?: string }) => {
-      const cleanCode = (row.language_code || 'en').toLowerCase().trim();
-      return {
-        code: cleanCode,
-        name: languageNameMap[cleanCode] || cleanCode.toUpperCase(),
-        vtt_url: row.content || '',
-      };
-    }
-  );
 
   return (
     <main className="w-screen h-screen bg-black overflow-hidden">
@@ -83,13 +69,13 @@ export default async function EmbedFilmPage({
           teaser: filmData.teaser,
           mux_playback_id: filmData.mux_playback_id,
           last_line: filmData.last_line,
-          story_date: filmData.story_date || filmData.story_year || '',
+          story_date: filmData.story_date || '',
           location: displayLocation,
           blok_tall: filmData.blok_tall,
           hero_wide: filmData.hero_wide,
           hero_clsx: filmData.hero_clsx,
           release_date: filmData.release_date,
-          language_subtitle: languageSubtitle,
+          language_subtitle: subtitleTracks,
         }}
         startAt={startAt}
       />

@@ -1,6 +1,10 @@
 import { unstable_cache } from 'next/cache';
 import { createPublicClient } from '@/lib/supabase/public';
 import type { HomeMix } from '@/lib/home-mix';
+import type { AppLocale } from '@/i18n/config';
+import { defaultLocale } from '@/i18n/config';
+import { localizeFilms, localizeFilmsWithThemes, fetchCollectionNameMap } from '@/lib/content/film-i18n';
+import { localizeArtifacts } from '@/lib/content/artifact-i18n';
 
 export type { HomeMix } from '@/lib/home-mix';
 
@@ -8,7 +12,7 @@ export const HOME_FILM_REVALIDATE_SECONDS = 60;
 export const HOME_ARTIFACT_REVALIDATE_SECONDS = 300;
 
 export const getFeaturedFilms = unstable_cache(
-  async () => {
+  async (locale: AppLocale = defaultLocale) => {
     const supabase = createPublicClient();
 
     const { data: collectionRow, error: collectionError } = await supabase
@@ -43,7 +47,7 @@ export const getFeaturedFilms = unstable_cache(
         title_art_scale,
         runtime,
         rating ( name ),
-        theme ( name ),
+        theme ( id, name, slug ),
         creator:sponsor_id ( name )
       )
     `)
@@ -55,7 +59,7 @@ export const getFeaturedFilms = unstable_cache(
       return [];
     }
 
-    return (mappedCollectionRows || [])
+    const films = (mappedCollectionRows || [])
       .map((row: any) => {
         const f = row.film;
         if (!f) return null;
@@ -71,13 +75,15 @@ export const getFeaturedFilms = unstable_cache(
         };
       })
       .filter(Boolean);
+
+    return localizeFilmsWithThemes(supabase, films, locale);
   },
-  ['home-featured'],
+  ['home-featured-i18n'],
   { revalidate: HOME_FILM_REVALIDATE_SECONDS, tags: ['film', 'home'] }
 );
 
 export const getCineHomeArtifacts = unstable_cache(
-  async () => {
+  async (locale: AppLocale = defaultLocale) => {
     const supabase = createPublicClient();
     const { data, error } = await supabase
       .from('artifact')
@@ -95,7 +101,7 @@ export const getCineHomeArtifacts = unstable_cache(
       return [];
     }
 
-    return data.map((row) => {
+    const mapped = data.map((row) => {
       const maps = Array.isArray(row.creator_map) ? row.creator_map : [];
       const creator =
         (maps[0] as { creator?: { name?: string } | null } | undefined)?.creator
@@ -112,13 +118,15 @@ export const getCineHomeArtifacts = unstable_cache(
         creator,
       };
     });
+
+    return localizeArtifacts(supabase, mapped, locale);
   },
-  ['home-cine-artifacts-v2'],
+  ['home-cine-artifacts-i18n'],
   { revalidate: HOME_ARTIFACT_REVALIDATE_SECONDS, tags: ['artifact', 'home'] }
 );
 
 export const getFilmRailFilms = unstable_cache(
-  async (mode: 'latest' | 'coming-soon') => {
+  async (mode: 'latest' | 'coming-soon', locale: AppLocale = defaultLocale) => {
     const supabase = createPublicClient();
     const currentIsoString = new Date().toISOString();
 
@@ -136,20 +144,22 @@ export const getFilmRailFilms = unstable_cache(
       return [];
     }
 
-    return rawFilms.map((film) => ({
+    const mapped = rawFilms.map((film) => ({
       id: film.id,
       name: film.name,
       slug: String(film.slug || '').trim(),
       blok_tall: film.blok_tall,
       release_date: film.release_date,
     }));
+
+    return localizeFilms(supabase, mapped, locale);
   },
-  ['home-film-rail'],
+  ['home-film-rail-i18n'],
   { revalidate: HOME_FILM_REVALIDATE_SECONDS, tags: ['film', 'home'] }
 );
 
 export const getArtifactRailItems = unstable_cache(
-  async () => {
+  async (locale: AppLocale = defaultLocale) => {
     const supabase = createPublicClient();
     const { data: artifacts, error } = await supabase
       .from('artifact')
@@ -162,26 +172,24 @@ export const getArtifactRailItems = unstable_cache(
       return [];
     }
 
-    return artifacts;
+    return localizeArtifacts(supabase, artifacts, locale);
   },
-  ['home-artifact-rail'],
+  ['home-artifact-rail-i18n'],
   { revalidate: HOME_ARTIFACT_REVALIDATE_SECONDS, tags: ['artifact', 'home'] }
 );
 
 export const getCineHomeFilms = unstable_cache(
-  async () => {
+  async (locale: AppLocale = defaultLocale) => {
     const supabase = createPublicClient();
     const currentIsoString = new Date().toISOString();
+    // Posters-only grid — theme slug is the stable dial filter key.
     const select = `
       id,
       name,
       slug,
-      teaser,
-      runtime,
       release_date,
       blok_tall,
-      rating ( name ),
-      theme ( name )
+      theme ( id, name, slug )
     `;
 
     const [released, comingSoon] = await Promise.all([
@@ -202,20 +210,22 @@ export const getCineHomeFilms = unstable_cache(
     if (released.error) console.error('Cine home released films failed:', released.error);
     if (comingSoon.error) console.error('Cine home coming soon films failed:', comingSoon.error);
 
-    return [...(released.data || []), ...(comingSoon.data || [])];
+    const rows = [...(released.data || []), ...(comingSoon.data || [])];
+    return localizeFilmsWithThemes(supabase, rows as { id: string }[], locale);
   },
-  ['home-cine-films'],
+  ['home-cine-films-i18n'],
   { revalidate: HOME_FILM_REVALIDATE_SECONDS, tags: ['film', 'home'] }
 );
 
 /** Curated mixes (collections) with film membership for the cine grid. */
 export const getHomeMixes = unstable_cache(
-  async (): Promise<HomeMix[]> => {
+  async (locale: AppLocale = defaultLocale): Promise<HomeMix[]> => {
     const supabase = createPublicClient();
     const { data, error } = await supabase
       .from('collection')
       .select(
         `
+        id,
         slug,
         name,
         collection_map (
@@ -231,10 +241,20 @@ export const getHomeMixes = unstable_cache(
       return [];
     }
 
+    const nameMap =
+      locale === defaultLocale
+        ? new Map<string, string>()
+        : await fetchCollectionNameMap(
+            supabase,
+            data.map((row: { id: string }) => row.id),
+            locale
+          );
+
     return data
       .map((row: any) => {
         const slug = String(row.slug || '').trim();
-        const name = String(row.name || '').trim();
+        const fallbackName = String(row.name || '').trim();
+        const name = nameMap.get(row.id) || fallbackName;
         if (!slug || !name) return null;
 
         const maps = Array.isArray(row.collection_map) ? row.collection_map : [];
@@ -249,7 +269,7 @@ export const getHomeMixes = unstable_cache(
       })
       .filter(Boolean) as HomeMix[];
   },
-  ['home-mixes'],
+  ['home-mixes-i18n'],
   { revalidate: HOME_FILM_REVALIDATE_SECONDS, tags: ['film', 'home'] }
 );
 
@@ -264,11 +284,11 @@ const MINIMAL_FILM_SELECT = `
   mux_playback_id,
   blok_tall,
   rating ( name ),
-  theme ( name )
+  theme ( id, name, slug )
 `;
 
 export const getMinimalHomeFilms = unstable_cache(
-  async () => {
+  async (locale: AppLocale = defaultLocale) => {
     const supabase = createPublicClient();
     const currentIsoString = new Date().toISOString();
 
@@ -290,8 +310,9 @@ export const getMinimalHomeFilms = unstable_cache(
     if (released.error) console.error('Minimal home released films failed:', released.error);
     if (comingSoon.error) console.error('Minimal home coming soon films failed:', comingSoon.error);
 
-    return [...(released.data || []), ...(comingSoon.data || [])];
+    const rows = [...(released.data || []), ...(comingSoon.data || [])];
+    return localizeFilmsWithThemes(supabase, rows as { id: string }[], locale);
   },
-  ['home-minimal-v2'],
+  ['home-minimal-i18n'],
   { revalidate: HOME_FILM_REVALIDATE_SECONDS, tags: ['film', 'home'] }
 );

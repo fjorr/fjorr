@@ -3,6 +3,8 @@ import MinimalHomeBrowse from '@/components/MinimalHomeBrowse';
 import { type MinimalFilm } from '@/components/MinimalHomeList';
 import { type MinimalArtifact } from '@/components/MinimalArtifactList';
 import { getCineHomeArtifacts, getMinimalHomeFilms } from '@/lib/content/home';
+import { getLocale, getTranslations } from 'next-intl/server';
+import { parseLocale } from '@/i18n/config';
 
 function mapFilm(film: any): MinimalFilm {
   return {
@@ -21,6 +23,8 @@ function mapFilm(film: any): MinimalFilm {
       typeof film.rating === 'object' ? film.rating?.name ?? null : film.rating ?? null,
     theme:
       typeof film.theme === 'object' ? film.theme?.name ?? null : film.theme ?? null,
+    themeSlug:
+      typeof film.theme === 'object' ? film.theme?.slug ?? null : null,
     blok_tall: film.blok_tall ?? null,
   };
 }
@@ -40,17 +44,19 @@ function mapArtifact(artifact: any): MinimalArtifact {
 }
 
 export default async function MinimalHomeLoader() {
+  const locale = parseLocale(await getLocale());
   const [filmRows, artifactRows] = await Promise.all([
-    getMinimalHomeFilms(),
-    getCineHomeArtifacts(),
+    getMinimalHomeFilms(locale),
+    getCineHomeArtifacts(locale),
   ]);
   const films = filmRows.map(mapFilm).filter((f) => f.slug);
   const artifacts = artifactRows.map(mapArtifact).filter((a) => a.slug);
 
   if (films.length === 0 && artifacts.length === 0) {
+    const t = await getTranslations('Home');
     return (
       <div className="w-full min-h-screen bg-[#1F1F1F] flex items-center justify-center text-white/40 font-sans text-sm">
-        No titles available.
+        {t('noTitles')}
       </div>
     );
   }

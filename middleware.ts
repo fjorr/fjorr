@@ -1,6 +1,10 @@
 import { updateSession } from "@/lib/supabase/proxy";
 import { isValidGateToken } from "@/lib/site-gate";
+import createMiddleware from "next-intl/middleware";
 import { NextResponse, type NextRequest } from "next/server";
+import { routing } from "@/i18n/routing";
+
+const handleI18nRouting = createMiddleware(routing);
 
 /**
  * Site password gate is opt-in via SITE_GATE_ENABLED=true (staging/preview).
@@ -48,11 +52,17 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/", request.nextUrl));
   }
 
-  return await updateSession(request);
+  // Partner embeds keep stable unprefixed URLs (no /fr/embed/...).
+  if (pathname.startsWith("/embed")) {
+    return await updateSession(request);
+  }
+
+  const response = handleI18nRouting(request);
+  return await updateSession(request, response);
 }
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|mp4|webm|mov|m4v)$).*)",
   ],
 };

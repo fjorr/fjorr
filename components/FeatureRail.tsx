@@ -243,11 +243,21 @@ export default function FeatureRail({
             const currentScale = film.title_art_scale || 1.0;
             const calculatedWidth = `${baselineWidth * currentScale}px`;
             const titleArtSvg = sanitizeTitleArtSvg(film.title_art_code);
+            const nearActive =
+              Math.abs(index - activeIndex) <= 1 ||
+              (activeIndex === 0 && index === films.length - 1) ||
+              (activeIndex === films.length - 1 && index === 0);
+            const mountHero = nearActive || index === 0;
 
             return (
               <article
                 key={film.id || index}
                 className="relative w-full min-w-full shrink-0 snap-center snap-always aspect-[1/1.618] md:aspect-[4/3] lg:aspect-[16/9] select-none"
+                style={
+                  mountHero
+                    ? undefined
+                    : { contentVisibility: 'auto', containIntrinsicSize: '100vw 56.25vw' }
+                }
               >
                 <PrefetchLink
                   href={`/film/${film.slug || ''}`}
@@ -258,22 +268,30 @@ export default function FeatureRail({
                   }}
                   draggable={false}
                 >
-                  <HeroPicture
-                    wide={film.hero_wide}
-                    clsx={film.hero_clsx}
-                    tall={film.hero_tall}
-                    alt={film.name || 'Featured Film Asset'}
-                    priority={index === 0}
-                    className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none"
-                    imgClassName="object-cover"
-                    onError={(e) => {
-                      e.currentTarget.style.display = 'none';
-                      const link = e.currentTarget.closest('a');
-                      if (link instanceof HTMLElement) {
-                        link.style.background = fallbackBg;
-                      }
-                    }}
-                  />
+                  {mountHero ? (
+                    <HeroPicture
+                      wide={film.hero_wide}
+                      clsx={film.hero_clsx}
+                      tall={film.hero_tall}
+                      alt={film.name || t('featuredAlt')}
+                      priority={index === 0}
+                      className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none"
+                      imgClassName="object-cover"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        const link = e.currentTarget.closest('a');
+                        if (link instanceof HTMLElement) {
+                          link.style.background = fallbackBg;
+                        }
+                      }}
+                    />
+                  ) : (
+                    <div
+                      className="absolute inset-0 z-0 pointer-events-none"
+                      style={{ background: fallbackBg }}
+                      aria-hidden
+                    />
+                  )}
 
                   <div
                     className="absolute inset-x-0 bottom-0 h-1/2 z-10 pointer-events-none"
@@ -391,7 +409,7 @@ export default function FeatureRail({
               type="button"
               onClick={handleTogglePlay}
               className="w-10 h-10 relative rounded-full flex items-center justify-center backdrop-blur-sm transition-all duration-200 active:scale-95 bg-white/10 hover:bg-white/20 border border-white/10 overflow-hidden transform-gpu"
-              aria-label={isPlaying ? 'Pause autoplay loop' : 'Start autoplay loop'}
+              aria-label={isPlaying ? t('pauseAutoplay') : t('startAutoplay')}
             >
               <svg
                 className="absolute inset-0 w-full h-full transform -rotate-90 pointer-events-none"

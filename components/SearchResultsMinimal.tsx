@@ -2,7 +2,6 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { createBrowserClient } from '@supabase/ssr';
 import { useTranslations } from 'next-intl';
 import type { SearchItem } from '@/components/SearchExperience';
 import { useMinimalFilter } from '@/components/MinimalFilterContext';
@@ -15,12 +14,11 @@ import {
 import SearchNadaView from '@/components/SearchNadaView';
 import {
   clearWatchProgress,
-  getWatchProgress,
-  isWatchableProgress,
   trackWatchProgress,
   formatResumeClock,
 } from '@/lib/watch-progress';
 import { useWatchProgressMap } from '@/components/useWatchProgress';
+import { openTheaterFromFilm } from '@/lib/theater-open';
 
 const CinemaTheater = dynamic(() => import('@/components/CinemaTheater'), {
   ssr: false,
@@ -90,71 +88,19 @@ export default function SearchResultsMinimal({ results }: { results: SearchItem[
     [mix, mixes, results, sort, theme]
   );
 
-  const handlePlay = async (item: SearchItem) => {
+  const handlePlay = (item: SearchItem) => {
     if (item.item_type !== 'film' || isComingSoon(item.release_date)) return;
-
-    const openWith = (payload: any, duration?: number | null) => {
-      const saved = getWatchProgress(payload.id || item.id);
-      setStartAt(
-        isWatchableProgress(saved, duration ?? item.runtime) ? saved.seconds : undefined
-      );
-      setSelectedFilm(payload);
-      setShowTheater(true);
-    };
-
-    try {
-      const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-      const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-      if (!url || !key) {
-        openWith({ id: item.id, slug: item.slug, name: item.name, runtime: item.runtime });
-        return;
-      }
-
-      const supabase = createBrowserClient(url, key);
-      const { data: verifiedFilm } = await supabase
-        .from('film')
-        .select(
-          'id, name, slug, mux_playback_id, last_line, story_date, location, runtime, has_subtitles'
-        )
-        .eq('slug', item.slug)
-        .maybeSingle();
-
-      if (!verifiedFilm) {
-        openWith({ id: item.id, slug: item.slug, name: item.name, runtime: item.runtime });
-        return;
-      }
-
-      let flattenedTracks: { code: string; name: string; vtt_url: string }[] = [];
-
-      if (verifiedFilm.has_subtitles !== false) {
-        const { data: junctionTracks } = await supabase
-          .from('language_subtitle')
-          .select(`
-            vtt_url,
-            language (
-              code,
-              name
-            )
-          `)
-          .eq('film_id', verifiedFilm.id);
-
-        flattenedTracks = (junctionTracks || []).map((track: any) => ({
-          code: track.language?.code || 'en',
-          name: track.language?.name || 'English',
-          vtt_url: track.vtt_url || '',
-        }));
-      }
-
-      openWith(
-        {
-          ...verifiedFilm,
-          language_subtitle: flattenedTracks,
-        },
-        verifiedFilm.runtime
-      );
-    } catch {
-      openWith({ id: item.id, slug: item.slug, name: item.name, runtime: item.runtime });
-    }
+    openTheaterFromFilm({
+      film: {
+        id: item.internal_id || item.id,
+        name: item.name,
+        slug: item.slug,
+        runtime: item.runtime ?? null,
+      },
+      setSelectedFilm,
+      setStartAt,
+      setShowTheater,
+    });
   };
 
   return (
@@ -181,7 +127,11 @@ export default function SearchResultsMinimal({ results }: { results: SearchItem[
             >
               <PrefetchLink
                 href={infoHref}
-                className="min-w-0 flex-1 max-w-[380px] flex flex-col gap-1 pr-2 group"
+                className={`min-w-0 flex-1 flex flex-col gap-1 group ${
+                  isFilm
+                    ? 'max-w-[380px] pr-2'
+                    : 'max-w-none sm:max-w-[380px]'
+                }`}
               >
                 <h2 className="font-sans text-[18px] font-bold tracking-tight text-white leading-tight group-hover:text-white/85 transition-colors">
                   {item.name}
@@ -194,25 +144,29 @@ export default function SearchResultsMinimal({ results }: { results: SearchItem[
                 <MetaLine item={item} />
               </PrefetchLink>
 
-              <div className="shrink-0 flex items-center justify-end gap-2">
-                {canPlay && (
-                  <button
-                    type="button"
-                    onClick={() => handlePlay(item)}
-                    className="h-8 px-3 rounded-[6px] bg-white/15 font-sans text-[13px] font-semibold text-white hover:bg-white/25 transition-colors whitespace-nowrap"
+              {isFilm ? (
+                <div className="shrink-0 flex items-center justify-end gap-2">
+                  {canPlay && (
+                    <button
+                      type="button"
+                      onClick={() => handlePlay(item)}
+                      className="h-8 px-3 rounded-[6px] bg-white/15 font-sans text-[13px] font-semibold text-white hover:bg-white/25 transition-colors whitespace-nowrap"
+                    >
+                      {resume
+                        ? t('resume', { time: formatResumeClock(resume.seconds) })
+                        : t('playShort')}
+                    </button>
+                  )}
+                  <PrefetchLink
+                    href={infoHref}
+                    className="h-8 px-3 rounded-[6px] bg-white/5 font-sans text-[13px] font-semibold text-white/55 hover:text-white/80 hover:bg-white/10 transition-colors inline-flex items-center"
                   >
-                    {resume
-                      ? t('resume', { time: formatResumeClock(resume.seconds) })
-                      : t('playShort')}
-                  </button>
-                )}
-                <PrefetchLink
-                  href={infoHref}
-                  className="h-8 px-3 rounded-[6px] bg-white/5 font-sans text-[13px] font-semibold text-white/55 hover:text-white/80 hover:bg-white/10 transition-colors inline-flex items-center"
-                >
-                  {t('info')}
-                </PrefetchLink>
-              </div>
+                    {t('info')}
+                  </PrefetchLink>
+                </div>
+              ) : (
+                <div className="hidden sm:block shrink-0 w-[132px]" aria-hidden />
+              )}
             </div>
           );
         })

@@ -2,18 +2,17 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { createBrowserClient } from '@supabase/ssr';
 import { useMinimalFilter } from '@/components/MinimalFilterContext';
 import TimelineRail, { type TimelineRailItem } from '@/components/TimelineRail';
 import TheaterOpenShell from '@/components/TheaterOpenShell';
 import type { MinimalFilm } from '@/components/MinimalHomeList';
 import type { MinimalArtifact } from '@/components/MinimalArtifactList';
+import { themesFromFilms } from '@/lib/filter-search-items';
 import {
   clearWatchProgress,
-  getWatchProgress,
-  isWatchableProgress,
   trackWatchProgress,
 } from '@/lib/watch-progress';
+import { openTheaterFromFilm } from '@/lib/theater-open';
 
 const CinemaTheater = dynamic(() => import('@/components/CinemaTheater'), {
   ssr: false,
@@ -52,11 +51,7 @@ export default function TimelineHomeList({
       setThemes([]);
       return;
     }
-    const set = new Set<string>();
-    for (const film of films) {
-      if (film.theme) set.add(film.theme);
-    }
-    setThemes(Array.from(set).sort((a, b) => a.localeCompare(b)));
+    setThemes(themesFromFilms(films));
   }, [films, showingArtifacts, setThemes]);
 
   const items = useMemo((): TimelineRailItem[] => {
@@ -83,7 +78,9 @@ export default function TimelineHomeList({
       }
     }
 
-    if (theme !== 'all') next = next.filter((f) => f.theme === theme);
+    if (theme !== 'all') {
+      next = next.filter((f) => (f.themeSlug || f.theme) === theme);
+    }
 
     return next.map((f) => ({
       id: f.id,
@@ -95,89 +92,26 @@ export default function TimelineHomeList({
       filmId: f.id,
       slug: f.slug,
       runtime: f.runtime,
+      mux_playback_id: f.mux_playback_id,
       canResume: !isComingSoon(f.release_date),
     }));
   }, [artifacts, films, mix, mixes, showingArtifacts, theme]);
 
-  const handleResume = async (item: TimelineRailItem) => {
+  const handleResume = (item: TimelineRailItem) => {
     if (!item.canResume || !item.slug) return;
-
-    const openWith = (payload: any, duration?: number | null) => {
-      const saved = getWatchProgress(payload.id || item.filmId || item.id);
-      if (!isWatchableProgress(saved, duration ?? item.runtime)) return;
-      setStartAt(saved.seconds);
-      setSelectedFilm(payload);
-      setShowTheater(true);
-    };
-
-    try {
-      const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-      const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-      if (!url || !key) {
-        openWith({
-          id: item.filmId || item.id,
-          slug: item.slug,
-          name: item.name,
-          runtime: item.runtime,
-        });
-        return;
-      }
-
-      const supabase = createBrowserClient(url, key);
-      const { data: verifiedFilm } = await supabase
-        .from('film')
-        .select(
-          'id, name, slug, mux_playback_id, last_line, story_date, location, runtime, has_subtitles'
-        )
-        .eq('slug', item.slug)
-        .maybeSingle();
-
-      if (!verifiedFilm) {
-        openWith({
-          id: item.filmId || item.id,
-          slug: item.slug,
-          name: item.name,
-          runtime: item.runtime,
-        });
-        return;
-      }
-
-      let flattenedTracks: { code: string; name: string; vtt_url: string }[] = [];
-
-      if (verifiedFilm.has_subtitles !== false) {
-        const { data: junctionTracks } = await supabase
-          .from('language_subtitle')
-          .select(`
-            vtt_url,
-            language (
-              code,
-              name
-            )
-          `)
-          .eq('film_id', verifiedFilm.id);
-
-        flattenedTracks = (junctionTracks || []).map((track: any) => ({
-          code: track.language?.code || 'en',
-          name: track.language?.name || 'English',
-          vtt_url: track.vtt_url || '',
-        }));
-      }
-
-      openWith(
-        {
-          ...verifiedFilm,
-          language_subtitle: flattenedTracks,
-        },
-        verifiedFilm.runtime
-      );
-    } catch {
-      openWith({
+    openTheaterFromFilm({
+      film: {
         id: item.filmId || item.id,
-        slug: item.slug,
         name: item.name,
+        slug: item.slug,
+        mux_playback_id: item.mux_playback_id ?? null,
         runtime: item.runtime,
-      });
-    }
+      },
+      setSelectedFilm,
+      setStartAt,
+      setShowTheater,
+      requireProgress: true,
+    });
   };
 
   return (

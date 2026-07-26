@@ -26,12 +26,37 @@
     "timelineFull": "Timeline",
     "timelineFilmsOnly": "Timeline is films only",
     "film": "Film",
-    "artifact": "Afct"
+    "artifact": "Afct",
+    "toggleMode": "Toggle display mode",
+    "toggleType": "Toggle content type"
   },
   "Timeline": {
     "undated": "Undated",
     "scrollEarlier": "Earlier",
     "scrollLater": "Later"
+  },
+  "Home": {
+    "heroLine1": "The world",
+    "heroLine2": "runs on atoms.",
+    "heroLine3": "And stories.",
+    "learnMore": "Learn more",
+    "noTitles": "No titles available.",
+    "srTitle": "Fjorr — Short films of the world's greatest stories."
+  },
+  "NotFound": {
+    "title": "LOST?",
+    "body": "Better stories this way.",
+    "home": "Home"
+  },
+  "Search": {
+    "placeholder": "Search",
+    "film": "Film",
+    "artifact": "Artifact",
+    "loading": "Loading search…",
+    "emptyBody": "We're building though. Know a story the world needs to hear? Nominate it and get your name in the credits.",
+    "noTeaser": "No contextual reference details configured.",
+    "filmComingSoon": "Film Coming Soon",
+    "didYouMean": "Did you mean {name}?"
   },
   "Film": {
     "play": "Play {runtime}",
@@ -39,6 +64,7 @@
     "resume": "Resume · {time}",
     "info": "Info",
     "comingSoon": "Coming Soon",
+    "comingSoonOnFjorr": "Coming soon on Fjorr",
     "presents": "presents",
     "send": "Send",
     "sendClose": "Close",
@@ -57,7 +83,56 @@
     "transcriptDownload": "Download",
     "transcriptPlayFrom": "Play from here",
     "transcriptNoMatches": "No lines match that search.",
-    "transcriptUnavailable": "Transcript content unavailable for this language."
+    "transcriptUnavailable": "Transcript content unavailable for this language.",
+    "about": "About Film",
+    "specs": "Specifications",
+    "runtimeLabel": "Runtime",
+    "ratingLabel": "Rating",
+    "releasedLabel": "Released",
+    "audioLabel": "Audio",
+    "subtitlesLabel": "Subtitles",
+    "tagsLabel": "Tags",
+    "runtimeMin": "{n} min",
+    "ages": "Ages {n}",
+    "agesFallback": "Ages 4+",
+    "unknownCreator": "Unknown",
+    "relatedArtifacts": "Related Artifacts",
+    "moreFilms": "More Short Films",
+    "featuredAlt": "Featured Film Asset",
+    "posterAlt": "Poster",
+    "startAutoplay": "Start autoplay loop",
+    "pauseAutoplay": "Pause autoplay loop",
+    "notFound": "Film Not Found",
+    "watchOnFjorrMeta": "Watch this short film on Fjorr."
+  },
+  "Theater": {
+    "watchOnFjorr": "Watch on Fjorr",
+    "closeTheater": "Close Theater",
+    "close": "Close",
+    "rolling": "Rolling...",
+    "fallbackMeta": "Theatrical Feature",
+    "ccOff": "Off",
+    "play": "Play",
+    "pause": "Pause",
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "fullscreen": "Fullscreen",
+    "exitFullscreen": "Exit Fullscreen",
+    "enterFullscreen": "Enter Fullscreen",
+    "captions": "Captions",
+    "rewind": "Rewind 10s",
+    "fastForward": "Fast Forward 10s",
+    "fin": "Fin.",
+    "share": "Share",
+    "onward": "Onward",
+    "linkCopied": "Link copied to clipboard"
+  },
+  "Artifact": {
+    "label": "Film Artifact",
+    "relatedFilms": "Related Films",
+    "untitled": "Untitled Connection",
+    "notFound": "Artifact Not Found",
+    "exploreMeta": "Explore this cultural artifact on Fjorr."
   },
   "MinimalList": {
     "filter": "Dials",
@@ -103,10 +178,10 @@
     "signOut": "Sign out",
     "errorGeneric": "Something went wrong. Try again."
   },
-  "Search": {
-    "placeholder": "Search",
-    "film": "Film",
-    "artifact": "Artifact"
+  "Auth": {
+    "errorTitle": "Sign-in didn’t work",
+    "errorFallback": "Something went wrong while signing in.",
+    "tryAgain": "Try again"
   },
   "Nominate": {
     "title": "Nominate.",
@@ -126,10 +201,77 @@
     "nominationLabel": "Nomination {number}"
   },
   "Partner": {
+    "eyebrow": "Partnerships",
     "headlineLine1": "Make",
     "headlineLine2": "'Em Feel.",
+    "headlineFeel": "feel.",
     "description": "We work with brands, studios, and individuals who believe stories shape people. From original films to cultural partnerships, we collaborate to bring meaningful ideas to life.",
-    "imageAlt": "Fjorr Partnerships"
+    "promoBody": "We work with brands, studios, and people who believe stories shape people and culture — and want to make work that does more than entertain.",
+    "imageAlt": "Fjorr Partnerships",
+    "bgAlt": "Partnerships Background",
+    "crowdAlt": "Crowd Feeling Stories"
+  },
+  "About": {
+    "heroThe": "The",
+    "heroWorld": "world",
+    "heroRunsOn": "runs on",
+    "heroAtoms": "atoms.",
+    "heroAnd": "And",
+    "heroStories": "stories.",
+    "manifesto": "We're building\na myth engine.\nShort, cinematic films\nabout the world's\ngreatest stories.\nDesigned to form\nimagination,\ncharacter,\nand cultural literacy.\nJust a few minutes.\nDone right.\nNot to keep you\nglued to glass.\nBut to send you\nback into the world\nwith something to carry.",
+    "logoLabel": "Logo",
+    "logoTitle": "The Cardboard Helmet",
+    "logoBody": "Every explorer starts here.",
+    "nameLabel": "Name",
+    "nameTitle": "Rooted in the Old Norse word fjọr.",
+    "nameBody": "Meaning the primal life-force that keeps living things moving.",
+    "namePronunciation": "[f-yōr] Rhymes with your."
+  },
+  "Privacy": {
+    "title": "PRIVACY",
+    "lastUpdated": "Last Updated",
+    "date": "January 01, 2026",
+    "s1Title": "We Respect Your Privacy",
+    "s1Body": "Fjorr is built to be simple. No accounts. No tracking. No following you around the internet.",
+    "s2Title": "What We Collect",
+    "s2p1": "We only collect personal information if you choose to give it to us—like your email when you subscribe to our newsletter. That's it.",
+    "s2p2": "Like most sites, our hosting provider does receive basic, anonymous server logs: the browser you use, your device, an approximate location (city-level), the pages you visit, and when you visited them.",
+    "s2p3": "These logs help us keep Fjorr secure and running well, and they don't identify you personally.",
+    "s3Title": "How We Use Your Email",
+    "s3Body": "If you subscribe to our newsletter, we'll use your email only to send new film updates and the occasional behind-the-scenes note. You can unsubscribe anytime with a single click. And we don't share, sell, or trade your email with anyone—ever.",
+    "s4Title": "What We Do Not Collect",
+    "s4Item1": "Names",
+    "s4Item2": "Email addresses",
+    "s4Item3": "User accounts",
+    "s4Item4": "Advertising IDs",
+    "s4Item5": "Tracking cookies",
+    "s4Item6": "Personal data for sale or sharing",
+    "s5Title": "Third-Party Services",
+    "s5Body": "We use a video player called MUX to stream our films. It may collect basic, anonymous playback data so the video actually works. If that ever changes, we'll update this policy with the exact details. If we use an email service to send our newsletter, it will store your email only so we can reach you—never for anything else.",
+    "s6Title": "Your Rights",
+    "s6Body": "If you live somewhere with specific privacy laws—California, for example—you have the right to know what data is collected and to ask for it to be deleted. Since we don't collect personal data, there's nothing to delete. If you unsubscribe from the newsletter, your email comes off our list right away.",
+    "s7Title": "Changes to This Policy",
+    "s7Body": "If what we collect or how Fjorr works ever changes, we'll update this page.",
+    "s8Title": "Contact",
+    "s8Body": "If you have questions, you can reach us at:"
+  },
+  "Terms": {
+    "titleLine1": "Terms",
+    "titleLine2": "of Use",
+    "lastUpdated": "Last Updated",
+    "date": "January 01, 2026",
+    "s1Title": "Welcome to Fjorr",
+    "s1Body": "Fjorr is a place for short films and stories. If you're here and watching, these are the terms we play by.",
+    "s2Title": "Use of the Site",
+    "s2Body": "Watch and share our films all you want—for personal use. Just don't copy or remix them without permission. And don't use the site in a way that makes life harder for everyone else.",
+    "s3Title": "Intellectual Property",
+    "s3Body": "All films, visuals, words, and logos on Fjorr belong to us or the people who made them. If you want to use anything commercially, you'll need our permission.",
+    "s4Title": "No Warranties",
+    "s4Body": "Fjorr is offered “as is.” We can't promise perfection or uninterrupted access, but we'll always try to keep things running smoothly.",
+    "s5Title": "Limitation of Liability",
+    "s5Body": "As the law allows, Fjorr isn't responsible for any damages tied to your use of the site.",
+    "s6Title": "Changes to These Terms",
+    "s6Body": "These terms may change once in a while. When they do, we'll update the date up top."
   },
   "Footer": {
     "blurb": "Fjorr is home to short cinematic films about the world's greatest stories. The stories are intended for cultural, educational, and creative purposes.",
@@ -144,5 +286,19 @@
     "configError": "Configuration error. Try again later.",
     "alreadyIn": "Email is already in.",
     "somethingWrong": "Something went wrong. Try again."
+  },
+  "Meta": {
+    "aboutTitle": "About",
+    "aboutDescription": "Short films of the world's greatest stories.",
+    "partnerTitle": "Partner",
+    "partnerDescription": "Partner with Fjorr on films and cultural collaborations.",
+    "nominateTitle": "Nominate",
+    "nominateDescription": "Nominate a story for Fjorr.",
+    "privacyTitle": "Privacy Policy",
+    "privacyDescription": "Fjorr privacy commitment: simple by design.",
+    "termsTitle": "Terms of Use",
+    "termsDescription": "Fjorr terms of use for watching and sharing.",
+    "accountTitle": "Account",
+    "signInTitle": "Sign in"
   }
 }

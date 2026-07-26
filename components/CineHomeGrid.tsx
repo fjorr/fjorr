@@ -4,6 +4,7 @@ import React, { useEffect, useMemo } from 'react';
 import type { SearchItem } from '@/components/SearchExperience';
 import SearchResultsGrid from '@/components/SearchResultsGrid';
 import { useMinimalFilter } from '@/components/MinimalFilterContext';
+import { themesFromFilms } from '@/lib/filter-search-items';
 
 export type CineGridFilm = {
   id: string;
@@ -15,6 +16,7 @@ export type CineGridFilm = {
   blok_tall?: string | null;
   rating?: string | null;
   theme?: string | null;
+  themeSlug?: string | null;
 };
 
 export type CineGridArtifact = {
@@ -39,6 +41,7 @@ function filmToSearchItem(film: CineGridFilm): SearchItem {
     release_date: film.release_date || '',
     rating: film.rating || undefined,
     theme: film.theme || undefined,
+    themeSlug: film.themeSlug || undefined,
     runtime: film.runtime ?? undefined,
   };
 }
@@ -67,11 +70,7 @@ export default function CineHomeGrid({
   const { mix, mixes, contentType, setThemes } = useMinimalFilter();
 
   useEffect(() => {
-    const set = new Set<string>();
-    for (const film of films) {
-      if (film.theme) set.add(film.theme);
-    }
-    setThemes(Array.from(set).sort((a, b) => a.localeCompare(b)));
+    setThemes(themesFromFilms(films));
   }, [films, setThemes]);
 
   const items = useMemo(() => {
