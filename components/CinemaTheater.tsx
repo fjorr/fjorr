@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import type Hls from 'hls.js';
 import { parseLocale } from '@/i18n/config';
 import { absoluteUrl } from '@/lib/site';
+import { expandCaptionCuesForDisplay } from '@/lib/format-caption';
 
 interface CinemaTheaterProps {
   film: {
@@ -352,7 +353,8 @@ export default function CinemaTheater({
         }
       }
       if (currentCue) cuesArray.push(currentCue);
-      setParsedCues(cuesArray);
+      // Timed-split long Whisper cues for on-screen CC only (transcript uses raw VTT).
+      setParsedCues(expandCaptionCuesForDisplay(cuesArray));
     } catch (err) {
       console.error(err);
     }
@@ -677,9 +679,13 @@ export default function CinemaTheater({
 
           <div className="absolute inset-0 bg-black/40 transition-opacity duration-500 pointer-events-none z-10" style={{ opacity: controlsVisible ? 1 : 0 }} />
 
-          {/* Captions Overlay */}
+          {/* Captions: soft chip + timed/wrapped text */}
           {selectedLangCode !== 'none' && currentSubtitleText && (
-            <div className="absolute bottom-[6%] left-1/2 -translate-x-1/2 max-w-[85%] text-center px-5 py-2.5 bg-zinc-950/70 backdrop-blur-md border border-white/10 rounded-[6px] text-[#F5F5F7] font-medium text-[15px] md:text-base tracking-tight leading-relaxed z-25 pointer-events-none select-none font-sans whitespace-pre-line shadow-2xl">
+            <div
+              className={`absolute left-1/2 -translate-x-1/2 w-max max-w-[min(92%,38rem)] px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-[6px] bg-zinc-950/75 backdrop-blur-md border border-white/10 text-center text-[#F5F5F7] font-medium text-[13px] sm:text-[15px] md:text-[16px] tracking-tight leading-[1.35] z-25 pointer-events-none select-none font-sans whitespace-pre-line shadow-2xl transition-[bottom] duration-300 ${
+                controlsVisible && !isPlayingLogo ? 'bottom-[20%]' : 'bottom-[6%]'
+              }`}
+            >
               {currentSubtitleText}
             </div>
           )}
