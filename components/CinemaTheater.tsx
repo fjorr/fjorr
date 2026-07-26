@@ -460,9 +460,9 @@ export default function CinemaTheater({
 
   useEffect(() => {
     const filmPlayer = filmPlayerRef.current;
-    
-    setParsedCues([]);
-    setCurrentSubtitleText('');
+
+    // Don't clear caption cues here — that races the async VTT load and can
+    // leave a raw unsplit Whisper line on screen.
 
     if (hlsRef.current) {
       hlsRef.current.destroy();
@@ -679,10 +679,10 @@ export default function CinemaTheater({
 
           <div className="absolute inset-0 bg-black/40 transition-opacity duration-500 pointer-events-none z-10" style={{ opacity: controlsVisible ? 1 : 0 }} />
 
-          {/* Captions: soft chip + timed/wrapped text */}
+          {/* Captions: narrow chip so long lines wrap; timed-split Whisper cues */}
           {selectedLangCode !== 'none' && currentSubtitleText && (
             <div
-              className={`absolute left-1/2 -translate-x-1/2 w-max max-w-[min(92%,38rem)] px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-[6px] bg-zinc-950/75 backdrop-blur-md border border-white/10 text-center text-[#F5F5F7] font-medium text-[13px] sm:text-[15px] md:text-[16px] tracking-tight leading-[1.35] z-25 pointer-events-none select-none font-sans whitespace-pre-line shadow-2xl transition-[bottom] duration-300 ${
+              className={`absolute left-1/2 -translate-x-1/2 w-[min(92%,36ch)] px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-[6px] bg-zinc-950/75 backdrop-blur-md border border-white/10 text-center text-[#F5F5F7] font-medium text-[13px] sm:text-[15px] md:text-[16px] tracking-tight leading-[1.35] z-25 pointer-events-none select-none font-sans whitespace-pre-line shadow-2xl transition-[bottom] duration-300 ${
                 controlsVisible && !isPlayingLogo ? 'bottom-[20%]' : 'bottom-[6%]'
               }`}
             >

@@ -1,19 +1,19 @@
 /**
  * Cinema caption helpers.
  *
- * - formatCaptionText: soft line-wrap for on-screen display (≤2–3 lines)
+ * - formatCaptionText: soft line-wrap for on-screen display (≤2 lines)
  * - expandCaptionCuesForDisplay: timed-split long Whisper cues so fewer
  *   words show at once — transcript keeps the original VTT untouched
  */
 
-const ONE_LINE = 56;
+const ONE_LINE = 42;
 const MAX_DISPLAY_LINES = 2;
 /** Cues at or under this stay as a single timed block. */
-const SHORT_CUE_CHARS = 64;
-const SHORT_CUE_WORDS = 14;
+const SHORT_CUE_CHARS = 48;
+const SHORT_CUE_WORDS = 10;
 /** Target size for each timed chunk. */
-const CHUNK_TARGET_CHARS = 52;
-const MIN_CHUNK_SECONDS = 1.25;
+const CHUNK_TARGET_CHARS = 40;
+const MIN_CHUNK_SECONDS = 1.0;
 const MAX_TIMED_CHUNKS = 4;
 
 export type CaptionCue = {
@@ -25,8 +25,8 @@ export type CaptionCue = {
 function bestBreakIndex(text: string, preferEnd = false): number {
   const len = text.length;
   const mid = preferEnd ? len * 0.72 : len / 2;
-  const lo = Math.floor(len * (preferEnd ? 0.45 : 0.28));
-  const hi = Math.ceil(len * (preferEnd ? 0.92 : 0.72));
+  const lo = Math.floor(len * (preferEnd ? 0.4 : 0.28));
+  const hi = Math.ceil(len * (preferEnd ? 0.95 : 0.72));
 
   const clause = /[,;:!?…]|\s+[—–-]\s+/g;
   let bestClause = -1;
@@ -111,7 +111,7 @@ export function formatCaptionText(raw: string): string {
 
   if (
     sourceLines.length > 1 &&
-    sourceLines.every((l) => l.length <= ONE_LINE + 8)
+    sourceLines.every((l) => l.length <= ONE_LINE + 6)
   ) {
     return sourceLines.slice(0, MAX_DISPLAY_LINES).join('\n');
   }
@@ -120,15 +120,15 @@ export function formatCaptionText(raw: string): string {
 }
 
 function takeNextChunk(text: string): { chunk: string; rest: string } {
-  if (text.length <= CHUNK_TARGET_CHARS + 10) {
+  if (text.length <= CHUNK_TARGET_CHARS + 8) {
     return { chunk: text, rest: '' };
   }
 
-  const window = text.slice(0, Math.min(text.length, Math.floor(CHUNK_TARGET_CHARS * 1.45)));
+  const window = text.slice(0, Math.min(text.length, Math.floor(CHUNK_TARGET_CHARS * 1.5)));
   const idx = bestBreakIndex(window, true);
   if (idx <= 0 || idx >= text.length) {
     const space = text.lastIndexOf(' ', CHUNK_TARGET_CHARS);
-    if (space > 12) {
+    if (space > 10) {
       return {
         chunk: text.slice(0, space).trim(),
         rest: text.slice(space).trim(),
@@ -176,13 +176,16 @@ function splitTimedChunks(text: string, maxChunks: number): string[] {
 
 /**
  * Expand VTT cues into timed display segments for the theater overlay.
- * Short cues pass through; long Whisper lines become sequential chunks.
+ * Chunk count follows both duration and text length so long Whisper lines
+ * still split even when the cue window is short.
  */
 export function expandCaptionCuesForDisplay(cues: CaptionCue[]): CaptionCue[] {
   return cues.flatMap((cue) => {
     const duration = Math.max(0.05, cue.endTime - cue.startTime);
-    const maxByTime = Math.max(1, Math.floor(duration / MIN_CHUNK_SECONDS));
-    const maxChunks = Math.min(MAX_TIMED_CHUNKS, maxByTime);
+    const normalized = normalizeCueText(cue.text);
+    const byTime = Math.max(1, Math.floor(duration / MIN_CHUNK_SECONDS));
+    const byChars = Math.max(1, Math.ceil(normalized.length / CHUNK_TARGET_CHARS));
+    const maxChunks = Math.min(MAX_TIMED_CHUNKS, Math.max(byTime, byChars));
     const chunks = splitTimedChunks(cue.text, maxChunks);
 
     if (chunks.length <= 1) {
