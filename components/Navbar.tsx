@@ -4,7 +4,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useLocale, useTranslations } from 'next-intl';
 import { Icon } from '@/components/ui/Icons';
-import AccountNavLink from '@/components/AccountNavLink';
 import { localeLabels, locales, stripLocalePrefix, type AppLocale } from '@/i18n/config';
 import { Link, usePathname, useRouter } from '@/i18n/navigation';
 
@@ -299,18 +298,6 @@ function Navbar({ variant = 'light' }: NavbarProps) {
                         );
                       })}
                     </nav>
-                  </div>
-
-                  <div
-                    className={`pt-5 border-t ${
-                      variant === 'light' ? 'border-white/10' : 'border-black/8'
-                    }`}
-                  >
-                    <AccountNavLink
-                      onNavigate={closePanel}
-                      onSignIn={() => openAuth('/account')}
-                      className={`font-sans text-[15px] font-semibold tracking-tight transition-opacity hover:opacity-70 ${textColor}`}
-                    />
                   </div>
 
                   <div
