@@ -811,6 +811,8 @@ export default function CinemaTheater({
             isScrubbing={isScrubbing}
             isLight={isLight}
             hideElapsed={showCCMenu}
+            logoLabel={isEmbed ? t('watchOnFjorr') : t('closeTheater')}
+            onLogoClick={handleCloseNavigation}
             filmTitle={film?.name || undefined}
             filmMeta={(() => {
               const dateVal = film?.story_date || '';
@@ -820,14 +822,14 @@ export default function CinemaTheater({
             })()}
             captionsSlot={
               selectedLangCode !== 'none' && currentSubtitleText ? (
-                <p className="font-sans text-[13px] font-normal tracking-normal leading-snug whitespace-pre-line">
+                <p className="font-sans text-[15px] sm:text-[13px] font-normal tracking-normal leading-snug whitespace-pre-line">
                   {currentSubtitleText}
                 </p>
               ) : null
             }
             toolsSlot={
               showCCMenu ? (
-                <div className="min-w-0 flex-1 flex items-center h-[14px] font-mono text-[11px] font-normal leading-none">
+                <div className="min-w-0 flex-1 flex items-center h-5 sm:h-[14px] font-mono text-[13px] sm:text-[12px] font-medium leading-none">
                   <style
                     dangerouslySetInnerHTML={{
                       __html: `.fjorr-cc-scroll::-webkit-scrollbar{display:none!important}`,
@@ -849,7 +851,7 @@ export default function CinemaTheater({
                     aria-label="Scroll languages left"
                     disabled={!ccCanScrollLeft}
                     onClick={() => scrollCcStrip(-1)}
-                    className={`shrink-0 w-4 h-[14px] flex items-center justify-center border-0 outline-none leading-none transition-opacity ${
+                    className={`shrink-0 w-5 sm:w-4 h-5 sm:h-[14px] flex items-center justify-center border-0 outline-none leading-none transition-opacity ${
                       ccCanScrollLeft
                         ? 'cursor-pointer opacity-70 hover:opacity-100'
                         : 'opacity-25 cursor-default'
@@ -867,7 +869,7 @@ export default function CinemaTheater({
                   </button>
                   <div
                     ref={ccScrollRef}
-                    className="fjorr-cc-scroll min-w-0 flex-1 flex items-center gap-2.5 h-[14px] overflow-x-auto overflow-y-hidden overscroll-x-contain scroll-smooth snap-x snap-mandatory"
+                    className="fjorr-cc-scroll min-w-0 flex-1 flex items-center gap-2.5 h-5 sm:h-[14px] overflow-x-auto overflow-y-hidden overscroll-x-contain scroll-smooth snap-x snap-mandatory"
                     style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                   >
                     {captionMenuItems(tracks).map((item) => {
@@ -901,7 +903,7 @@ export default function CinemaTheater({
                     aria-label="Scroll languages right"
                     disabled={!ccCanScrollRight}
                     onClick={() => scrollCcStrip(1)}
-                    className={`shrink-0 w-4 h-[14px] flex items-center justify-center border-0 outline-none leading-none transition-opacity ${
+                    className={`shrink-0 w-5 sm:w-4 h-5 sm:h-[14px] flex items-center justify-center border-0 outline-none leading-none transition-opacity ${
                       ccCanScrollRight
                         ? 'cursor-pointer opacity-70 hover:opacity-100'
                         : 'opacity-25 cursor-default'
@@ -923,31 +925,34 @@ export default function CinemaTheater({
                   <button
                     type="button"
                     onClick={() => setShowCCMenu(true)}
-                    className={`font-mono text-[11px] font-normal tracking-[0.08em] uppercase bg-transparent border-0 outline-none cursor-pointer p-0 leading-none whitespace-nowrap transition-opacity hover:opacity-100 ${
+                    aria-label={t('captions')}
+                    className={`font-mono text-[13px] sm:text-[12px] font-medium tracking-[0.08em] uppercase bg-transparent border-0 outline-none cursor-pointer p-0 leading-none whitespace-nowrap transition-opacity hover:opacity-100 ${
                       selectedLangCode !== 'none'
                         ? 'text-[#ffd446] opacity-100'
                         : 'opacity-70'
                     }`}
                   >
-                    {t('captions')}
+                    Subs
                   </button>
                   <button
                     type="button"
                     onClick={toggleMute}
-                    className={`font-mono text-[11px] font-normal tracking-[0.08em] uppercase bg-transparent border-0 outline-none cursor-pointer p-0 leading-none whitespace-nowrap transition-opacity hover:opacity-100 ${
+                    aria-label={isMuted ? t('unmute') : t('mute')}
+                    className={`font-mono text-[13px] sm:text-[12px] font-medium tracking-[0.08em] uppercase bg-transparent border-0 outline-none cursor-pointer p-0 leading-none whitespace-nowrap transition-opacity hover:opacity-100 ${
                       isMuted
                         ? 'text-[#d90429] opacity-100'
                         : 'opacity-70'
                     }`}
                   >
-                    {isMuted ? t('unmute') : t('mute')}
+                    {isMuted ? 'Unmute' : 'Mute'}
                   </button>
                   <button
                     type="button"
                     onClick={toggleFullscreen}
-                    className="font-mono text-[11px] font-normal tracking-[0.08em] uppercase bg-transparent border-0 outline-none cursor-pointer p-0 leading-none whitespace-nowrap opacity-70 hover:opacity-100"
+                    aria-label={isFullscreen ? t('exitFullscreen') : t('fullscreen')}
+                    className="font-mono text-[13px] sm:text-[12px] font-medium tracking-[0.08em] uppercase bg-transparent border-0 outline-none cursor-pointer p-0 leading-none whitespace-nowrap opacity-70 hover:opacity-100"
                   >
-                    {isFullscreen ? t('exitFullscreen') : t('fullscreen')}
+                    {isFullscreen ? 'Exit' : 'Full'}
                   </button>
                 </>
               )
