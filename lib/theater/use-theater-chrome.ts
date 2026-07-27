@@ -43,6 +43,8 @@ export function useTheaterChrome({
   const hideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastMoveRef = useRef(0);
 
+  const hideDelayMs = chassisMode ? 2200 : 2000;
+
   const showUIControls = useCallback(() => {
     if (isPlayingLogo) {
       setControlsVisible(false);
@@ -54,8 +56,8 @@ export function useTheaterChrome({
       if (isPlaying && !showCCMenu && !isScrubbing) {
         setControlsVisible(false);
       }
-    }, 2000);
-  }, [isPlayingLogo, isPlaying, showCCMenu, isScrubbing]);
+    }, hideDelayMs);
+  }, [isPlayingLogo, isPlaying, showCCMenu, isScrubbing, hideDelayMs]);
 
   // Auto-hide after playback starts
   useEffect(() => {
@@ -63,12 +65,12 @@ export function useTheaterChrome({
       if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
       hideTimeoutRef.current = setTimeout(() => {
         setControlsVisible(false);
-      }, 2000);
+      }, hideDelayMs);
     }
     return () => {
       if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
     };
-  }, [isPlaying, showCCMenu, isScrubbing, isPlayingLogo]);
+  }, [isPlaying, showCCMenu, isScrubbing, isPlayingLogo, hideDelayMs]);
 
   // Ignore the opening click/touch that mounted the theater.
   useEffect(() => {
