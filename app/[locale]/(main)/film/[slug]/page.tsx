@@ -63,10 +63,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function FilmDetailPage({ params }: PageProps) {
   const { slug: urlSlug } = await params;
   return (
-    <div className="w-full min-h-screen bg-[#1F1F1F] text-white flex flex-col items-center pt-0 -mt-[70px] relative z-0">
+    <div className="w-full min-h-screen bg-[var(--page-bg)] text-[var(--page-fg)] flex flex-col items-center pt-[12px] relative z-0">
       <Suspense
         fallback={
-          <div className="w-full flex justify-center bg-[#1F1F1F] animate-pulse">
+          <div className="w-full flex justify-center bg-[var(--page-bg)] animate-pulse">
             <div className="w-full relative aspect-[1/1.618] md:aspect-[4/3] lg:aspect-[16/9] overflow-hidden">
               <ServerSafeSkeleton variant="feature" />
               <div className="absolute inset-x-0 bottom-0 px-8 md:px-12 pb-14 md:pb-16 flex flex-col items-center md:items-start gap-4 z-10">

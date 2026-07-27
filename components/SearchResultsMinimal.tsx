@@ -41,7 +41,7 @@ function MetaLine({ item }: { item: SearchItem }) {
 
   if (item.item_type === 'film' && comingSoon) {
     return (
-      <p className="font-sans text-[11px] font-medium capitalize tracking-normal text-white/30">
+      <p className="font-sans text-[11px] font-medium capitalize tracking-normal text-page-faint">
         {t('comingSoon')}
       </p>
     );
@@ -58,14 +58,14 @@ function MetaLine({ item }: { item: SearchItem }) {
 
   if (parts.length === 0) {
     return (
-      <p className="font-sans text-[11px] font-medium capitalize tracking-normal text-white/30">
+      <p className="font-sans text-[11px] font-medium capitalize tracking-normal text-page-faint">
         {item.item_type === 'film' ? 'Film' : 'Artifact'}
       </p>
     );
   }
 
   return (
-    <p className="font-sans text-[11px] font-medium capitalize tracking-normal text-white/30">
+    <p className="font-sans text-[11px] font-medium capitalize tracking-normal text-page-faint">
       {parts.join(' - ')}
     </p>
   );
@@ -104,7 +104,7 @@ export default function SearchResultsMinimal({ results }: { results: SearchItem[
   };
 
   return (
-    <div className="w-full max-w-[600px] mx-auto flex flex-col divide-y divide-white/[0.06]">
+    <div className="w-full max-w-[600px] mx-auto flex flex-col divide-y divide-page-faint">
       {visibleResults.length === 0 ? (
         <div className="flex w-full justify-center py-6">
           <SearchNadaView />
@@ -133,11 +133,11 @@ export default function SearchResultsMinimal({ results }: { results: SearchItem[
                     : 'max-w-none sm:max-w-[380px]'
                 }`}
               >
-                <h2 className="font-sans text-[18px] font-bold tracking-tight text-white leading-tight group-hover:text-white/85 transition-colors">
+                <h2 className="font-sans text-[18px] font-bold tracking-tight text-page leading-tight group-hover:opacity-80 transition-opacity">
                   {item.name}
                 </h2>
                 {item.teaser && (
-                  <p className="font-sans text-[14px] font-normal text-white/70 leading-snug line-clamp-2">
+                  <p className="font-sans text-[14px] font-normal text-page-muted leading-snug line-clamp-2">
                     {item.teaser}
                   </p>
                 )}
@@ -150,7 +150,7 @@ export default function SearchResultsMinimal({ results }: { results: SearchItem[
                     <button
                       type="button"
                       onClick={() => handlePlay(item)}
-                      className="h-8 px-3 rounded-[6px] bg-white/15 font-sans text-[13px] font-semibold text-white hover:bg-white/25 transition-colors whitespace-nowrap"
+                      className="h-8 px-3 rounded-[6px] bg-page-chip-active font-sans text-[13px] font-semibold text-page hover:bg-page-chip-hover transition-colors whitespace-nowrap"
                     >
                       {resume
                         ? t('resume', { time: formatResumeClock(resume.seconds) })
@@ -159,7 +159,7 @@ export default function SearchResultsMinimal({ results }: { results: SearchItem[
                   )}
                   <PrefetchLink
                     href={infoHref}
-                    className="h-8 px-3 rounded-[6px] bg-white/5 font-sans text-[13px] font-semibold text-white/55 hover:text-white/80 hover:bg-white/10 transition-colors inline-flex items-center"
+                    className="h-8 px-3 rounded-[6px] bg-page-chip font-sans text-[13px] font-semibold text-page-muted hover:text-page hover:bg-page-chip-hover transition-colors inline-flex items-center"
                   >
                     {t('info')}
                   </PrefetchLink>

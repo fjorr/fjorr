@@ -15,7 +15,10 @@
     "language": "Idioma",
     "languages": "Idiomas",
     "signIn": "Iniciar sesión o registrarse",
-    "account": "Cuenta"
+    "account": "Cuenta",
+    "appearance": "Apariencia",
+    "appearanceDark": "Oscuro",
+    "appearanceLight": "Claro"
   },
   "DisplayMode": {
     "cinematic": "Cine",

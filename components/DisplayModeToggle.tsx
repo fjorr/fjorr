@@ -61,7 +61,7 @@ export default function DisplayModeToggle() {
   ];
 
   return (
-    <div className="inline-flex shrink-0 items-center gap-0.5 rounded-[8px] p-0.5 bg-white/5">
+    <div className="inline-flex shrink-0 items-center gap-0.5 rounded-[8px] p-0.5 bg-page-chip">
       {options.map((option) => {
         const active = mode === option.id;
         return (
@@ -74,8 +74,8 @@ export default function DisplayModeToggle() {
             onClick={() => setMode(option.id)}
             className={`w-7 h-7 sm:w-8 sm:h-8 inline-flex items-center justify-center rounded-[6px] transition-colors ${
               active
-                ? 'bg-white/15 text-white'
-                : 'text-white/40 hover:text-white/70'
+                ? 'bg-page-chip-active text-page'
+                : 'text-page-faint hover:text-page-muted'
             }`}
           >
             <ModeIcon mode={option.id} />

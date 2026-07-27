@@ -82,10 +82,10 @@ export default function BrowseControlBar({
           }}
           className={`h-7 sm:h-8 px-2 sm:px-3 shrink-0 rounded-[6px] font-sans text-[11px] sm:text-xs font-semibold transition-colors inline-flex items-center gap-1 sm:gap-1.5 ${
             mixesDisabled
-              ? 'bg-white/[0.03] text-white/25 cursor-not-allowed'
+              ? 'bg-page-chip text-page-faint cursor-not-allowed'
               : panel === 'mixes' || mix !== 'all'
-                ? 'bg-white/15 text-white'
-                : 'bg-white/5 text-white/55 hover:text-white/80 hover:bg-white/10'
+                ? 'bg-page-chip-active text-page'
+                : 'bg-page-chip text-page-muted hover:text-page hover:bg-page-chip-hover'
           }`}
           aria-expanded={panel === 'mixes'}
           aria-disabled={mixesDisabled}
@@ -101,8 +101,8 @@ export default function BrowseControlBar({
           onClick={() => toggle('dials')}
           className={`h-7 sm:h-8 px-2 sm:px-3 shrink-0 rounded-[6px] font-sans text-[11px] sm:text-xs font-semibold transition-colors inline-flex items-center gap-1 sm:gap-1.5 ${
             panel === 'dials' || dialsHaveValue
-              ? 'bg-white/15 text-white'
-              : 'bg-white/5 text-white/55 hover:text-white/80 hover:bg-white/10'
+              ? 'bg-page-chip-active text-page'
+              : 'bg-page-chip text-page-muted hover:text-page hover:bg-page-chip-hover'
           }`}
           aria-expanded={panel === 'dials'}
         >

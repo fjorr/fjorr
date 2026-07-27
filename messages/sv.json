@@ -15,7 +15,10 @@
     "language": "Språk",
     "languages": "Språk",
     "signIn": "Logga in eller skapa konto",
-    "account": "Konto"
+    "account": "Konto",
+    "appearance": "Utseende",
+    "appearanceDark": "Mörkt",
+    "appearanceLight": "Ljust"
   },
   "DisplayMode": {
     "cinematic": "Bio",

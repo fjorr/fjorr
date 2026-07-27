@@ -15,7 +15,10 @@
     "language": "भाषा",
     "languages": "भाषाएँ",
     "signIn": "लॉग इन करें या साइन अप करें",
-    "account": "खाता"
+    "account": "खाता",
+    "appearance": "दिखावट",
+    "appearanceDark": "डार्क",
+    "appearanceLight": "लाइट"
   },
   "DisplayMode": {
     "cinematic": "सिने",

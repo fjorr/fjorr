@@ -20,8 +20,9 @@ interface ResultsGridProps {
   postersOnly?: boolean;
 }
 
+/** Always dark glass — badges sit on posters regardless of site theme. */
 const glassBadgeStyle: React.CSSProperties = {
-  backgroundColor: 'color-mix(in srgb, var(--page-bg-color, #1F1F1F) 72%, transparent)',
+  backgroundColor: 'color-mix(in srgb, #1F1F1F 72%, transparent)',
   backdropFilter: 'blur(24px) saturate(1.4)',
   WebkitBackdropFilter: 'blur(24px) saturate(1.4)',
   transform: 'translateZ(0)',
@@ -95,7 +96,7 @@ export default function SearchResultsGrid({ results, postersOnly = false }: Resu
               animationDelay: gridStaggerDelay,
             }}
           >
-            <div className="w-full aspect-[2/3] rounded-[8px] border border-white/5 bg-zinc-900/40 overflow-hidden relative shadow-xl group-hover:border-white/10 transition-all duration-300">
+            <div className="w-full aspect-[2/3] rounded-[8px] border-0 dark:border dark:border-white/5 bg-zinc-900/40 overflow-hidden relative shadow-xl dark:group-hover:border-white/10 transition-all duration-300">
               {item.blok_tall ? (
                 <Image
                   src={item.blok_tall}
@@ -135,17 +136,17 @@ export default function SearchResultsGrid({ results, postersOnly = false }: Resu
 
             {!postersOnly && (
               <div className="flex flex-col gap-1 pl-0.5">
-                <h2 className="font-sans font-black text-base leading-normal text-white transition-opacity group-hover:opacity-80">
+                <h2 className="font-sans font-black text-base leading-normal text-page transition-opacity group-hover:opacity-80">
                   {item.name}
                 </h2>
 
-                <div className="font-sans font-medium text-[11px] tracking-normal capitalize text-white/40 flex items-center min-h-[16px] truncate">
+                <div className="font-sans font-medium text-[11px] tracking-normal capitalize text-page-faint flex items-center min-h-[16px] truncate">
                   {isFilm ? (
                     isFutureRelease ? (
                       <span className="text-[#6db7f8] font-semibold">{tSearch('filmComingSoon')}</span>
                     ) : (
                       <div className="flex items-center gap-x-1.5 dynamic-meta-row capitalize truncate">
-                        <span className="font-extrabold text-white/70">{tSearch('film')}</span>
+                        <span className="font-extrabold text-page-muted">{tSearch('film')}</span>
                         {item.theme && <span className="truncate max-w-[90px]">{item.theme}</span>}
                         {runtimeMinutes && <span>{runtimeMinutes}</span>}
                       </div>
@@ -153,7 +154,7 @@ export default function SearchResultsGrid({ results, postersOnly = false }: Resu
                   ) : (
                     <div className="flex items-center gap-x-1.5 capitalize truncate">
                       {item.label && (
-                        <span className="font-extrabold text-white/70 truncate max-w-[90px]">
+                        <span className="font-extrabold text-page-muted truncate max-w-[90px]">
                           {item.label}
                         </span>
                       )}
@@ -162,13 +163,13 @@ export default function SearchResultsGrid({ results, postersOnly = false }: Resu
                       )}
                       {displayYear && <span>{displayYear}</span>}
                       {!item.label && !item.creator && !displayYear && (
-                        <span className="text-white/30">{tSearch('artifact')}</span>
+                        <span className="text-page-faint">{tSearch('artifact')}</span>
                       )}
                     </div>
                   )}
                 </div>
 
-                <p className="font-sans font-medium text-[13px] leading-snug text-white/60 tracking-normal line-clamp-2 mt-0.5">
+                <p className="font-sans font-medium text-[13px] leading-snug text-page-muted tracking-normal line-clamp-2 mt-0.5">
                   {item.teaser || tSearch('noTeaser')}
                 </p>
               </div>

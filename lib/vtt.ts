@@ -43,9 +43,10 @@ export function parseVttCues(rawVtt: string | null | undefined): VttCue[] {
       const [startRaw, endRaw] = timeRow.split('-->').map((p) => p.trim());
       const startSeconds = parseVttTimeToSeconds(startRaw || '');
       const endSeconds = parseVttTimeToSeconds(endRaw || '');
+      // Theater overlay keeps intentional cue line breaks; transcript search still works.
       const dialogue = lines
         .slice(lines.findIndex((l) => l.includes('-->')) + 1)
-        .join(' ')
+        .join('\n')
         .replace(/<[^>]+>/g, '')
         .trim();
 
@@ -57,4 +58,56 @@ export function parseVttCues(rawVtt: string | null | undefined): VttCue[] {
       };
     })
     .filter((cue) => cue.dialogue.length > 0);
+}
+
+/**
+ * Binary search for the active cue at `timeSeconds`.
+ * Cues must be sorted by startSeconds (parseVttCues order is fine).
+ */
+export function findActiveCue(
+  cues: VttCue[],
+  timeSeconds: number
+): VttCue | null {
+  if (!cues.length) return null;
+  let lo = 0;
+  let hi = cues.length - 1;
+  let candidate: VttCue | null = null;
+
+  while (lo <= hi) {
+    const mid = (lo + hi) >> 1;
+    const cue = cues[mid];
+    if (timeSeconds < cue.startSeconds) {
+      hi = mid - 1;
+    } else {
+      candidate = cue;
+      lo = mid + 1;
+    }
+  }
+
+  if (!candidate) return null;
+  if (timeSeconds >= candidate.startSeconds && timeSeconds <= candidate.endSeconds) {
+    return candidate;
+  }
+  return null;
+}
+
+/** Advancing pointer while playing forward — O(1) amortized. */
+export function advanceActiveCueIndex(
+  cues: VttCue[],
+  timeSeconds: number,
+  fromIndex: number
+): { index: number; cue: VttCue | null } {
+  if (!cues.length) return { index: -1, cue: null };
+
+  let i = Math.max(0, Math.min(fromIndex, cues.length - 1));
+  if (fromIndex < 0) i = 0;
+
+  while (i + 1 < cues.length && timeSeconds >= cues[i + 1].startSeconds) i++;
+  while (i > 0 && timeSeconds < cues[i].startSeconds) i--;
+
+  const cue = cues[i];
+  if (timeSeconds >= cue.startSeconds && timeSeconds <= cue.endSeconds) {
+    return { index: i, cue };
+  }
+  return { index: i, cue: null };
 }

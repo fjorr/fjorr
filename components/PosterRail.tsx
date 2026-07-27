@@ -128,7 +128,7 @@ export default function PosterRail({ title, items }: PosterRailProps) {
       >
         <h3
           ref={titleRef}
-          className="font-sans font-bold text-[18px] text-white/90 tracking-tight capitalize whitespace-nowrap"
+          className="font-sans font-bold text-[18px] text-page tracking-tight capitalize whitespace-nowrap"
         >
           {title}
         </h3>
@@ -138,14 +138,14 @@ export default function PosterRail({ title, items }: PosterRailProps) {
             <button
               type="button"
               onClick={() => scroll('left')}
-              className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/40 hover:text-white/80 transition-all duration-200 text-[16px] font-sans font-bold cursor-pointer pb-0.5"
+              className="w-8 h-8 rounded-full bg-page-chip hover:bg-page-chip-hover flex items-center justify-center text-page-faint hover:text-page transition-all duration-200 text-[16px] font-sans font-bold cursor-pointer pb-0.5"
             >
               &lsaquo;
             </button>
             <button
               type="button"
               onClick={() => scroll('right')}
-              className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/40 hover:text-white/80 transition-all duration-200 text-[16px] font-sans font-bold cursor-pointer pb-0.5"
+              className="w-8 h-8 rounded-full bg-page-chip hover:bg-page-chip-hover flex items-center justify-center text-page-faint hover:text-page transition-all duration-200 text-[16px] font-sans font-bold cursor-pointer pb-0.5"
             >
               &rsaquo;
             </button>
@@ -176,7 +176,7 @@ export default function PosterRail({ title, items }: PosterRailProps) {
                 ${hasEnteredScreen ? 'opacity-100' : 'opacity-0'}`}
               style={{ transitionDelay: hasEnteredScreen ? delay : '0ms' }}
             >
-              <div className="w-full aspect-[2/3] rounded-[8px] bg-zinc-900/40 border border-white/5 overflow-hidden relative shadow-xl flex items-center justify-center [@media(hover:hover)_and_(pointer:fine)]:transition-transform [@media(hover:hover)_and_(pointer:fine)]:duration-300 [@media(hover:hover)_and_(pointer:fine)]:group-hover/card:scale-[1.02]">
+              <div className="w-full aspect-[2/3] rounded-[8px] bg-zinc-900/40 border-0 dark:border dark:border-white/5 overflow-hidden relative shadow-xl flex items-center justify-center [@media(hover:hover)_and_(pointer:fine)]:transition-transform [@media(hover:hover)_and_(pointer:fine)]:duration-300 [@media(hover:hover)_and_(pointer:fine)]:group-hover/card:scale-[1.02]">
                 {item.image ? (
                   <Image
                     src={item.image}
@@ -188,7 +188,7 @@ export default function PosterRail({ title, items }: PosterRailProps) {
                   />
                 ) : (
                   <div
-                    className="w-full h-full flex items-center justify-center p-4 text-center text-white/30 font-sans font-medium text-[11px]"
+                    className="w-full h-full flex items-center justify-center p-4 text-center text-page-faint font-sans font-medium text-[11px]"
                     style={{ background: 'linear-gradient(to bottom, #1C1C1E, #0A0A0C)' }}
                   >
                     {item.label}

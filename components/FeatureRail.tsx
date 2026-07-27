@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import HeroPicture from '@/components/HeroPicture';
 import PrefetchLink from '@/components/PrefetchLink';
-import { sanitizeTitleArtSvg } from '@/lib/sanitize-svg';
+import { resolveTitleArtColor, sanitizeTitleArtSvg } from '@/lib/sanitize-svg';
 
 interface FilmAsset {
   id: string;
@@ -228,7 +228,7 @@ export default function FeatureRail({
   };
 
   return (
-    <section className="w-full flex justify-center bg-[#1F1F1F]">
+    <section className="w-full flex justify-center bg-[var(--page-bg)]">
       <style dangerouslySetInnerHTML={{ __html: RAIL_SCROLLBAR_CSS }} />
 
       {/* Avoid overflow-hidden here — it breaks nested horizontal swipe on iOS Safari. */}
@@ -311,7 +311,7 @@ export default function FeatureRail({
                       className="mb-4 w-full max-w-[240px] md:max-w-[380px] flex items-center justify-center md:justify-start [&>svg]:w-full [&>svg]:h-auto"
                       style={
                         {
-                          color: film.title_art_hex || '#FFFFFF',
+                          color: resolveTitleArtColor(film.title_art_hex),
                           '--desktop-width': calculatedWidth,
                         } as React.CSSProperties
                       }

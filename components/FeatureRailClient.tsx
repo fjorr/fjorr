@@ -67,7 +67,7 @@ export default function FeatureRailClient({ films }: { films: any[] }) {
   if (!films?.length) return null;
 
   return (
-    <div className="w-full relative bg-[#1F1F1F]">
+    <div className="w-full relative bg-[var(--page-bg)]">
       <FeatureRail
         films={films}
         activeIndex={activeIndex}

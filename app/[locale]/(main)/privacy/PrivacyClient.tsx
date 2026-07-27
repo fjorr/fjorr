@@ -31,7 +31,7 @@ export default function PrivacyClient() {
   }, [targetText]);
 
   return (
-    <div className="w-full min-h-screen pt-16 pb-24 px-[10%] text-left flex flex-col items-center">
+    <div className="w-full min-h-screen bg-[var(--page-bg)] text-page pt-16 pb-24 px-[10%] text-left flex flex-col items-center">
       <div className="w-full max-w-lg flex flex-col">
 
         {/* 🧠 STRUCTURED DATA: AI Compliance Schema */}
@@ -50,7 +50,7 @@ export default function PrivacyClient() {
         
         {/* HERO TITLE (Pure Monospace Decrypt String) */}
         <div className="w-full text-center mb-4 select-none">
-          <h1 className="font-mono text-5xl md:text-6xl uppercase tracking-tight leading-none font-semibold text-white min-h-[48px] md:min-h-[60px]">
+          <h1 className="font-mono text-5xl md:text-6xl uppercase tracking-tight leading-none font-semibold text-page min-h-[48px] md:min-h-[60px]">
             {displayedText}
           </h1>
         </div>
@@ -60,7 +60,7 @@ export default function PrivacyClient() {
           <div className="w-full flex flex-col animate-in fade-in slide-in-from-bottom-3 duration-700 fill-mode-both">
             
             {/* THE EDITORIAL DATE TRACKER HEADER */}
-            <div className="w-full text-center flex flex-col gap-1.5 mb-16 font-mono font-bold text-xs tracking-relaxed text-white/40 uppercase">
+            <div className="w-full text-center flex flex-col gap-1.5 mb-16 font-mono font-bold text-xs tracking-relaxed text-page-faint uppercase">
               <span>{t('lastUpdated')}</span>
               <span>{t('date')}</span>
             </div>
@@ -70,20 +70,20 @@ export default function PrivacyClient() {
               
               {/* SECTION 1 */}
               <section className="flex flex-col gap-2">
-                <h2 className="font-sans text-lg font-bold text-white">
+                <h2 className="font-sans text-lg font-bold text-page">
                   {t('s1Title')}
                 </h2>
-                <p className="font-sans text-[15px] leading-normal text-white/60 ">
+                <p className="font-sans text-[15px] leading-normal text-page-muted ">
                   {t('s1Body')}
                 </p>
               </section>
 
               {/* SECTION 2 */}
               <section className="flex flex-col gap-4">
-                <h2 className="font-sans text-lg font-bold text-white ">
+                <h2 className="font-sans text-lg font-bold text-page ">
                   {t('s2Title')}
                 </h2>
-                <div className="flex flex-col gap-3 font-sans text-[15px] leading-normal text-white/60">
+                <div className="flex flex-col gap-3 font-sans text-[15px] leading-normal text-page-muted">
                   <p>
                     {t('s2p1')}
                   </p>
@@ -98,81 +98,81 @@ export default function PrivacyClient() {
 
               {/* SECTION 3 */}
               <section className="flex flex-col gap-2">
-                <h2 className="font-sans text-lg font-bold text-white ">
+                <h2 className="font-sans text-lg font-bold text-page ">
                   {t('s3Title')}
                 </h2>
-                <p className="font-sans text-[15px] leading-normal text-white/60 ">
+                <p className="font-sans text-[15px] leading-normal text-page-muted ">
                   {t('s3Body')}
                 </p>
               </section>
 
               {/* SECTION 4 (THE BULLET POINT MATRIX) */}
               <section className="flex flex-col gap-3">
-                <h2 className="font-sans text-lg font-bold text-white ">
+                <h2 className="font-sans text-lg font-bold text-page ">
                   {t('s4Title')}
                 </h2>
-                <ul className="list-none flex flex-col gap-1.5 font-sans text-[15px] text-white/60  pl-1.5">
+                <ul className="list-none flex flex-col gap-1.5 font-sans text-[15px] text-page-muted  pl-1.5">
                   <li className="flex items-center gap-2">
-                    <span className="text-white/30 text-xs font-bold">•</span> {t('s4Item1')}
+                    <span className="text-page-faint text-xs font-bold">•</span> {t('s4Item1')}
                   </li>
                   <li className="flex items-center gap-2">
-                    <span className="text-white/30 text-xs font-bold">•</span> {t('s4Item2')}
+                    <span className="text-page-faint text-xs font-bold">•</span> {t('s4Item2')}
                   </li>
                   <li className="flex items-center gap-2">
-                    <span className="text-white/30 text-xs font-bold">•</span> {t('s4Item3')}
+                    <span className="text-page-faint text-xs font-bold">•</span> {t('s4Item3')}
                   </li>
                   <li className="flex items-center gap-2">
-                    <span className="text-white/30 text-xs font-bold">•</span> {t('s4Item4')}
+                    <span className="text-page-faint text-xs font-bold">•</span> {t('s4Item4')}
                   </li>
                   <li className="flex items-center gap-2">
-                    <span className="text-white/30 text-xs font-bold">•</span> {t('s4Item5')}
+                    <span className="text-page-faint text-xs font-bold">•</span> {t('s4Item5')}
                   </li>
                   <li className="flex items-center gap-2">
-                    <span className="text-white/30 text-xs font-bold">•</span> {t('s4Item6')}
+                    <span className="text-page-faint text-xs font-bold">•</span> {t('s4Item6')}
                   </li>
                 </ul>
               </section>
 
               {/* SECTION 5 */}
               <section className="flex flex-col gap-2">
-                <h2 className="font-sans text-lg font-bold text-white ">
+                <h2 className="font-sans text-lg font-bold text-page ">
                   {t('s5Title')}
                 </h2>
-                <p className="font-sans text-base leading-normal text-white/60 ">
+                <p className="font-sans text-base leading-normal text-page-muted ">
                   {t('s5Body')}
                 </p>
               </section>
 
               {/* SECTION 6 */}
               <section className="flex flex-col gap-2">
-                <h2 className="font-sans text-lg font-bold text-white ">
+                <h2 className="font-sans text-lg font-bold text-page ">
                   {t('s6Title')}
                 </h2>
-                <p className="font-sans text-base leading-normal text-white/60 ">
+                <p className="font-sans text-base leading-normal text-page-muted ">
                   {t('s6Body')}
                 </p>
               </section>
 
               {/* SECTION 7 */}
               <section className="flex flex-col gap-2">
-                <h2 className="font-sans text-lg font-bold text-white ">
+                <h2 className="font-sans text-lg font-bold text-page ">
                   {t('s7Title')}
                 </h2>
-                <p className="font-sans text-base leading-normal text-white/60 ">
+                <p className="font-sans text-base leading-normal text-page-muted ">
                   {t('s7Body')}
                 </p>
               </section>
 
               {/* SECTION 8 */}
               <section className="flex flex-col gap-1.5">
-                <h2 className="font-sans text-lg font-bold text-white ">
+                <h2 className="font-sans text-lg font-bold text-page ">
                   {t('s8Title')}
                 </h2>
-                <p className="font-sans text-base text-white/60 ">
+                <p className="font-sans text-base text-page-muted ">
                   {t('s8Body')}{' '}
                   <a 
                     href="mailto:team@fjorr.com" 
-                    className="text-white hover:opacity-80 underline underline-offset-4 decoration-white/20 transition-opacity"
+                    className="text-page hover:opacity-80 underline underline-offset-4 decoration-[color-mix(in_srgb,var(--page-fg)_20%,transparent)] transition-opacity"
                   > team@fjorr.com
                   </a>
                 </p>

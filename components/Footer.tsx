@@ -11,6 +11,9 @@ import {
   stripLocalePrefix,
   type AppLocale,
 } from '@/i18n/config';
+import { useColorScheme } from '@/components/ColorSchemeProvider';
+import { isColorSchemeLockedPath } from '@/lib/color-scheme';
+import ColorSchemeToggle from '@/components/ColorSchemeToggle';
 
 interface FooterProps {
   variant?: 'light' | 'dark';
@@ -22,7 +25,9 @@ export default function Footer({ variant }: FooterProps) {
   const pathname = usePathname();
   const router = useRouter();
   const locale = useLocale() as AppLocale;
+  const { isLocked } = useColorScheme();
   const isAboutPage = pathname === '/about';
+  const showAppearance = !isColorSchemeLockedPath(pathname) && !isLocked;
   const [langOpen, setLangOpen] = useState(false);
   const langRef = useRef<HTMLDivElement>(null);
 
@@ -87,50 +92,59 @@ export default function Footer({ variant }: FooterProps) {
         ${textColor}
       `}
     >
-      <div ref={langRef} className="relative mb-4 flex flex-col items-center">
-        <button
-          type="button"
-          aria-label={tNav('language')}
-          aria-expanded={langOpen}
-          aria-haspopup="listbox"
-          onClick={() => setLangOpen((open) => !open)}
-          className={`inline-flex items-center gap-1.5 font-sans text-[14px] font-semibold transition-colors hover:opacity-80 ${subTextColor}`}
-        >
-          <Icon name="globe" className="w-3.5 h-3.5" />
-          <span>
-            {localeLabels[locale]}{' '}
-            <span className={mutedTextColor}>({locale})</span>
-          </span>
-        </button>
-
-        {langOpen && (
-          <div
-            role="listbox"
-            aria-label={tNav('languages')}
-            className={`absolute bottom-full mb-2 z-20 min-w-[10rem] rounded-[10px] border py-1.5 text-left shadow-[0_12px_32px_rgba(0,0,0,0.35)] ${
-              isDarkBg
-                ? 'border-white/10 bg-[#1F1F1F]'
-                : 'border-black/10 bg-white'
-            }`}
+      <div className="relative mb-4 flex items-center justify-center gap-3">
+        <div ref={langRef} className="relative flex flex-col items-center">
+          <button
+            type="button"
+            aria-label={tNav('language')}
+            aria-expanded={langOpen}
+            aria-haspopup="listbox"
+            onClick={() => setLangOpen((open) => !open)}
+            className={`inline-flex items-center gap-1.5 font-sans text-[14px] font-semibold transition-colors hover:opacity-80 ${subTextColor}`}
           >
-            {locales.map((code) => (
-              <button
-                key={code}
-                type="button"
-                role="option"
-                aria-selected={locale === code}
-                onClick={() => setLocale(code)}
-                className={`flex w-full items-center justify-between gap-3 px-3 py-1.5 font-sans text-[14px] font-semibold transition-colors ${
-                  locale === code
-                    ? mutedTextColor
-                    : `${textColor} hover:opacity-70`
-                } ${isDarkBg ? 'hover:bg-white/5' : 'hover:bg-black/5'}`}
-              >
-                <span>{localeLabels[code]}</span>
-                <span className={mutedTextColor}>{code}</span>
-              </button>
-            ))}
-          </div>
+            <Icon name="globe" className="w-3.5 h-3.5" />
+            <span>
+              {localeLabels[locale]}{' '}
+              <span className={mutedTextColor}>({locale})</span>
+            </span>
+          </button>
+
+          {langOpen && (
+            <div
+              role="listbox"
+              aria-label={tNav('languages')}
+              className={`absolute bottom-full mb-2 z-20 min-w-[10rem] rounded-[10px] border py-1.5 text-left menu-surface shadow-[0_12px_32px_rgba(0,0,0,0.35)] ${
+                isDarkBg
+                  ? 'border-white/10 bg-[#1F1F1F]'
+                  : 'border-black/10 bg-white'
+              }`}
+            >
+              {locales.map((code) => (
+                <button
+                  key={code}
+                  type="button"
+                  role="option"
+                  aria-selected={locale === code}
+                  onClick={() => setLocale(code)}
+                  className={`flex w-full items-center justify-between gap-3 px-3 py-1.5 font-sans text-[14px] font-semibold transition-colors ${
+                    locale === code
+                      ? mutedTextColor
+                      : `${textColor} hover:opacity-70`
+                  } ${isDarkBg ? 'hover:bg-white/5' : 'hover:bg-black/5'}`}
+                >
+                  <span>{localeLabels[code]}</span>
+                  <span className={mutedTextColor}>{code}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {showAppearance && (
+          <ColorSchemeToggle
+            activeClass={textColor}
+            mutedClass={mutedTextColor}
+          />
         )}
       </div>
 

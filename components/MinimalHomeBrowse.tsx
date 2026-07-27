@@ -17,7 +17,7 @@ export default function MinimalHomeBrowse({
 
   return (
     <div className="w-full pb-8">
-      <div className="w-full max-w-[600px] mx-auto px-5 pt-2 flex flex-col divide-y divide-white/[0.06]">
+      <div className="w-full max-w-[600px] mx-auto px-5 pt-2 flex flex-col divide-y divide-page-faint">
         {contentType === 'artifact' ? (
           <MinimalArtifactList artifacts={artifacts} />
         ) : (

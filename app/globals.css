@@ -12,11 +12,60 @@
   --light-02: #F5F5F7A6;
   --light-03: #F5F5F766;
   --light-04: #F5F5F70D;
+
+  /* Semantic page surface — flipped by html.light / html.dark */
+  --page-bg: #1F1F1F;
+  --page-fg: #F5F5F7;
+  --page-bg-color: #1F1F1F;
+  --page-elevated: #2A2A2A;
+  --page-muted: rgba(245, 245, 247, 0.55);
+  --page-faint: rgba(245, 245, 247, 0.3);
+  --page-chip: rgba(255, 255, 255, 0.08);
+  --page-chip-hover: rgba(255, 255, 255, 0.14);
 }
 
-html, body {
-  background-color: #1F1F1F !important;
-  color: #F5F5F7 !important;
+html.light {
+  color-scheme: light;
+  --page-bg: #F5F5F7;
+  --page-fg: #0B0B0C;
+  --page-bg-color: #F5F5F7;
+  --page-elevated: #FFFFFF;
+  --page-muted: rgba(11, 11, 12, 0.55);
+  --page-faint: rgba(11, 11, 12, 0.35);
+  --page-chip: rgba(0, 0, 0, 0.06);
+  --page-chip-hover: rgba(0, 0, 0, 0.1);
+}
+
+html.dark {
+  color-scheme: dark;
+  --page-bg: #1F1F1F;
+  --page-fg: #F5F5F7;
+  --page-bg-color: #1F1F1F;
+  --page-elevated: #2A2A2A;
+  --page-muted: rgba(245, 245, 247, 0.55);
+  --page-faint: rgba(245, 245, 247, 0.3);
+  --page-chip: rgba(255, 255, 255, 0.08);
+  --page-chip-hover: rgba(255, 255, 255, 0.14);
+}
+
+/* Flat surfaces in light mode — no elevation shadows, except float menus */
+html.light *:not(.menu-surface) {
+  box-shadow: none !important;
+  --tw-shadow: 0 0 #0000 !important;
+  --tw-shadow-colored: 0 0 #0000 !important;
+  --tw-drop-shadow: 0 0 #0000 !important;
+}
+
+html.light .menu-surface {
+  box-shadow:
+    0 10px 28px rgba(0, 0, 0, 0.08),
+    0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+html,
+body {
+  background-color: var(--page-bg);
+  color: var(--page-fg);
   font-family: var(--font-sans), system-ui, sans-serif;
   margin: 0;
   padding: 0;
@@ -46,4 +95,44 @@ html, body {
 .animate-fade-up {
   opacity: 0;
   animation: fadeUpReveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Theme-aware ink / chips for browse chrome */
+@layer utilities {
+  .text-page {
+    color: var(--page-fg);
+  }
+  .text-page-muted {
+    color: var(--page-muted);
+  }
+  .text-page-faint {
+    color: var(--page-faint);
+  }
+  .bg-page {
+    background-color: var(--page-bg);
+  }
+  .bg-page-elevated {
+    background-color: var(--page-elevated, var(--page-bg));
+  }
+  .bg-page-chip {
+    background-color: var(--page-chip);
+  }
+  .hover\:bg-page-chip-hover:hover {
+    background-color: var(--page-chip-hover);
+  }
+  .bg-page-chip-active {
+    background-color: color-mix(in srgb, var(--page-fg) 14%, transparent);
+  }
+  .placeholder-page-muted::placeholder {
+    color: var(--page-muted);
+  }
+  .border-page-faint {
+    border-color: color-mix(in srgb, var(--page-fg) 12%, transparent);
+  }
+  .divide-page-faint > :not([hidden]) ~ :not([hidden]) {
+    border-color: color-mix(in srgb, var(--page-fg) 8%, transparent);
+  }
+  .bg-page-line {
+    background-color: color-mix(in srgb, var(--page-fg) 14%, transparent);
+  }
 }

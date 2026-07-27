@@ -15,7 +15,10 @@
     "language": "言語",
     "languages": "言語",
     "signIn": "ログインまたは登録",
-    "account": "アカウント"
+    "account": "アカウント",
+    "appearance": "外観",
+    "appearanceDark": "ダーク",
+    "appearanceLight": "ライト"
   },
   "DisplayMode": {
     "cinematic": "シネマ",

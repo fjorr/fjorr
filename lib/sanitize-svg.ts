@@ -24,3 +24,17 @@ export function sanitizeTitleArtSvg(html: string | null | undefined): string | n
   if (!/<svg[\s>]/i.test(cleaned)) return null;
   return cleaned;
 }
+
+const TITLE_ART_FALLBACK = '#FFFFFF';
+
+/** CMS sometimes stores junk like `#FALSE` — only pass real CSS colors through. */
+export function resolveTitleArtColor(hex: string | null | undefined): string {
+  if (!hex) return TITLE_ART_FALLBACK;
+  const value = hex.trim();
+  if (!value) return TITLE_ART_FALLBACK;
+  if (/^#([0-9a-f]{3}|[0-9a-f]{4}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(value)) {
+    return value;
+  }
+  if (/^(rgb|rgba|hsl|hsla)\(/i.test(value)) return value;
+  return TITLE_ART_FALLBACK;
+}

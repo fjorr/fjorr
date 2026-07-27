@@ -58,9 +58,9 @@ export default function HomeWithSearch({
   }, []);
 
   return (
-    <Suspense fallback={<div className="w-full min-h-screen bg-dark-01" />}>
+    <Suspense fallback={<div className="w-full min-h-screen bg-[var(--page-bg)]" />}>
       <MinimalFilterProvider initialMixes={mixes}>
-        <div className="w-full min-h-screen bg-dark-01 pb-24">
+        <div className="w-full min-h-screen bg-[var(--page-bg)] text-[var(--page-fg)] pb-24">
           <h1 className="sr-only">Fjorr — Short films of the world&apos;s greatest stories</h1>
           <SearchExperience
             browseContent={children}

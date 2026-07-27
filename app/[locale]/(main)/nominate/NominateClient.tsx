@@ -86,7 +86,7 @@ export default function NominateClient() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-[#1F1F1F] pt-5 pb-24 flex flex-col items-center overflow-x-hidden">
+    <div className="w-full min-h-screen bg-[var(--page-bg)] text-page pt-5 pb-24 flex flex-col items-center overflow-x-hidden">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -102,53 +102,53 @@ export default function NominateClient() {
 
       <div className="w-full flex flex-nowrap justify-center gap-1.5 mb-24 sm:mb-32 select-none">
         <div className="flex flex-col gap-2.5 w-[33%] md:w-[25%] shrink-0 opacity-0 animate-sweep-right style-delay-100">
-          <div className="bg-zinc-900 relative w-full overflow-hidden">
+          <div className="bg-page-chip relative w-full overflow-hidden">
             <img
               src="https://media.fjorr.com/assets/fjorr-nominate-poster-breakdancing.avif"
               className="w-full h-auto object-contain block opacity-85 hover:opacity-100 hover:scale-[1.01] transition-all duration-700"
               alt="Breakdancing narrative frame"
             />
           </div>
-          <div className="film-metadata-horizontal text-[9px] text-white/30 tracking-[0.2em] font-mono uppercase font-medium px-4 truncate">
+          <div className="film-metadata-horizontal text-[9px] text-page-faint tracking-[0.2em] font-mono uppercase font-medium px-4 truncate">
             {t('nominationLabel', { number: 143 })}
           </div>
         </div>
 
         <div className="flex flex-col gap-2.5 w-[33%] md:w-[25%] shrink-0 opacity-0 animate-sweep-right style-delay-180">
-          <div className="bg-zinc-900 relative w-full overflow-hidden">
+          <div className="bg-page-chip relative w-full overflow-hidden">
             <img
               src="https://media.fjorr.com/assets/fjorr-nominate-poster-naismith.avif"
               className="w-full h-auto object-contain block opacity-85 hover:opacity-100 hover:scale-[1.01] transition-all duration-700"
               alt="Naismith basketball narrative frame"
             />
           </div>
-          <div className="film-metadata-horizontal text-[9px] text-white/30 tracking-[0.2em] font-mono uppercase font-medium px-4 truncate">
+          <div className="film-metadata-horizontal text-[9px] text-page-faint tracking-[0.2em] font-mono uppercase font-medium px-4 truncate">
             {t('nominationLabel', { number: 144 })}
           </div>
         </div>
 
         <div className="flex flex-col gap-2.5 w-[33%] md:w-[25%] shrink-0 opacity-0 animate-sweep-right style-delay-250">
-          <div className="bg-zinc-900 relative w-full overflow-hidden">
+          <div className="bg-page-chip relative w-full overflow-hidden">
             <img
               src="https://media.fjorr.com/assets/fjorr-nominate-poster-ww2.avif"
               className="w-full h-auto object-contain block opacity-85 hover:opacity-100 hover:scale-[1.01] transition-all duration-700"
               alt="WWII historical narrative frame"
             />
           </div>
-          <div className="film-metadata-horizontal text-[9px] text-white/30 tracking-[0.2em] font-mono uppercase font-medium px-4 truncate">
+          <div className="film-metadata-horizontal text-[9px] text-page-faint tracking-[0.2em] font-mono uppercase font-medium px-4 truncate">
             {t('nominationLabel', { number: 145 })}
           </div>
         </div>
 
         <div className="flex-col gap-2.5 w-[25%] shrink-0 opacity-0 animate-sweep-right style-delay-320 hidden md:flex">
-          <div className="bg-zinc-900 relative w-full overflow-hidden">
+          <div className="bg-page-chip relative w-full overflow-hidden">
             <img
               src="https://media.fjorr.com/assets/fjorr-nominate-poster-yeti.avif"
               className="w-full h-auto object-contain block opacity-85 hover:opacity-100 hover:scale-[1.01] transition-all duration-700"
               alt="Yeti legend narrative frame"
             />
           </div>
-          <div className="film-metadata-horizontal text-[9px] text-white/30 tracking-[0.2em] font-mono uppercase font-medium px-4 truncate">
+          <div className="film-metadata-horizontal text-[9px] text-page-faint tracking-[0.2em] font-mono uppercase font-medium px-4 truncate">
             {t('nominationLabel', { number: 146 })}
           </div>
         </div>
@@ -159,11 +159,11 @@ export default function NominateClient() {
           <NominateSuccessView onReset={handleResetForm} />
         ) : (
           <div className="w-full max-w-xl flex flex-col items-center">
-            <h1 className="text-6xl sm:text-7xl md:text-8xl font-extrabold uppercase tracking-tighter text-light-01 leading-[52px] sm:leading-[64px] md:leading-[76px] font-futura mb-6 opacity-0 animate-slide-up style-delay-headline whitespace-pre-line select-none">
+            <h1 className="text-6xl sm:text-7xl md:text-8xl font-extrabold uppercase tracking-tighter text-page leading-[52px] sm:leading-[64px] md:leading-[76px] font-futura mb-6 opacity-0 animate-slide-up style-delay-headline whitespace-pre-line select-none">
               {t('title')}
             </h1>
 
-            <p className="font-sans font-medium text-[15px] sm:text-[16px] leading-[1.6em] text-white/60 max-w-[280px] sm:max-w-md tracking-tight text-center mb-10 opacity-0 animate-slide-up style-delay-body">
+            <p className="font-sans font-medium text-[15px] sm:text-[16px] leading-[1.6em] text-page-muted max-w-[280px] sm:max-w-md tracking-tight text-center mb-10 opacity-0 animate-slide-up style-delay-body">
               {t('description')}
             </p>
 
@@ -177,11 +177,11 @@ export default function NominateClient() {
                   value={story}
                   onChange={handleStoryChange}
                   placeholder={t('storyPlaceholder')}
-                  className={`w-full min-h-64 rounded-xl p-6 bg-white/5 font-sans font-semibold text-[15px] text-white placeholder-white/30 border align-top resize-none focus:outline-none transition-all duration-300
+                  className={`w-full min-h-64 rounded-xl p-6 bg-page-chip font-sans font-semibold text-[15px] text-page placeholder-page-muted border align-top resize-none focus:outline-none transition-all duration-300
                     ${
                       errors.story_details
                         ? 'border-red-500/50 focus:border-red-500'
-                        : 'border-white/5 focus:border-white/10 focus:bg-white/10'
+                        : 'border-page-faint focus:border-[color-mix(in_srgb,var(--page-fg)_22%,transparent)] focus:bg-[var(--page-chip-hover)]'
                     }
                   `}
                 />
@@ -198,11 +198,11 @@ export default function NominateClient() {
                   value={email}
                   onChange={handleEmailChange}
                   placeholder={t('emailPlaceholder')}
-                  className={`w-full h-14 px-6 rounded-xl bg-white/5 font-sans font-semibold text-[15px] text-white placeholder-white/30 border focus:outline-none transition-all duration-300
+                  className={`w-full h-14 px-6 rounded-xl bg-page-chip font-sans font-semibold text-[15px] text-page placeholder-page-muted border focus:outline-none transition-all duration-300
                     ${
                       errors.contributor_email
                         ? 'border-red-500/50 focus:border-red-500'
-                        : 'border-white/5 focus:border-white/10 focus:bg-white/10'
+                        : 'border-page-faint focus:border-[color-mix(in_srgb,var(--page-fg)_22%,transparent)] focus:bg-[var(--page-chip-hover)]'
                     }
                   `}
                 />
@@ -213,7 +213,7 @@ export default function NominateClient() {
                 )}
               </div>
 
-              <p className="font-sans font-medium text-xs leading-[1.5em] text-white/40 tracking-relaxed text-center max-w-xs mx-auto mb-8 select-none">
+              <p className="font-sans font-medium text-xs leading-[1.5em] text-page-faint tracking-relaxed text-center max-w-xs mx-auto mb-8 select-none">
                 {t('disclaimer')}
               </p>
 
@@ -221,7 +221,7 @@ export default function NominateClient() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-10 h-14 bg-white text-black font-sans font-bold text-[15px] tracking-tight rounded-full shadow-2xl hover:bg-white/90 active:scale-95 disabled:opacity-50 disabled:pointer-events-none transition-all duration-150"
+                  className="px-10 h-14 bg-[var(--page-fg)] text-[var(--page-bg)] font-sans font-bold text-[15px] tracking-tight rounded-full shadow-2xl hover:opacity-90 active:scale-95 disabled:opacity-50 disabled:pointer-events-none transition-all duration-150"
                 >
                   {submitting ? t('submitting') : t('submit')}
                 </button>

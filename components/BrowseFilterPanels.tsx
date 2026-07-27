@@ -11,7 +11,7 @@ import {
 const COMING_SOON_MIX_SLUG = 'coming-soon';
 
 const panelShellClass =
-  'w-full rounded-[10px] border border-white/10 bg-[#1F1F1F]/95 backdrop-blur-xl shadow-[0_16px_48px_rgba(0,0,0,0.45)] px-[30px] py-5 flex flex-col gap-3 max-h-[min(60vh,420px)] overflow-y-auto';
+  'w-full rounded-[10px] border border-page-faint bg-page-elevated menu-surface shadow-[0_16px_48px_rgba(0,0,0,0.18)] px-[30px] py-5 flex flex-col gap-3 max-h-[min(60vh,420px)] overflow-y-auto text-page';
 
 function OptionChip({
   active,
@@ -28,8 +28,8 @@ function OptionChip({
       onClick={onClick}
       className={`h-8 px-3 rounded-[6px] font-sans text-[12px] font-semibold transition-colors ${
         active
-          ? 'bg-white/15 text-white'
-          : 'bg-white/5 text-white/55 hover:text-white/85 hover:bg-white/10'
+          ? 'bg-page-chip-active text-page'
+          : 'bg-page-chip text-page-muted hover:text-page hover:bg-page-chip-hover'
       }`}
     >
       {children}
@@ -56,7 +56,7 @@ export function MixesPanel({ onDone }: { onDone?: () => void }) {
 
   return (
     <nav
-      className="w-full max-h-[min(42vh,260px)] overflow-y-auto overscroll-contain rounded-[10px] border border-white/10 bg-[#1F1F1F]/95 backdrop-blur-xl shadow-[0_16px_48px_rgba(0,0,0,0.45)] px-[30px] py-5 flex flex-col gap-1.5"
+      className="w-full max-h-[min(42vh,260px)] overflow-y-auto overscroll-contain rounded-[10px] border border-page-faint bg-page-elevated menu-surface shadow-[0_16px_48px_rgba(0,0,0,0.18)] px-[30px] py-5 flex flex-col gap-1.5 text-page"
       aria-label={tf('mixes')}
     >
       {listItems.map((item) => {
@@ -66,7 +66,7 @@ export function MixesPanel({ onDone }: { onDone?: () => void }) {
             <span
               key={item.slug}
               aria-current="true"
-              className="font-sans text-[15px] font-semibold tracking-tight text-white/35 cursor-default select-none leading-tight py-0.5"
+              className="font-sans text-[15px] font-semibold tracking-tight text-page-faint cursor-default select-none leading-tight py-0.5"
             >
               {item.name}
             </span>
@@ -80,7 +80,7 @@ export function MixesPanel({ onDone }: { onDone?: () => void }) {
               setMix(item.slug);
               onDone?.();
             }}
-            className="text-left font-sans text-[15px] font-semibold tracking-tight text-white leading-tight py-0.5 transition-opacity hover:opacity-70"
+            className="text-left font-sans text-[15px] font-semibold tracking-tight text-page leading-tight py-0.5 transition-opacity hover:opacity-70"
           >
             {item.name}
           </button>
@@ -112,7 +112,7 @@ export function DialsPanel() {
     <div className={panelShellClass}>
       {!isTimeline && (
         <div className="flex flex-col gap-2">
-          <p className="font-sans text-[11px] font-semibold uppercase tracking-wide text-white/35">
+          <p className="font-sans text-[11px] font-semibold uppercase tracking-wide text-page-faint">
             {tf('sort')}
           </p>
           <div className="flex flex-wrap gap-1.5">
@@ -133,7 +133,7 @@ export function DialsPanel() {
 
       {contentType === 'film' && (
         <div className="flex flex-col gap-2">
-          <p className="font-sans text-[11px] font-semibold uppercase tracking-wide text-white/35">
+          <p className="font-sans text-[11px] font-semibold uppercase tracking-wide text-page-faint">
             {tf('theme')}
           </p>
           <div className="flex flex-wrap gap-1.5">
@@ -157,7 +157,7 @@ export function DialsPanel() {
         <button
           type="button"
           onClick={() => clearFilters()}
-          className="self-start font-sans text-[12px] font-semibold text-white/40 hover:text-white/70 transition-colors"
+          className="self-start font-sans text-[12px] font-semibold text-page-faint hover:text-page-muted transition-colors"
         >
           {tf('clear')}
         </button>

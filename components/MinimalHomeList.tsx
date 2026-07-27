@@ -62,7 +62,7 @@ function MetaLine({ film }: { film: MinimalFilm }) {
   const year = formatYear(film);
   if (isComingSoon(film)) {
     return (
-      <p className="font-sans text-[11px] font-medium capitalize tracking-normal text-white/30">
+      <p className="font-sans text-[11px] font-medium capitalize tracking-normal text-page-faint">
         {t('comingSoon')}
         {year ? ` · ${year}` : ''}
       </p>
@@ -76,7 +76,7 @@ function MetaLine({ film }: { film: MinimalFilm }) {
   if (parts.length === 0) return null;
 
   return (
-    <p className="font-sans text-[11px] font-medium capitalize tracking-normal text-white/30">
+    <p className="font-sans text-[11px] font-medium capitalize tracking-normal text-page-faint">
       {parts.join(' - ')}
     </p>
   );
@@ -160,11 +160,11 @@ export default function MinimalHomeList({ films }: { films: MinimalFilm[] }) {
                 href={`/film/${film.slug}`}
                 className="min-w-0 flex-1 max-w-[380px] flex flex-col gap-1 pr-2 group"
               >
-                <h2 className="font-sans text-[18px] font-bold tracking-tight text-white leading-tight group-hover:text-white/85 transition-colors">
+                <h2 className="font-sans text-[18px] font-bold tracking-tight text-page leading-tight group-hover:opacity-80 transition-opacity">
                   {film.name}
                 </h2>
                 {film.teaser && (
-                  <p className="font-sans text-[14px] font-normal text-white/70 leading-snug line-clamp-2">
+                  <p className="font-sans text-[14px] font-normal text-page-muted leading-snug line-clamp-2">
                     {film.teaser}
                   </p>
                 )}
@@ -176,7 +176,7 @@ export default function MinimalHomeList({ films }: { films: MinimalFilm[] }) {
                   <button
                     type="button"
                     onClick={() => handlePlay(film)}
-                    className="h-8 px-3 rounded-[6px] bg-white/15 font-sans text-[13px] font-semibold text-white hover:bg-white/25 transition-colors whitespace-nowrap"
+                    className="h-8 px-3 rounded-[6px] bg-page-chip-active font-sans text-[13px] font-semibold text-page hover:bg-page-chip-hover transition-colors whitespace-nowrap"
                   >
                     {resume
                       ? t('resume', { time: formatResumeClock(resume.seconds) })
@@ -185,7 +185,7 @@ export default function MinimalHomeList({ films }: { films: MinimalFilm[] }) {
                 )}
                 <PrefetchLink
                   href={`/film/${film.slug}`}
-                  className="h-8 px-3 rounded-[6px] bg-white/5 font-sans text-[13px] font-semibold text-white/55 hover:text-white/80 hover:bg-white/10 transition-colors inline-flex items-center"
+                  className="h-8 px-3 rounded-[6px] bg-page-chip font-sans text-[13px] font-semibold text-page-muted hover:text-page hover:bg-page-chip-hover transition-colors inline-flex items-center"
                 >
                   {t('info')}
                 </PrefetchLink>

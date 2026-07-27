@@ -62,9 +62,9 @@ function highlightName(name: string, query: string) {
   if (idx < 0) return name;
   return (
     <>
-      {name.slice(0, idx)}
-      <span className="text-white">{name.slice(idx, idx + q.length)}</span>
-      {name.slice(idx + q.length)}
+      <span className="text-page-muted">{name.slice(0, idx)}</span>
+      <span className="text-page">{name.slice(idx, idx + q.length)}</span>
+      <span className="text-page-muted">{name.slice(idx + q.length)}</span>
     </>
   );
 }
@@ -375,23 +375,23 @@ function SearchContent({
     isTimeline ? (
       <div className="relative w-full mt-6 animate-pulse">
         <div
-          className="pointer-events-none absolute left-1/2 top-0 bottom-0 w-px -translate-x-1/2 bg-white/10"
+          className="pointer-events-none absolute left-1/2 top-0 bottom-0 w-px -translate-x-1/2 bg-page-line"
           aria-hidden
         />
         <div className="mx-auto w-full max-w-sm">
           <div className="flex justify-center py-10">
-            <div className="h-6 w-16 rounded bg-white/10" />
+            <div className="h-6 w-16 rounded bg-page-chip" />
           </div>
           <div className="flex flex-col gap-12">
             {[1, 2, 3].map((n) => (
               <div key={n} className="grid grid-cols-2 gap-x-8 md:gap-x-10 items-start">
                 <div className="flex justify-end">
-                  <div className="w-[72px] sm:w-[80px] aspect-[2/3] rounded-[10px] bg-white/10" />
+                  <div className="w-[72px] sm:w-[80px] aspect-[2/3] rounded-[10px] bg-page-chip" />
                 </div>
                 <div className="flex flex-col gap-2 pt-1">
-                  <div className="h-4 bg-white/10 rounded w-3/4" />
-                  <div className="h-3 bg-white/5 rounded w-full" />
-                  <div className="h-3 bg-white/5 rounded w-5/6" />
+                  <div className="h-4 bg-page-chip rounded w-3/4" />
+                  <div className="h-3 bg-page-chip rounded w-full opacity-70" />
+                  <div className="h-3 bg-page-chip rounded w-5/6 opacity-70" />
                 </div>
               </div>
             ))}
@@ -402,9 +402,9 @@ function SearchContent({
       <div className="w-full max-w-[600px] flex flex-col gap-6 animate-pulse">
         {[1, 2, 3].map((n) => (
           <div key={n} className="flex flex-col gap-2">
-            <div className="h-5 bg-white/10 rounded w-1/3" />
-            <div className="h-4 bg-white/5 rounded w-2/3" />
-            <div className="h-3 bg-white/5 rounded w-1/4" />
+            <div className="h-5 bg-page-chip rounded w-1/3" />
+            <div className="h-4 bg-page-chip rounded w-2/3 opacity-70" />
+            <div className="h-3 bg-page-chip rounded w-1/4 opacity-50" />
           </div>
         ))}
       </div>
@@ -412,9 +412,9 @@ function SearchContent({
       <div className="w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-6 gap-y-10 animate-pulse">
         {[1, 2, 3, 4].map((n) => (
           <div key={n} className="flex flex-col gap-3">
-            <div className="w-full aspect-[2/3] bg-white/5 rounded-[8px]" />
-            <div className="h-4 bg-white/10 rounded w-2/3" />
-            <div className="h-3 bg-white/5 rounded w-full" />
+            <div className="w-full aspect-[2/3] bg-page-chip rounded-[8px]" />
+            <div className="h-4 bg-page-chip rounded w-2/3" />
+            <div className="h-3 bg-page-chip rounded w-full opacity-70" />
           </div>
         ))}
       </div>
@@ -450,7 +450,7 @@ function SearchContent({
             ref={boxRef}
             className="relative z-50 group w-full max-w-sm animate-in fade-in slide-in-from-top-3 duration-500 fill-mode-both"
           >
-            <span className="absolute left-5 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none transition-colors group-focus-within:text-white/80 z-10">
+            <span className="absolute left-5 top-1/2 -translate-y-1/2 text-page-faint pointer-events-none transition-colors group-focus-within:text-page-muted z-10">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
@@ -467,12 +467,12 @@ function SearchContent({
               aria-expanded={showSuggestions}
               aria-controls="search-suggestions"
               aria-autocomplete="list"
-              className="w-full bg-white/5 rounded-[10px] h-14 pl-14 pr-12 font-sans font-semibold text-[16px] text-white placeholder-white/55 focus:bg-white/10 focus:outline-none focus:ring-0 focus:ring-offset-0 transition-all duration-300 shadow-2xl relative z-[1]"
+              className="w-full bg-page-chip rounded-[10px] h-14 pl-14 pr-12 font-sans font-semibold text-[16px] text-[var(--page-fg)] caret-[var(--page-fg)] placeholder-page-muted focus:bg-page-chip-active focus:outline-none focus:ring-0 focus:ring-offset-0 transition-all duration-300 shadow-2xl relative z-[1]"
             />
             {query && (
               <button
                 onClick={handleClearSearch}
-                className="absolute right-5 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors z-10"
+                className="absolute right-5 top-1/2 -translate-y-1/2 text-page-faint hover:text-page transition-colors z-10"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -484,7 +484,7 @@ function SearchContent({
               <ul
                 id="search-suggestions"
                 role="listbox"
-                className="absolute left-0 right-0 top-[calc(100%+8px)] z-50 rounded-[10px] border border-white/10 bg-[#1F1F1F] shadow-[0_16px_48px_rgba(0,0,0,0.55)] py-1.5 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150"
+                className="absolute left-0 right-0 top-[calc(100%+8px)] z-50 rounded-[10px] border border-page-faint bg-page-elevated menu-surface shadow-[0_16px_48px_rgba(0,0,0,0.18)] py-1.5 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150 text-page"
               >
                 {suggestions.map((item, index) => (
                   <li key={item.id} role="option" aria-selected={index === activeIndex}>
@@ -492,24 +492,24 @@ function SearchContent({
                       href={hrefFor(item)}
                       onMouseEnter={() => setActiveIndex(index)}
                       className={`flex items-center justify-between gap-3 px-4 py-2.5 transition-colors ${
-                        index === activeIndex ? 'bg-white/10' : 'hover:bg-white/5'
+                        index === activeIndex ? 'bg-page-chip-active' : 'hover:bg-page-chip'
                       }`}
                     >
                       <span className="min-w-0 flex flex-col gap-0.5">
-                        <span className="font-sans font-semibold text-[15px] text-white/75 truncate">
+                        <span className="font-sans font-semibold text-[15px] text-page truncate">
                           {highlightName(item.name, query)}
                         </span>
                         {(() => {
                           const hint = suggestionHint(item);
                           if (!hint) return null;
                           return (
-                            <span className="font-sans text-[12px] text-white/35 truncate">
+                            <span className="font-sans text-[12px] text-page-faint truncate">
                               {hint}
                             </span>
                           );
                         })()}
                       </span>
-                      <span className="shrink-0 font-sans text-[11px] font-medium uppercase tracking-wide text-white/35">
+                      <span className="shrink-0 font-sans text-[11px] font-medium uppercase tracking-wide text-page-faint">
                         {item.item_type === 'film' ? tSearch('film') : tSearch('artifact')}
                       </span>
                     </Link>
@@ -520,11 +520,11 @@ function SearchContent({
           </div>
 
           {didYouMean && !loading && isSearchActive && (
-            <p className="font-sans text-[13px] text-white/45 -mt-1">
+            <p className="font-sans text-[13px] text-page-muted -mt-1">
               <button
                 type="button"
                 onClick={() => applyDidYouMean(didYouMean)}
-                className="hover:text-white/80 transition-colors underline-offset-2 hover:underline"
+                className="hover:text-page transition-colors underline-offset-2 hover:underline"
               >
                 {tSearch('didYouMean', { name: didYouMean.name })}
               </button>
@@ -541,11 +541,11 @@ function SearchContent({
         className={`relative z-0 w-full ${
           showIdle
             ? theaterOpen
-              ? 'invisible pointer-events-none'
+              ? 'pointer-events-none'
               : 'animate-in fade-in duration-300'
             : 'hidden'
         }`}
-        aria-hidden={!showIdle || theaterOpen}
+        aria-hidden={!showIdle}
       >
         {browseContent}
       </div>
@@ -567,7 +567,7 @@ function SearchContent({
 function SearchLoadingFallback() {
   const t = useTranslations('Search');
   return (
-    <div className="text-white/20 font-sans text-sm mt-12 animate-pulse">
+    <div className="text-page-faint font-sans text-sm mt-12 animate-pulse">
       {t('loading')}
     </div>
   );

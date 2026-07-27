@@ -22,14 +22,14 @@ interface FilmTranscriptProps {
   variant?: 'page' | 'dock';
 }
 
-function highlightMatch(text: string, query: string) {
+function highlightMatch(text: string, query: string, ink: string) {
   if (!query.trim()) return text;
   const idx = text.toLowerCase().indexOf(query.toLowerCase());
   if (idx < 0) return text;
   return (
     <>
       {text.slice(0, idx)}
-      <mark className="bg-[#76c3ff]/25 text-white rounded-[2px] px-0.5">
+      <mark className={`bg-[#76c3ff]/25 ${ink} rounded-[2px] px-0.5`}>
         {text.slice(idx, idx + query.length)}
       </mark>
       {text.slice(idx + query.length)}
@@ -198,6 +198,39 @@ export default function FilmTranscript({
   };
 
   const isDock = variant === 'dock';
+  const ink = isDock
+    ? {
+        primary: 'text-white',
+        soft: 'text-white/80',
+        muted: 'text-white/60',
+        faint: 'text-white/50',
+        quieter: 'text-white/45',
+        whisper: 'text-white/35',
+        chip: 'bg-white/5 hover:bg-white/10',
+        chipActive: 'bg-white/10',
+        rowHover: 'hover:bg-white/[0.04]',
+        rowActive: 'bg-white/10',
+        input:
+          'bg-white/5 text-white placeholder-white/40 focus:bg-white/10',
+        menu: 'bg-[#2a2a2a]',
+        menuItem: 'text-white/80 hover:bg-white/5',
+      }
+    : {
+        primary: 'text-page',
+        soft: 'text-page-muted',
+        muted: 'text-page-muted',
+        faint: 'text-page-faint',
+        quieter: 'text-page-faint',
+        whisper: 'text-page-faint',
+        chip: 'bg-page-chip hover:bg-page-chip-hover',
+        chipActive: 'bg-page-chip-active',
+        rowHover: 'hover:bg-page-chip',
+        rowActive: 'bg-page-chip-active',
+        input:
+          'bg-page-chip text-page placeholder-page-muted focus:bg-page-chip-hover',
+        menu: 'bg-page border border-page-faint',
+        menuItem: 'text-page-muted hover:bg-page-chip',
+      };
 
   return (
     <div className={`w-full ${isDock ? 'h-full flex flex-col min-h-0' : ''}`}>
@@ -207,11 +240,13 @@ export default function FilmTranscript({
             type="button"
             onClick={handlePrimaryClick}
             className={`h-9 px-4 inline-flex items-center justify-center gap-2 rounded-[8px] text-sm font-semibold tracking-normal transition-all duration-150 select-none active:scale-[0.98] ${
-              isOpen ? 'text-white bg-white/10' : 'text-white/60 bg-white/5 hover:bg-white/10'
+              isOpen
+                ? `${ink.primary} ${ink.chipActive}`
+                : `${ink.muted} ${ink.chip}`
             }`}
           >
             <svg
-              className={`w-5 h-5 shrink-0 ${isOpen ? 'text-[#76c3ff]' : 'text-white/60'}`}
+              className={`w-5 h-5 shrink-0 ${isOpen ? 'text-[#76c3ff]' : ink.muted}`}
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -234,16 +269,16 @@ export default function FilmTranscript({
           </button>
 
           {isDropdownOpen && subtitles.length > 0 && (
-            <div className="absolute left-0 mt-2 w-48 bg-[#2a2a2a] rounded-[8px] shadow-2xl overflow-hidden z-50 px-1 py-1">
+            <div className={`absolute left-0 mt-2 w-48 ${ink.menu} rounded-[8px] shadow-2xl overflow-hidden z-50 px-1 py-1`}>
               {subtitles.map((sub) => (
                 <button
                   key={sub.code}
                   type="button"
                   onClick={() => openWithLanguage(sub.code)}
-                  className={`w-full text-left px-5 py-2.5 text-sm font-sans font-semibold tracking-normal transition-colors rounded-[6px] hover:bg-white/5 ${
+                  className={`w-full text-left px-5 py-2.5 text-sm font-sans font-semibold tracking-normal transition-colors rounded-[6px] ${
                     isOpen && activeLanguage === sub.code
-                      ? 'text-[#76c3ff] font-bold bg-white/[0.02]'
-                      : 'text-white/80'
+                      ? `text-[#76c3ff] font-bold ${isDock ? 'bg-white/[0.02]' : 'bg-page-chip'}`
+                      : ink.menuItem
                   }`}
                 >
                   {sub.name}
@@ -257,7 +292,11 @@ export default function FilmTranscript({
           <button
             type="button"
             onClick={downloadVtt}
-            className="h-9 px-3 rounded-[8px] bg-white/5 hover:bg-white/10 text-white/50 hover:text-white/80 text-sm font-semibold transition-colors"
+            className={`h-9 px-3 rounded-[8px] text-sm font-semibold transition-colors ${
+              isDock
+                ? 'bg-white/5 hover:bg-white/10 text-white/50 hover:text-white/80'
+                : 'bg-page-chip hover:bg-page-chip-hover text-page-faint hover:text-page'
+            }`}
           >
             {t('transcriptDownload')}
           </button>
@@ -272,7 +311,7 @@ export default function FilmTranscript({
               setQuery('');
             }}
             aria-label={t('transcriptClose')}
-            className={`h-9 w-9 inline-flex items-center justify-center rounded-[8px] bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-all duration-200 select-none active:scale-[0.95] ${
+            className={`h-9 w-9 inline-flex items-center justify-center rounded-[8px] bg-page-chip hover:bg-page-chip-hover text-page-faint hover:text-page transition-all duration-200 select-none active:scale-[0.95] ${
               isOpen
                 ? 'opacity-100 scale-100 pointer-events-auto'
                 : 'opacity-0 scale-95 pointer-events-none'
@@ -293,7 +332,7 @@ export default function FilmTranscript({
         >
           <div className="relative mb-3 shrink-0">
             <svg
-              className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/35 pointer-events-none"
+              className={`w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 ${ink.whisper} pointer-events-none`}
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
@@ -306,7 +345,7 @@ export default function FilmTranscript({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={t('transcriptSearch')}
-              className="w-full h-10 rounded-[8px] bg-white/5 pl-10 pr-3 font-sans text-sm font-medium text-white placeholder-white/40 focus:outline-none focus:bg-white/10"
+              className={`w-full h-10 rounded-[8px] pl-10 pr-3 font-sans text-sm font-medium focus:outline-none ${ink.input}`}
             />
           </div>
 
@@ -317,7 +356,7 @@ export default function FilmTranscript({
             }`}
           >
             {vttLoading ? (
-              <div className="text-white/35 text-[13px] py-4 px-1 animate-pulse">
+              <div className={`${ink.whisper} text-[13px] py-4 px-1 animate-pulse`}>
                 …
               </div>
             ) : filteredCues.length > 0 ? (
@@ -331,7 +370,7 @@ export default function FilmTranscript({
                   <div
                     key={`${cue.startSeconds}-${absoluteIndex}`}
                     className={`group flex items-start gap-2 rounded-[8px] px-2 py-2 transition-colors ${
-                      isActive ? 'bg-white/10' : 'hover:bg-white/[0.04]'
+                      isActive ? ink.rowActive : ink.rowHover
                     }`}
                   >
                     <button
@@ -348,8 +387,8 @@ export default function FilmTranscript({
                       >
                         {cue.displayTime}
                       </span>
-                      <span className="text-white/80 font-medium text-[15px] leading-snug">
-                        {highlightMatch(cue.dialogue, query)}
+                      <span className={`${ink.soft} font-medium text-[15px] leading-snug`}>
+                        {highlightMatch(cue.dialogue, query, ink.primary)}
                       </span>
                     </button>
 
@@ -357,7 +396,11 @@ export default function FilmTranscript({
                       <button
                         type="button"
                         onClick={() => copyText(copyKey, cue.dialogue)}
-                        className="h-7 px-2 rounded-[6px] text-[11px] font-semibold text-white/45 hover:text-white/80 hover:bg-white/10"
+                        className={`h-7 px-2 rounded-[6px] text-[11px] font-semibold ${
+                          isDock
+                            ? 'text-white/45 hover:text-white/80 hover:bg-white/10'
+                            : 'text-page-faint hover:text-page hover:bg-page-chip'
+                        }`}
                         title={t('transcriptCopy')}
                       >
                         {copiedId === copyKey ? t('transcriptCopied') : t('transcriptCopy')}
@@ -366,7 +409,11 @@ export default function FilmTranscript({
                         <button
                           type="button"
                           onClick={() => copyText(shareKey, shareUrlForCue(cue))}
-                          className="h-7 px-2 rounded-[6px] text-[11px] font-semibold text-white/45 hover:text-white/80 hover:bg-white/10"
+                          className={`h-7 px-2 rounded-[6px] text-[11px] font-semibold ${
+                            isDock
+                              ? 'text-white/45 hover:text-white/80 hover:bg-white/10'
+                              : 'text-page-faint hover:text-page hover:bg-page-chip'
+                          }`}
                           title={t('transcriptShare')}
                         >
                           {copiedId === shareKey ? t('transcriptCopied') : t('transcriptShare')}
@@ -377,7 +424,7 @@ export default function FilmTranscript({
                 );
               })
             ) : (
-              <div className="text-white/35 text-[13px] py-4 px-1">
+              <div className={`${ink.whisper} text-[13px] py-4 px-1`}>
                 {query.trim() ? t('transcriptNoMatches') : t('transcriptUnavailable')}
               </div>
             )}

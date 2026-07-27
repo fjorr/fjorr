@@ -15,7 +15,10 @@
     "language": "Sprache",
     "languages": "Sprachen",
     "signIn": "Anmelden oder registrieren",
-    "account": "Konto"
+    "account": "Konto",
+    "appearance": "Erscheinungsbild",
+    "appearanceDark": "Dunkel",
+    "appearanceLight": "Hell"
   },
   "DisplayMode": {
     "cinematic": "Kino",

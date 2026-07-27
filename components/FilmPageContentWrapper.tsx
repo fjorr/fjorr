@@ -126,7 +126,7 @@ export default function FilmPageContentWrapper({
   }, [filmData?.id]);
 
   return (
-    <div className="w-full relative bg-[#1F1F1F]">
+    <div className="w-full relative bg-[var(--page-bg)]">
       {showTheater && (
         <>
           <CinemaTheater
@@ -144,6 +144,10 @@ export default function FilmPageContentWrapper({
               last_line: filmData.last_line,
               story_date: filmData.story_date || filmData.story_year || '1972',
               location: displayLocation,
+              teaser: filmData.teaser,
+              runtime: filmData.runtime,
+              blok_tall: filmData.blok_tall,
+              hero_tall: filmData.hero_tall,
               language_subtitle: subtitlesData,
             }}
           />
@@ -175,7 +179,7 @@ export default function FilmPageContentWrapper({
           resumeSeconds={resumeProgress?.seconds ?? null}
         />
 
-        <div className="w-full bg-[#1F1F1F] pt-8 pb-24 flex flex-col gap-0">
+        <div className="w-full bg-[var(--page-bg)] pt-8 pb-24 flex flex-col gap-0">
           <div className="w-full min-w-0 flex flex-col space-y-6">
             {relatedArtifacts.length > 0 && (
               <ArtifactRail title={t('relatedArtifacts')} artifacts={relatedArtifacts} />

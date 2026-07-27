@@ -121,7 +121,7 @@ export default function TimelineRail({
     <div className="relative w-full mt-6 pb-24">
       {/* Viewport-centered spine */}
       <div
-        className="pointer-events-none absolute left-1/2 top-0 bottom-0 w-px -translate-x-1/2 bg-white/20"
+        className="pointer-events-none absolute left-1/2 top-0 bottom-0 w-px -translate-x-1/2 bg-page-line"
         aria-hidden
       />
 
@@ -137,7 +137,7 @@ export default function TimelineRail({
                 const { primary, secondary } = splitYearLabel(group.label);
                 return (
                   <h2
-                    className="relative z-10 px-3 py-2 flex flex-col items-center gap-1 text-white/40"
+                    className="relative z-10 px-3 py-2 flex flex-col items-center gap-1 text-page-faint"
                     style={{
                       backgroundColor: 'var(--page-bg-color, #1F1F1F)',
                     }}
@@ -146,7 +146,7 @@ export default function TimelineRail({
                       {primary}
                     </span>
                     {secondary ? (
-                      <span className="font-mono text-[10px] md:text-[11px] font-medium uppercase tracking-[0.14em] leading-none text-white/35">
+                      <span className="font-mono text-[10px] md:text-[11px] font-medium uppercase tracking-[0.14em] leading-none text-page-faint">
                         {secondary}
                       </span>
                     ) : null}
@@ -184,7 +184,7 @@ export default function TimelineRail({
                             className="w-[72px] sm:w-[80px] h-auto rounded-[10px] transition-opacity duration-300 group-hover:opacity-90"
                           />
                         ) : (
-                          <div className="w-[72px] sm:w-[80px] aspect-[2/3] rounded-[10px] bg-white/10" />
+                          <div className="w-[72px] sm:w-[80px] aspect-[2/3] rounded-[10px] bg-page-chip" />
                         )}
                       </PrefetchLink>
 
@@ -194,11 +194,11 @@ export default function TimelineRail({
                           onClick={rememberScroll}
                           className="group flex flex-col gap-2 min-w-0"
                         >
-                          <h3 className="font-sans text-[16px] md:text-[17px] font-bold tracking-tight text-white leading-snug group-hover:text-white/85 transition-colors">
+                          <h3 className="font-sans text-[16px] md:text-[17px] font-bold tracking-tight text-page leading-snug group-hover:opacity-85 transition-opacity">
                             {item.name}
                           </h3>
                           {item.teaser ? (
-                            <p className="font-sans text-[13px] font-normal text-white/45 leading-relaxed line-clamp-4">
+                            <p className="font-sans text-[13px] font-normal text-page-muted leading-relaxed line-clamp-4">
                               {item.teaser}
                             </p>
                           ) : null}
@@ -211,7 +211,7 @@ export default function TimelineRail({
                               rememberScroll();
                               onResume(item);
                             }}
-                            className="self-start h-8 px-3 rounded-[6px] bg-white/15 font-sans text-[13px] font-semibold text-white hover:bg-white/25 transition-colors whitespace-nowrap"
+                            className="self-start h-8 px-3 rounded-[6px] bg-page-chip-active font-sans text-[13px] font-semibold text-page hover:bg-page-chip-hover transition-colors whitespace-nowrap"
                           >
                             {tFilm('resume', {
                               time: formatResumeClock(resume.seconds),

@@ -15,7 +15,10 @@
     "language": "언어",
     "languages": "언어",
     "signIn": "로그인 또는 가입",
-    "account": "계정"
+    "account": "계정",
+    "appearance": "화면",
+    "appearanceDark": "다크",
+    "appearanceLight": "라이트"
   },
   "DisplayMode": {
     "cinematic": "시네",

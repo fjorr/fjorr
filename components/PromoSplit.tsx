@@ -22,7 +22,7 @@ export default function PromoSplit() {
           {/* 💥 FIXED: Changed aspect-[4/3] to aspect-auto and h-auto.
               Combined with the gap-12 on the parent flex container, this forces 
               the mobile box to vertically stretch based on its text content! */}
-          <div className="w-full lg:w-1/2 aspect-auto lg:aspect-square h-auto lg:h-full bg-transparent relative drop-shadow-[0_10px_20px_rgba(0,0,0,0.4)] flex flex-col items-center justify-center">
+          <div className="w-full lg:w-1/2 aspect-auto lg:aspect-square h-auto lg:h-full bg-transparent relative dark:drop-shadow-[0_10px_20px_rgba(0,0,0,0.4)] flex flex-col items-center justify-center">
             {/* CLOUDFLARE ASSET: Left Dark Texture Backing */}
             {/* 💥 FIXED: Added 'hidden lg:block' so this dark backing image is completely 
                 deleted on mobile and only appears on desktop. */}
@@ -75,7 +75,7 @@ export default function PromoSplit() {
           </div>
 
           {/* RIGHT CONTAINER (The Crowd Portrait Frame) */}
-          <div className="w-full lg:w-1/2 aspect-[4/3] lg:aspect-square bg-transparent drop-shadow-[0_10px_20px_rgba(0,0,0,0.4)] relative">
+          <div className="w-full lg:w-1/2 aspect-[4/3] lg:aspect-square bg-transparent dark:drop-shadow-[0_10px_20px_rgba(0,0,0,0.4)] relative">
             <Image
               src="https://media.fjorr.com/assets/fjorr-partner-promo-crowd-f2v04.avif"
               alt={t('crowdAlt')}

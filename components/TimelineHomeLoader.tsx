@@ -55,7 +55,7 @@ export default async function TimelineHomeLoader() {
   if (films.length === 0 && artifacts.length === 0) {
     const t = await getTranslations('Home');
     return (
-      <div className="w-full min-h-[40vh] bg-[#1F1F1F] flex items-center justify-center text-white/40 font-sans text-sm">
+      <div className="w-full min-h-[40vh] bg-[var(--page-bg)] flex items-center justify-center text-page-faint font-sans text-sm">
         {t('noTitles')}
       </div>
     );

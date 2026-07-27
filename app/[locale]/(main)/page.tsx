@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 
 function FeatureRailFallback() {
   return (
-    <div className="w-full flex justify-center animate-pulse bg-[#1F1F1F]">
+    <div className="w-full flex justify-center animate-pulse bg-page">
       <div className="w-full max-w-[1440px] aspect-[1/1.618] md:aspect-[4/3] lg:aspect-[16/9] overflow-hidden rounded-none min-[1440px]:rounded-xl">
         <ServerSafeSkeleton variant="feature" />
       </div>

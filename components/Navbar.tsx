@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { Icon } from '@/components/ui/Icons';
 import { localeLabels, locales, stripLocalePrefix, type AppLocale } from '@/i18n/config';
 import { Link, usePathname, useRouter } from '@/i18n/navigation';
+import ColorSchemeToggle from '@/components/ColorSchemeToggle';
 
 const SignInForm = dynamic(() => import('@/components/SignInForm'), {
   ssr: false,
@@ -60,7 +61,7 @@ function Navbar({ variant = 'light' }: NavbarProps) {
   const openGlassClass =
     variant === 'light'
       ? 'border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.35)]'
-      : 'border-black/5 shadow-[0_8px_32px_rgba(0,0,0,0.1)]';
+      : 'border-black/5 menu-surface';
   const glassAnimClass =
     variant === 'light' ? 'animate-nav-glass' : 'animate-nav-glass-light';
 
@@ -144,10 +145,10 @@ function Navbar({ variant = 'light' }: NavbarProps) {
   if (isTheaterOpen) return null;
 
   return (
-    <header className="sticky top-0 z-50 w-full h-[70px] pt-[20px] px-4 flex justify-center pointer-events-none overflow-visible">
-      <div ref={panelRef} className="relative h-[50px] pointer-events-auto">
+    <header className="sticky top-0 z-50 w-full h-[56px] pt-[12px] px-4 flex justify-center pointer-events-none overflow-visible">
+      <div ref={panelRef} className="relative h-[44px] pointer-events-auto">
         <div
-          className="flex h-[50px] px-[30px] items-center gap-[20px] opacity-0 pointer-events-none select-none"
+          className="flex h-[44px] px-[30px] items-center gap-[20px] opacity-0 pointer-events-none select-none"
           aria-hidden
         >
           <div className="w-[50px] shrink-0" />
@@ -163,11 +164,11 @@ function Navbar({ variant = 'light' }: NavbarProps) {
             absolute left-0 right-0 flex flex-col border
             transition-[top,padding,border-radius,background-color,border-color,backdrop-filter] duration-300 ease-out
             ${isOpen
-              ? `${openGlassClass} -top-9 pt-9 rounded-b-[10px] rounded-t-none overflow-visible`
+              ? `${openGlassClass} -top-3 pt-3 rounded-b-[10px] rounded-t-none overflow-visible`
               : `top-0 rounded-[10px] overflow-visible ${glassAnimClass}`}
           `}
         >
-          <div className="flex h-[50px] px-[30px] items-center gap-[20px]">
+          <div className="flex h-[44px] px-[30px] items-center gap-[20px]">
             <Link
               href="/"
               onClick={closePanel}
@@ -331,6 +332,17 @@ function Navbar({ variant = 'light' }: NavbarProps) {
                     >
                       {emailCopied ? t('emailCopied') : t('letsTalk')}
                     </button>
+                  </div>
+
+                  <div
+                    className={`pt-5 flex items-center border-t ${
+                      variant === 'light' ? 'border-white/10' : 'border-black/8'
+                    }`}
+                  >
+                    <ColorSchemeToggle
+                      activeClass={textColor}
+                      mutedClass={mutedLabel}
+                    />
                   </div>
                 </div>
               )}

@@ -10,14 +10,14 @@ export default function ContentTypeToggle() {
   const { contentType, setContentType } = useMinimalFilter();
 
   return (
-    <div className="inline-flex shrink-0 items-center gap-0.5 rounded-[8px] p-0.5 bg-white/5">
+    <div className="inline-flex shrink-0 items-center gap-0.5 rounded-[8px] p-0.5 bg-page-chip">
       <button
         type="button"
         onClick={() => setContentType('film')}
         className={`font-sans text-[11px] sm:text-xs font-semibold px-2 sm:px-3 py-1.5 rounded-[6px] transition-colors whitespace-nowrap ${
           contentType === 'film'
-            ? 'bg-white/15 text-white'
-            : 'text-white/40 hover:text-white/70'
+            ? 'bg-page-chip-active text-page'
+            : 'text-page-faint hover:text-page-muted'
         }`}
       >
         {t('film')}
@@ -27,8 +27,8 @@ export default function ContentTypeToggle() {
         onClick={() => setContentType('artifact')}
         className={`font-sans text-[11px] sm:text-xs font-semibold px-2 sm:px-3 py-1.5 rounded-[6px] transition-colors whitespace-nowrap ${
           contentType === 'artifact'
-            ? 'bg-white/15 text-white'
-            : 'text-white/40 hover:text-white/70'
+            ? 'bg-page-chip-active text-page'
+            : 'text-page-faint hover:text-page-muted'
         }`}
       >
         {t('artifact')}

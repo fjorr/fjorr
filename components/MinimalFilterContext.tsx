@@ -314,7 +314,7 @@ export function QueryStatusBar() {
 
   return (
     <div className="flex items-center justify-center gap-2.5 min-h-[18px] px-2">
-      <p className="font-sans text-[11px] font-medium text-white/45 tracking-tight truncate max-w-[min(100%,28rem)]">
+      <p className="font-sans text-[11px] font-medium text-page-muted tracking-tight truncate max-w-[min(100%,28rem)]">
         {parts.join(' · ')}
       </p>
       {queryActive && (

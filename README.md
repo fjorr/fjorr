@@ -24,6 +24,7 @@ Set these in `.env.local` (or in Vercel):
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Used by most app code (server + client queries) |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Used by middleware session refresh (`lib/supabase/proxy.ts`). Set this to the same value as the anon key if you only have one key. |
+| `NEXT_PUBLIC_MUX_DATA_ENV_KEY` | Optional. Enables Mux Data monitoring in `CinemaTheater` |
 | `SITE_PASSWORD` | Only used when `SITE_GATE_ENABLED=true` (staging preview gate) |
 | `SITE_GATE_ENABLED` | Set to `true` on staging/preview to re-enable `/password` gate. Leave unset/false in production. |
 | `SUPABASE_SERVICE_ROLE_KEY` | Optional. Used by the newsletter signup server action for writes to `intel_list`. Falls back to anon key if missing. |

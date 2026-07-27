@@ -3,9 +3,11 @@ import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { DisplayModeProvider } from '@/components/DisplayModeProvider';
+import { ColorSchemeProvider } from '@/components/ColorSchemeProvider';
 import TypekitLoader from '@/components/TypekitLoader';
 import { fontVariables } from '@/lib/fonts';
 import { DISPLAY_MODE_COOKIE, parseDisplayMode } from '@/lib/display-mode';
+import { COLOR_SCHEME_COOKIE, parseColorScheme } from '@/lib/color-scheme';
 import { routing } from '@/i18n/routing';
 
 export function generateStaticParams() {
@@ -30,15 +32,21 @@ export default async function LocaleLayout({
   const initialMode = parseDisplayMode(
     cookieStore.get(DISPLAY_MODE_COOKIE)?.value
   );
+  const initialScheme = parseColorScheme(
+    cookieStore.get(COLOR_SCHEME_COOKIE)?.value
+  );
+  const schemeClass = initialScheme === 'light' ? 'light' : 'dark';
 
   return (
-    <html lang={locale} className={`${fontVariables} dark`}>
-      <body className="font-sans antialiased text-light-01 min-h-screen">
+    <html lang={locale} className={`${fontVariables} ${schemeClass}`}>
+      <body className="font-sans antialiased min-h-screen bg-[var(--page-bg)] text-[var(--page-fg)]">
         <TypekitLoader />
         <NextIntlClientProvider locale={locale} messages={messages}>
-          <DisplayModeProvider initialMode={initialMode}>
-            {children}
-          </DisplayModeProvider>
+          <ColorSchemeProvider initialScheme={initialScheme}>
+            <DisplayModeProvider initialMode={initialMode}>
+              {children}
+            </DisplayModeProvider>
+          </ColorSchemeProvider>
         </NextIntlClientProvider>
       </body>
     </html>

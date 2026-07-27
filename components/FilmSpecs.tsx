@@ -8,7 +8,7 @@ import { createClient } from '@/lib/supabase/client';
 const FilmTranscript = dynamic(() => import('./FilmTranscript'), {
   ssr: false,
   loading: () => (
-    <div className="mt-2 h-10 w-40 rounded bg-white/5 animate-pulse" aria-hidden />
+    <div className="mt-2 h-10 w-40 rounded bg-page-chip animate-pulse" aria-hidden />
   ),
 });
 
@@ -66,17 +66,17 @@ export default function FilmSpecs({
   }, [film?.id, subtitles.length]);
 
   return (
-    <div className="max-w-2xl w-full px-8 md:px-12 mx-auto text-left text-white/90 font-sans select-none relative z-20">
+    <div className="max-w-2xl w-full px-8 md:px-12 mx-auto text-left text-page font-sans select-none relative z-20">
       
       {/* 📖 ABOUT FILM PANEL */}
       <div className="max-w-3xl mb-8">
-        <h3 className="text-lg font-bold text-white mb-3">{t('about')}</h3>
-        <p className="text-base leading-normal text-white/80 font-medium mb-4">
+        <h3 className="text-lg font-bold text-page mb-3">{t('about')}</h3>
+        <p className="text-base leading-normal text-page font-medium mb-4 opacity-80">
           {film.description}
         </p>
         
         {/* VERTICAL METADATA STACK */}
-        <div className="flex flex-col items-start gap-0.5 text-sm font-medium text-white/50">
+        <div className="flex flex-col items-start gap-0.5 text-sm font-medium text-page-faint">
           {film.story_date && <span>{film.story_date}</span>}
           {film.location && <span>{film.location}</span>}
           {film.note && <span className="font-normal">{film.note}</span>}
@@ -96,7 +96,7 @@ export default function FilmSpecs({
 
       {/* 📋 UNIFIED DETAILS PANEL */}
       <div className="w-full mt-14">
-        <h3 className="text-lg font-bold text-white mb-6 tracking-tight">{t('specs')}</h3>
+        <h3 className="text-lg font-bold text-page mb-6 tracking-tight">{t('specs')}</h3>
         
         {/* A single, vertically continuous stack with tight, deliberate rhythm */}
         <div className="flex flex-col space-y-2 text-sm">
@@ -104,36 +104,36 @@ export default function FilmSpecs({
           {/* Dynamic Filmmaker Data Blocks */}
           {creators.map((item, idx) => (
             <div key={idx} className="flex items-baseline gap-2">
-              <span className="text-white/40 font-medium capitalize">{item.role}</span>
-              <span className="text-white font-semibold">{item.creator?.name || t('unknownCreator')}</span>
+              <span className="text-page-faint font-medium capitalize">{item.role}</span>
+              <span className="text-page font-semibold">{item.creator?.name || t('unknownCreator')}</span>
             </div>
           ))}
 
           {/* Technical Specifications Rows */}
           <div className="flex items-baseline gap-2">
-            <span className="text-white/40 font-medium">{t('runtimeLabel')}</span>
-            <span className="text-white font-semibold">{displayRuntime}</span>
+            <span className="text-page-faint font-medium">{t('runtimeLabel')}</span>
+            <span className="text-page font-semibold">{displayRuntime}</span>
           </div>
 
           <div className="flex items-baseline gap-2">
-            <span className="text-white/40 font-medium">{t('ratingLabel')}</span>
-            <span className="text-white font-semibold">{displayRating}</span>
+            <span className="text-page-faint font-medium">{t('ratingLabel')}</span>
+            <span className="text-page font-semibold">{displayRating}</span>
           </div>
 
           <div className="flex items-baseline gap-2">
-            <span className="text-white/40 font-medium">{t('releasedLabel')}</span>
-            <span className="text-white font-semibold">{releaseYear}</span>
+            <span className="text-page-faint font-medium">{t('releasedLabel')}</span>
+            <span className="text-page font-semibold">{releaseYear}</span>
           </div>
 
           <div className="flex items-baseline gap-2">
-            <span className="text-white/40 font-medium">{t('audioLabel')}</span>
-            <span className="text-white font-semibold">{audioLanguages.join(', ')}</span>
+            <span className="text-page-faint font-medium">{t('audioLabel')}</span>
+            <span className="text-page font-semibold">{audioLanguages.join(', ')}</span>
           </div>
 
           {subtitles.length > 0 && (
             <div className="flex items-baseline gap-2">
-              <span className="text-white/40 font-medium">{t('subtitlesLabel')}</span>
-              <span className="text-white font-semibold">
+              <span className="text-page-faint font-medium">{t('subtitlesLabel')}</span>
+              <span className="text-page font-semibold">
                 {subtitles.map(s => s.name).join(', ')}
               </span>
             </div>
@@ -141,12 +141,12 @@ export default function FilmSpecs({
 
           {tags.length > 0 && (
             <div className="flex items-start gap-2">
-              <span className="text-white/40 font-medium shrink-0 pt-0.5">{t('tagsLabel')}</span>
+              <span className="text-page-faint font-medium shrink-0 pt-0.5">{t('tagsLabel')}</span>
               <div className="flex flex-wrap gap-1.5">
                 {tags.map((tag) => (
                   <span
                     key={tag}
-                    className="bg-white/10 rounded-[4px] px-2 py-0.5 text-[12px] text-white font-semibold"
+                    className="bg-page-chip rounded-[4px] px-2 py-0.5 text-[12px] text-page font-semibold"
                   >
                     {tag.charAt(0).toUpperCase() + tag.slice(1)}
                   </span>

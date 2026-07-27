@@ -12,12 +12,13 @@ export default function NominateSuccessView({ onReset }: SuccessProps) {
 
   return (
     <div className="w-full max-w-md mx-auto h-auto bg-transparent flex items-center justify-center transition-all duration-500">
-      <div className="w-full h-full border border-[#FFFFFF]/10 rounded-2xl bg-[#1F1F1F] flex items-center justify-center overflow-hidden relative group">
-        <div className="w-full h-full bg-[#1F1F1F] px-[30px] py-16 relative flex flex-col items-center justify-center text-center">
+      <div className="w-full h-full border border-page-faint rounded-2xl bg-page-elevated flex items-center justify-center overflow-hidden relative group menu-surface">
+        <div className="w-full h-full bg-page-elevated px-[30px] py-16 relative flex flex-col items-center justify-center text-center">
           <div
             className="absolute top-[30px] bottom-[30px] left-[30px] right-[30px] opacity-[0.15] pointer-events-none"
             style={{
-              backgroundImage: 'radial-gradient(#FFFFFF 1px, transparent 1px)',
+              backgroundImage:
+                'radial-gradient(var(--page-fg) 1px, transparent 1px)',
               backgroundSize: '20px 20px',
               backgroundPosition: 'center',
             }}
@@ -27,7 +28,7 @@ export default function NominateSuccessView({ onReset }: SuccessProps) {
             className="relative z-10 flex flex-col items-center justify-center opacity-0 animate-slide-up"
             style={{ animationDelay: '150ms' }}
           >
-            <div className="mb-4 text-white/90">
+            <div className="mb-4 text-page">
               <svg
                 className="w-10 h-10 stroke-current"
                 fill="none"
@@ -43,17 +44,17 @@ export default function NominateSuccessView({ onReset }: SuccessProps) {
               </svg>
             </div>
 
-            <h2 className="text-5xl sm:text-6xl font-extrabold uppercase tracking-tighter text-light-01 leading-[46px] sm:leading-[54px] font-futura mb-4 select-none">
+            <h2 className="text-5xl sm:text-6xl font-extrabold uppercase tracking-tighter text-page leading-[46px] sm:leading-[54px] font-futura mb-4 select-none">
               {t('successTitle')}
             </h2>
 
-            <p className="font-sans font-medium text-base leading-relaxed text-white/60 max-w-[200px] sm:max-w-[250px] mb-8 tracking-tight">
+            <p className="font-sans font-medium text-base leading-relaxed text-page-muted max-w-[200px] sm:max-w-[250px] mb-8 tracking-tight">
               {t('successBody')}
             </p>
 
             <button
               onClick={onReset}
-              className="px-10 h-14 bg-white text-black font-sans font-bold text-[15px] tracking-tight rounded-full hover:bg-white/90 active:scale-95 transition-all duration-150 inline-flex items-center justify-center gap-1.5 group/btn"
+              className="px-10 h-14 bg-[var(--page-fg)] text-[var(--page-bg)] font-sans font-bold text-[15px] tracking-tight rounded-full hover:opacity-90 active:scale-95 transition-all duration-150 inline-flex items-center justify-center gap-1.5 group/btn"
             >
               <span>{t('submitMore')}</span>
               <svg

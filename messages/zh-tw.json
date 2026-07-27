@@ -15,7 +15,10 @@
     "language": "語言",
     "languages": "語言",
     "signIn": "登入或註冊",
-    "account": "帳戶"
+    "account": "帳戶",
+    "appearance": "外觀",
+    "appearanceDark": "深色",
+    "appearanceLight": "淺色"
   },
   "DisplayMode": {
     "cinematic": "影院",

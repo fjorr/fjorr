@@ -29,7 +29,7 @@ function MetaLine({ item }: { item: MinimalArtifact }) {
   if (parts.length === 0) return null;
 
   return (
-    <p className="font-sans text-[11px] font-medium capitalize tracking-normal text-white/30">
+    <p className="font-sans text-[11px] font-medium capitalize tracking-normal text-page-faint">
       {parts.join(' - ')}
     </p>
   );
@@ -71,11 +71,11 @@ export default function MinimalArtifactList({ artifacts }: { artifacts: MinimalA
             href={`/artifact/${item.slug}`}
             className="min-w-0 flex-1 max-w-none sm:max-w-[380px] flex flex-col gap-1 group"
           >
-            <h2 className="font-sans text-[18px] font-bold tracking-tight text-white leading-tight group-hover:text-white/85 transition-colors">
+            <h2 className="font-sans text-[18px] font-bold tracking-tight text-page leading-tight group-hover:opacity-80 transition-opacity">
               {item.name}
             </h2>
             {item.teaser && (
-              <p className="font-sans text-[14px] font-normal text-white/70 leading-snug line-clamp-2">
+              <p className="font-sans text-[14px] font-normal text-page-muted leading-snug line-clamp-2">
                 {item.teaser}
               </p>
             )}

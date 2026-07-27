@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 import HeroPicture from '@/components/HeroPicture';
-import { sanitizeTitleArtSvg } from '@/lib/sanitize-svg';
+import { resolveTitleArtColor, sanitizeTitleArtSvg } from '@/lib/sanitize-svg';
 import { formatResumeClock } from '@/lib/watch-progress';
 
 const FilmSendSheet = dynamic(() => import('@/components/FilmSendSheet'), {
@@ -101,7 +101,7 @@ export default function FilmHero({
                   className="mb-4 w-full max-w-[200px] md:max-w-none flex items-center justify-center md:justify-start [&>svg]:w-full [&>svg]:h-auto"
                   style={
                     {
-                      color: film.title_art_hex || '#FFFFFF',
+                      color: resolveTitleArtColor(film.title_art_hex),
                       '--desktop-width': calculatedWidth,
                     } as React.CSSProperties
                   }

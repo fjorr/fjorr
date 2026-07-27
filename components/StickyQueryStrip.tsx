@@ -10,8 +10,8 @@ import {
 import { DialsPanel, MixesPanel } from '@/components/BrowseFilterPanels';
 import { nextDisplayMode } from '@/lib/display-mode';
 
-/** Navbar occupies 70px; leave 10px air before the sticky glass. */
-const STICKY_TOP_PX = 80;
+/** Navbar occupies 56px; leave 10px air before the sticky glass. */
+const STICKY_TOP_PX = 66;
 
 type Panel = 'mixes' | 'dials' | null;
 
@@ -92,11 +92,10 @@ export default function StickyQueryStrip({
         className="pointer-events-auto w-full max-w-sm flex flex-col items-center gap-2"
       >
         <div
-          className="flex items-center justify-center gap-1 px-4 py-2.5 rounded-[10px] border w-fit max-w-full"
+          className="flex items-center justify-center gap-1 px-4 py-2.5 rounded-[10px] border border-page-faint w-fit max-w-full menu-surface"
           style={{
             backgroundColor:
               'color-mix(in srgb, var(--page-bg-color, #1F1F1F) 72%, transparent)',
-            borderColor: 'rgba(255, 255, 255, 0.1)',
             backdropFilter: 'blur(24px) saturate(1.4)',
             WebkitBackdropFilter: 'blur(24px) saturate(1.4)',
             transform: 'translateZ(0)',
@@ -165,7 +164,7 @@ export default function StickyQueryStrip({
 }
 
 function Dot() {
-  return <span className="text-white/25 font-sans text-[11px] select-none">·</span>;
+  return <span className="text-page-faint font-sans text-[11px] select-none">·</span>;
 }
 
 function Chip({
@@ -191,12 +190,12 @@ function Chip({
       onClick={onClick}
       className={`shrink-0 max-w-[9rem] truncate font-sans text-[11px] font-semibold transition-colors px-1 ${
         disabled
-          ? 'text-white/25 cursor-not-allowed'
+          ? 'text-page-faint cursor-not-allowed opacity-50'
           : active
-            ? 'text-white'
+            ? 'text-page'
             : muted
-              ? 'text-white/35 hover:text-white/70'
-              : 'text-white/55 hover:text-white'
+              ? 'text-page-faint hover:text-page-muted'
+              : 'text-page-muted hover:text-page'
       }`}
     >
       {children}

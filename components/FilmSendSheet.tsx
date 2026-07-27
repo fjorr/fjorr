@@ -109,7 +109,7 @@ export default function FilmSendSheet({
   };
 
   return (
-    <div className="fixed inset-0 z-[90] flex items-end sm:items-center justify-center p-0 sm:p-6">
+    <div className="fixed inset-0 z-[100050] flex items-end sm:items-center justify-center p-0 sm:p-6">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]" aria-hidden />
 
       <div
