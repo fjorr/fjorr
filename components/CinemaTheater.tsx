@@ -15,11 +15,7 @@ import TheaterCircleControl, {
   THEATER_CIRCLE_CIRCUMFERENCE,
 } from '@/components/TheaterCircleControl';
 import TheaterRamsChrome, { TheaterRamsIdentity } from '@/components/TheaterRamsChrome';
-import {
-  THEATER_PLAYER_CHROME,
-  resolveRamsChromeLayout,
-  type RamsChromeLayout,
-} from '@/lib/theater/player-chrome-variant';
+import { THEATER_PLAYER_CHROME } from '@/lib/theater/player-chrome-variant';
 import { useColorScheme } from '@/components/ColorSchemeProvider';
 import { LIGHT_PAGE_BG, LIGHT_PAGE_FG } from '@/lib/color-scheme';
 
@@ -122,12 +118,6 @@ export default function CinemaTheater({
   const router = useRouter();
   const locale = parseLocale(useLocale());
   const t = useTranslations('Theater');
-  const ramsLayout: RamsChromeLayout = resolveRamsChromeLayout(
-    film?.slug,
-    typeof window !== 'undefined'
-      ? new URLSearchParams(window.location.search).get('rams')
-      : null
-  );
   const tNav = useTranslations('Nav');
   const { isLight } = useColorScheme();
   const isEmbed = mode === 'embed';
@@ -364,7 +354,6 @@ export default function CinemaTheater({
     showCCMenu,
     isScrubbing,
     chassisMode: isRamsChrome,
-    chassisTogglePlay: ramsLayout !== 'plaque',
     onTogglePlay: togglePlay,
     onToggleMute: toggleMute,
     onToggleFullscreen: toggleFullscreen,
@@ -373,19 +362,16 @@ export default function CinemaTheater({
     onClose: handleCloseNavigation,
   });
 
-  /** Rams chrome visible — drives overlay dim / plaque shrink. */
+  /** Rams chrome visible — drives plaque shrink. */
   const ramsChromeUp =
     isRamsChrome && controlsVisible && !isPlayingLogo && !isEmbed;
-
-  const ramsUsesCompact = ramsLayout === 'plaque';
-  /** Plaque animates live — no mid-fade snap. */
-  const plaqueCompact = ramsLayout === 'plaque' && ramsChromeUp;
+  const plaqueCompact = ramsChromeUp;
 
   // Plaque chrome stays mounted — repaint playhead when it becomes visible.
   useLayoutEffect(() => {
-    if (!plaqueCompact) return;
+    if (!isRamsChrome || !plaqueCompact) return;
     paintTimeUi();
-  }, [plaqueCompact, paintTimeUi]);
+  }, [isRamsChrome, plaqueCompact, paintTimeUi]);
 
   useEffect(() => {
     if (isEmbed) return;
@@ -525,6 +511,18 @@ export default function CinemaTheater({
       onEnded?.();
     }
   };
+
+  const handleRewatch = useCallback(() => {
+    setIsEnded(false);
+    setShowCCMenu(false);
+    const player = filmPlayerRef.current;
+    if (!player) return;
+    player.currentTime = 0;
+    currentTimeRef.current = 0;
+    paintTimeUi();
+    syncCueToTime();
+    void player.play().catch(() => {});
+  }, [paintTimeUi, syncCueToTime]);
 
   const handleScrubStart = useCallback(() => {
     if (!isPlayingLogo) setIsScrubbing(true);
@@ -710,11 +708,7 @@ export default function CinemaTheater({
         type="button"
         onClick={togglePlay}
         aria-label={isPlaying ? t('pause') : t('play')}
-        className={`font-mono text-[13px] tracking-[0.08em] uppercase bg-transparent border-0 outline-none cursor-pointer p-0 leading-none whitespace-nowrap transition-opacity hover:opacity-100 ${
-          ramsLayout === 'plaque'
-            ? 'font-bold opacity-100'
-            : 'font-medium opacity-90'
-        }`}
+        className={`font-mono text-[13px] font-bold tracking-[0.08em] uppercase bg-transparent border-0 outline-none cursor-pointer p-0 leading-none whitespace-nowrap opacity-100 hover:opacity-100 transition-opacity`}
       >
         {isPlaying ? t('pause') : t('play')}
       </button>
@@ -756,8 +750,7 @@ export default function CinemaTheater({
     return dateVal || locationVal || undefined;
   })();
 
-  const ramsIdentity =
-    !isPlayingLogo && ramsUsesCompact ? (
+  const ramsIdentity = !isPlayingLogo ? (
       <TheaterRamsIdentity
         isLight={isFullscreen ? false : isLight}
         logoLabel={isEmbed ? t('watchOnFjorr') : t('closeTheater')}
@@ -780,7 +773,7 @@ export default function CinemaTheater({
       filmTitle={film?.name || undefined}
       filmMeta={ramsFilmMeta}
       toolsSlot={ramsToolsSlot}
-      hideHeader={ramsUsesCompact}
+      hideHeader
       onScrubStart={handleScrubStart}
       onScrubChange={handleScrubChange}
       onScrubEnd={handleScrubEnd}
@@ -939,7 +932,6 @@ export default function CinemaTheater({
       )}
 
       {isRamsChrome ? (
-        ramsLayout === 'plaque' ? (
           <div
             data-rams-layout="plaque"
             className="absolute inset-0 z-10 flex items-center justify-center px-4 pointer-events-none"
@@ -981,35 +973,6 @@ export default function CinemaTheater({
               </div>
             </div>
           </div>
-        ) : (
-          <div
-            data-rams-layout="overlay"
-            className="absolute inset-0 z-10 flex items-center justify-center px-4 pointer-events-none"
-          >
-            <div
-              className={`relative overflow-hidden bg-black pointer-events-auto w-full transition-opacity duration-500 ease-out ${
-                ramsChromeUp ? 'opacity-20' : 'opacity-100'
-              } ${
-                isFullscreen
-                  ? 'h-full max-w-none rounded-none'
-                  : 'max-w-[1200px] aspect-video max-h-[calc(100dvh-3rem)] rounded-none min-[1201px]:rounded-[12px]'
-              }`}
-            >
-              {ramsVideoStack}
-            </div>
-
-            <div
-              className={`absolute inset-0 z-40 flex items-center justify-center px-4 pointer-events-none transition-opacity duration-500 ease-out ${
-                ramsChromeUp ? 'opacity-100' : 'opacity-0'
-              }`}
-              aria-hidden={!ramsChromeUp}
-            >
-              <div className={ramsChromeUp ? 'pointer-events-auto' : 'pointer-events-none'}>
-                {ramsChrome}
-              </div>
-            </div>
-          </div>
-        )
       ) : (
       <div className="flex-1 min-h-0 w-full flex items-center justify-center relative z-10">
         <div
@@ -1447,16 +1410,60 @@ export default function CinemaTheater({
           pointerEvents: isEnded ? 'auto' : 'none',
         }}
       >
-        {/* Fjorr logo — top-left exit */}
-        <button
-          type="button"
-          onClick={handleCloseNavigation}
-          className={`absolute top-[max(1rem,env(safe-area-inset-top))] left-[max(1rem,env(safe-area-inset-left))] bg-transparent border-0 p-0 outline-none cursor-pointer transition-opacity opacity-60 hover:opacity-100`}
-          aria-label={isEmbed ? t('watchOnFjorr') : t('closeTheater')}
+        <div
+          className={`max-w-2xl text-center flex flex-col items-center gap-8 px-6 relative ${
+            isLight ? 'text-[#0B0B0C]' : 'text-[#F5F5F7]'
+          }`}
         >
+          <p
+            className={`font-sans text-lg font-semibold leading-relaxed max-w-lg ${
+              isLight ? 'text-[#0B0B0C]/90' : 'text-[#F5F5F7]/90'
+            }`}
+          >
+            {film?.last_line || t('fin')}
+          </p>
+
+          {(film?.name || film?.story_date || film?.location) && (
+            <div
+              className={`font-sans text-[12px] font-normal tracking-normal leading-snug ${
+                isLight ? 'text-[#0B0B0C]/40' : 'text-[#F5F5F7]/40'
+              }`}
+            >
+              {[film?.name, film?.story_date, film?.location].filter(Boolean).join(' · ')}
+            </div>
+          )}
+
+          <div
+            className={`flex items-center justify-center gap-x-3.5 ${
+              isLight ? 'text-[#0B0B0C]/55' : 'text-[#F5F5F7]/55'
+            }`}
+          >
+            <button
+              type="button"
+              onClick={handleCloseNavigation}
+              className="font-mono text-[13px] font-medium tracking-[0.08em] uppercase bg-transparent border-0 outline-none cursor-pointer p-0 leading-none whitespace-nowrap opacity-90 hover:opacity-100 transition-opacity"
+            >
+              {t('close')}
+            </button>
+            <button
+              type="button"
+              onClick={() => setSendOpen(true)}
+              className="font-mono text-[13px] font-medium tracking-[0.08em] uppercase bg-transparent border-0 outline-none cursor-pointer p-0 leading-none whitespace-nowrap opacity-90 hover:opacity-100 transition-opacity"
+            >
+              {t('share')}
+            </button>
+            <button
+              type="button"
+              onClick={handleRewatch}
+              className="font-mono text-[13px] font-medium tracking-[0.08em] uppercase bg-transparent border-0 outline-none cursor-pointer p-0 leading-none whitespace-nowrap opacity-90 hover:opacity-100 transition-opacity"
+            >
+              {t('rewatch')}
+            </button>
+          </div>
+
           <svg
             viewBox="0 0 143 81"
-            className={`w-[36px] h-auto ${isLight ? 'text-[#0B0B0C]' : 'text-[#F5F5F7]'}`}
+            className={`w-[28px] h-auto opacity-80 ${isLight ? 'text-[#0B0B0C]' : 'text-[#F5F5F7]'}`}
             fill="currentColor"
             xmlns="http://www.w3.org/2000/svg"
             aria-hidden
@@ -1467,34 +1474,6 @@ export default function CinemaTheater({
             <path d="M116.309 15.9435V22.7375C116.309 23.2395 115.402 23.6455 115.402 23.6455H108.509C108.066 23.6455 107.709 24.0033 107.709 24.4466V48.5568C107.709 49.0589 107.303 49.4648 106.802 49.4648H97.1508C96.6493 49.4648 96.2438 49.0589 96.2438 48.5568V15.9435C96.2438 15.4414 96.6493 15.0355 97.1508 15.0355H115.402C115.903 15.0355 116.309 15.4414 116.309 15.9435Z" />
             <path d="M143 15.9435V22.7375C143 23.2395 142.595 23.6455 142.093 23.6455H135.2C134.757 23.6455 134.4 24.0033 134.4 24.4466V48.5568C134.4 49.0589 133.994 49.4648 133.493 49.4648H123.842C123.34 49.4648 122.935 49.0589 122.935 48.5568V15.9435C122.935 15.4414 123.34 15.0355 123.842 15.0355H142.093C142.595 15.0355 143 15.4414 143 15.9435Z" />
           </svg>
-        </button>
-
-        <div className="max-w-2xl text-center flex flex-col items-center gap-8 px-6 relative">
-          <p
-            className={`font-sans text-lg font-semibold leading-relaxed max-w-lg ${
-              isLight ? 'text-[#0B0B0C]/90' : 'text-[#F5F5F7]/90'
-            }`}
-          >
-            {film?.last_line || t('fin')}
-          </p>
-
-          <button
-            onClick={() => setSendOpen(true)}
-            className={`font-sans font-semibold text-sm transition-colors bg-transparent border-0 outline-none cursor-pointer normal-case ${
-              isLight ? 'text-[#0B0B0C]/50 hover:text-[#0B0B0C]' : 'text-white/50 hover:text-[#f5f5f7]'
-            }`}
-          >
-            {t('share')}
-          </button>
-
-          <div
-            className={`font-tradeGothic tracking-tight uppercase text-base ${
-              isLight ? 'text-[#0B0B0C]/40' : 'text-[#F5F5F7]/40'
-            }`}
-          >
-            <span>{film?.name}</span> &nbsp;<span>{film?.story_date}</span> &nbsp;
-            <span>{film?.location}</span>
-          </div>
         </div>
       </div>
 
