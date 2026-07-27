@@ -11,7 +11,7 @@ type IdentityProps = {
   className?: string;
 };
 
-/** Logo + title + subhead — used above plaque/strip media. */
+/** Logo + title + subhead — used above plaque media. */
 export function TheaterRamsIdentity({
   isLight = false,
   filmTitle,
@@ -85,9 +85,7 @@ type Props = {
   onScrubStart: () => void;
   onScrubChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onScrubEnd: (e: React.SyntheticEvent<HTMLInputElement>) => void;
-  /** When true, omit lens scrubber (e.g. film-strip layout owns seeking). */
-  hideScrubber?: boolean;
-  /** When true, omit logo/title (rendered above plaque/strip instead). */
+  /** When true, omit logo/title (rendered above plaque instead). */
   hideHeader?: boolean;
 };
 
@@ -136,7 +134,6 @@ export default function TheaterRamsChrome({
   onScrubStart,
   onScrubChange,
   onScrubEnd,
-  hideScrubber = false,
   hideHeader = false,
 }: Props) {
   const muted = isLight ? 'text-[#0B0B0C]/55' : 'text-[#F5F5F7]/55';
@@ -158,52 +155,50 @@ export default function TheaterRamsChrome({
         />
       ) : null}
 
-      {!hideScrubber ? (
-        <div className="w-full px-[1.75em]">
-          <div className="relative w-full h-[44px]">
-            <div className="pointer-events-none absolute inset-x-0 top-[17px] h-[10px]" aria-hidden>
-              <LensScaleBar isLight={isLight} />
-            </div>
-            <div
-              ref={playheadRef}
-              className="pointer-events-none absolute z-20 top-0 -translate-x-1/2 flex flex-col items-center"
-              style={{ left: '0%' }}
-              aria-hidden
+      <div className="w-full px-[1.75em]">
+        <div className="relative w-full h-[44px]">
+          <div className="pointer-events-none absolute inset-x-0 top-[17px] h-[10px]" aria-hidden>
+            <LensScaleBar isLight={isLight} />
+          </div>
+          <div
+            ref={playheadRef}
+            className="pointer-events-none absolute z-20 top-0 -translate-x-1/2 flex flex-col items-center"
+            style={{ left: '0%' }}
+            aria-hidden
+          >
+            <span
+              ref={elapsedRef}
+              className={`font-mono text-[12px] font-medium tabular-nums tracking-normal leading-none whitespace-nowrap transition-colors duration-150 ${
+                isScrubbing ? 'text-[#d90429]' : muted
+              }`}
             >
-              <span
-                ref={elapsedRef}
-                className={`font-mono text-[12px] font-medium tabular-nums tracking-normal leading-none whitespace-nowrap transition-colors duration-150 ${
-                  isScrubbing ? 'text-[#d90429]' : muted
-                }`}
-              >
-                00:00
-              </span>
-              <div className="h-[10px] mt-[5px]" aria-hidden />
-              <div
-                className={`mt-[5px] rounded-full bg-[#d90429] transition-[width,height] duration-100 ${
-                  isScrubbing ? 'w-[6px] h-[6px]' : 'w-[5px] h-[5px]'
-                }`}
-              />
-            </div>
-            <input
-              ref={scrubberRef}
-              type="range"
-              min={0}
-              max={100}
-              step="any"
-              defaultValue={0}
-              onMouseDown={onScrubStart}
-              onTouchStart={onScrubStart}
-              onChange={onScrubChange}
-              onMouseUp={onScrubEnd}
-              onTouchEnd={onScrubEnd}
-              aria-label="Seek"
-              className="absolute inset-0 w-full h-full m-0 appearance-none bg-transparent cursor-pointer outline-none z-30 touch-none focus:outline-none focus:ring-0 [&::-webkit-slider-runnable-track]:h-full [&::-webkit-slider-runnable-track]:bg-transparent [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-11 [&::-webkit-slider-thumb]:bg-transparent [&::-moz-range-track]:h-full [&::-moz-range-track]:bg-transparent [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-11 [&::-moz-range-thumb]:bg-transparent [&::-moz-range-thumb]:border-0"
-              style={{ WebkitAppearance: 'none' }}
+              00:00
+            </span>
+            <div className="h-[10px] mt-[5px]" aria-hidden />
+            <div
+              className={`mt-[5px] rounded-full bg-[#d90429] transition-[width,height] duration-100 ${
+                isScrubbing ? 'w-[6px] h-[6px]' : 'w-[5px] h-[5px]'
+              }`}
             />
           </div>
+          <input
+            ref={scrubberRef}
+            type="range"
+            min={0}
+            max={100}
+            step="any"
+            defaultValue={0}
+            onMouseDown={onScrubStart}
+            onTouchStart={onScrubStart}
+            onChange={onScrubChange}
+            onMouseUp={onScrubEnd}
+            onTouchEnd={onScrubEnd}
+            aria-label="Seek"
+            className="absolute inset-0 w-full h-full m-0 appearance-none bg-transparent cursor-pointer outline-none z-30 touch-none focus:outline-none focus:ring-0 [&::-webkit-slider-runnable-track]:h-full [&::-webkit-slider-runnable-track]:bg-transparent [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-11 [&::-webkit-slider-thumb]:bg-transparent [&::-moz-range-track]:h-full [&::-moz-range-track]:bg-transparent [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-11 [&::-moz-range-thumb]:bg-transparent [&::-moz-range-thumb]:border-0"
+            style={{ WebkitAppearance: 'none' }}
+          />
         </div>
-      ) : null}
+      </div>
 
       <div className={`min-h-[18px] h-[18px] flex items-center justify-center w-full ${muted}`}>
         <div className="flex items-center justify-center min-w-0 gap-x-3.5">

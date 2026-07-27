@@ -9,18 +9,16 @@ export type TheaterPlayerChromeVariant = 'classic' | 'circle' | 'rams';
 export const THEATER_PLAYER_CHROME: TheaterPlayerChromeVariant = 'rams';
 
 /**
- * Rams chrome layout A/B/C.
- * - `'overlay'` — full player dims to ~10%, controls centered on top
- * - `'plaque'` — fade → snap to thumbnail + controls below → fade in
- * - `'strip'` — fade → Mux storyboard film-strip rail (scrub pans frames) + controls
+ * Rams chrome layout A/B.
+ * - `'overlay'` — full player dims to ~20%, controls centered on top
+ * - `'plaque'` — hero animates down to thumbnail + controls below
  */
-export type RamsChromeLayout = 'overlay' | 'plaque' | 'strip';
+export type RamsChromeLayout = 'overlay' | 'plaque';
 
 /** Fixed A/B assignments for side-by-side testing. */
 export const RAMS_LAYOUT_BY_SLUG: Record<string, RamsChromeLayout> = {
   'unexpected-champion': 'plaque',
   shoebox: 'overlay',
-  moonshot: 'strip',
 };
 
 function hashSlug(slug: string): number {
@@ -34,15 +32,13 @@ function hashSlug(slug: string): number {
 /**
  * Resolve Rams layout for a film.
  * Fixed for Champion / Shoebox; stable hash for others (no hydration flicker).
- * Pass `override` from `?rams=overlay|plaque|strip` when testing.
+ * Pass `override` from `?rams=overlay|plaque` when testing.
  */
 export function resolveRamsChromeLayout(
   slug: string | null | undefined,
   override?: string | null
 ): RamsChromeLayout {
-  if (override === 'overlay' || override === 'plaque' || override === 'strip') {
-    return override;
-  }
+  if (override === 'overlay' || override === 'plaque') return override;
   const key = String(slug || '')
     .trim()
     .toLowerCase();

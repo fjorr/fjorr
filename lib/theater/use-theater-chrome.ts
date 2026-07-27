@@ -28,7 +28,7 @@ export function useTheaterChrome({
   filmPlayerRef,
   logoPlayerRef,
   isPlayingLogo,
-  isPlaying,
+  isPlaying: _isPlaying,
   isEmbed,
   showCCMenu,
   isScrubbing,
@@ -47,6 +47,18 @@ export function useTheaterChrome({
   const lastMoveRef = useRef(0);
 
   const hideDelayMs = chassisMode ? 2200 : 2000;
+  const showCCMenuRef = useRef(showCCMenu);
+  const isScrubbingRef = useRef(isScrubbing);
+  showCCMenuRef.current = showCCMenu;
+  isScrubbingRef.current = isScrubbing;
+
+  const armIdleHide = useCallback(() => {
+    if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
+    hideTimeoutRef.current = setTimeout(() => {
+      if (showCCMenuRef.current || isScrubbingRef.current) return;
+      setControlsVisible(false);
+    }, hideDelayMs);
+  }, [hideDelayMs]);
 
   const showUIControls = useCallback(() => {
     if (isPlayingLogo) {
@@ -54,26 +66,23 @@ export function useTheaterChrome({
       return;
     }
     setControlsVisible(true);
-    if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
-    hideTimeoutRef.current = setTimeout(() => {
-      if (isPlaying && !showCCMenu && !isScrubbing) {
-        setControlsVisible(false);
-      }
-    }, hideDelayMs);
-  }, [isPlayingLogo, isPlaying, showCCMenu, isScrubbing, hideDelayMs]);
+    armIdleHide();
+  }, [isPlayingLogo, armIdleHide]);
 
-  // Auto-hide after playback starts
+  // Idle hide whenever chrome is up — playing or paused (plaque grows back on mobile).
   useEffect(() => {
-    if (isPlaying && !showCCMenu && !isScrubbing && !isPlayingLogo) {
-      if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
-      hideTimeoutRef.current = setTimeout(() => {
-        setControlsVisible(false);
-      }, hideDelayMs);
+    if (!controlsVisible || isPlayingLogo || showCCMenu || isScrubbing) {
+      if (hideTimeoutRef.current && (showCCMenu || isScrubbing)) {
+        clearTimeout(hideTimeoutRef.current);
+        hideTimeoutRef.current = null;
+      }
+      return;
     }
+    armIdleHide();
     return () => {
       if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
     };
-  }, [isPlaying, showCCMenu, isScrubbing, isPlayingLogo, hideDelayMs]);
+  }, [controlsVisible, isPlayingLogo, showCCMenu, isScrubbing, armIdleHide]);
 
   // Ignore the opening click/touch that mounted the theater.
   useEffect(() => {
