@@ -13,6 +13,8 @@ type Args = {
   isScrubbing: boolean;
   /** When true, video click toggles play/pause (controls still auto-hide). */
   chassisMode?: boolean;
+  /** When false with chassisMode, tap only shows/hides chrome (no play toggle). Default true. */
+  chassisTogglePlay?: boolean;
   onTogglePlay: () => void;
   onToggleMute: () => void;
   onToggleFullscreen: () => void;
@@ -31,6 +33,7 @@ export function useTheaterChrome({
   showCCMenu,
   isScrubbing,
   chassisMode = false,
+  chassisTogglePlay = true,
   onTogglePlay,
   onToggleMute,
   onToggleFullscreen,
@@ -95,8 +98,18 @@ export function useTheaterChrome({
       const target = e.target as HTMLElement;
       if (target.closest('[data-ui-control="true"]')) return;
       if (chassisMode) {
-        onTogglePlay();
-        showUIControls();
+        if (chassisTogglePlay) {
+          onTogglePlay();
+          showUIControls();
+          return;
+        }
+        // Plaque: tap only reveals / dismisses chrome — play is button-only.
+        if (controlsVisible) {
+          if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
+          setControlsVisible(false);
+        } else {
+          showUIControls();
+        }
         return;
       }
       if (controlsVisible) {
@@ -117,7 +130,7 @@ export function useTheaterChrome({
       root.removeEventListener('touchend', onInteract);
       if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
     };
-  }, [containerEl, controlsVisible, showUIControls, chassisMode, onTogglePlay]);
+  }, [containerEl, controlsVisible, showUIControls, chassisMode, chassisTogglePlay, onTogglePlay]);
 
   useEffect(() => {
     const handleFsChange = () => {

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import dynamic from 'next/dynamic';
 import { useRouter } from '@/i18n/navigation';
@@ -393,6 +393,7 @@ export default function CinemaTheater({
     showCCMenu,
     isScrubbing,
     chassisMode: isRamsChrome,
+    chassisTogglePlay: ramsLayout !== 'plaque',
     onTogglePlay: togglePlay,
     onToggleMute: toggleMute,
     onToggleFullscreen: toggleFullscreen,
@@ -407,31 +408,35 @@ export default function CinemaTheater({
     isRamsChrome && controlsVisible && !isPlayingLogo && !isEmbed;
   stripMenuOpenRef.current = ramsLayout === 'strip' && ramsChromeUp;
 
-  /** Plaque/strip compact mode after mid-fade swap — layout snaps while opacity is 0. */
+  /** Strip compact mode after mid-fade swap — size snaps while opacity is 0. */
   const [ramsPlaqueMode, setRamsPlaqueMode] = useState(false);
   const [ramsStageHidden, setRamsStageHidden] = useState(false);
   const ramsUsesCompact = ramsLayout === 'plaque' || ramsLayout === 'strip';
+  /** Plaque animates live — no mid-fade snap. */
+  const plaqueCompact = ramsLayout === 'plaque' && ramsChromeUp;
 
   useEffect(() => {
-    if (!isRamsChrome || !ramsUsesCompact) {
-      setRamsPlaqueMode(false);
-      setRamsStageHidden(false);
+    if (!isRamsChrome || ramsLayout !== 'strip') {
+      if (ramsLayout !== 'strip') {
+        setRamsPlaqueMode(false);
+        setRamsStageHidden(false);
+      }
       return;
     }
     if (ramsChromeUp === ramsPlaqueMode) return;
     // Strip → full player: snap open immediately (Play dismisses the menu).
-    if (ramsLayout === 'strip' && !ramsChromeUp) {
+    if (!ramsChromeUp) {
       setRamsStageHidden(false);
       setRamsPlaqueMode(false);
       return;
     }
     setRamsStageHidden(true);
     const timer = window.setTimeout(() => {
-      setRamsPlaqueMode(ramsChromeUp);
+      setRamsPlaqueMode(true);
       setRamsStageHidden(false);
     }, 280);
     return () => window.clearTimeout(timer);
-  }, [isRamsChrome, ramsUsesCompact, ramsLayout, ramsChromeUp, ramsPlaqueMode]);
+  }, [isRamsChrome, ramsLayout, ramsChromeUp, ramsPlaqueMode]);
 
   // Strip: pause whenever the menu is up — strip is a still scrubber, not a live viewer.
   useEffect(() => {
@@ -452,6 +457,12 @@ export default function CinemaTheater({
       scrubberRef.current.value = String(time);
     }
   }, [ramsLayout, ramsPlaqueMode, storyboard]);
+
+  // Plaque chrome stays mounted — repaint playhead when it becomes visible.
+  useLayoutEffect(() => {
+    if (!plaqueCompact) return;
+    paintTimeUi();
+  }, [plaqueCompact, paintTimeUi]);
 
   useEffect(() => {
     if (isEmbed) return;
@@ -856,7 +867,11 @@ export default function CinemaTheater({
   const showRamsCaptionsOnVideo =
     selectedLangCode !== 'none' &&
     Boolean(currentSubtitleText) &&
-    (ramsUsesCompact ? !ramsPlaqueMode : !ramsChromeUp);
+    (ramsLayout === 'plaque'
+      ? !ramsChromeUp
+      : ramsLayout === 'strip'
+        ? !ramsPlaqueMode
+        : !ramsChromeUp);
 
   const ramsVideoStack = (
     <>
@@ -1055,28 +1070,43 @@ export default function CinemaTheater({
         ) : ramsLayout === 'plaque' ? (
           <div
             data-rams-layout="plaque"
-            className={`absolute inset-0 z-10 flex items-center justify-center px-4 pointer-events-none transition-opacity duration-[280ms] ease-out ${
-              ramsStageHidden ? 'opacity-0' : 'opacity-100'
-            }`}
+            className="absolute inset-0 z-10 flex items-center justify-center px-4 pointer-events-none"
           >
             <div
-              className={`flex flex-col items-center pointer-events-auto ${
-                ramsPlaqueMode ? 'gap-8' : 'gap-0 w-full max-w-[1200px]'
+              className={`flex flex-col items-center pointer-events-auto w-full max-w-[1200px] transition-[gap] duration-500 ease-out ${
+                plaqueCompact ? 'gap-6 sm:gap-8' : 'gap-0'
               }`}
             >
-              {ramsPlaqueMode ? ramsIdentity : null}
               <div
-                className={`relative overflow-hidden bg-black shrink-0 ${
-                  isFullscreen && !ramsPlaqueMode
-                    ? 'w-full h-[100dvh] max-w-none rounded-none'
-                    : ramsPlaqueMode
+                className={`w-full flex justify-center overflow-hidden transition-all duration-500 ease-out ${
+                  plaqueCompact
+                    ? 'opacity-100 max-h-28 translate-y-0'
+                    : 'opacity-0 max-h-0 -translate-y-2 pointer-events-none'
+                }`}
+              >
+                {ramsIdentity}
+              </div>
+              <div
+                className={`relative overflow-hidden bg-black shrink-0 transition-all duration-500 ease-out ${
+                  isFullscreen && !plaqueCompact
+                    ? 'w-full h-[100dvh] max-w-none rounded-none shadow-none'
+                    : plaqueCompact
                       ? 'w-[min(72vw,300px)] aspect-video rounded-[10px] shadow-[0_24px_80px_rgba(0,0,0,0.55)]'
-                      : 'w-full aspect-video max-h-[calc(100dvh-3rem)] rounded-none min-[1201px]:rounded-[12px]'
+                      : 'w-full aspect-video max-h-[calc(100dvh-3rem)] rounded-none min-[1201px]:rounded-[12px] shadow-none'
                 }`}
               >
                 {ramsVideoStack}
               </div>
-              {ramsPlaqueMode ? ramsChrome : null}
+              <div
+                className={`w-full flex justify-center overflow-hidden transition-all duration-500 ease-out ${
+                  plaqueCompact
+                    ? 'opacity-100 max-h-48 translate-y-0'
+                    : 'opacity-0 max-h-0 translate-y-2 pointer-events-none'
+                }`}
+                aria-hidden={!plaqueCompact}
+              >
+                {ramsChrome}
+              </div>
             </div>
           </div>
         ) : (
