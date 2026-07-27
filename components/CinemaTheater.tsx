@@ -14,12 +14,17 @@ import TheaterScrubber from '@/components/TheaterScrubber';
 import TheaterCircleControl, {
   THEATER_CIRCLE_CIRCUMFERENCE,
 } from '@/components/TheaterCircleControl';
-import TheaterRamsChrome from '@/components/TheaterRamsChrome';
+import TheaterRamsChrome, { TheaterRamsIdentity } from '@/components/TheaterRamsChrome';
+import TheaterFilmStrip, {
+  paintFilmStrip,
+  type FilmStripMeta,
+} from '@/components/TheaterFilmStrip';
 import {
   THEATER_PLAYER_CHROME,
   resolveRamsChromeLayout,
   type RamsChromeLayout,
 } from '@/lib/theater/player-chrome-variant';
+import { useMuxStoryboard } from '@/lib/theater/use-mux-storyboard';
 import { useColorScheme } from '@/components/ColorSchemeProvider';
 import { LIGHT_PAGE_BG, LIGHT_PAGE_FG } from '@/lib/color-scheme';
 
@@ -188,6 +193,8 @@ export default function CinemaTheater({
   const circleProgressRef = useRef<SVGCircleElement | null>(null);
   const elapsedTimeRef = useRef<HTMLSpanElement | null>(null);
   const durationTimeRef = useRef<HTMLSpanElement | null>(null);
+  const stripRailRef = useRef<HTMLDivElement | null>(null);
+  const stripMetaRef = useRef<FilmStripMeta | null>(null);
   const ccScrollRef = useRef<HTMLDivElement | null>(null);
   const [ccCanScrollLeft, setCcCanScrollLeft] = useState(false);
   const [ccCanScrollRight, setCcCanScrollRight] = useState(false);
@@ -231,6 +238,10 @@ export default function CinemaTheater({
     onFatalError: onFatalErrorStable,
   });
 
+  const { storyboard } = useMuxStoryboard(
+    isRamsChrome && ramsLayout === 'strip' ? playbackId : null
+  );
+
   const tracks = cachedSubtitles.length > 0 ? cachedSubtitles : film?.language_subtitle || [];
 
   const {
@@ -264,12 +275,21 @@ export default function CinemaTheater({
     const clock = isRamsChrome ? formatTimecode : formatTime;
     if (elapsedTimeRef.current) elapsedTimeRef.current.textContent = clock(time);
     if (durationTimeRef.current) durationTimeRef.current.textContent = clock(duration || 0);
+    // Strip only pans while scrubbing — playback-driven motion reads too choppy.
+    if (isScrubbingRef.current) {
+      paintFilmStrip(stripRailRef.current, stripMetaRef.current, ratio);
+    }
   }, []);
 
   const paintTimeUi = useCallback(() => {
     if (isScrubbingRef.current) return;
     paintProgress(currentTimeRef.current, durationRef.current);
   }, [paintProgress]);
+
+  useEffect(() => {
+    if (!storyboard) return;
+    paintTimeUi();
+  }, [storyboard, paintTimeUi]);
 
   // rAF clock while playing — avoids React re-renders every timeupdate.
   useEffect(() => {
@@ -293,11 +313,20 @@ export default function CinemaTheater({
     else onClose();
   }, [isEmbed, watchOnFjorrUrl, backUrl, router, onClose]);
 
+  const setControlsVisibleRef = useRef<(visible: boolean) => void>(() => {});
+  const stripMenuOpenRef = useRef(false);
+
   const togglePlay = useCallback(() => {
     const player = isPlayingLogo ? logoPlayerRef.current : filmPlayerRef.current;
     if (!player) return;
+    // Strip menu: Play dismisses chrome and resumes the full player immediately.
+    if (stripMenuOpenRef.current && player.paused) {
+      void player.play().catch(() => {});
+      setControlsVisibleRef.current(false);
+      return;
+    }
     if (isPlaying) player.pause();
-    else player.play().catch(() => {});
+    else void player.play().catch(() => {});
   }, [isPlaying, isPlayingLogo]);
 
   const toggleMute = useCallback(() => {
@@ -354,7 +383,7 @@ export default function CinemaTheater({
     syncCueToTime();
   }, [isPlayingLogo, paintTimeUi, syncCueToTime]);
 
-  const { controlsVisible, isFullscreen, showUIControls } = useTheaterChrome({
+  const { controlsVisible, isFullscreen, showUIControls, setControlsVisible } = useTheaterChrome({
     containerEl,
     filmPlayerRef,
     logoPlayerRef,
@@ -371,29 +400,58 @@ export default function CinemaTheater({
     onSeekBy: seekBy,
     onClose: handleCloseNavigation,
   });
+  setControlsVisibleRef.current = setControlsVisible;
 
   /** Rams chrome visible — drives overlay dim / plaque crossfade. */
   const ramsChromeUp =
     isRamsChrome && controlsVisible && !isPlayingLogo && !isEmbed;
+  stripMenuOpenRef.current = ramsLayout === 'strip' && ramsChromeUp;
 
-  /** Plaque mode after mid-fade swap — size snaps while opacity is 0. */
+  /** Plaque/strip compact mode after mid-fade swap — layout snaps while opacity is 0. */
   const [ramsPlaqueMode, setRamsPlaqueMode] = useState(false);
   const [ramsStageHidden, setRamsStageHidden] = useState(false);
+  const ramsUsesCompact = ramsLayout === 'plaque' || ramsLayout === 'strip';
 
   useEffect(() => {
-    if (!isRamsChrome || ramsLayout !== 'plaque') {
+    if (!isRamsChrome || !ramsUsesCompact) {
       setRamsPlaqueMode(false);
       setRamsStageHidden(false);
       return;
     }
     if (ramsChromeUp === ramsPlaqueMode) return;
+    // Strip → full player: snap open immediately (Play dismisses the menu).
+    if (ramsLayout === 'strip' && !ramsChromeUp) {
+      setRamsStageHidden(false);
+      setRamsPlaqueMode(false);
+      return;
+    }
     setRamsStageHidden(true);
     const timer = window.setTimeout(() => {
       setRamsPlaqueMode(ramsChromeUp);
       setRamsStageHidden(false);
     }, 280);
     return () => window.clearTimeout(timer);
-  }, [isRamsChrome, ramsLayout, ramsChromeUp, ramsPlaqueMode]);
+  }, [isRamsChrome, ramsUsesCompact, ramsLayout, ramsChromeUp, ramsPlaqueMode]);
+
+  // Strip: pause whenever the menu is up — strip is a still scrubber, not a live viewer.
+  useEffect(() => {
+    if (ramsLayout !== 'strip' || !ramsChromeUp) return;
+    const player = filmPlayerRef.current;
+    if (player && !player.paused) player.pause();
+  }, [ramsLayout, ramsChromeUp]);
+
+  // Pin strip + clock once when the rail appears (no playback-driven pan).
+  useEffect(() => {
+    if (ramsLayout !== 'strip' || !ramsPlaqueMode) return;
+    const duration = durationRef.current;
+    const time = currentTimeRef.current;
+    const ratio = duration > 0 ? Math.min(1, Math.max(0, time / duration)) : 0;
+    paintFilmStrip(stripRailRef.current, stripMetaRef.current, ratio);
+    if (elapsedTimeRef.current) elapsedTimeRef.current.textContent = formatTimecode(time);
+    if (scrubberRef.current && document.activeElement !== scrubberRef.current) {
+      scrubberRef.current.value = String(time);
+    }
+  }, [ramsLayout, ramsPlaqueMode, storyboard]);
 
   useEffect(() => {
     if (isEmbed) return;
@@ -559,6 +617,9 @@ export default function CinemaTheater({
       player.currentTime = parseFloat(e.currentTarget.value);
       currentTimeRef.current = player.currentTime;
       paintTimeUi();
+      const duration = durationRef.current;
+      const ratio = duration > 0 ? Math.min(1, Math.max(0, player.currentTime / duration)) : 0;
+      paintFilmStrip(stripRailRef.current, stripMetaRef.current, ratio);
       syncCueToTime();
       showUIControls();
     },
@@ -753,6 +814,24 @@ export default function CinemaTheater({
     </>
   );
 
+  const ramsFilmMeta = (() => {
+    const dateVal = film?.story_date || '';
+    const locationVal = film?.location || '';
+    if (dateVal && locationVal) return `${dateVal} · ${locationVal}`;
+    return dateVal || locationVal || undefined;
+  })();
+
+  const ramsIdentity =
+    !isPlayingLogo && ramsUsesCompact ? (
+      <TheaterRamsIdentity
+        isLight={isFullscreen ? false : isLight}
+        logoLabel={isEmbed ? t('watchOnFjorr') : t('closeTheater')}
+        onLogoClick={handleCloseNavigation}
+        filmTitle={film?.name || undefined}
+        filmMeta={ramsFilmMeta}
+      />
+    ) : null;
+
   const ramsChrome = !isPlayingLogo ? (
     <TheaterRamsChrome
       scrubberRef={scrubberRef}
@@ -764,13 +843,10 @@ export default function CinemaTheater({
       logoLabel={isEmbed ? t('watchOnFjorr') : t('closeTheater')}
       onLogoClick={handleCloseNavigation}
       filmTitle={film?.name || undefined}
-      filmMeta={(() => {
-        const dateVal = film?.story_date || '';
-        const locationVal = film?.location || '';
-        if (dateVal && locationVal) return `${dateVal} · ${locationVal}`;
-        return dateVal || locationVal || undefined;
-      })()}
+      filmMeta={ramsFilmMeta}
       toolsSlot={ramsToolsSlot}
+      hideScrubber={ramsLayout === 'strip'}
+      hideHeader={ramsUsesCompact}
       onScrubStart={handleScrubStart}
       onScrubChange={handleScrubChange}
       onScrubEnd={handleScrubEnd}
@@ -780,7 +856,7 @@ export default function CinemaTheater({
   const showRamsCaptionsOnVideo =
     selectedLangCode !== 'none' &&
     Boolean(currentSubtitleText) &&
-    (ramsLayout === 'plaque' ? !ramsPlaqueMode : !ramsChromeUp);
+    (ramsUsesCompact ? !ramsPlaqueMode : !ramsChromeUp);
 
   const ramsVideoStack = (
     <>
@@ -929,7 +1005,54 @@ export default function CinemaTheater({
       )}
 
       {isRamsChrome ? (
-        ramsLayout === 'plaque' ? (
+        ramsLayout === 'strip' ? (
+          <div
+            data-rams-layout="strip"
+            className={`absolute inset-0 z-10 flex items-center justify-center px-4 pointer-events-none transition-opacity duration-[280ms] ease-out ${
+              ramsStageHidden ? 'opacity-0' : 'opacity-100'
+            }`}
+          >
+            <div
+              className={`flex flex-col items-center pointer-events-auto ${
+                ramsPlaqueMode ? 'gap-8 w-full' : 'gap-0 w-full max-w-[1200px]'
+              }`}
+            >
+              {ramsPlaqueMode ? ramsIdentity : null}
+              <div
+                className={`relative overflow-hidden bg-black shrink-0 ${
+                  ramsPlaqueMode && storyboard
+                    ? 'sr-only'
+                    : ramsPlaqueMode
+                      ? 'w-[min(72vw,300px)] aspect-video rounded-[10px] shadow-[0_24px_80px_rgba(0,0,0,0.55)]'
+                      : isFullscreen
+                        ? 'w-full h-[100dvh] max-w-none rounded-none'
+                        : 'w-full aspect-video max-h-[calc(100dvh-3rem)] rounded-none min-[1201px]:rounded-[12px]'
+                }`}
+              >
+                {ramsVideoStack}
+              </div>
+              {ramsPlaqueMode ? (
+                <>
+                  {storyboard ? (
+                    <TheaterFilmStrip
+                      storyboard={storyboard}
+                      railRef={stripRailRef}
+                      metaRef={stripMetaRef}
+                      scrubberRef={scrubberRef}
+                      elapsedRef={elapsedTimeRef}
+                      isScrubbing={isScrubbing}
+                      isLight={isFullscreen ? false : isLight}
+                      onScrubStart={handleScrubStart}
+                      onScrubChange={handleScrubChange}
+                      onScrubEnd={handleScrubEnd}
+                    />
+                  ) : null}
+                  {ramsChrome}
+                </>
+              ) : null}
+            </div>
+          </div>
+        ) : ramsLayout === 'plaque' ? (
           <div
             data-rams-layout="plaque"
             className={`absolute inset-0 z-10 flex items-center justify-center px-4 pointer-events-none transition-opacity duration-[280ms] ease-out ${
@@ -941,6 +1064,7 @@ export default function CinemaTheater({
                 ramsPlaqueMode ? 'gap-8' : 'gap-0 w-full max-w-[1200px]'
               }`}
             >
+              {ramsPlaqueMode ? ramsIdentity : null}
               <div
                 className={`relative overflow-hidden bg-black shrink-0 ${
                   isFullscreen && !ramsPlaqueMode
