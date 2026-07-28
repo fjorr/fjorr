@@ -164,7 +164,9 @@
     "noMatches": "Nessun risultato corrisponde a questi filtri.",
     "clear": "Cancella",
     "noFilmMatches": "Nessun risultato film corrisponde.",
-    "noArtifactMatches": "Nessun risultato artefatto corrisponde."
+    "noArtifactMatches": "Nessun risultato artefatto corrisponde.",
+    "seeFilmMatches": "Ci sono {count} film corrispondenti.",
+    "seeArtifactMatches": "Ci sono {count} artefatti corrispondenti."
   },
   "Account": {
     "modalTitle": "Accedi o registrati",

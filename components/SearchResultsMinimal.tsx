@@ -12,6 +12,7 @@ import {
   themesFromSearchItems,
 } from '@/lib/filter-search-items';
 import SearchNadaView from '@/components/SearchNadaView';
+import SearchMatchLine from '@/components/SearchMatchLine';
 import {
   clearWatchProgress,
   trackWatchProgress,
@@ -139,6 +140,7 @@ export default function SearchResultsMinimal({ results }: { results: SearchItem[
                     {item.teaser}
                   </p>
                 )}
+                <SearchMatchLine item={item} />
                 <MetaLine item={item} />
               </PrefetchLink>
 

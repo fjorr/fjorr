@@ -164,7 +164,9 @@
     "noMatches": "沒有符合這些篩選條件的結果。",
     "clear": "清除",
     "noFilmMatches": "沒有符合的影片結果。",
-    "noArtifactMatches": "沒有符合的文物結果。"
+    "noArtifactMatches": "沒有符合的文物結果。",
+    "seeFilmMatches": "有 {count} 部符合的影片。",
+    "seeArtifactMatches": "有 {count} 件符合的文物。"
   },
   "Account": {
     "modalTitle": "登入或註冊",

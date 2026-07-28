@@ -164,7 +164,9 @@
     "noMatches": "Ningún resultado coincide con estos filtros.",
     "clear": "Borrar",
     "noFilmMatches": "Ningún resultado de películas coincide.",
-    "noArtifactMatches": "Ningún resultado de artefactos coincide."
+    "noArtifactMatches": "Ningún resultado de artefactos coincide.",
+    "seeFilmMatches": "Hay {count} coincidencias de películas.",
+    "seeArtifactMatches": "Hay {count} coincidencias de artefactos."
   },
   "Account": {
     "modalTitle": "Iniciar sesión o registrarse",

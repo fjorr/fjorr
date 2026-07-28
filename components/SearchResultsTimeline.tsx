@@ -133,6 +133,7 @@ export default function SearchResultsTimeline({
         slug: item.slug,
         runtime: item.runtime ?? null,
         canResume: isFilm && !isComingSoon(item.release_date),
+        search_content: item.search_content || null,
       };
     });
   }, [storyDates, typed]);

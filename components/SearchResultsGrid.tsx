@@ -11,6 +11,7 @@ import {
   themesFromSearchItems,
 } from '@/lib/filter-search-items';
 import SearchNadaView from '@/components/SearchNadaView';
+import SearchMatchLine from '@/components/SearchMatchLine';
 import { useWatchProgressMap } from '@/components/useWatchProgress';
 import { formatResumeClock } from '@/lib/watch-progress';
 
@@ -168,6 +169,7 @@ export default function SearchResultsGrid({ results, postersOnly = false }: Resu
                 <p className="font-sans font-medium text-[13px] leading-snug text-page-muted tracking-normal line-clamp-2 mt-0.5">
                   {item.teaser || tSearch('noTeaser')}
                 </p>
+                <SearchMatchLine item={item} className="mt-0.5" />
               </div>
             )}
           </PrefetchLink>

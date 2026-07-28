@@ -214,6 +214,7 @@ function SearchContent({
   };
 
   const showIdle = !isSearchActive && !loading;
+  const showEmpty = !loading && filteredResults.length === 0;
 
   const resultsBody = loading ? (
     isTimeline ? (
@@ -263,16 +264,37 @@ function SearchContent({
         ))}
       </div>
     )
-  ) : filteredResults.length > 0 ? (
-    isTimeline ? (
-      <SearchResultsTimeline results={filteredResults} />
-    ) : isMinimal ? (
-      <SearchResultsMinimal results={filteredResults} />
-    ) : (
-      <SearchResultsGrid results={filteredResults} />
-    )
+  ) : isTimeline ? (
+    <SearchResultsTimeline results={filteredResults} />
+  ) : isMinimal ? (
+    <SearchResultsMinimal results={filteredResults} />
   ) : (
-    <SearchNadaView />
+    <SearchResultsGrid results={filteredResults} />
+  );
+
+  /** Shared shell so empty / hero share the same Y across Cine · Mini · Time. */
+  const resultsShell = (body: ReactNode) => (
+    <div className="relative z-0 w-full px-[10%] flex flex-col items-center mt-2">
+      <div
+        className={`w-full flex flex-col items-stretch ${
+          showEmpty
+            ? 'max-w-4xl'
+            : isTimeline
+              ? 'max-w-[1440px]'
+              : isMinimal
+                ? 'max-w-[600px]'
+                : 'max-w-4xl'
+        }`}
+      >
+        <div className="mt-4 md:mt-6 mb-5 md:mb-6">
+          <MixHeroTitle
+            query={query}
+            className={!showEmpty && isTimeline ? 'text-center' : ''}
+          />
+        </div>
+        {body}
+      </div>
+    </div>
   );
 
   return (
@@ -320,30 +342,11 @@ function SearchContent({
         </div>
       ) : null}
 
-      {!showIdle &&
-        (isTimeline ? (
-          <div className="relative z-0 w-full">
-            <div className="w-full px-5 sm:px-8 md:px-16 mt-6 md:mt-8 mb-5 md:mb-6">
-              <div className="w-full max-w-[1440px] mx-auto">
-                <MixHeroTitle query={query} className="text-center" />
-              </div>
-            </div>
-            {resultsBody}
-          </div>
-        ) : (
-          <div className="relative z-0 w-full px-[10%] flex flex-col items-center mt-2">
-            <div
-              className={`w-full flex flex-col items-stretch ${
-                isMinimal ? 'max-w-[600px]' : 'max-w-4xl'
-              }`}
-            >
-              <div className="mt-4 md:mt-6 mb-5 md:mb-6">
-                <MixHeroTitle query={query} />
-              </div>
-              {resultsBody}
-            </div>
-          </div>
-        ))}
+      {!showIdle
+        ? showEmpty
+          ? resultsShell(<SearchNadaView />)
+          : resultsShell(resultsBody)
+        : null}
     </>
   );
 }

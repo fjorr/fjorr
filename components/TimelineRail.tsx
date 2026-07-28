@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useRef } from 'react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import SearchNadaView from '@/components/SearchNadaView';
+import SearchMatchLine from '@/components/SearchMatchLine';
 import PrefetchLink from '@/components/PrefetchLink';
 import { useWatchProgressMap } from '@/components/useWatchProgress';
 import { formatResumeClock } from '@/lib/watch-progress';
@@ -22,6 +23,8 @@ export type TimelineRailItem = {
   runtime?: number | null;
   mux_playback_id?: string | null;
   canResume?: boolean;
+  /** Indexed search body — enables tiny match excerpts while searching. */
+  search_content?: string | null;
 };
 
 function readScroll(key: string): number {
@@ -198,6 +201,13 @@ export default function TimelineRail({
                               {item.teaser}
                             </p>
                           ) : null}
+                          <SearchMatchLine
+                            item={{
+                              name: item.name,
+                              teaser: item.teaser,
+                              search_content: item.search_content,
+                            }}
+                          />
                         </PrefetchLink>
 
                         {resume && onResume ? (

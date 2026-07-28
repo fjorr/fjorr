@@ -164,9 +164,9 @@ export default function FilmHero({
                   </span>
                 </button>
               ) : (
-                <p className="font-sans text-sm font-medium text-white/55 tracking-normal select-none">
+                <span className="h-10 px-5 inline-flex items-center justify-center rounded-[10px] bg-black/80 font-sans text-sm font-semibold text-white tracking-normal select-none">
                   {t('comingSoon')}
-                </p>
+                </span>
               )}
 
               <button

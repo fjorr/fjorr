@@ -721,7 +721,7 @@ function CinemaTheater({
             e.currentTarget.muted = isMuted;
           }}
           onVolumeChange={(e) => setIsMuted(e.currentTarget.muted)}
-          className="w-full h-full object-contain absolute inset-0 z-20 bg-black"
+          className="w-full h-full object-contain absolute inset-0 z-20"
           onEnded={handleVideoEnded}
         />
       )}
@@ -735,7 +735,7 @@ function CinemaTheater({
           e.currentTarget.muted = isMuted;
         }}
         onVolumeChange={(e) => setIsMuted(e.currentTarget.muted)}
-        className="w-full h-full object-contain absolute inset-0 z-0 bg-black"
+        className="w-full h-full object-contain absolute inset-0 z-0"
         onTimeUpdate={(e) => {
           if (isScrubbingRef.current) return;
           const time = e.currentTarget.currentTime;
@@ -856,13 +856,22 @@ function CinemaTheater({
             {ramsIdentity}
           </div>
           <div
-            className={`relative overflow-hidden bg-black shrink-0 transition-all duration-500 ease-out ${
+            className={`relative isolate overflow-hidden bg-black shrink-0 transition-all duration-500 ease-out transform-gpu ${
               isFullscreen && !plaqueCompact
                 ? 'w-full h-full max-w-none rounded-none shadow-none'
                 : plaqueCompact
                   ? `${PLAQUE_WIDTH} aspect-video rounded-[10px] shadow-[0_24px_80px_rgba(0,0,0,0.55)]`
                   : 'w-full aspect-video max-h-[calc(100dvh-3rem)] rounded-none min-[1201px]:rounded-[12px] shadow-none'
             }`}
+            style={
+              isLight && !(isFullscreen && !plaqueCompact)
+                ? {
+                    // Cover subpixel black AA on rounded edges against the light page.
+                    boxShadow: `0 0 0 1px ${LIGHT_PAGE_BG}`,
+                    WebkitMaskImage: '-webkit-radial-gradient(white, black)',
+                  }
+                : undefined
+            }
           >
             {ramsVideoStack}
           </div>

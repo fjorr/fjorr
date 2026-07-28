@@ -164,7 +164,9 @@
     "noMatches": "No results match these filters.",
     "clear": "Clear",
     "noFilmMatches": "No film results match.",
-    "noArtifactMatches": "No artifact results match."
+    "noArtifactMatches": "No artifact results match.",
+    "seeFilmMatches": "There are {count} film matches.",
+    "seeArtifactMatches": "There are {count} artifact matches."
   },
   "Account": {
     "modalTitle": "Log in or sign up",

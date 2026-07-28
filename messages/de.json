@@ -164,7 +164,9 @@
     "noMatches": "Keine Ergebnisse entsprechen diesen Filtern.",
     "clear": "Zurücksetzen",
     "noFilmMatches": "Keine Filmergebnisse passen.",
-    "noArtifactMatches": "Keine Artefaktergebnisse passen."
+    "noArtifactMatches": "Keine Artefaktergebnisse passen.",
+    "seeFilmMatches": "Es gibt {count} Filmtreffer.",
+    "seeArtifactMatches": "Es gibt {count} Artefakttreffer."
   },
   "Account": {
     "modalTitle": "Anmelden oder registrieren",

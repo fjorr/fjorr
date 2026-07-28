@@ -191,7 +191,7 @@ export default function PosterRail({
               style={{ transitionDelay: hasEnteredScreen ? delay : '0ms' }}
             >
               <div
-                className={`w-full aspect-[2/3] rounded-[8px] bg-zinc-900/40 border-0 dark:border dark:border-white/5 overflow-hidden relative flex items-center justify-center [@media(hover:hover)_and_(pointer:fine)]:transition-transform [@media(hover:hover)_and_(pointer:fine)]:duration-300 [@media(hover:hover)_and_(pointer:fine)]:group-hover/card:scale-[1.02] ${
+                className={`w-full aspect-[2/3] rounded-[8px] bg-zinc-900/40 border-0 dark:border dark:border-white/5 overflow-hidden relative flex items-center justify-center ${
                   compact ? 'shadow-md' : 'shadow-xl'
                 }`}
               >
@@ -205,7 +205,7 @@ export default function PosterRail({
                         ? '(max-width: 640px) 28vw, (max-width: 768px) 18vw, 140px'
                         : '(max-width: 640px) 42vw, (max-width: 768px) 28vw, (max-width: 1024px) 22vw, 14vw'
                     }
-                    className="object-cover pointer-events-none select-none"
+                    className="object-cover pointer-events-none select-none [@media(hover:hover)_and_(pointer:fine)]:transition-transform [@media(hover:hover)_and_(pointer:fine)]:duration-300 [@media(hover:hover)_and_(pointer:fine)]:group-hover/card:scale-[1.02]"
                     draggable={false}
                   />
                 ) : (

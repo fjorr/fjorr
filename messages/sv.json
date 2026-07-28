@@ -164,7 +164,9 @@
     "noMatches": "Inga resultat matchar dessa filter.",
     "clear": "Rensa",
     "noFilmMatches": "Inga filmresultat matchar.",
-    "noArtifactMatches": "Inga artefaktresultat matchar."
+    "noArtifactMatches": "Inga artefaktresultat matchar.",
+    "seeFilmMatches": "Det finns {count} filmmatchningar.",
+    "seeArtifactMatches": "Det finns {count} artefaktmatchningar."
   },
   "Account": {
     "modalTitle": "Logga in eller skapa konto",

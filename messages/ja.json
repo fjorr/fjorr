@@ -164,7 +164,9 @@
     "noMatches": "これらのフィルターに一致する結果はありません。",
     "clear": "クリア",
     "noFilmMatches": "一致する映画の結果はありません。",
-    "noArtifactMatches": "一致する遺物の結果はありません。"
+    "noArtifactMatches": "一致する遺物の結果はありません。",
+    "seeFilmMatches": "映画の一致が {count} 件あります。",
+    "seeArtifactMatches": "遺物の一致が {count} 件あります。"
   },
   "Account": {
     "modalTitle": "ログインまたは登録",

@@ -164,7 +164,9 @@
     "noMatches": "이 필터와 일치하는 결과가 없습니다.",
     "clear": "지우기",
     "noFilmMatches": "일치하는 영화 결과가 없습니다.",
-    "noArtifactMatches": "일치하는 유물 결과가 없습니다."
+    "noArtifactMatches": "일치하는 유물 결과가 없습니다.",
+    "seeFilmMatches": "일치하는 영화가 {count}개 있습니다.",
+    "seeArtifactMatches": "일치하는 유물이 {count}개 있습니다."
   },
   "Account": {
     "modalTitle": "로그인 또는 가입",

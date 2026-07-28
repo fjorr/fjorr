@@ -164,7 +164,9 @@
     "noMatches": "इन फ़िल्टरों से कोई परिणाम मेल नहीं खाता।",
     "clear": "साफ़ करें",
     "noFilmMatches": "कोई फ़िल्म परिणाम मेल नहीं खाता।",
-    "noArtifactMatches": "कोई कलावस्तु परिणाम मेल नहीं खाता।"
+    "noArtifactMatches": "कोई कलावस्तु परिणाम मेल नहीं खाता।",
+    "seeFilmMatches": "{count} फ़िल्म परिणाम मिलते हैं।",
+    "seeArtifactMatches": "{count} कलावस्तु परिणाम मिलते हैं।"
   },
   "Account": {
     "modalTitle": "लॉग इन करें या साइन अप करें",
