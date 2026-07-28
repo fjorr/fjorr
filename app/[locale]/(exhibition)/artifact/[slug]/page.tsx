@@ -74,7 +74,6 @@ export default async function DynamicArtifactPage({ params }: ArtifactPageProps)
 
   const textClass = isDarkBg ? 'text-white' : 'text-black';
   const targetedDotOpacity = isDarkBg ? 0.3 : 0.65;
-  const borderClass = 'opacity-0 border-none !border-transparent';
 
   return (
     <div
@@ -89,8 +88,8 @@ export default async function DynamicArtifactPage({ params }: ArtifactPageProps)
       <Suspense
         fallback={
           <main className="w-full lg:h-screen flex-grow flex flex-col lg:flex-row items-stretch lg:items-center relative z-0">
-            <div className="w-full lg:w-[calc(100%-400px)] h-auto lg:h-full flex items-center justify-center p-0 md:p-10 lg:p-12 relative z-0 flex-grow">
-              <div className="w-full max-w-[400px] md:max-w-4xl max-h-screen overflow-hidden transform lg:-translate-y-[35px] relative">
+            <div className="w-full lg:w-[calc(100%-360px)] xl:w-[calc(100%-400px)] h-auto lg:h-full flex items-center justify-center p-6 md:p-10 lg:p-12 relative z-0 flex-grow">
+              <div className="w-full max-w-[400px] md:max-w-4xl max-h-[min(100%,80vh)] overflow-hidden relative">
                 <div className="relative w-full aspect-[1/1.618] sm:aspect-[4/3] md:aspect-[16/10] z-10">
                   <div className="absolute inset-0 w-full h-full z-0">
                     <ServerSafeSkeleton
@@ -119,7 +118,6 @@ export default async function DynamicArtifactPage({ params }: ArtifactPageProps)
               textClass={textClass}
               subTextClass=""
               mutedTextClass=""
-              borderClass={borderClass}
               isLoader={true}
             />
           </main>
@@ -130,7 +128,6 @@ export default async function DynamicArtifactPage({ params }: ArtifactPageProps)
           customBg={customBg}
           isDarkBg={isDarkBg}
           textClass={textClass}
-          borderClass={borderClass}
         />
       </Suspense>
 
@@ -144,13 +141,11 @@ async function DeferredArtifactContent({
   customBg,
   isDarkBg,
   textClass,
-  borderClass,
 }: {
   urlSlug: string;
   customBg: string;
   isDarkBg: boolean;
   textClass: string;
-  borderClass: string;
 }) {
   const locale = parseLocale(await getLocale());
   const pageData = await getArtifactPageData(urlSlug, locale);
@@ -180,8 +175,8 @@ async function DeferredArtifactContent({
         }}
       />
 
-      <div className="w-full lg:w-[calc(100%-400px)] h-auto lg:h-full flex items-center justify-center p-0 lg:p-12 relative z-0 flex-grow">
-        <picture className="w-full max-w-4xl h-auto max-h-full flex items-center justify-center transform lg:-translate-y-[35px]">
+      <div className="w-full lg:w-[calc(100%-360px)] xl:w-[calc(100%-400px)] h-auto lg:h-full flex items-center justify-center p-6 md:p-10 lg:p-12 relative z-0 flex-grow">
+        <picture className="w-full max-w-4xl h-auto max-h-[min(100%,80vh)] flex items-center justify-center">
           {(artifact.hero_clsx || artifact.hero_tall) && (
             <source media="(min-width: 768px)" srcSet={artifact.hero_clsx || artifact.hero_tall || ''} />
           )}
@@ -193,7 +188,7 @@ async function DeferredArtifactContent({
               height={2400}
               priority
               sizes="(max-width: 1024px) 100vw, 55vw"
-              className="w-full h-auto max-h-full object-contain block mx-auto"
+              className="w-full h-auto max-h-[min(100%,80vh)] object-contain block mx-auto"
             />
           )}
         </picture>
@@ -214,7 +209,6 @@ async function DeferredArtifactContent({
         textClass={textClass}
         subTextClass={subTextClass}
         mutedTextClass={mutedTextClass}
-        borderClass={borderClass}
       />
     </main>
   );

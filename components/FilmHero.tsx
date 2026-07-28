@@ -57,15 +57,9 @@ export default function FilmHero({
   const titleArtSvg = sanitizeTitleArtSvg(film.title_art_code);
 
   return (
-    <section className="w-full flex justify-center">
-      <div className="w-full relative overflow-hidden rounded-none shadow-2xl">
-        <div
-          className="w-full block aspect-[1/1.618] md:aspect-[4/3] lg:aspect-[16/9] flex flex-col justify-end px-8 md:px-12 pb-8 md:pb-12 pt-[220px] relative bg-cover bg-center transition-all duration-500 select-none"
-          style={{
-            backgroundImage:
-              'linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0) 100%)',
-          }}
-        >
+    <section className="w-full flex justify-center my-3 md:my-4">
+      <div className="w-full max-w-[1440px] relative overflow-hidden rounded-none min-[1440px]:rounded-xl shadow-2xl">
+        <div className="w-full block aspect-[1/1.618] md:aspect-[4/3] lg:aspect-[16/9] flex flex-col justify-end px-8 md:px-12 py-8 md:py-10 relative bg-cover bg-center transition-all duration-500 select-none">
           <HeroPicture
             wide={film.hero_wide}
             clsx={film.hero_clsx}
@@ -82,9 +76,13 @@ export default function FilmHero({
             }}
           />
 
+          {/* Short soft trough — enough for type, leaves most of the poster open */}
           <div
-            className="absolute inset-x-0 bottom-0 h-1/2 z-10 pointer-events-none"
-            style={{ background: 'linear-gradient(to top, #000000BF 0%, #00000000 100%)' }}
+            className="absolute inset-x-0 bottom-0 h-[40%] z-10 pointer-events-none"
+            style={{
+              background:
+                'linear-gradient(to top, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.22) 55%, rgba(0,0,0,0) 100%)',
+            }}
           />
 
           <div className="relative z-20 max-w-2xl w-full flex flex-col items-center text-center md:items-start md:text-left mx-auto md:mx-0 mt-auto">
@@ -148,11 +146,11 @@ export default function FilmHero({
               {film.teaser}
             </p>
 
-            <div className="flex items-center justify-center md:justify-start gap-2.5 flex-wrap">
+            <div className="flex items-center justify-center md:justify-start gap-4 flex-wrap">
               {isReleased ? (
                 <button
                   onClick={onPlayClick}
-                  className="h-10 px-6 inline-flex items-center justify-center gap-2 bg-white hover:bg-white/90 text-black font-sans font-bold text-sm tracking-normal rounded-full transition-all active:scale-[0.98] duration-150 shadow-lg cursor-pointer border-0 outline-none"
+                  className="h-10 px-6 inline-flex items-center justify-center gap-2 bg-white hover:bg-white/90 text-black font-sans font-bold text-sm tracking-normal rounded-full transition-all active:scale-[0.98] duration-150 cursor-pointer border-0 outline-none"
                 >
                   <img
                     src="/icons/play.svg"
@@ -166,27 +164,15 @@ export default function FilmHero({
                   </span>
                 </button>
               ) : (
-                <div className="h-10 px-6 inline-flex items-center justify-center gap-2 bg-white/20 backdrop-blur-md text-white/80 font-sans font-bold text-sm tracking-normal rounded-full border border-white/5 select-none">
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    viewBox="0 0 24 24"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <circle cx="12" cy="12" r="9" />
-                    <path d="M12 7v5l3 2" />
-                  </svg>
-                  <span>{t('comingSoon')}</span>
-                </div>
+                <p className="font-sans text-sm font-medium text-white/55 tracking-normal select-none">
+                  {t('comingSoon')}
+                </p>
               )}
 
               <button
                 type="button"
                 onClick={() => setSendOpen(true)}
-                className="h-10 px-5 inline-flex items-center justify-center bg-white/10 hover:bg-white/15 text-white font-sans font-bold text-sm tracking-normal rounded-full transition-all active:scale-[0.98] duration-150 cursor-pointer border-0 outline-none backdrop-blur-md"
+                className="h-10 inline-flex items-center justify-center bg-transparent text-white/75 hover:text-white font-sans font-semibold text-sm tracking-normal transition-colors duration-150 cursor-pointer border-0 outline-none px-0"
               >
                 {t('send')}
               </button>

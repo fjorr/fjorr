@@ -40,8 +40,11 @@ type MinimalFilterContextValue = {
   searchActive: boolean;
   setSearchActive: (value: boolean) => void;
   filtersActive: boolean;
+  /** Mix and/or dials dirty — drives Clear (not mode/type). */
   queryActive: boolean;
   clearFilters: () => void;
+  clearMix: () => void;
+  /** Clears dials + mix; leaves mode and Film/Afct alone. */
   clearAll: () => void;
 };
 
@@ -149,7 +152,7 @@ export function MinimalFilterProvider({
     [replaceFilterParams]
   );
 
-  const { isMinimal, isTimeline, setMode } = useDisplayMode();
+  const { isTimeline } = useDisplayMode();
 
   // Time owns chronology — drop residual sort params from other modes.
   useEffect(() => {
@@ -158,36 +161,34 @@ export function MinimalFilterProvider({
     }
   }, [isTimeline, replaceFilterParams, sort]);
 
+  /** Dials only — never wipe mix or Film/Afct. */
   const clearFilters = useCallback(() => {
     replaceFilterParams({
       sort: null,
       show: null,
       theme: null,
-      type: null,
     });
   }, [replaceFilterParams]);
 
+  const clearMix = useCallback(() => {
+    replaceFilterParams({ mix: null });
+  }, [replaceFilterParams]);
+
+  /** Curation reset: dials + mix. Mode and type stay. */
   const clearAll = useCallback(() => {
     replaceFilterParams({
       sort: null,
       show: null,
       theme: null,
-      type: null,
       mix: null,
     });
-    if (isMinimal || isTimeline) setMode('cinematic');
-  }, [isMinimal, isTimeline, replaceFilterParams, setMode]);
+  }, [replaceFilterParams]);
 
   const filtersActive = isTimeline
     ? theme !== 'all'
     : sort !== 'newest' || theme !== 'all';
 
-  const queryActive =
-    filtersActive ||
-    mix !== 'all' ||
-    contentType !== 'film' ||
-    isMinimal ||
-    isTimeline;
+  const queryActive = filtersActive || mix !== 'all';
 
   const value = useMemo(
     () => ({
@@ -210,6 +211,7 @@ export function MinimalFilterProvider({
       filtersActive,
       queryActive,
       clearFilters,
+      clearMix,
       clearAll,
     }),
     [
@@ -229,6 +231,7 @@ export function MinimalFilterProvider({
       filtersActive,
       queryActive,
       clearFilters,
+      clearMix,
       clearAll,
     ]
   );
@@ -274,8 +277,9 @@ export function useQueryStatusLabels() {
     : isMinimal
       ? tDisplay('minimalFull')
       : tDisplay('cinematicFull');
-  const typeLabel = contentType === 'artifact' ? tf('artifact') : tDisplay('film');
-  const mixLabel = mix !== 'all' && mixName ? capitalizeLabel(mixName) : tf('noMixes');
+  const typeLabel = contentType === 'artifact' ? tf('artifacts') : tDisplay('film');
+  const mixLabel =
+    mix !== 'all' && mixName ? capitalizeLabel(mixName) : tf('allMixes');
   const dialLabels: string[] = [];
   if (!isTimeline && sort !== 'newest') dialLabels.push(tf(sort));
   if (theme !== 'all') {
@@ -308,20 +312,51 @@ export function QueryStatusBar() {
     dialLabels,
     queryActive,
     clearAll,
+    isMinimal,
+    isTimeline,
+    contentType,
+    mix,
   } = useQueryStatusLabels();
 
-  const parts = [modeLabel, typeLabel, mixLabel, ...dialLabels];
+  const modeActive = isMinimal || isTimeline;
+  const typeActive = contentType === 'artifact';
+  const mixActive = mix !== 'all';
+
+  const segments: { text: string; active: boolean; smOnly?: boolean }[] = [
+    { text: modeLabel, active: modeActive },
+    { text: typeLabel, active: typeActive },
+  ];
+  if (mixActive) {
+    segments.push({ text: mixLabel, active: true });
+  }
+  for (const dial of dialLabels) {
+    segments.push({
+      text: capitalizeLabel(dial),
+      active: true,
+      smOnly: true,
+    });
+  }
 
   return (
     <div className="flex items-center justify-center gap-2.5 min-h-[18px] px-2">
-      <p className="font-sans text-[11px] font-medium text-page-muted tracking-tight truncate max-w-[min(100%,28rem)]">
-        {parts.join(' · ')}
+      <p className="font-sans text-[12px] sm:text-[14px] font-medium tracking-tight truncate max-w-[min(100%,28rem)]">
+        {segments.map((seg, i) => (
+          <span
+            key={`${seg.text}-${i}`}
+            className={seg.smOnly ? 'hidden sm:inline' : undefined}
+          >
+            {i > 0 ? <span className="text-page-faint">{' · '}</span> : null}
+            <span className={seg.active ? 'text-page' : 'text-page-muted'}>
+              {seg.text}
+            </span>
+          </span>
+        ))}
       </p>
       {queryActive && (
         <button
           type="button"
           onClick={clearAll}
-          className="shrink-0 font-sans text-[11px] font-semibold text-[#FF385C] hover:text-[#FF5A5F] transition-colors"
+          className="shrink-0 font-sans text-[12px] sm:text-[14px] font-semibold text-[#FF385C] hover:text-[#FF5A5F] transition-colors"
         >
           {tf('clear')}
         </button>

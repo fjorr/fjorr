@@ -106,7 +106,8 @@
     "startAutoplay": "Starta automatisk uppspelning",
     "pauseAutoplay": "Pausa automatisk uppspelning",
     "notFound": "Filmen hittades inte",
-    "watchOnFjorrMeta": "Se den här kortfilmen på Fjorr."
+    "watchOnFjorrMeta": "Se den här kortfilmen på Fjorr.",
+    "languagesAndThemes": "Språk och teman"
   },
   "Theater": {
     "watchOnFjorr": "Se på Fjorr",
@@ -115,14 +116,14 @@
     "rolling": "Rullar...",
     "fallbackMeta": "Långfilm",
     "ccOff": "Av",
-    "play": "Spela upp",
-    "pause": "Pausa",
-    "mute": "Stäng av ljud",
-    "unmute": "Slå på ljud",
+    "play": "Spela",
+    "pause": "Paus",
+    "mute": "Tyst",
+    "unmute": "Ljud",
     "fullscreen": "Helskärm",
     "full": "Hel",
     "exitFullscreen": "Avsluta helskärm",
-    "exit": "Avsluta",
+    "exit": "Fönster",
     "enterFullscreen": "Gå till helskärm",
     "captions": "Undertexter",
     "subs": "Text",
@@ -142,8 +143,8 @@
     "exploreMeta": "Utforska den här kulturella artefakten på Fjorr."
   },
   "MinimalList": {
-    "filter": "Reglage",
-    "mixes": "Mixes",
+    "filter": "Regl",
+    "mixes": "Mix",
     "allMixes": "Alla filmer",
     "noMixes": "Inga Mixes",
     "sort": "Sortera",
@@ -281,7 +282,7 @@
     "s6Body": "Dessa villkor kan ändras då och då. När det sker uppdaterar vi datumet högst upp."
   },
   "Footer": {
-    "blurb": "Fjorr är hem för filmiska kortfilmer om världens största historier. Berättelserna är avsedda för kulturella, pedagogiska och kreativa syften.",
+    "blurb": "Fjorr är hem för filmiska kortfilmer om världens största historier.",
     "privacy": "Integritetspolicy",
     "terms": "Användarvillkor",
     "copyright": "© 2026 Fjorr. Alla rättigheter förbehållna.",

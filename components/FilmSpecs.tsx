@@ -8,7 +8,7 @@ import { createClient } from '@/lib/supabase/client';
 const FilmTranscript = dynamic(() => import('./FilmTranscript'), {
   ssr: false,
   loading: () => (
-    <div className="mt-2 h-10 w-40 rounded bg-page-chip animate-pulse" aria-hidden />
+    <div className="mt-2 h-8 w-28 rounded bg-page-chip/60 animate-pulse" aria-hidden />
   ),
 });
 
@@ -31,6 +31,25 @@ interface FilmSpecsProps {
   tags: string[];
   creators?: CreatorMapRow[];
   onSeek?: (seconds: number) => void;
+}
+
+function SpecRow({
+  label,
+  value,
+  emphasize = false,
+}: {
+  label: string;
+  value: React.ReactNode;
+  emphasize?: boolean;
+}) {
+  return (
+    <div className="grid grid-cols-[7.5rem_1fr] sm:grid-cols-[8.5rem_1fr] gap-x-3 items-baseline text-sm">
+      <span className="text-page-faint font-medium">{label}</span>
+      <span className={emphasize ? 'text-page font-semibold' : 'text-page font-medium'}>
+        {value}
+      </span>
+    </div>
+  );
 }
 
 export default function FilmSpecs({
@@ -65,25 +84,30 @@ export default function FilmSpecs({
     };
   }, [film?.id, subtitles.length]);
 
+  const hasTranscript = subtitles.length > 0;
+  const hasSecondary =
+    audioLanguages.length > 0 || subtitles.length > 0 || tags.length > 0;
+
+  const placeLine = [film.story_date, film.location].filter(Boolean).join(' · ');
+
   return (
-    <div className="max-w-2xl w-full px-8 md:px-12 mx-auto text-left text-page font-sans select-none relative z-20">
-      
-      {/* 📖 ABOUT FILM PANEL */}
-      <div className="max-w-3xl mb-8">
-        <h3 className="text-lg font-bold text-page mb-3">{t('about')}</h3>
-        <p className="text-base leading-normal text-page font-medium mb-4 opacity-80">
+    <div className="w-full max-w-3xl px-8 md:px-12 mx-auto text-left text-page font-sans select-none relative z-20">
+      {/* Story leads — no About heading */}
+      <div className="pb-8 border-b border-[color-mix(in_srgb,var(--page-fg)_6%,transparent)]">
+        <p className="text-base md:text-[17px] leading-relaxed text-page font-medium opacity-90 max-w-3xl">
           {film.description}
         </p>
-        
-        {/* VERTICAL METADATA STACK */}
-        <div className="flex flex-col items-start gap-0.5 text-sm font-medium text-page-faint">
-          {film.story_date && <span>{film.story_date}</span>}
-          {film.location && <span>{film.location}</span>}
-          {film.note && <span className="font-normal">{film.note}</span>}
-        </div>
 
-        {subtitles.length > 0 && (
-          <div className="mt-6">
+        {(placeLine || film.note) && (
+          <p className="mt-3 text-sm font-medium text-page-faint">
+            {placeLine}
+            {placeLine && film.note ? ' · ' : null}
+            {film.note ? <span className="font-normal">{film.note}</span> : null}
+          </p>
+        )}
+
+        {hasTranscript && (
+          <div className="mt-5">
             <FilmTranscript
               subtitles={subtitles}
               transcripts={transcripts}
@@ -94,70 +118,61 @@ export default function FilmSpecs({
         )}
       </div>
 
-      {/* 📋 UNIFIED DETAILS PANEL */}
-      <div className="w-full mt-14">
-        <h3 className="text-lg font-bold text-page mb-6 tracking-tight">{t('specs')}</h3>
-        
-        {/* A single, vertically continuous stack with tight, deliberate rhythm */}
-        <div className="flex flex-col space-y-2 text-sm">
-          
-          {/* Dynamic Filmmaker Data Blocks */}
+      {/* Specs — self-explanatory grid, no section title */}
+      <div className="pt-8 max-w-2xl">
+        <div className="flex flex-col gap-2">
           {creators.map((item, idx) => (
-            <div key={idx} className="flex items-baseline gap-2">
-              <span className="text-page-faint font-medium capitalize">{item.role}</span>
-              <span className="text-page font-semibold">{item.creator?.name || t('unknownCreator')}</span>
-            </div>
+            <SpecRow
+              key={idx}
+              label={item.role}
+              value={item.creator?.name || t('unknownCreator')}
+              emphasize
+            />
           ))}
 
-          {/* Technical Specifications Rows */}
-          <div className="flex items-baseline gap-2">
-            <span className="text-page-faint font-medium">{t('runtimeLabel')}</span>
-            <span className="text-page font-semibold">{displayRuntime}</span>
-          </div>
+          <SpecRow label={t('runtimeLabel')} value={displayRuntime} />
+          <SpecRow label={t('ratingLabel')} value={displayRating} />
+          <SpecRow label={t('releasedLabel')} value={releaseYear} />
+        </div>
+      </div>
 
-          <div className="flex items-baseline gap-2">
-            <span className="text-page-faint font-medium">{t('ratingLabel')}</span>
-            <span className="text-page font-semibold">{displayRating}</span>
-          </div>
+      {/* Languages & themes — whisper heading */}
+      {hasSecondary && (
+        <div className="mt-8 pt-8 border-t border-[color-mix(in_srgb,var(--page-fg)_6%,transparent)] max-w-2xl">
+          <h3 className="text-[13px] font-medium text-page-faint mb-3 tracking-tight">
+            {t('languagesAndThemes')}
+          </h3>
 
-          <div className="flex items-baseline gap-2">
-            <span className="text-page-faint font-medium">{t('releasedLabel')}</span>
-            <span className="text-page font-semibold">{releaseYear}</span>
-          </div>
-
-          <div className="flex items-baseline gap-2">
-            <span className="text-page-faint font-medium">{t('audioLabel')}</span>
-            <span className="text-page font-semibold">{audioLanguages.join(', ')}</span>
-          </div>
-
-          {subtitles.length > 0 && (
-            <div className="flex items-baseline gap-2">
-              <span className="text-page-faint font-medium">{t('subtitlesLabel')}</span>
-              <span className="text-page font-semibold">
-                {subtitles.map(s => s.name).join(', ')}
-              </span>
-            </div>
-          )}
-
-          {tags.length > 0 && (
-            <div className="flex items-start gap-2">
-              <span className="text-page-faint font-medium shrink-0 pt-0.5">{t('tagsLabel')}</span>
-              <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-col gap-2 text-[13px] text-page-muted font-medium">
+            {audioLanguages.length > 0 && (
+              <p>
+                <span className="text-page-faint">{t('audioLabel')}</span>
+                {' · '}
+                {audioLanguages.join(', ')}
+              </p>
+            )}
+            {subtitles.length > 0 && (
+              <p>
+                <span className="text-page-faint">{t('subtitlesLabel')}</span>
+                {' · '}
+                {subtitles.map((s) => s.name).join(', ')}
+              </p>
+            )}
+            {tags.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 pt-1">
                 {tags.map((tag) => (
                   <span
                     key={tag}
-                    className="bg-page-chip rounded-[4px] px-2 py-0.5 text-[12px] text-page font-semibold"
+                    className="bg-page-chip rounded-[4px] px-2 py-0.5 text-[11px] text-page-muted font-medium"
                   >
                     {tag.charAt(0).toUpperCase() + tag.slice(1)}
                   </span>
                 ))}
               </div>
-            </div>
-          )}
-
+            )}
+          </div>
         </div>
-      </div>
-
+      )}
     </div>
   );
 }

@@ -106,7 +106,8 @@
     "startAutoplay": "Démarrer la lecture automatique",
     "pauseAutoplay": "Mettre en pause la lecture automatique",
     "notFound": "Film introuvable",
-    "watchOnFjorrMeta": "Regardez ce court métrage sur Fjorr."
+    "watchOnFjorrMeta": "Regardez ce court métrage sur Fjorr.",
+    "languagesAndThemes": "Langues et thèmes"
   },
   "Theater": {
     "watchOnFjorr": "Regarder sur Fjorr",
@@ -115,14 +116,14 @@
     "rolling": "Ça tourne...",
     "fallbackMeta": "Long métrage",
     "ccOff": "Désactivé",
-    "play": "Lecture",
+    "play": "Lire",
     "pause": "Pause",
-    "mute": "Couper le son",
-    "unmute": "Activer le son",
+    "mute": "Muet",
+    "unmute": "Son",
     "fullscreen": "Plein écran",
     "full": "Plein",
     "exitFullscreen": "Quitter le plein écran",
-    "exit": "Quitter",
+    "exit": "Sortir",
     "enterFullscreen": "Passer en plein écran",
     "captions": "Sous-titres",
     "subs": "ST",
@@ -142,8 +143,8 @@
     "exploreMeta": "Explorez cet artefact culturel sur Fjorr."
   },
   "MinimalList": {
-    "filter": "Réglages",
-    "mixes": "Mixes",
+    "filter": "Dial",
+    "mixes": "Mix",
     "allMixes": "Tous les films",
     "noMixes": "Aucun Mix",
     "sort": "Trier",
@@ -281,7 +282,7 @@
     "s6Body": "Ces conditions peuvent changer de temps à autre. Le cas échéant, nous mettrons à jour la date en haut de page."
   },
   "Footer": {
-    "blurb": "Fjorr accueille des courts métrages cinématographiques sur les plus grandes histoires du monde. Ces histoires ont une vocation culturelle, éducative et créative.",
+    "blurb": "Fjorr accueille des courts métrages cinématographiques sur les plus grandes histoires du monde.",
     "privacy": "Politique de confidentialité",
     "terms": "Conditions d'utilisation",
     "copyright": "© 2026 Fjorr. Tous droits réservés.",

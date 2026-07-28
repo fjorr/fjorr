@@ -34,17 +34,33 @@ export default function Footer({ variant }: FooterProps) {
   const isCustomVariant = variant === 'light' || variant === 'dark';
   const isDarkBg = variant === 'light' || isAboutPage;
 
-  const textColor = (isCustomVariant || isAboutPage)
-    ? (isDarkBg ? 'text-white' : 'text-black')
-    : 'text-black dark:text-white';
+  const textColor =
+    isCustomVariant || isAboutPage
+      ? isDarkBg
+        ? 'text-white'
+        : 'text-black'
+      : 'text-black dark:text-white';
 
-  const subTextColor = (isCustomVariant || isAboutPage)
-    ? (isDarkBg ? 'text-white/60' : 'text-black/60')
-    : 'text-black/40 dark:text-white/60';
+  const subTextColor =
+    isCustomVariant || isAboutPage
+      ? isDarkBg
+        ? 'text-white/60'
+        : 'text-black/60'
+      : 'text-black/40 dark:text-white/60';
 
-  const mutedTextColor = (isCustomVariant || isAboutPage)
-    ? (isDarkBg ? 'text-white/40' : 'text-black/40')
-    : 'text-black/30 dark:text-white/40';
+  const mutedTextColor =
+    isCustomVariant || isAboutPage
+      ? isDarkBg
+        ? 'text-white/40'
+        : 'text-black/40'
+      : 'text-black/30 dark:text-white/40';
+
+  const faintTextColor =
+    isCustomVariant || isAboutPage
+      ? isDarkBg
+        ? 'text-white/25'
+        : 'text-black/25'
+      : 'text-black/25 dark:text-white/25';
 
   const getBackgroundClass = () => {
     if (isAboutPage) return 'bg-black';
@@ -87,12 +103,19 @@ export default function Footer({ variant }: FooterProps) {
   return (
     <footer
       className={`
-        w-full pt-16 pb-10 px-[10%] text-center flex flex-col items-center transition-colors duration-300
+        w-full pt-14 pb-8 px-[10%] text-center flex flex-col items-center transition-colors duration-300
         ${getBackgroundClass()}
         ${textColor}
       `}
     >
-      <div className="relative mb-4 flex items-center justify-center gap-3">
+      <div className="w-full max-w-64 mb-6">
+        <IntelForm
+          variant={isAboutPage ? 'light' : variant}
+          isCustomVariant={isCustomVariant || isAboutPage}
+        />
+      </div>
+
+      <div className="relative mb-6 flex items-center justify-center gap-3">
         <div ref={langRef} className="relative flex flex-col items-center">
           <button
             type="button"
@@ -100,12 +123,11 @@ export default function Footer({ variant }: FooterProps) {
             aria-expanded={langOpen}
             aria-haspopup="listbox"
             onClick={() => setLangOpen((open) => !open)}
-            className={`inline-flex items-center gap-1.5 font-sans text-[14px] font-semibold transition-colors hover:opacity-80 ${subTextColor}`}
+            className={`inline-flex items-center gap-1.5 transition-colors hover:opacity-80 ${subTextColor}`}
           >
             <Icon name="globe" className="w-3.5 h-3.5" />
-            <span>
-              {localeLabels[locale]}{' '}
-              <span className={mutedTextColor}>({locale})</span>
+            <span className="font-mono text-[11px] font-medium uppercase tracking-[0.05em] leading-none">
+              {locale}
             </span>
           </button>
 
@@ -140,46 +162,41 @@ export default function Footer({ variant }: FooterProps) {
           )}
         </div>
 
-        {showAppearance && (
-          <ColorSchemeToggle
-            activeClass={textColor}
-            mutedClass={mutedTextColor}
-          />
-        )}
+        {showAppearance && <ColorSchemeToggle />}
       </div>
 
-      <div className="w-full max-w-64 mb-6">
-        <IntelForm
-          variant={isAboutPage ? 'light' : variant}
-          isCustomVariant={isCustomVariant || isAboutPage}
-        />
-      </div>
-
-      <div className="max-w-2xl mb-2">
-        <p className={`font-sans font-normal text-[12px] leading-[1.4em] tracking-normal transition-colors ${subTextColor}`}>
+      <div className="max-w-[16rem] mb-2">
+        <p
+          className={`font-sans font-normal text-[12px] leading-[1.45] tracking-normal transition-colors ${subTextColor}`}
+        >
           {t('blurb')}
         </p>
       </div>
 
-      <div className={`flex flex-col sm:flex-row items-center justify-center gap-2 mb-0 font-sans text-[12px] transition-colors ${subTextColor}`}>
-        <div className={`flex items-center gap-1 transition-colors ${mutedTextColor}`}>
-          <Icon name="lock" className="w-4 h-4" />
-          <Icon name="cc" className="w-4 h-4" />
-          <Icon name="globe" className="w-4 h-4" />
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Link href="/privacy" className={`hover:opacity-80 transition-colors ${subTextColor}`}>
-            {t('privacy')}
-          </Link>
-          <Link href="/terms" className={`hover:opacity-80 transition-colors ${subTextColor}`}>
-            {t('terms')}
-          </Link>
-        </div>
+      <div
+        className={`flex items-center justify-center gap-2 font-sans text-[12px] transition-colors ${subTextColor}`}
+      >
+        <Link
+          href="/privacy"
+          className={`hover:opacity-80 transition-colors ${subTextColor}`}
+        >
+          {t('privacy')}
+        </Link>
+        <span className={mutedTextColor} aria-hidden>
+          ·
+        </span>
+        <Link
+          href="/terms"
+          className={`hover:opacity-80 transition-colors ${subTextColor}`}
+        >
+          {t('terms')}
+        </Link>
       </div>
 
-      <div className="w-full pt-2">
-        <p className={`font-sans text-[11px] tracking-wide transition-colors ${mutedTextColor}`}>
+      <div className="w-full mt-4">
+        <p
+          className={`font-sans text-[10px] tracking-wide transition-colors ${faintTextColor}`}
+        >
           {t('copyright')}
         </p>
       </div>

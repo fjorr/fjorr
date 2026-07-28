@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { parseLocale } from '@/i18n/config';
 import { parseVttCues, type VttCue } from '@/lib/vtt';
+import { useColorScheme } from '@/components/ColorSchemeProvider';
 
 interface TranscriptRow {
   language_code: string;
@@ -22,14 +23,14 @@ interface FilmTranscriptProps {
   variant?: 'page' | 'dock';
 }
 
-function highlightMatch(text: string, query: string, ink: string) {
+function highlightMatch(text: string, query: string, ink: string, markBg: string) {
   if (!query.trim()) return text;
   const idx = text.toLowerCase().indexOf(query.toLowerCase());
   if (idx < 0) return text;
   return (
     <>
       {text.slice(0, idx)}
-      <mark className={`bg-[#76c3ff]/25 ${ink} rounded-[2px] px-0.5`}>
+      <mark className={`${markBg} ${ink} rounded-[2px] px-0.5`}>
         {text.slice(idx, idx + query.length)}
       </mark>
       {text.slice(idx + query.length)}
@@ -47,6 +48,7 @@ export default function FilmTranscript({
 }: FilmTranscriptProps) {
   const t = useTranslations('Film');
   const locale = parseLocale(useLocale());
+  const { isLight } = useColorScheme();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const activeRowRef = useRef<HTMLButtonElement | null>(null);
@@ -198,6 +200,10 @@ export default function FilmTranscript({
   };
 
   const isDock = variant === 'dock';
+  const useAppleBlue = isLight && !isDock;
+  const accentText = useAppleBlue ? 'text-[#0071E3]' : 'text-[#76c3ff]';
+  const accentTextSoft = useAppleBlue ? 'text-[#0071E3]/80' : 'text-[#76c3ff]/80';
+  const accentMark = useAppleBlue ? 'bg-[#0071E3]/20' : 'bg-[#76c3ff]/25';
   const ink = isDock
     ? {
         primary: 'text-white',
@@ -239,30 +245,38 @@ export default function FilmTranscript({
           <button
             type="button"
             onClick={handlePrimaryClick}
-            className={`h-9 px-4 inline-flex items-center justify-center gap-2 rounded-[8px] text-sm font-semibold tracking-normal transition-all duration-150 select-none active:scale-[0.98] ${
-              isOpen
-                ? `${ink.primary} ${ink.chipActive}`
-                : `${ink.muted} ${ink.chip}`
-            }`}
+            className={
+              isDock
+                ? `h-9 px-4 inline-flex items-center justify-center gap-2 rounded-[8px] text-sm font-semibold tracking-normal transition-all duration-150 select-none active:scale-[0.98] ${
+                    isOpen
+                      ? `${ink.primary} ${ink.chipActive}`
+                      : `${ink.muted} ${ink.chip}`
+                  }`
+                : `inline-flex items-center gap-1.5 py-1 font-mono text-[13px] font-medium tracking-[0.05em] uppercase bg-transparent border-0 outline-none cursor-pointer p-0 select-none transition-opacity hover:opacity-100 ${
+                    isOpen ? `${accentText} opacity-100` : 'text-page-muted opacity-90'
+                  }`
+            }
           >
-            <svg
-              className={`w-5 h-5 shrink-0 ${isOpen ? 'text-[#76c3ff]' : ink.muted}`}
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <rect width="18" height="14" x="3" y="5" rx="3" />
-              <path d="M11 10h-2a2 2 0 0 0-2 2v0a2 2 0 0 0 2 2h2" />
-              <path d="M17 10h-2a2 2 0 0 0-2 2v0a2 2 0 0 0 2 2h2" />
-            </svg>
+            {isDock ? (
+              <svg
+                className={`w-5 h-5 shrink-0 ${isOpen ? accentText : ink.muted}`}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <rect width="18" height="14" x="3" y="5" rx="3" />
+                <path d="M11 10h-2a2 2 0 0 0-2 2v0a2 2 0 0 0 2 2h2" />
+                <path d="M17 10h-2a2 2 0 0 0-2 2v0a2 2 0 0 0 2 2h2" />
+              </svg>
+            ) : null}
             <span>
               {isOpen ? languageLabel : t('transcript')}
             </span>
             {subtitles.length > 1 && (
-              <svg className="w-3.5 h-3.5 opacity-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <svg className="w-3 h-3 opacity-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 9l6 6 6-6" />
               </svg>
             )}
@@ -277,7 +291,7 @@ export default function FilmTranscript({
                   onClick={() => openWithLanguage(sub.code)}
                   className={`w-full text-left px-5 py-2.5 text-sm font-sans font-semibold tracking-normal transition-colors rounded-[6px] ${
                     isOpen && activeLanguage === sub.code
-                      ? `text-[#76c3ff] font-bold ${isDock ? 'bg-white/[0.02]' : 'bg-page-chip'}`
+                      ? `${accentText} font-bold ${isDock ? 'bg-white/[0.02]' : 'bg-page-chip'}`
                       : ink.menuItem
                   }`}
                 >
@@ -292,11 +306,11 @@ export default function FilmTranscript({
           <button
             type="button"
             onClick={downloadVtt}
-            className={`h-9 px-3 rounded-[8px] text-sm font-semibold transition-colors ${
+            className={
               isDock
-                ? 'bg-white/5 hover:bg-white/10 text-white/50 hover:text-white/80'
-                : 'bg-page-chip hover:bg-page-chip-hover text-page-faint hover:text-page'
-            }`}
+                ? 'h-9 px-3 rounded-[8px] text-sm font-semibold transition-colors bg-white/5 hover:bg-white/10 text-white/50 hover:text-white/80'
+                : 'font-mono text-[12px] font-medium tracking-[0.05em] uppercase text-page-faint hover:text-page bg-transparent border-0 outline-none cursor-pointer p-0 transition-colors'
+            }
           >
             {t('transcriptDownload')}
           </button>
@@ -311,15 +325,13 @@ export default function FilmTranscript({
               setQuery('');
             }}
             aria-label={t('transcriptClose')}
-            className={`h-9 w-9 inline-flex items-center justify-center rounded-[8px] bg-page-chip hover:bg-page-chip-hover text-page-faint hover:text-page transition-all duration-200 select-none active:scale-[0.95] ${
+            className={`font-mono text-[16px] leading-none text-page-faint hover:text-page bg-transparent border-0 outline-none cursor-pointer p-0 transition-all duration-200 select-none ${
               isOpen
-                ? 'opacity-100 scale-100 pointer-events-auto'
-                : 'opacity-0 scale-95 pointer-events-none'
+                ? 'opacity-100 pointer-events-auto'
+                : 'opacity-0 pointer-events-none'
             }`}
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.75" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            ×
           </button>
         )}
       </div>
@@ -382,13 +394,13 @@ export default function FilmTranscript({
                     >
                       <span
                         className={`font-mono font-medium text-sm tracking-normal select-none w-10 shrink-0 pt-0.5 ${
-                          isActive ? 'text-[#76c3ff]' : 'text-[#76c3ff]/80'
+                          isActive ? accentText : accentTextSoft
                         }`}
                       >
                         {cue.displayTime}
                       </span>
                       <span className={`${ink.soft} font-medium text-[15px] leading-snug`}>
-                        {highlightMatch(cue.dialogue, query, ink.primary)}
+                        {highlightMatch(cue.dialogue, query, ink.primary, accentMark)}
                       </span>
                     </button>
 

@@ -106,7 +106,8 @@
     "startAutoplay": "自動再生ループを開始",
     "pauseAutoplay": "自動再生ループを一時停止",
     "notFound": "映画が見つかりません",
-    "watchOnFjorrMeta": "Fjorrでこの短編映画を見る。"
+    "watchOnFjorrMeta": "Fjorrでこの短編映画を見る。",
+    "languagesAndThemes": "言語とテーマ"
   },
   "Theater": {
     "watchOnFjorr": "Fjorrで見る",
@@ -116,9 +117,9 @@
     "fallbackMeta": "劇場公開作品",
     "ccOff": "オフ",
     "play": "再生",
-    "pause": "一時停止",
-    "mute": "ミュート",
-    "unmute": "ミュート解除",
+    "pause": "停止",
+    "mute": "消音",
+    "unmute": "音声",
     "fullscreen": "全画面表示",
     "full": "全画面",
     "exitFullscreen": "全画面表示を終了",
@@ -281,7 +282,7 @@
     "s6Body": "本規約は随時変更される場合があります。変更の際は、ページ上部の日付を更新します。"
   },
   "Footer": {
-    "blurb": "Fjorrは世界で最も偉大な物語を描く映画的短編作品のホームです。これらの物語は文化的、教育的、創造的な目的のために作られています。",
+    "blurb": "Fjorrは世界で最も偉大な物語を描く映画的短編作品のホームです。",
     "privacy": "プライバシーポリシー",
     "terms": "利用規約",
     "copyright": "© 2026 Fjorr. All rights reserved.",

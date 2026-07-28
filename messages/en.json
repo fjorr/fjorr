@@ -106,7 +106,8 @@
     "startAutoplay": "Start autoplay loop",
     "pauseAutoplay": "Pause autoplay loop",
     "notFound": "Film Not Found",
-    "watchOnFjorrMeta": "Watch this short film on Fjorr."
+    "watchOnFjorrMeta": "Watch this short film on Fjorr.",
+    "languagesAndThemes": "Languages & themes"
   },
   "Theater": {
     "watchOnFjorr": "Watch on Fjorr",
@@ -281,7 +282,7 @@
     "s6Body": "These terms may change once in a while. When they do, we'll update the date up top."
   },
   "Footer": {
-    "blurb": "Fjorr is home to short cinematic films about the world's greatest stories. The stories are intended for cultural, educational, and creative purposes.",
+    "blurb": "Fjorr is home to short cinematic films about the world's greatest stories.",
     "privacy": "Privacy Policy",
     "terms": "Terms of Use",
     "copyright": "© 2026 Fjorr. All rights reserved.",

@@ -3,18 +3,13 @@
 import React from 'react';
 import { useTranslations } from 'next-intl';
 import { usePathname } from '@/i18n/navigation';
-import { Icon } from '@/components/ui/Icons';
 import { useColorScheme } from '@/components/ColorSchemeProvider';
 import { isColorSchemeLockedPath } from '@/lib/color-scheme';
 
-/** Icon-only dark / light control — used in navbar menu and footer. */
+/** Dark / Light segmented switch — matches Film / Afct control-bar chips. */
 export default function ColorSchemeToggle({
-  activeClass,
-  mutedClass,
   className = '',
 }: {
-  activeClass: string;
-  mutedClass: string;
   className?: string;
 }) {
   const t = useTranslations('Nav');
@@ -26,31 +21,33 @@ export default function ColorSchemeToggle({
 
   return (
     <div
-      className={`inline-flex items-center gap-0 ${className}`}
+      className={`inline-flex shrink-0 items-center gap-0.5 rounded-[8px] p-0.5 bg-page-chip ${className}`}
       role="group"
       aria-label={t('appearance')}
     >
       <button
         type="button"
-        aria-label={t('appearanceDark')}
         aria-pressed={preference === 'dark'}
         onClick={() => setScheme('dark')}
-        className={`w-5 h-6 inline-flex items-center justify-center transition-opacity ${
-          preference === 'dark' ? activeClass : `${mutedClass} hover:opacity-70`
+        className={`font-sans text-[11px] sm:text-xs font-semibold px-1.5 sm:px-3 py-1.5 rounded-[6px] transition-colors whitespace-nowrap ${
+          preference === 'dark'
+            ? 'bg-page-chip-active text-page'
+            : 'text-page-faint hover:text-page-muted'
         }`}
       >
-        <Icon name="moon" className="w-3.5 h-3.5" />
+        {t('appearanceDark')}
       </button>
       <button
         type="button"
-        aria-label={t('appearanceLight')}
         aria-pressed={preference === 'light'}
         onClick={() => setScheme('light')}
-        className={`w-5 h-6 inline-flex items-center justify-center transition-opacity ${
-          preference === 'light' ? activeClass : `${mutedClass} hover:opacity-70`
+        className={`font-sans text-[11px] sm:text-xs font-semibold px-1.5 sm:px-3 py-1.5 rounded-[6px] transition-colors whitespace-nowrap ${
+          preference === 'light'
+            ? 'bg-page-chip-active text-page'
+            : 'text-page-faint hover:text-page-muted'
         }`}
       >
-        <Icon name="bolt" className="w-3.5 h-3.5" />
+        {t('appearanceLight')}
       </button>
     </div>
   );

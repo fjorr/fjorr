@@ -63,13 +63,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function FilmDetailPage({ params }: PageProps) {
   const { slug: urlSlug } = await params;
   return (
-    <div className="w-full min-h-screen bg-[var(--page-bg)] text-[var(--page-fg)] flex flex-col items-center pt-[12px] relative z-0">
+    <div className="w-full min-h-screen bg-[var(--page-bg)] text-[var(--page-fg)] flex flex-col items-center relative z-0">
       <Suspense
         fallback={
-          <div className="w-full flex justify-center bg-[var(--page-bg)] animate-pulse">
-            <div className="w-full relative aspect-[1/1.618] md:aspect-[4/3] lg:aspect-[16/9] overflow-hidden">
+          <div className="w-full flex justify-center bg-[var(--page-bg)] animate-pulse my-3 md:my-4 px-0">
+            <div className="w-full max-w-[1440px] relative aspect-[1/1.618] md:aspect-[4/3] lg:aspect-[16/9] overflow-hidden rounded-none min-[1440px]:rounded-xl">
               <ServerSafeSkeleton variant="feature" />
-              <div className="absolute inset-x-0 bottom-0 px-8 md:px-12 pb-14 md:pb-16 flex flex-col items-center md:items-start gap-4 z-10">
+              <div className="absolute inset-x-0 bottom-0 px-8 md:px-12 pb-8 md:pb-10 flex flex-col items-center md:items-start gap-4 z-10">
                 <div className="w-32 h-4 bg-white/5 rounded" />
                 <div className="w-64 h-12 bg-white/10 rounded-lg" />
                 <div className="w-full max-w-xs h-4 bg-white/5 rounded" />

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 import FilmHero from './FilmHero';
@@ -53,6 +53,7 @@ export default function FilmPageContentWrapper({
   const [playbackTime, setPlaybackTime] = useState(0);
   const [shareSeconds, setShareSeconds] = useState<number | null>(null);
   const theaterOpenRef = React.useRef(false);
+  const lastShareFloorRef = useRef<number | null>(null);
   const resumeProgress = useWatchProgress(filmData?.id, filmData?.runtime);
 
   useEffect(() => {
@@ -84,11 +85,14 @@ export default function FilmPageContentWrapper({
     setShowTheater(true);
   }, []);
 
+  const handleSeekHandled = useCallback(() => setSeekTo(null), []);
+
   const handleCloseTheater = useCallback(() => {
     setShowTheater(false);
     setStartAt(undefined);
     setSeekTo(null);
     setPlaybackTime(0);
+    lastShareFloorRef.current = null;
     const url = new URL(window.location.href);
     if (url.searchParams.has('t')) {
       url.searchParams.delete('t');
@@ -109,7 +113,15 @@ export default function FilmPageContentWrapper({
   const handleTimeUpdate = useCallback(
     (seconds: number) => {
       setPlaybackTime(seconds);
-      if (seconds >= 1) setShareSeconds(seconds);
+      // Throttle share-link updates to once per whole second so the dependent
+      // FilmHero share button doesn't re-render on every parent time tick.
+      if (seconds >= 1) {
+        const floorSeconds = Math.floor(seconds);
+        if (lastShareFloorRef.current === null || floorSeconds !== lastShareFloorRef.current) {
+          lastShareFloorRef.current = floorSeconds;
+          setShareSeconds(seconds);
+        }
+      }
       if (!filmData?.id || !filmData?.slug) return;
       trackWatchProgress({
         filmId: filmData.id,
@@ -125,6 +137,24 @@ export default function FilmPageContentWrapper({
     if (filmData?.id) clearWatchProgress(filmData.id);
   }, [filmData?.id]);
 
+  const theaterFilm = useMemo(
+    () => ({
+      id: filmData.id,
+      name: filmData.name,
+      slug: filmData.slug,
+      mux_playback_id: filmData.mux_playback_id,
+      last_line: filmData.last_line,
+      story_date: filmData.story_date || filmData.story_year || '1972',
+      location: displayLocation,
+      teaser: filmData.teaser,
+      runtime: filmData.runtime,
+      blok_tall: filmData.blok_tall,
+      hero_tall: filmData.hero_tall,
+      language_subtitle: subtitlesData,
+    }),
+    [filmData, displayLocation, subtitlesData]
+  );
+
   return (
     <div className="w-full relative bg-[var(--page-bg)]">
       {showTheater && (
@@ -133,23 +163,10 @@ export default function FilmPageContentWrapper({
             onClose={handleCloseTheater}
             startAt={startAt}
             seekTo={seekTo}
-            onSeekHandled={() => setSeekTo(null)}
+            onSeekHandled={handleSeekHandled}
             onTimeUpdate={handleTimeUpdate}
             onEnded={handleEnded}
-            film={{
-              id: filmData.id,
-              name: filmData.name,
-              slug: filmData.slug,
-              mux_playback_id: filmData.mux_playback_id,
-              last_line: filmData.last_line,
-              story_date: filmData.story_date || filmData.story_year || '1972',
-              location: displayLocation,
-              teaser: filmData.teaser,
-              runtime: filmData.runtime,
-              blok_tall: filmData.blok_tall,
-              hero_tall: filmData.hero_tall,
-              language_subtitle: subtitlesData,
-            }}
+            film={theaterFilm}
           />
 
           {subtitlesData.length > 0 && (
@@ -179,19 +196,19 @@ export default function FilmPageContentWrapper({
           resumeSeconds={resumeProgress?.seconds ?? null}
         />
 
-        <div className="w-full bg-[var(--page-bg)] pt-8 pb-24 flex flex-col gap-0">
-          <div className="w-full min-w-0 flex flex-col space-y-6">
-            {relatedArtifacts.length > 0 && (
-              <ArtifactRail title={t('relatedArtifacts')} artifacts={relatedArtifacts} />
-            )}
-
-            {recommendedFilms.length > 0 && (
-              <FilmRail title={t('moreFilms')} films={recommendedFilms} />
-            )}
-          </div>
+        <div className="w-full bg-[var(--page-bg)] pt-0 pb-24 flex flex-col gap-0">
+          {relatedArtifacts.length > 0 && (
+            <div className="w-full min-w-0 mt-8 md:mt-12">
+              <ArtifactRail
+                title={t('relatedArtifacts')}
+                artifacts={relatedArtifacts}
+                quietTitle
+              />
+            </div>
+          )}
 
           {!isComingSoon && (
-            <div className="w-full mt-16">
+            <div className="w-full mt-8 md:mt-12">
               <FilmSpecs
                 film={{ ...filmData, location: displayLocation }}
                 audioLanguages={['English']}
@@ -200,6 +217,12 @@ export default function FilmPageContentWrapper({
                 creators={creatorRows}
                 onSeek={openFromTime}
               />
+            </div>
+          )}
+
+          {recommendedFilms.length > 0 && (
+            <div className="w-full min-w-0 mt-8 md:mt-12">
+              <FilmRail title={t('moreFilms')} films={recommendedFilms} size="compact" />
             </div>
           )}
         </div>

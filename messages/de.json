@@ -106,7 +106,8 @@
     "startAutoplay": "Automatische Wiedergabeschleife starten",
     "pauseAutoplay": "Automatische Wiedergabeschleife pausieren",
     "notFound": "Film nicht gefunden",
-    "watchOnFjorrMeta": "Sieh dir diesen Kurzfilm auf Fjorr an."
+    "watchOnFjorrMeta": "Sieh dir diesen Kurzfilm auf Fjorr an.",
+    "languagesAndThemes": "Sprachen & Themen"
   },
   "Theater": {
     "watchOnFjorr": "Auf Fjorr ansehen",
@@ -115,14 +116,14 @@
     "rolling": "Läuft schon...",
     "fallbackMeta": "Spielfilm",
     "ccOff": "Aus",
-    "play": "Abspielen",
+    "play": "Start",
     "pause": "Pause",
-    "mute": "Stummschalten",
-    "unmute": "Ton einschalten",
+    "mute": "Stumm",
+    "unmute": "Ton",
     "fullscreen": "Vollbild",
     "full": "Voll",
     "exitFullscreen": "Vollbild verlassen",
-    "exit": "Beenden",
+    "exit": "Fenster",
     "enterFullscreen": "Vollbild aktivieren",
     "captions": "Untertitel",
     "subs": "UT",
@@ -142,8 +143,8 @@
     "exploreMeta": "Entdecke dieses kulturelle Artefakt auf Fjorr."
   },
   "MinimalList": {
-    "filter": "Regler",
-    "mixes": "Mixes",
+    "filter": "Regl",
+    "mixes": "Mix",
     "allMixes": "Alle Filme",
     "noMixes": "Keine Mixes",
     "sort": "Sortieren",
@@ -281,7 +282,7 @@
     "s6Body": "Diese Bedingungen können sich gelegentlich ändern. Wenn das passiert, aktualisieren wir das Datum oben."
   },
   "Footer": {
-    "blurb": "Fjorr ist die Heimat filmischer Kurzfilme über die größten Geschichten der Welt. Die Geschichten dienen kulturellen, pädagogischen und kreativen Zwecken.",
+    "blurb": "Fjorr ist die Heimat filmischer Kurzfilme über die größten Geschichten der Welt.",
     "privacy": "Datenschutzerklärung",
     "terms": "Nutzungsbedingungen",
     "copyright": "© 2026 Fjorr. Alle Rechte vorbehalten.",

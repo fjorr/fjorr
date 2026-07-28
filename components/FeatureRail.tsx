@@ -231,8 +231,8 @@ export default function FeatureRail({
     <section className="w-full flex justify-center bg-[var(--page-bg)]">
       <style dangerouslySetInnerHTML={{ __html: RAIL_SCROLLBAR_CSS }} />
 
-      {/* Avoid overflow-hidden here — it breaks nested horizontal swipe on iOS Safari. */}
-      <div className="w-full max-w-[1440px] relative group/rail rounded-none min-[1440px]:rounded-xl">
+      {/* overflow-hidden only when inset (>1440): clips rounded corners without breaking iOS swipe on full-bleed mobile. */}
+      <div className="w-full max-w-[1440px] relative group/rail rounded-none min-[1440px]:rounded-xl min-[1440px]:overflow-hidden">
         <div
           ref={railRef}
           className="fjorr-feature-scroll flex w-full min-w-0 snap-x snap-mandatory"

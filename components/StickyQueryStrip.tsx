@@ -135,7 +135,10 @@ export default function StickyQueryStrip({
             muted={!dialsActive && panel !== 'dials'}
             title={tf('filter')}
           >
-            {dialLabels.length > 0 ? dialLabels.join(' · ') : tf('filter')}
+            <span className="sm:hidden">{tf('filter')}</span>
+            <span className="hidden sm:inline">
+              {dialLabels.length > 0 ? dialLabels.join(' · ') : tf('filter')}
+            </span>
           </Chip>
           {queryActive && (
             <>

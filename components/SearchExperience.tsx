@@ -301,8 +301,8 @@ function SearchContent({
       if (nextQuery.trim()) {
         params.set('q', nextQuery);
       } else {
+        // Drop query only — keep mix / type / dials so browse state survives clear.
         params.delete('q');
-        params.delete('type');
       }
       const qs = params.toString();
       router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
@@ -467,7 +467,7 @@ function SearchContent({
               aria-expanded={showSuggestions}
               aria-controls="search-suggestions"
               aria-autocomplete="list"
-              className="w-full bg-page-chip rounded-[10px] h-14 pl-14 pr-12 font-sans font-semibold text-[16px] text-[var(--page-fg)] caret-[var(--page-fg)] placeholder-page-muted focus:bg-page-chip-active focus:outline-none focus:ring-0 focus:ring-offset-0 transition-all duration-300 shadow-2xl relative z-[1]"
+              className="w-full bg-page-chip rounded-[10px] h-12 pl-14 pr-12 font-sans font-semibold text-[16px] text-[var(--page-fg)] caret-[var(--page-fg)] placeholder-page-muted focus:bg-page-chip-active focus:outline-none focus:ring-0 focus:ring-offset-0 transition-colors duration-200 relative z-[1]"
             />
             {query && (
               <button

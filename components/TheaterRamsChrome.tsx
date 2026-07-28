@@ -89,41 +89,51 @@ type Props = {
   hideHeader?: boolean;
 };
 
-const CHROME_WIDTH = 'w-[min(84vw,320px)]';
+/** Matches plaque video width so scrubber aligns with the frame. */
+export const PLAQUE_WIDTH =
+  'w-[min(72vw,300px)] sm:w-[min(58vw,420px)] lg:w-[min(48vw,560px)] xl:w-[min(42vw,640px)]';
 
-/** Dense equal-height barrel notches. */
-function LensScaleBar({ isLight }: { isLight: boolean }) {
-  const tick = isLight
-    ? 'color-mix(in srgb, #0B0B0C 50%, transparent)'
-    : 'color-mix(in srgb, #F5F5F7 50%, transparent)';
+const CHROME_WIDTH = PLAQUE_WIDTH;
 
-  return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
-      <div
-        className="absolute inset-0"
-        style={{
-          backgroundImage: `repeating-linear-gradient(
-            to right,
-            ${tick} 0,
-            ${tick} 1px,
-            transparent 1px,
-            transparent 3px
-          )`,
-        }}
-      />
-    </div>
-  );
-}
+/** Scrubber thumb/track reset — module-level so it isn't rebuilt every render. */
+const RAMS_SCRUB_STYLE = `
+  .fjorr-rams-scrub::-webkit-slider-thumb{
+    -webkit-appearance:none!important;
+    appearance:none!important;
+    width:28px!important;
+    height:44px!important;
+    background:transparent!important;
+    border:0!important;
+    border-radius:0!important;
+    box-shadow:none!important;
+    opacity:0!important;
+  }
+  .fjorr-rams-scrub::-moz-range-thumb{
+    appearance:none!important;
+    width:28px!important;
+    height:44px!important;
+    background:transparent!important;
+    border:0!important;
+    border-radius:0!important;
+    box-shadow:none!important;
+    opacity:0!important;
+  }
+  .fjorr-rams-scrub::-webkit-slider-runnable-track,
+  .fjorr-rams-scrub::-moz-range-track{
+    background:transparent!important;
+    border:0!important;
+  }
+`;
 
 /**
  * Museum plaque chrome — no glass.
- * Logo → title → lens scrubber → centered tools.
+ * Logo → title → thin scrubber → centered tools.
  */
 export default function TheaterRamsChrome({
   scrubberRef,
   playheadRef,
   elapsedRef,
-  durationRef: _durationRef,
+  durationRef,
   isScrubbing,
   isLight = false,
   filmTitle,
@@ -138,6 +148,10 @@ export default function TheaterRamsChrome({
 }: Props) {
   const muted = isLight ? 'text-[#0B0B0C]/55' : 'text-[#F5F5F7]/55';
   const ink = isLight ? 'text-[#0B0B0C]' : 'text-[#F5F5F7]';
+  const hatch = isLight ? '#0B0B0C' : '#F5F5F7';
+  const clockClass =
+    'font-mono text-[12px] font-medium tabular-nums tracking-normal leading-none shrink-0 min-w-[3.25em] transition-colors duration-150';
+  const clockTone = isScrubbing ? ink : muted;
 
   return (
     <div
@@ -155,30 +169,37 @@ export default function TheaterRamsChrome({
         />
       ) : null}
 
-      <div className="w-full px-[1.75em]">
-        <div className="relative w-full h-[44px]">
-          <div className="pointer-events-none absolute inset-x-0 top-[17px] h-[10px]" aria-hidden>
-            <LensScaleBar isLight={isLight} />
-          </div>
+      <div className="w-full flex items-center gap-2.5">
+        <style dangerouslySetInnerHTML={{ __html: RAMS_SCRUB_STYLE }} />
+        <span ref={elapsedRef} className={`${clockClass} text-left ${clockTone}`} />
+        <div className="relative min-w-0 flex-1 h-11">
+          <div
+            className="pointer-events-none absolute inset-x-0 top-1/2 h-[8px] -translate-y-1/2 rounded-full overflow-hidden opacity-55"
+            style={{
+              backgroundImage: `
+                repeating-linear-gradient(
+                  -45deg,
+                  transparent 0 1px,
+                  ${hatch} 1px 2px
+                ),
+                repeating-linear-gradient(
+                  45deg,
+                  transparent 0 1px,
+                  ${hatch} 1px 2px
+                )
+              `,
+            }}
+            aria-hidden
+          />
           <div
             ref={playheadRef}
-            className="pointer-events-none absolute z-20 top-0 -translate-x-1/2 flex flex-col items-center"
-            style={{ left: '0%' }}
+            className="pointer-events-none absolute z-20 top-1/2 -translate-x-1/2 -translate-y-1/2"
             aria-hidden
           >
-            <span
-              ref={elapsedRef}
-              className={`font-mono text-[12px] font-medium tabular-nums tracking-normal leading-none whitespace-nowrap transition-colors duration-150 ${
-                isScrubbing ? 'text-[#d90429]' : muted
-              }`}
-            >
-              00:00
-            </span>
-            <div className="h-[10px] mt-[5px]" aria-hidden />
             <div
-              className={`mt-[5px] rounded-full bg-[#d90429] transition-[width,height] duration-100 ${
-                isScrubbing ? 'w-[6px] h-[6px]' : 'w-[5px] h-[5px]'
-              }`}
+              className={`rounded-full transition-[width,height] duration-100 ${
+                isLight ? 'bg-[#0B0B0C]' : 'bg-[#F5F5F7]'
+              } ${isScrubbing ? 'w-[13px] h-[13px]' : 'w-[12px] h-[12px]'}`}
             />
           </div>
           <input
@@ -194,14 +215,15 @@ export default function TheaterRamsChrome({
             onMouseUp={onScrubEnd}
             onTouchEnd={onScrubEnd}
             aria-label="Seek"
-            className="absolute inset-0 w-full h-full m-0 appearance-none bg-transparent cursor-pointer outline-none z-30 touch-none focus:outline-none focus:ring-0 [&::-webkit-slider-runnable-track]:h-full [&::-webkit-slider-runnable-track]:bg-transparent [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-11 [&::-webkit-slider-thumb]:bg-transparent [&::-moz-range-track]:h-full [&::-moz-range-track]:bg-transparent [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-11 [&::-moz-range-thumb]:bg-transparent [&::-moz-range-thumb]:border-0"
-            style={{ WebkitAppearance: 'none' }}
+            className="fjorr-rams-scrub absolute inset-0 w-full h-full m-0 appearance-none bg-transparent cursor-pointer outline-none z-30 touch-none focus:outline-none focus:ring-0"
+            style={{ WebkitAppearance: 'none', appearance: 'none', background: 'transparent' }}
           />
         </div>
+        <span ref={durationRef} className={`${clockClass} text-right ${clockTone}`} />
       </div>
 
       <div className={`min-h-[18px] h-[18px] flex items-center justify-center w-full ${muted}`}>
-        <div className="flex items-center justify-center min-w-0 gap-x-3.5">
+        <div className="flex items-center justify-center flex-nowrap min-w-0 gap-x-2 min-[400px]:gap-x-3.5">
           {toolsSlot}
         </div>
       </div>

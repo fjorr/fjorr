@@ -69,7 +69,7 @@ export default function BrowseControlBar({
       }}
       className="relative z-0 w-full max-w-sm flex flex-col items-center gap-3.5"
     >
-      <div className="flex w-full items-center justify-center gap-1 sm:gap-2 flex-nowrap">
+      <div className="flex w-full items-center justify-center gap-0.5 sm:gap-2 flex-nowrap">
         <DisplayModeToggle />
         <ContentTypeToggle />
 
@@ -80,35 +80,41 @@ export default function BrowseControlBar({
             if (mixesDisabled) return;
             toggle('mixes');
           }}
-          className={`h-7 sm:h-8 px-2 sm:px-3 shrink-0 rounded-[6px] font-sans text-[11px] sm:text-xs font-semibold transition-colors inline-flex items-center gap-1 sm:gap-1.5 ${
+          className={`h-7 sm:h-8 px-2 sm:px-3 shrink-0 rounded-[6px] font-sans text-[11px] sm:text-xs font-semibold transition-colors inline-flex items-center gap-1 sm:gap-1.5 whitespace-nowrap ${
             mixesDisabled
               ? 'bg-page-chip text-page-faint cursor-not-allowed'
               : panel === 'mixes' || mix !== 'all'
                 ? 'bg-page-chip-active text-page'
-                : 'bg-page-chip text-page-muted hover:text-page hover:bg-page-chip-hover'
+                : 'bg-page-chip text-page hover:bg-page-chip-hover'
           }`}
           aria-expanded={panel === 'mixes'}
           aria-disabled={mixesDisabled}
         >
           {tf('mixes')}
           {!mixesDisabled && mix !== 'all' && (
-            <span className="w-1.5 h-1.5 rounded-full bg-[#ffd446]" aria-hidden />
+            <span
+              className="w-1.5 h-1.5 rounded-full bg-[#0071E3] dark:bg-[#ffd446]"
+              aria-hidden
+            />
           )}
         </button>
 
         <button
           type="button"
           onClick={() => toggle('dials')}
-          className={`h-7 sm:h-8 px-2 sm:px-3 shrink-0 rounded-[6px] font-sans text-[11px] sm:text-xs font-semibold transition-colors inline-flex items-center gap-1 sm:gap-1.5 ${
+          className={`h-7 sm:h-8 px-1.5 sm:px-2.5 shrink-0 rounded-[6px] font-sans text-[11px] sm:text-xs font-semibold transition-colors inline-flex items-center gap-1 sm:gap-1.5 whitespace-nowrap ${
             panel === 'dials' || dialsHaveValue
               ? 'bg-page-chip-active text-page'
-              : 'bg-page-chip text-page-muted hover:text-page hover:bg-page-chip-hover'
+              : 'bg-transparent text-page-faint hover:text-page-muted hover:bg-page-chip'
           }`}
           aria-expanded={panel === 'dials'}
         >
           {tf('filter')}
           {dialsHaveValue && (
-            <span className="w-1.5 h-1.5 rounded-full bg-[#ffd446]" aria-hidden />
+            <span
+              className="w-1.5 h-1.5 rounded-full bg-[#0071E3] dark:bg-[#ffd446]"
+              aria-hidden
+            />
           )}
         </button>
       </div>

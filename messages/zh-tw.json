@@ -106,7 +106,8 @@
     "startAutoplay": "開始自動播放循環",
     "pauseAutoplay": "暫停自動播放循環",
     "notFound": "找不到影片",
-    "watchOnFjorrMeta": "在 Fjorr 上觀看這部短片。"
+    "watchOnFjorrMeta": "在 Fjorr 上觀看這部短片。",
+    "languagesAndThemes": "語言與主題"
   },
   "Theater": {
     "watchOnFjorr": "在 Fjorr 上觀看",
@@ -118,7 +119,7 @@
     "play": "播放",
     "pause": "暫停",
     "mute": "靜音",
-    "unmute": "取消靜音",
+    "unmute": "聲音",
     "fullscreen": "全螢幕",
     "full": "全螢幕",
     "exitFullscreen": "退出全螢幕",
@@ -281,7 +282,7 @@
     "s6Body": "本條款可能會不時變更。變更時，我們會更新上方的日期。"
   },
   "Footer": {
-    "blurb": "Fjorr 致力於呈現關於世界上最偉大故事的電影感短片。這些故事旨在用於文化、教育與創意目的。",
+    "blurb": "Fjorr 致力於呈現關於世界上最偉大故事的電影感短片。",
     "privacy": "隱私政策",
     "terms": "使用條款",
     "copyright": "© 2026 Fjorr. All rights reserved.",

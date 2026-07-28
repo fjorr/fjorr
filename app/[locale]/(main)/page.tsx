@@ -16,11 +16,31 @@ export const metadata: Metadata = {
   alternates: { canonical: '/' },
 };
 
+/** Matches FeatureRail shell + aspect so the skeleton never reads larger than the live rail. */
 function FeatureRailFallback() {
   return (
-    <div className="w-full flex justify-center animate-pulse bg-page">
-      <div className="w-full max-w-[1440px] aspect-[1/1.618] md:aspect-[4/3] lg:aspect-[16/9] overflow-hidden rounded-none min-[1440px]:rounded-xl">
-        <ServerSafeSkeleton variant="feature" />
+    <section className="w-full flex justify-center bg-[var(--page-bg)]" aria-hidden>
+      <div className="w-full max-w-[1440px] relative rounded-none min-[1440px]:rounded-xl min-[1440px]:overflow-hidden aspect-[1/1.618] md:aspect-[4/3] lg:aspect-[16/9]">
+        <ServerSafeSkeleton
+          variant="feature"
+          className="rounded-none min-[1440px]:rounded-xl"
+        />
+      </div>
+    </section>
+  );
+}
+
+/** Matches CineHomeGrid gutters + SearchResultsGrid poster geometry. */
+function CineGridFallback() {
+  return (
+    <div className="w-full px-8 md:px-16 mt-8 md:mt-12" aria-hidden>
+      <div className="w-full max-w-[1440px] mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-6 gap-y-12">
+        {Array.from({ length: 8 }, (_, i) => (
+          <div
+            key={i}
+            className="w-full aspect-[2/3] rounded-[8px] bg-page-chip"
+          />
+        ))}
       </div>
     </div>
   );
@@ -78,14 +98,14 @@ export default async function Home() {
           cinematic={
             <>
               <FeatureRailGate>
-                <div className="w-full mt-6 md:mt-10">
+                <div className="w-full mt-4 md:mt-6">
                   <Suspense fallback={<FeatureRailFallback />}>
                     <FeatureRailLoader />
                   </Suspense>
                 </div>
               </FeatureRailGate>
 
-              <Suspense fallback={null}>
+              <Suspense fallback={<CineGridFallback />}>
                 <CineHomeLoader />
               </Suspense>
 

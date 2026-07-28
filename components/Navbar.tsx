@@ -144,18 +144,25 @@ function Navbar({ variant = 'light' }: NavbarProps) {
 
   if (isTheaterOpen) return null;
 
+  /** Scales down on narrow viewports; truncate is the last-resort fit for long locales. */
+  const taglineClass =
+    'font-sans font-medium tracking-normal whitespace-nowrap text-[clamp(9px,0.2rem+1.7vw,12px)]';
+
   return (
     <header className="sticky top-0 z-50 w-full h-[56px] pt-[12px] px-4 flex justify-center pointer-events-none overflow-visible">
-      <div ref={panelRef} className="relative h-[44px] pointer-events-auto">
+      <div
+        ref={panelRef}
+        className="relative h-[44px] pointer-events-auto w-full max-w-[calc(100vw-2rem)] sm:w-max"
+      >
         <div
-          className="flex h-[44px] px-[30px] items-center gap-[20px] opacity-0 pointer-events-none select-none"
+          className="flex h-[44px] w-full px-4 sm:px-[30px] items-center gap-3 sm:gap-5 opacity-0 pointer-events-none select-none sm:w-max"
           aria-hidden
         >
           <div className="w-[50px] shrink-0" />
-          <span className="font-sans text-xs font-medium tracking-normal whitespace-nowrap">
+          <span className={`${taglineClass} min-w-0 flex-1 truncate sm:flex-initial`}>
             {t('tagline')}
           </span>
-          <div className="w-[48px] shrink-0" />
+          <div className="w-[4.75rem] shrink-0" />
         </div>
 
         <div
@@ -168,7 +175,7 @@ function Navbar({ variant = 'light' }: NavbarProps) {
               : `top-0 rounded-[10px] overflow-visible ${glassAnimClass}`}
           `}
         >
-          <div className="flex h-[44px] px-[30px] items-center gap-[20px]">
+          <div className="flex h-[44px] w-full px-4 sm:px-[30px] items-center gap-3 sm:gap-5">
             <Link
               href="/"
               onClick={closePanel}
@@ -186,9 +193,9 @@ function Navbar({ variant = 'light' }: NavbarProps) {
             <Link
               href="/about"
               onClick={closePanel}
-              className="flex items-center shrink-0 cursor-pointer transition-opacity hover:opacity-80"
+              className="flex items-center min-w-0 flex-1 sm:flex-initial overflow-hidden cursor-pointer transition-opacity hover:opacity-80"
             >
-              <span className={`font-sans text-xs font-medium tracking-normal select-none whitespace-nowrap ${subTextColor}`}>
+              <span className={`${taglineClass} truncate select-none ${subTextColor}`}>
                 {t('tagline')}
               </span>
             </Link>
@@ -216,9 +223,12 @@ function Navbar({ variant = 'light' }: NavbarProps) {
                 aria-label={t('language')}
                 aria-expanded={panel === 'lang'}
                 onClick={toggleLang}
-                className={`w-[18px] h-[18px] flex items-center justify-center shrink-0 transition-opacity hover:opacity-80 ${iconColor}`}
+                className={`flex items-center gap-1.5 shrink-0 transition-opacity hover:opacity-80 ${iconColor}`}
               >
                 <Icon name="globe" className="w-[18px] h-[18px]" />
+                <span className="font-mono text-[11px] font-medium uppercase tracking-[0.05em] leading-none">
+                  {locale}
+                </span>
               </button>
             </div>
           </div>
@@ -339,10 +349,7 @@ function Navbar({ variant = 'light' }: NavbarProps) {
                       variant === 'light' ? 'border-white/10' : 'border-black/8'
                     }`}
                   >
-                    <ColorSchemeToggle
-                      activeClass={textColor}
-                      mutedClass={mutedLabel}
-                    />
+                    <ColorSchemeToggle />
                   </div>
                 </div>
               )}

@@ -14,7 +14,7 @@ export default function ContentTypeToggle() {
       <button
         type="button"
         onClick={() => setContentType('film')}
-        className={`font-sans text-[11px] sm:text-xs font-semibold px-2 sm:px-3 py-1.5 rounded-[6px] transition-colors whitespace-nowrap ${
+        className={`font-sans text-[11px] sm:text-xs font-semibold px-1.5 sm:px-3 py-1.5 rounded-[6px] transition-colors whitespace-nowrap ${
           contentType === 'film'
             ? 'bg-page-chip-active text-page'
             : 'text-page-faint hover:text-page-muted'
@@ -25,7 +25,7 @@ export default function ContentTypeToggle() {
       <button
         type="button"
         onClick={() => setContentType('artifact')}
-        className={`font-sans text-[11px] sm:text-xs font-semibold px-2 sm:px-3 py-1.5 rounded-[6px] transition-colors whitespace-nowrap ${
+        className={`font-sans text-[11px] sm:text-xs font-semibold px-1.5 sm:px-3 py-1.5 rounded-[6px] transition-colors whitespace-nowrap ${
           contentType === 'artifact'
             ? 'bg-page-chip-active text-page'
             : 'text-page-faint hover:text-page-muted'

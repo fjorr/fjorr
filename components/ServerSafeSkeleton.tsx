@@ -8,6 +8,7 @@ interface ServerSafeSkeletonProps {
   backgroundColor?: string;
   isDarkBg?: boolean;
   dotOpacity?: number;
+  className?: string;
 }
 
 /** Thin client wrapper so Suspense fallbacks can render the skeleton without a delayed dynamic import. */
@@ -16,6 +17,7 @@ export default function ServerSafeSkeleton({
   backgroundColor,
   isDarkBg,
   dotOpacity,
+  className,
 }: ServerSafeSkeletonProps) {
   return (
     <SkeletonLoader
@@ -23,6 +25,7 @@ export default function ServerSafeSkeleton({
       backgroundColor={backgroundColor}
       isDarkBg={isDarkBg}
       dotOpacity={dotOpacity}
+      className={className}
     />
   );
 }

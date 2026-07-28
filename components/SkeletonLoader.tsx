@@ -7,13 +7,16 @@ interface SkeletonLoaderProps {
   backgroundColor?: string;
   isDarkBg?: boolean;
   dotOpacity?: number;
+  /** Overrides default rounded-2xl — use to match host chrome (e.g. feature rail). */
+  className?: string;
 }
 
 export default function SkeletonLoader({ 
   variant = 'feature',
   backgroundColor = '#1F1F1F',
   isDarkBg = true,
-  dotOpacity
+  dotOpacity,
+  className,
 }: SkeletonLoaderProps) {
   
   const dotColor = isDarkBg ? '#FFFFFF' : '#000000';
@@ -40,7 +43,9 @@ export default function SkeletonLoader({
           backgroundPosition: '10px 10px',
           opacity: finalOpacity
         }} 
-        className={`w-full h-full border ${wireframeBorder} rounded-2xl overflow-hidden relative transition-opacity duration-150 ease-in-out`}
+        className={`w-full h-full border ${wireframeBorder} overflow-hidden relative transition-opacity duration-150 ease-in-out ${
+          className ?? 'rounded-2xl'
+        }`}
       />
     </div>
   );

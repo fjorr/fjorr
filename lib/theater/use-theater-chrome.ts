@@ -2,6 +2,11 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+const CHROME_SETTLE_MS = 2000;
+const CHROME_SETTLE_MOVE_WINDOW_MS = 400;
+/** Ignore trackpad/mouse jitter — must travel this far to reveal chrome. */
+const SHOW_MOVE_THRESHOLD_PX = 12;
+
 type Args = {
   containerEl: HTMLDivElement | null;
   filmPlayerRef: React.RefObject<HTMLVideoElement | null>;
@@ -21,6 +26,21 @@ type Args = {
   onClose: () => void;
 };
 
+function readIsFullscreen(
+  filmPlayerRef: React.RefObject<HTMLVideoElement | null>,
+  logoPlayerRef: React.RefObject<HTMLVideoElement | null>
+) {
+  const doc = document as Document & { webkitFullscreenElement?: Element };
+  return (
+    !!document.fullscreenElement ||
+    !!doc.webkitFullscreenElement ||
+    !!(filmPlayerRef.current as HTMLVideoElement & { webkitDisplayingFullscreen?: boolean })
+      ?.webkitDisplayingFullscreen ||
+    !!(logoPlayerRef.current as HTMLVideoElement & { webkitDisplayingFullscreen?: boolean })
+      ?.webkitDisplayingFullscreen
+  );
+}
+
 export function useTheaterChrome({
   containerEl,
   filmPlayerRef,
@@ -38,10 +58,17 @@ export function useTheaterChrome({
   onSeekBy,
   onClose,
 }: Args) {
-  const [controlsVisible, setControlsVisible] = useState(true);
+  const [controlsVisible, setControlsVisible] = useState(!chassisMode);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const hideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastMoveRef = useRef(0);
+  const lastPointerRef = useRef<{ x: number; y: number } | null>(null);
+  const moveAccumRef = useRef(0);
+  const settleUntilRef = useRef(0);
+  const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const wasPlayingLogoRef = useRef(isPlayingLogo);
+  const isPlayingLogoRef = useRef(isPlayingLogo);
+  isPlayingLogoRef.current = isPlayingLogo;
 
   const hideDelayMs = chassisMode ? 2200 : 2000;
   const showCCMenuRef = useRef(showCCMenu);
@@ -58,13 +85,59 @@ export function useTheaterChrome({
   }, [hideDelayMs]);
 
   const showUIControls = useCallback(() => {
+    if (isPlayingLogoRef.current) {
+      setControlsVisible(false);
+      return;
+    }
+    // Settle window: stay full-frame until grace ends.
+    if (performance.now() < settleUntilRef.current) return;
+    setControlsVisible(true);
+    armIdleHide();
+  }, [armIdleHide]);
+
+  /**
+   * Hide chrome for 2s (full player). If the mouse is still moving when the
+   * window ends, shrink to plaque / reveal controls; otherwise stay full.
+   */
+  const beginChromeSettle = useCallback(() => {
+    setControlsVisible(false);
+    if (hideTimeoutRef.current) {
+      clearTimeout(hideTimeoutRef.current);
+      hideTimeoutRef.current = null;
+    }
+    lastMoveRef.current = 0;
+    moveAccumRef.current = 0;
+    lastPointerRef.current = null;
+    settleUntilRef.current = performance.now() + CHROME_SETTLE_MS;
+    if (settleTimerRef.current) clearTimeout(settleTimerRef.current);
+    settleTimerRef.current = setTimeout(() => {
+      settleUntilRef.current = 0;
+      settleTimerRef.current = null;
+      if (isPlayingLogoRef.current) return;
+      const movedRecently =
+        lastMoveRef.current > 0 &&
+        performance.now() - lastMoveRef.current < CHROME_SETTLE_MOVE_WINDOW_MS;
+      if (movedRecently) {
+        setControlsVisible(true);
+        armIdleHide();
+      }
+    }, CHROME_SETTLE_MS);
+  }, [armIdleHide]);
+
+  const prepareFullscreenEnter = beginChromeSettle;
+
+  // Bumper → film: launch full size with no controls, then settle.
+  useEffect(() => {
+    const wasLogo = wasPlayingLogoRef.current;
+    wasPlayingLogoRef.current = isPlayingLogo;
     if (isPlayingLogo) {
       setControlsVisible(false);
       return;
     }
-    setControlsVisible(true);
-    armIdleHide();
-  }, [isPlayingLogo, armIdleHide]);
+    if (wasLogo && !isPlayingLogo && chassisMode && !isEmbed) {
+      beginChromeSettle();
+    }
+  }, [isPlayingLogo, chassisMode, isEmbed, beginChromeSettle]);
 
   // Idle hide whenever chrome is up — playing or paused (plaque grows back on mobile).
   useEffect(() => {
@@ -72,6 +145,10 @@ export function useTheaterChrome({
       if (hideTimeoutRef.current && (showCCMenu || isScrubbing)) {
         clearTimeout(hideTimeoutRef.current);
         hideTimeoutRef.current = null;
+      }
+      if (!controlsVisible) {
+        moveAccumRef.current = 0;
+        lastPointerRef.current = null;
       }
       return;
     }
@@ -91,10 +168,25 @@ export function useTheaterChrome({
       armed = true;
     }, 300);
 
-    const onMove = () => {
+    const onMove = (e: MouseEvent) => {
       if (!armed) return;
       const now = performance.now();
-      if (now - lastMoveRef.current < 80) return;
+      const prev = lastPointerRef.current;
+      lastPointerRef.current = { x: e.clientX, y: e.clientY };
+
+      // First sample only sets a baseline — don't reveal on a single jitter tick.
+      if (!prev) return;
+
+      const dist = Math.hypot(e.clientX - prev.x, e.clientY - prev.y);
+
+      if (!controlsVisible) {
+        moveAccumRef.current += dist;
+        if (moveAccumRef.current < SHOW_MOVE_THRESHOLD_PX) return;
+        moveAccumRef.current = 0;
+      } else if (now - lastMoveRef.current < 80 && lastMoveRef.current > 0) {
+        return;
+      }
+
       lastMoveRef.current = now;
       showUIControls();
     };
@@ -135,14 +227,15 @@ export function useTheaterChrome({
 
   useEffect(() => {
     const handleFsChange = () => {
-      setIsFullscreen(
-        !!document.fullscreenElement ||
-          !!(document as Document & { webkitFullscreenElement?: Element }).webkitFullscreenElement ||
-          !!(filmPlayerRef.current as HTMLVideoElement & { webkitDisplayingFullscreen?: boolean })
-            ?.webkitDisplayingFullscreen ||
-          !!(logoPlayerRef.current as HTMLVideoElement & { webkitDisplayingFullscreen?: boolean })
-            ?.webkitDisplayingFullscreen
-      );
+      const next = readIsFullscreen(filmPlayerRef, logoPlayerRef);
+      setIsFullscreen(next);
+      if (!next) {
+        settleUntilRef.current = 0;
+        if (settleTimerRef.current) {
+          clearTimeout(settleTimerRef.current);
+          settleTimerRef.current = null;
+        }
+      }
     };
 
     document.addEventListener('fullscreenchange', handleFsChange);
@@ -150,6 +243,7 @@ export function useTheaterChrome({
     return () => {
       document.removeEventListener('fullscreenchange', handleFsChange);
       document.removeEventListener('webkitfullscreenchange', handleFsChange);
+      if (settleTimerRef.current) clearTimeout(settleTimerRef.current);
     };
   }, [filmPlayerRef, logoPlayerRef]);
 
@@ -175,6 +269,9 @@ export function useTheaterChrome({
           break;
         case 'f':
           e.preventDefault();
+          if (!readIsFullscreen(filmPlayerRef, logoPlayerRef)) {
+            prepareFullscreenEnter();
+          }
           onToggleFullscreen();
           break;
         case 'c':
@@ -216,6 +313,9 @@ export function useTheaterChrome({
     onSeekBy,
     onClose,
     showUIControls,
+    prepareFullscreenEnter,
+    filmPlayerRef,
+    logoPlayerRef,
   ]);
 
   return {
@@ -223,5 +323,6 @@ export function useTheaterChrome({
     setControlsVisible,
     isFullscreen,
     showUIControls,
+    prepareFullscreenEnter,
   };
 }

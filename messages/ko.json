@@ -106,7 +106,8 @@
     "startAutoplay": "자동 재생 시작",
     "pauseAutoplay": "자동 재생 일시정지",
     "notFound": "영화를 찾을 수 없습니다",
-    "watchOnFjorrMeta": "Fjorr에서 이 단편 영화를 감상하세요."
+    "watchOnFjorrMeta": "Fjorr에서 이 단편 영화를 감상하세요.",
+    "languagesAndThemes": "언어 및 테마"
   },
   "Theater": {
     "watchOnFjorr": "Fjorr에서 보기",
@@ -116,9 +117,9 @@
     "fallbackMeta": "장편 영화",
     "ccOff": "끄기",
     "play": "재생",
-    "pause": "일시정지",
+    "pause": "정지",
     "mute": "음소거",
-    "unmute": "음소거 해제",
+    "unmute": "소리",
     "fullscreen": "전체 화면",
     "full": "전체",
     "exitFullscreen": "전체 화면 종료",
@@ -281,7 +282,7 @@
     "s6Body": "이 약관은 때때로 변경될 수 있습니다. 변경 시 상단의 날짜를 업데이트하겠습니다."
   },
   "Footer": {
-    "blurb": "Fjorr는 세상에서 가장 위대한 이야기들을 담은 영화적 단편 영화의 보금자리입니다. 이 이야기들은 문화적, 교육적, 창의적 목적을 위한 것입니다.",
+    "blurb": "Fjorr는 세상에서 가장 위대한 이야기들을 담은 영화적 단편 영화의 보금자리입니다.",
     "privacy": "개인정보 처리방침",
     "terms": "이용약관",
     "copyright": "© 2026 Fjorr. All rights reserved.",

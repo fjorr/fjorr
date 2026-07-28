@@ -28,7 +28,7 @@
     "minimalFull": "Minimalista",
     "timelineFull": "Línea de tiempo",
     "timelineFilmsOnly": "La línea de tiempo es solo películas",
-    "film": "Película",
+    "film": "Film",
     "artifact": "Artf",
     "toggleMode": "Cambiar modo de visualización",
     "toggleType": "Cambiar tipo de contenido"
@@ -106,7 +106,8 @@
     "startAutoplay": "Iniciar reproducción automática",
     "pauseAutoplay": "Pausar reproducción automática",
     "notFound": "Película no encontrada",
-    "watchOnFjorrMeta": "Mira este cortometraje en Fjorr."
+    "watchOnFjorrMeta": "Mira este cortometraje en Fjorr.",
+    "languagesAndThemes": "Idiomas y temas"
   },
   "Theater": {
     "watchOnFjorr": "Ver en Fjorr",
@@ -115,10 +116,10 @@
     "rolling": "Rodando...",
     "fallbackMeta": "Largometraje",
     "ccOff": "Desactivado",
-    "play": "Reproducir",
-    "pause": "Pausar",
-    "mute": "Silenciar",
-    "unmute": "Activar sonido",
+    "play": "Ver",
+    "pause": "Pausa",
+    "mute": "Mudo",
+    "unmute": "Sonido",
     "fullscreen": "Pantalla completa",
     "full": "Full",
     "exitFullscreen": "Salir de pantalla completa",
@@ -142,8 +143,8 @@
     "exploreMeta": "Explora este artefacto cultural en Fjorr."
   },
   "MinimalList": {
-    "filter": "Controles",
-    "mixes": "Mixes",
+    "filter": "Diales",
+    "mixes": "Mix",
     "allMixes": "Todas las películas",
     "noMixes": "Sin Mixes",
     "sort": "Ordenar",
@@ -281,7 +282,7 @@
     "s6Body": "Estos términos pueden cambiar de vez en cuando. Cuando lo hagan, actualizaremos la fecha en la parte superior."
   },
   "Footer": {
-    "blurb": "Fjorr alberga cortometrajes cinematográficos sobre las historias más grandes del mundo. Las historias tienen fines culturales, educativos y creativos.",
+    "blurb": "Fjorr alberga cortometrajes cinematográficos sobre las historias más grandes del mundo.",
     "privacy": "Política de privacidad",
     "terms": "Términos de uso",
     "copyright": "© 2026 Fjorr. Todos los derechos reservados.",

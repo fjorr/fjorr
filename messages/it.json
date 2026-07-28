@@ -106,7 +106,8 @@
     "startAutoplay": "Avvia riproduzione automatica",
     "pauseAutoplay": "Metti in pausa la riproduzione automatica",
     "notFound": "Film non trovato",
-    "watchOnFjorrMeta": "Guarda questo cortometraggio su Fjorr."
+    "watchOnFjorrMeta": "Guarda questo cortometraggio su Fjorr.",
+    "languagesAndThemes": "Lingue e temi"
   },
   "Theater": {
     "watchOnFjorr": "Guarda su Fjorr",
@@ -115,10 +116,10 @@
     "rolling": "Si gira...",
     "fallbackMeta": "Lungometraggio",
     "ccOff": "Disattivati",
-    "play": "Riproduci",
+    "play": "Avvia",
     "pause": "Pausa",
-    "mute": "Disattiva audio",
-    "unmute": "Attiva audio",
+    "mute": "Muto",
+    "unmute": "Audio",
     "fullscreen": "Schermo intero",
     "full": "Full",
     "exitFullscreen": "Esci da schermo intero",
@@ -142,7 +143,7 @@
     "exploreMeta": "Esplora questo artefatto culturale su Fjorr."
   },
   "MinimalList": {
-    "filter": "Comandi",
+    "filter": "Dial",
     "mixes": "Mix",
     "allMixes": "Tutti i film",
     "noMixes": "Nessun Mix",
@@ -281,7 +282,7 @@
     "s6Body": "Questi termini possono cambiare di tanto in tanto. Quando succede, aggiorneremo la data in alto."
   },
   "Footer": {
-    "blurb": "Fjorr ospita cortometraggi cinematografici sulle più grandi storie del mondo. Le storie hanno finalità culturali, educative e creative.",
+    "blurb": "Fjorr ospita cortometraggi cinematografici sulle più grandi storie del mondo.",
     "privacy": "Informativa sulla privacy",
     "terms": "Termini di utilizzo",
     "copyright": "© 2026 Fjorr. Tutti i diritti riservati.",

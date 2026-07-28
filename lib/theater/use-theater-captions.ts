@@ -33,6 +33,10 @@ export function useTheaterCaptions({
   const cuesRef = useRef<VttCue[]>([]);
   const cueIndexRef = useRef(-1);
   const lastTextRef = useRef('');
+  /** Only auto-pick once per open — never wipe a manual language choice. */
+  const didAutoSelectRef = useRef(false);
+  const tracksRef = useRef(tracks);
+  tracksRef.current = tracks;
 
   const clearCaptions = useCallback(() => {
     cuesRef.current = [];
@@ -54,7 +58,7 @@ export function useTheaterCaptions({
       return;
     }
 
-    const match = tracks.find(
+    const match = tracksRef.current.find(
       (item) => (item.code || '').toLowerCase().trim() === langCode.toLowerCase().trim()
     );
     if (!match?.vtt_url) {
@@ -78,21 +82,27 @@ export function useTheaterCaptions({
       cuesRef.current = [];
       setCurrentSubtitleText('');
     }
-  }, [tracks, currentTimeRef]);
+  }, [currentTimeRef]);
 
-  // Auto-select site locale when tracks arrive / bumper ends.
+  // Auto-select site locale once when tracks arrive / bumper ends.
   useEffect(() => {
-    if (!enableAutoSelect) return;
+    if (!enableAutoSelect) {
+      didAutoSelectRef.current = false;
+      return;
+    }
+    if (didAutoSelectRef.current) return;
+
     const hasLocale = tracks.some(
       (t) => (t.code || '').toLowerCase().trim() === locale
     );
-    const preferred = locale !== 'en' && hasLocale ? locale : 'none';
-    if (preferred === 'none') {
-      clearCaptions();
-      return;
+    // Wait for tracks before deciding — async fetch may still be in flight.
+    if (tracks.length === 0 && locale !== 'en') return;
+
+    didAutoSelectRef.current = true;
+    if (locale !== 'en' && hasLocale) {
+      void selectLanguage(locale);
     }
-    void selectLanguage(preferred);
-  }, [enableAutoSelect, locale, tracks, clearCaptions, selectLanguage]);
+  }, [enableAutoSelect, locale, tracks, selectLanguage]);
 
   /** Call from the theater rAF loop — only setStates when cue text changes. */
   const syncCueToTime = useCallback(() => {

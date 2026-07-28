@@ -5,9 +5,14 @@ import PosterRail from '@/components/PosterRail';
 interface ArtifactRailProps {
   title: string;
   artifacts: any[];
+  quietTitle?: boolean;
 }
 
-export default function ArtifactRail({ title, artifacts: rawArtifacts }: ArtifactRailProps) {
+export default function ArtifactRail({
+  title,
+  artifacts: rawArtifacts,
+  quietTitle = false,
+}: ArtifactRailProps) {
   const items = (rawArtifacts || [])
     .map((item, index) => {
       const artifact = item?.artifact ? item.artifact : item;
@@ -21,5 +26,5 @@ export default function ArtifactRail({ title, artifacts: rawArtifacts }: Artifac
     })
     .filter(Boolean) as { key: string; href: string; image?: string; label?: string }[];
 
-  return <PosterRail title={title} items={items} />;
+  return <PosterRail title={title} items={items} quietTitle={quietTitle} />;
 }

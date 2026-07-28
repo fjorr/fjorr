@@ -106,7 +106,8 @@
     "startAutoplay": "Iniciar reprodução automática",
     "pauseAutoplay": "Pausar reprodução automática",
     "notFound": "Filme não encontrado",
-    "watchOnFjorrMeta": "Assista a este curta-metragem no Fjorr."
+    "watchOnFjorrMeta": "Assista a este curta-metragem no Fjorr.",
+    "languagesAndThemes": "Idiomas e temas"
   },
   "Theater": {
     "watchOnFjorr": "Assistir no Fjorr",
@@ -115,10 +116,10 @@
     "rolling": "Gravando...",
     "fallbackMeta": "Longa-metragem",
     "ccOff": "Desativado",
-    "play": "Reproduzir",
-    "pause": "Pausar",
-    "mute": "Sem áudio",
-    "unmute": "Ativar áudio",
+    "play": "Play",
+    "pause": "Pausa",
+    "mute": "Mudo",
+    "unmute": "Som",
     "fullscreen": "Tela cheia",
     "full": "Tela",
     "exitFullscreen": "Sair da tela cheia",
@@ -142,8 +143,8 @@
     "exploreMeta": "Explore este artefato cultural no Fjorr."
   },
   "MinimalList": {
-    "filter": "Controles",
-    "mixes": "Mixes",
+    "filter": "Diais",
+    "mixes": "Mix",
     "allMixes": "Todos os filmes",
     "noMixes": "Nenhum Mix",
     "sort": "Ordenar",
@@ -281,7 +282,7 @@
     "s6Body": "Estes termos podem mudar de vez em quando. Quando isso acontecer, atualizaremos a data no topo."
   },
   "Footer": {
-    "blurb": "O Fjorr é o lar de curtas-metragens cinematográficos sobre as maiores histórias do mundo. As histórias têm fins culturais, educacionais e criativos.",
+    "blurb": "O Fjorr é o lar de curtas-metragens cinematográficos sobre as maiores histórias do mundo.",
     "privacy": "Política de Privacidade",
     "terms": "Termos de Uso",
     "copyright": "© 2026 Fjorr. Todos os direitos reservados.",
