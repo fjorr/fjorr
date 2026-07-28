@@ -252,8 +252,10 @@ export default function FilmTranscript({
                       ? `${ink.primary} ${ink.chipActive}`
                       : `${ink.muted} ${ink.chip}`
                   }`
-                : `inline-flex items-center gap-1.5 py-1 font-mono text-[13px] font-medium tracking-[0.05em] uppercase bg-transparent border-0 outline-none cursor-pointer p-0 select-none transition-opacity hover:opacity-100 ${
-                    isOpen ? `${accentText} opacity-100` : 'text-page-muted opacity-90'
+                : `h-8 px-3 inline-flex items-center gap-1.5 rounded-[6px] font-mono text-[12px] font-medium tracking-[0.05em] uppercase select-none transition-colors active:scale-[0.98] ${
+                    isOpen
+                      ? `${accentText} ${ink.chipActive}`
+                      : `text-page-muted ${ink.chip}`
                   }`
             }
           >

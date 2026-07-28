@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import FeatureRail from './FeatureRail';
 import TheaterOpenShell from '@/components/TheaterOpenShell';
 import { useDisplayMode } from '@/components/DisplayModeProvider';
+import { useMinimalFilterOptional } from '@/components/MinimalFilterContext';
 import {
   clearWatchProgress,
   trackWatchProgress,
@@ -18,11 +19,12 @@ const CinemaTheater = dynamic(() => import('@/components/CinemaTheater'), {
 
 export default function FeatureRailClient({ films }: { films: any[] }) {
   const { mode } = useDisplayMode();
+  const searchActive = useMinimalFilterOptional()?.searchActive ?? false;
   const [activeIndex, setActiveIndex] = useState(0);
   const [showTheater, setShowTheater] = useState(false);
   const [selectedFilm, setSelectedFilm] = useState<any>(null);
   const [startAt, setStartAt] = useState<number | undefined>(undefined);
-  const isBrowseActive = mode === 'cinematic';
+  const isBrowseActive = mode === 'cinematic' && !searchActive;
 
   const handlePlayClick = (filmAsset: any) => {
     openTheaterFromFilm({

@@ -28,6 +28,8 @@ const EXPLORE_LINKS = [
 
 type PanelMode = 'closed' | 'nav' | 'lang' | 'auth';
 
+const TAGLINE_SCROLL_PX = 40;
+
 function Navbar({ variant = 'light' }: NavbarProps) {
   const t = useTranslations('Nav');
   const locale = useLocale() as AppLocale;
@@ -37,6 +39,7 @@ function Navbar({ variant = 'light' }: NavbarProps) {
   const [panel, setPanel] = useState<PanelMode>('closed');
   const [authNextPath, setAuthNextPath] = useState('/account');
   const [emailCopied, setEmailCopied] = useState(false);
+  const [scrolledPast, setScrolledPast] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
   const contactEmail = 'scout@fjorr.com';
 
@@ -46,6 +49,8 @@ function Navbar({ variant = 'light' }: NavbarProps) {
   const subTextColor = variant === 'light' ? 'text-white/80' : 'text-black/80';
   const iconColor = variant === 'light' ? 'text-white/55' : 'text-black/45';
   const mutedLabel = variant === 'light' ? 'text-white/50' : 'text-black/50';
+  // Compact on scroll; expand again when a menu is open so the panel isn’t cramped.
+  const showTagline = !scrolledPast || isOpen;
 
   const openGlassStyle = isOpen
     ? {
@@ -101,6 +106,17 @@ function Navbar({ variant = 'light' }: NavbarProps) {
     if (panel !== 'nav') setEmailCopied(false);
   }, [panel]);
 
+  // Slogan on every page load / route; hide only after scroll.
+  useEffect(() => {
+    setScrolledPast(false);
+    const onScroll = () => {
+      setScrolledPast(window.scrollY > TAGLINE_SCROLL_PX);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [pathname]);
+
   useEffect(() => {
     const handleHide = () => {
       setIsTheaterOpen(true);
@@ -155,13 +171,15 @@ function Navbar({ variant = 'light' }: NavbarProps) {
         className="relative h-[44px] pointer-events-auto w-full max-w-[calc(100vw-2rem)] sm:w-max"
       >
         <div
-          className="flex h-[44px] w-full px-4 sm:px-[30px] items-center gap-3 sm:gap-5 opacity-0 pointer-events-none select-none sm:w-max"
+          className="flex h-[44px] w-full pl-3 pr-4 sm:pl-5 sm:pr-[30px] items-center gap-3 sm:gap-5 opacity-0 pointer-events-none select-none sm:w-max"
           aria-hidden
         >
           <div className="w-[50px] shrink-0" />
-          <span className={`${taglineClass} min-w-0 flex-1 truncate sm:flex-initial`}>
-            {t('tagline')}
-          </span>
+          {showTagline ? (
+            <span className={`${taglineClass} min-w-0 flex-1 truncate sm:flex-initial`}>
+              {t('tagline')}
+            </span>
+          ) : null}
           <div className="w-[4.75rem] shrink-0" />
         </div>
 
@@ -175,11 +193,11 @@ function Navbar({ variant = 'light' }: NavbarProps) {
               : `top-0 rounded-[10px] overflow-visible ${glassAnimClass}`}
           `}
         >
-          <div className="flex h-[44px] w-full px-4 sm:px-[30px] items-center gap-3 sm:gap-5">
+          <div className="flex h-[44px] w-full pl-3 pr-4 sm:pl-5 sm:pr-[30px] items-center gap-3 sm:gap-5">
             <Link
               href="/"
               onClick={closePanel}
-              className={`w-[50px] flex items-center cursor-pointer shrink-0 ${textColor}`}
+              className={`w-[50px] flex items-center cursor-pointer shrink-0 translate-y-[1.5px] ${textColor}`}
             >
               <svg viewBox="0 0 143 81" className="w-full h-auto" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M71.3559 13.2942C60.8993 13.2942 52.4273 21.7814 52.4273 32.2448C52.4273 42.7082 60.9046 51.1953 71.3559 51.1953C81.8073 51.1953 90.2846 42.7082 90.2846 32.2448C90.2846 21.7814 81.8073 13.2942 71.3559 13.2942ZM71.3559 39.7278C67.232 39.7278 63.8869 36.3789 63.8869 32.2501C63.8869 28.1214 67.232 24.7725 71.3559 24.7725C75.4799 24.7725 78.825 28.1214 78.825 32.2501C78.825 36.3789 75.4799 39.7278 71.3559 39.7278Z" fill="currentColor"/>
@@ -190,17 +208,27 @@ function Navbar({ variant = 'light' }: NavbarProps) {
               </svg>
             </Link>
 
-            <Link
-              href="/about"
-              onClick={closePanel}
-              className="flex items-center min-w-0 flex-1 sm:flex-initial overflow-hidden cursor-pointer transition-opacity hover:opacity-80"
+            <div
+              className={`min-w-0 overflow-hidden transition-[flex,opacity,max-width] duration-300 ease-out ${
+                showTagline
+                  ? 'flex-1 sm:flex-initial opacity-100 max-w-[22rem]'
+                  : 'flex-none opacity-0 max-w-0 pointer-events-none'
+              }`}
             >
-              <span className={`${taglineClass} truncate select-none ${subTextColor}`}>
-                {t('tagline')}
-              </span>
-            </Link>
+              <Link
+                href="/about"
+                onClick={closePanel}
+                tabIndex={showTagline ? undefined : -1}
+                aria-hidden={!showTagline}
+                className="flex items-center min-w-0 overflow-hidden cursor-pointer transition-opacity hover:opacity-80"
+              >
+                <span className={`${taglineClass} truncate select-none ${subTextColor}`}>
+                  {t('tagline')}
+                </span>
+              </Link>
+            </div>
 
-            <div className="flex items-center gap-3 shrink-0">
+            <div className="flex items-center gap-3 shrink-0 ml-auto sm:ml-0">
               <button
                 type="button"
                 aria-label={showCloseIcon ? t('closeMenu') : t('openMenu')}

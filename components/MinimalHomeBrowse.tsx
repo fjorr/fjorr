@@ -13,11 +13,15 @@ export default function MinimalHomeBrowse({
   films: MinimalFilm[];
   artifacts: MinimalArtifact[];
 }) {
-  const { contentType } = useMinimalFilter();
+  const { contentType, mix } = useMinimalFilter();
 
   return (
     <div className="w-full pb-8">
-      <div className="w-full max-w-[600px] mx-auto px-5 pt-2 flex flex-col divide-y divide-page-faint">
+      <div
+        className={`w-full max-w-[600px] mx-auto px-5 flex flex-col divide-y divide-page-faint ${
+          mix === 'all' ? 'pt-2 mt-6 md:mt-8' : 'pt-0'
+        }`}
+      >
         {contentType === 'artifact' ? (
           <MinimalArtifactList artifacts={artifacts} />
         ) : (

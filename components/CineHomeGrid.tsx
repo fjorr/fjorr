@@ -75,7 +75,17 @@ export default function CineHomeGrid({
 
   const items = useMemo(() => {
     if (contentType === 'artifact') {
-      return artifacts.map(artifactToSearchItem);
+      if (mix === 'coming-soon') return [];
+
+      const selected = mix === 'all' ? null : mixes.find((m) => m.slug === mix);
+      if (!selected) return artifacts.map(artifactToSearchItem);
+
+      const idSet = new Set(selected.artifactIds);
+      const order = new Map(selected.artifactIds.map((id, i) => [id, i]));
+      return artifacts
+        .filter((a) => idSet.has(a.id))
+        .sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0))
+        .map(artifactToSearchItem);
     }
 
     if (mix === 'coming-soon') {
@@ -100,7 +110,11 @@ export default function CineHomeGrid({
   }, [artifacts, contentType, films, mix, mixes]);
 
   return (
-    <div className="w-full px-8 md:px-16 mt-8 md:mt-12">
+    <div
+      className={`w-full px-8 md:px-16 ${
+        mix === 'all' ? 'mt-6 md:mt-8' : 'mt-0'
+      }`}
+    >
       <div className="w-full max-w-[1440px] mx-auto">
         <SearchResultsGrid results={items} postersOnly />
       </div>

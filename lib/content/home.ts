@@ -3,7 +3,7 @@ import { createPublicClient } from '@/lib/supabase/public';
 import type { HomeMix } from '@/lib/home-mix';
 import type { AppLocale } from '@/i18n/config';
 import { defaultLocale } from '@/i18n/config';
-import { localizeFilms, localizeFilmsWithThemes, fetchCollectionNameMap } from '@/lib/content/film-i18n';
+import { localizeFilms, localizeFilmsWithThemes, fetchCollectionCopyMap } from '@/lib/content/film-i18n';
 import { localizeArtifacts } from '@/lib/content/artifact-i18n';
 
 export type { HomeMix } from '@/lib/home-mix';
@@ -217,7 +217,7 @@ export const getCineHomeFilms = unstable_cache(
   { revalidate: HOME_FILM_REVALIDATE_SECONDS, tags: ['film', 'home'] }
 );
 
-/** Curated mixes (collections) with film membership for the cine grid. */
+/** Curated mixes (collections) with film + artifact membership. */
 export const getHomeMixes = unstable_cache(
   async (locale: AppLocale = defaultLocale): Promise<HomeMix[]> => {
     const supabase = createPublicClient();
@@ -228,9 +228,11 @@ export const getHomeMixes = unstable_cache(
         id,
         slug,
         name,
+        description,
         collection_map (
           sort_order,
-          film ( id )
+          film ( id ),
+          artifact ( id )
         )
       `
       )
@@ -241,10 +243,10 @@ export const getHomeMixes = unstable_cache(
       return [];
     }
 
-    const nameMap =
+    const copyMap =
       locale === defaultLocale
-        ? new Map<string, string>()
-        : await fetchCollectionNameMap(
+        ? new Map<string, { name?: string; description?: string }>()
+        : await fetchCollectionCopyMap(
             supabase,
             data.map((row: { id: string }) => row.id),
             locale
@@ -254,8 +256,15 @@ export const getHomeMixes = unstable_cache(
       .map((row: any) => {
         const slug = String(row.slug || '').trim();
         const fallbackName = String(row.name || '').trim();
-        const name = nameMap.get(row.id) || fallbackName;
+        const localized = copyMap.get(row.id);
+        const name = localized?.name || fallbackName;
         if (!slug || !name) return null;
+
+        const rawDescription = localized?.description ?? row.description;
+        const description =
+          typeof rawDescription === 'string' && rawDescription.trim()
+            ? rawDescription.trim()
+            : null;
 
         const maps = Array.isArray(row.collection_map) ? row.collection_map : [];
         const sorted = [...maps].sort(
@@ -264,13 +273,25 @@ export const getHomeMixes = unstable_cache(
         const filmIds = sorted
           .map((m: any) => m?.film?.id)
           .filter((id: unknown): id is string => Boolean(id));
+        const artifactIds = sorted
+          .map((m: any) => m?.artifact?.id)
+          .filter((id: unknown): id is string => Boolean(id));
 
-        return { slug, name, filmIds };
+        return {
+          slug,
+          name,
+          description: description || null,
+          filmIds,
+          artifactIds,
+        };
       })
       .filter(Boolean) as HomeMix[];
   },
   ['home-mixes-i18n'],
-  { revalidate: HOME_FILM_REVALIDATE_SECONDS, tags: ['film', 'home'] }
+  {
+    revalidate: HOME_FILM_REVALIDATE_SECONDS,
+    tags: ['film', 'artifact', 'home'],
+  }
 );
 
 const MINIMAL_FILM_SELECT = `

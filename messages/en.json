@@ -28,8 +28,8 @@
     "minimalFull": "Minimal",
     "timelineFull": "Timeline",
     "timelineFilmsOnly": "Timeline is films only",
-    "film": "Film",
-    "artifact": "Afct",
+    "film": "Films",
+    "artifact": "Artifacts",
     "toggleMode": "Toggle display mode",
     "toggleType": "Toggle content type"
   },
@@ -59,7 +59,7 @@
     "emptyBody": "We're building though. Know a story the world needs to hear? Nominate it and get your name in the credits.",
     "noTeaser": "No contextual reference details configured.",
     "filmComingSoon": "Film Coming Soon",
-    "didYouMean": "Did you mean {name}?"
+    "nominateStory": "Nominate story"
   },
   "Film": {
     "play": "Play {runtime}",
@@ -162,7 +162,9 @@
     "comingSoon": "Coming soon",
     "allThemes": "All themes",
     "noMatches": "No results match these filters.",
-    "clear": "Clear"
+    "clear": "Clear",
+    "noFilmMatches": "No film results match.",
+    "noArtifactMatches": "No artifact results match."
   },
   "Account": {
     "modalTitle": "Log in or sign up",

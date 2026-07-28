@@ -7,17 +7,24 @@
  *  - Manual:  { "collection_id": "..." }
  *  - Webhook: { "record": { "id": "..." } } on public.collection INSERT/UPDATE
  *
- * Upserts collection_translation.name for each locale. Skips status = 'reviewed'.
+ * Upserts collection_translation.name + description for each locale.
+ * Skips status = 'reviewed'.
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import {
   LOCALES,
+  LOCALE_LABEL,
   json,
   resolveUuidId,
   sha256,
-  translateName,
+  type AppLocale,
 } from '../_shared/i18n.ts';
+
+type CollectionCopy = {
+  name: string;
+  description: string;
+};
 
 Deno.serve(async (req) => {
   try {
@@ -45,7 +52,7 @@ Deno.serve(async (req) => {
 
     const { data: collection, error: collectionError } = await supabase
       .from('collection')
-      .select('id, name')
+      .select('id, name, description')
       .eq('id', collectionId)
       .maybeSingle();
 
@@ -56,8 +63,18 @@ Deno.serve(async (req) => {
       );
     }
 
-    const englishName = String(collection.name ?? '').trim();
-    const sourceHash = await sha256(englishName);
+    const source: CollectionCopy = {
+      name: String(collection.name ?? '').trim(),
+      description: String(collection.description ?? '').trim(),
+    };
+
+    if (!source.name) {
+      return json({ error: 'collection name is empty' }, 400);
+    }
+
+    const sourceHash = await sha256(
+      `${source.name}\n${source.description}`
+    );
 
     const { data: existing } = await supabase
       .from('collection_translation')
@@ -86,7 +103,7 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      const name = await translateName(englishName, locale, 'collection');
+      const translated = await translateCopy(source, locale);
 
       const { error: upsertError } = await supabase
         .from('collection_translation')
@@ -94,7 +111,8 @@ Deno.serve(async (req) => {
           {
             collection_id: collectionId,
             locale,
-            name,
+            name: translated.name,
+            description: translated.description || null,
             source_hash: sourceHash,
             status: 'auto',
             updated_at: new Date().toISOString(),
@@ -115,3 +133,52 @@ Deno.serve(async (req) => {
     return json({ error: message }, 500);
   }
 });
+
+async function translateCopy(
+  source: CollectionCopy,
+  locale: AppLocale
+): Promise<CollectionCopy> {
+  const apiKey = Deno.env.get('OPENAI_API_KEY');
+  if (!apiKey) {
+    throw new Error('OPENAI_API_KEY not set');
+  }
+
+  const system = [
+    `You translate a Fjorr collection (mix) label and optional one-line subhead into ${LOCALE_LABEL[locale]} (${locale}).`,
+    'Return ONLY valid JSON with keys: name, description.',
+    'name is a short UI label — concise, not marketing.',
+    'description is one quiet editorial line under the mix title (Shel Silverstein–simple when the English is). Keep that spirit; do not expand into a paragraph.',
+    'Keep proper nouns unchanged unless a well-known localized form exists.',
+    'Empty string input → empty string output.',
+  ].join(' ');
+
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'gpt-4.1-mini',
+      temperature: 0.2,
+      response_format: { type: 'json_object' },
+      messages: [
+        { role: 'system', content: system },
+        { role: 'user', content: JSON.stringify(source) },
+      ],
+    }),
+  });
+
+  if (!res.ok) {
+    throw new Error(`OpenAI ${res.status}: ${await res.text()}`);
+  }
+
+  const data = await res.json();
+  const raw = data.choices?.[0]?.message?.content ?? '{}';
+  const parsed = JSON.parse(raw) as Partial<CollectionCopy>;
+
+  return {
+    name: String(parsed.name ?? source.name).trim() || source.name,
+    description: String(parsed.description ?? source.description).trim(),
+  };
+}

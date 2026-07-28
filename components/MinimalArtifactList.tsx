@@ -36,10 +36,21 @@ function MetaLine({ item }: { item: MinimalArtifact }) {
 }
 
 export default function MinimalArtifactList({ artifacts }: { artifacts: MinimalArtifact[] }) {
-  const { sort } = useMinimalFilter();
+  const { sort, mix, mixes } = useMinimalFilter();
 
   const visible = useMemo(() => {
-    const next = [...artifacts];
+    let next = [...artifacts];
+
+    if (mix === 'coming-soon') {
+      next = [];
+    } else if (mix !== 'all') {
+      const selected = mixes.find((m) => m.slug === mix);
+      if (selected) {
+        const idSet = new Set(selected.artifactIds);
+        next = next.filter((a) => idSet.has(a.id));
+      }
+    }
+
     if (sort === 'az') {
       next.sort((a, b) => a.name.localeCompare(b.name));
     } else {
@@ -49,15 +60,12 @@ export default function MinimalArtifactList({ artifacts }: { artifacts: MinimalA
         return bt - at;
       });
     }
+
     return next;
-  }, [artifacts, sort]);
+  }, [artifacts, mix, mixes, sort]);
 
   if (visible.length === 0) {
-    return (
-      <div className="flex w-full justify-center py-6">
-        <SearchNadaView />
-      </div>
-    );
+    return <SearchNadaView />;
   }
 
   return (

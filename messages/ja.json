@@ -59,7 +59,7 @@
     "emptyBody": "私たちはまだ制作中です。世界が聞くべき物語をご存知ですか？推薦して、クレジットにお名前を。",
     "noTeaser": "設定されたコンテキスト参照情報がありません。",
     "filmComingSoon": "映画は近日公開",
-    "didYouMean": "もしかして：{name}"
+    "nominateStory": "ストーリーをノミネート"
   },
   "Film": {
     "play": "再生 {runtime}",
@@ -162,7 +162,9 @@
     "comingSoon": "近日公開",
     "allThemes": "すべてのテーマ",
     "noMatches": "これらのフィルターに一致する結果はありません。",
-    "clear": "クリア"
+    "clear": "クリア",
+    "noFilmMatches": "一致する映画の結果はありません。",
+    "noArtifactMatches": "一致する遺物の結果はありません。"
   },
   "Account": {
     "modalTitle": "ログインまたは登録",

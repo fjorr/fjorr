@@ -1,5 +1,6 @@
 import React, { Suspense } from 'react';
 import type { Metadata } from 'next';
+import { cookies } from 'next/headers';
 import PromoSplit from '@/components/PromoSplit';
 import FeatureRailLoader from '@/components/FeatureRailLoader';
 import FeatureRailGate from '@/components/FeatureRailGate';
@@ -9,7 +10,9 @@ import TimelineHomeLoader from '@/components/TimelineHomeLoader';
 import HomeWithSearch from '@/components/HomeWithSearch';
 import HomeBrowseModes from '@/components/HomeBrowseModes';
 import HomeMixesLoader from '@/components/HomeMixesLoader';
+import HomeMixHero from '@/components/HomeMixHero';
 import ServerSafeSkeleton from '@/components/ServerSafeSkeleton';
+import { DISPLAY_MODE_COOKIE, parseDisplayMode } from '@/lib/display-mode';
 import { SITE_ORIGIN, absoluteUrl } from '@/lib/site';
 
 export const metadata: Metadata = {
@@ -77,9 +80,50 @@ const siteJsonLd = {
 };
 
 export default async function Home() {
-  // Cookie still seeds DisplayModeProvider; all three browse trees mount so
-  // mode switches stay client-side and instant. Mixes hydrate in a nested
-  // Suspense so FeatureRail is not blocked on collection membership.
+  const cookieStore = await cookies();
+  const mode = parseDisplayMode(
+    cookieStore.get(DISPLAY_MODE_COOKIE)?.value
+  );
+
+  // Cookie-gate: only stream the active browse mode. Mode switches write the
+  // cookie and router.refresh() so the next RSC payload swaps trees.
+  const cinematic =
+    mode === 'cinematic' ? (
+      <>
+        <FeatureRailGate>
+          <div className="w-full mt-4 md:mt-6">
+            <Suspense fallback={<FeatureRailFallback />}>
+              <FeatureRailLoader />
+            </Suspense>
+          </div>
+        </FeatureRailGate>
+
+        <Suspense fallback={<CineGridFallback />}>
+          <CineHomeLoader />
+        </Suspense>
+
+        <FeatureRailGate>
+          <div className="mt-12 md:mt-16">
+            <PromoSplit />
+          </div>
+        </FeatureRailGate>
+      </>
+    ) : null;
+
+  const minimal =
+    mode === 'minimal' ? (
+      <Suspense fallback={null}>
+        <MinimalHomeLoader />
+      </Suspense>
+    ) : null;
+
+  const timeline =
+    mode === 'timeline' ? (
+      <Suspense fallback={null}>
+        <TimelineHomeLoader />
+      </Suspense>
+    ) : null;
+
   const jsonLd = (
     <script
       type="application/ld+json"
@@ -94,38 +138,11 @@ export default async function Home() {
         <Suspense fallback={null}>
           <HomeMixesLoader />
         </Suspense>
+        <HomeMixHero />
         <HomeBrowseModes
-          cinematic={
-            <>
-              <FeatureRailGate>
-                <div className="w-full mt-4 md:mt-6">
-                  <Suspense fallback={<FeatureRailFallback />}>
-                    <FeatureRailLoader />
-                  </Suspense>
-                </div>
-              </FeatureRailGate>
-
-              <Suspense fallback={<CineGridFallback />}>
-                <CineHomeLoader />
-              </Suspense>
-
-              <FeatureRailGate>
-                <div className="mt-12 md:mt-16">
-                  <PromoSplit />
-                </div>
-              </FeatureRailGate>
-            </>
-          }
-          minimal={
-            <Suspense fallback={null}>
-              <MinimalHomeLoader />
-            </Suspense>
-          }
-          timeline={
-            <Suspense fallback={null}>
-              <TimelineHomeLoader />
-            </Suspense>
-          }
+          cinematic={cinematic}
+          minimal={minimal}
+          timeline={timeline}
         />
       </HomeWithSearch>
     </>

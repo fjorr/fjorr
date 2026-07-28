@@ -39,6 +39,9 @@ type MinimalFilterContextValue = {
   setMixes: (mixes: HomeMix[]) => void;
   searchActive: boolean;
   setSearchActive: (value: boolean) => void;
+  /** Per-type hit counts while searching (0 when idle). */
+  searchTypeHits: { film: number; artifact: number };
+  setSearchTypeHits: (hits: { film: number; artifact: number }) => void;
   filtersActive: boolean;
   /** Mix and/or dials dirty — drives Clear (not mode/type). */
   queryActive: boolean;
@@ -85,10 +88,18 @@ export function MinimalFilterProvider({
   const [themes, setThemes] = useState<ThemeOption[]>([]);
   const [mixes, setMixes] = useState<HomeMix[]>(initialMixes);
   const [searchActive, setSearchActive] = useState(false);
+  const [searchTypeHits, setSearchTypeHits] = useState({
+    film: 0,
+    artifact: 0,
+  });
 
   useEffect(() => {
     if (initialMixes.length > 0) setMixes(initialMixes);
   }, [initialMixes]);
+
+  useEffect(() => {
+    if (!searchActive) setSearchTypeHits({ film: 0, artifact: 0 });
+  }, [searchActive]);
 
   const replaceFilterParams = useCallback(
     (updates: Record<string, string | null>) => {
@@ -136,10 +147,10 @@ export function MinimalFilterProvider({
 
   const setContentType = useCallback(
     (value: MinimalContentType) => {
-      // Leaving films clears mix; artifacts don't use mixes.
+      // Theme dial is film-only; mix stays — same POV across Film / Afct.
       replaceFilterParams({
         type: value === 'film' ? null : value,
-        ...(value === 'artifact' ? { mix: null, show: null, theme: null } : {}),
+        ...(value === 'artifact' ? { show: null, theme: null } : {}),
       });
     },
     [replaceFilterParams]
@@ -208,6 +219,8 @@ export function MinimalFilterProvider({
       setMixes,
       searchActive,
       setSearchActive,
+      searchTypeHits,
+      setSearchTypeHits,
       filtersActive,
       queryActive,
       clearFilters,
@@ -228,6 +241,7 @@ export function MinimalFilterProvider({
       setMix,
       mixes,
       searchActive,
+      searchTypeHits,
       filtersActive,
       queryActive,
       clearFilters,
@@ -264,8 +278,18 @@ export function useQueryStatusLabels() {
   const tf = useTranslations('MinimalList');
   const tDisplay = useTranslations('DisplayMode');
   const { isMinimal, isTimeline } = useDisplayMode();
-  const { mix, mixes, sort, theme, themes, contentType, queryActive, clearAll } =
-    useMinimalFilter();
+  const {
+    mix,
+    mixes,
+    sort,
+    theme,
+    themes,
+    contentType,
+    queryActive,
+    filtersActive,
+    clearAll,
+    clearFilters,
+  } = useMinimalFilter();
 
   const mixName =
     mix === 'coming-soon'
@@ -293,7 +317,9 @@ export function useQueryStatusLabels() {
     mixLabel,
     dialLabels,
     queryActive,
+    filtersActive,
     clearAll,
+    clearFilters,
     isMinimal,
     isTimeline,
     contentType,
@@ -303,59 +329,29 @@ export function useQueryStatusLabels() {
   };
 }
 
+/** Dial readout under the control bar. Mode / type live on their toggles. */
 export function QueryStatusBar() {
   const tf = useTranslations('MinimalList');
-  const {
-    modeLabel,
-    typeLabel,
-    mixLabel,
-    dialLabels,
-    queryActive,
-    clearAll,
-    isMinimal,
-    isTimeline,
-    contentType,
-    mix,
-  } = useQueryStatusLabels();
+  const { dialLabels, filtersActive, clearFilters } = useQueryStatusLabels();
 
-  const modeActive = isMinimal || isTimeline;
-  const typeActive = contentType === 'artifact';
-  const mixActive = mix !== 'all';
-
-  const segments: { text: string; active: boolean; smOnly?: boolean }[] = [
-    { text: modeLabel, active: modeActive },
-    { text: typeLabel, active: typeActive },
-  ];
-  if (mixActive) {
-    segments.push({ text: mixLabel, active: true });
-  }
-  for (const dial of dialLabels) {
-    segments.push({
-      text: capitalizeLabel(dial),
-      active: true,
-      smOnly: true,
-    });
-  }
+  if (dialLabels.length === 0 && !filtersActive) return null;
 
   return (
     <div className="flex items-center justify-center gap-2.5 min-h-[18px] px-2">
-      <p className="font-sans text-[12px] sm:text-[14px] font-medium tracking-tight truncate max-w-[min(100%,28rem)]">
-        {segments.map((seg, i) => (
-          <span
-            key={`${seg.text}-${i}`}
-            className={seg.smOnly ? 'hidden sm:inline' : undefined}
-          >
-            {i > 0 ? <span className="text-page-faint">{' · '}</span> : null}
-            <span className={seg.active ? 'text-page' : 'text-page-muted'}>
-              {seg.text}
+      {dialLabels.length > 0 && (
+        <p className="font-sans text-[12px] sm:text-[14px] font-medium tracking-tight truncate max-w-[min(100%,28rem)]">
+          {dialLabels.map((dial, i) => (
+            <span key={`${dial}-${i}`}>
+              {i > 0 ? <span className="text-page-faint">{' · '}</span> : null}
+              <span className="text-page">{capitalizeLabel(dial)}</span>
             </span>
-          </span>
-        ))}
-      </p>
-      {queryActive && (
+          ))}
+        </p>
+      )}
+      {filtersActive && (
         <button
           type="button"
-          onClick={clearAll}
+          onClick={clearFilters}
           className="shrink-0 font-sans text-[12px] sm:text-[14px] font-semibold text-[#FF385C] hover:text-[#FF5A5F] transition-colors"
         >
           {tf('clear')}

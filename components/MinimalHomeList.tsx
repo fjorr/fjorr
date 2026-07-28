@@ -143,9 +143,7 @@ export default function MinimalHomeList({ films }: { films: MinimalFilm[] }) {
   return (
     <>
       {visibleFilms.length === 0 ? (
-        <div className="flex w-full justify-center py-6">
-          <SearchNadaView />
-        </div>
+        <SearchNadaView />
       ) : (
         visibleFilms.map((film) => {
           const comingSoon = isComingSoon(film);
@@ -183,12 +181,6 @@ export default function MinimalHomeList({ films }: { films: MinimalFilm[] }) {
                       : t('playShort')}
                   </button>
                 )}
-                <PrefetchLink
-                  href={`/film/${film.slug}`}
-                  className="h-8 px-3 rounded-[6px] bg-page-chip font-sans text-[13px] font-semibold text-page-muted hover:text-page hover:bg-page-chip-hover transition-colors inline-flex items-center"
-                >
-                  {t('info')}
-                </PrefetchLink>
               </div>
             </div>
           );

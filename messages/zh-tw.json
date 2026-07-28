@@ -59,7 +59,7 @@
     "emptyBody": "我們仍在努力打造中。你知道一個世界該聽見的故事嗎？推薦它，讓你的名字登上片尾名單。",
     "noTeaser": "尚未設定相關參考資訊。",
     "filmComingSoon": "影片即將上線",
-    "didYouMean": "你是不是要找：{name}？"
+    "nominateStory": "提名故事"
   },
   "Film": {
     "play": "播放 {runtime}",
@@ -162,7 +162,9 @@
     "comingSoon": "即將上線",
     "allThemes": "所有主題",
     "noMatches": "沒有符合這些篩選條件的結果。",
-    "clear": "清除"
+    "clear": "清除",
+    "noFilmMatches": "沒有符合的影片結果。",
+    "noArtifactMatches": "沒有符合的文物結果。"
   },
   "Account": {
     "modalTitle": "登入或註冊",

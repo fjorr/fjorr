@@ -28,8 +28,8 @@
     "minimalFull": "Minimal",
     "timelineFull": "Zeitleiste",
     "timelineFilmsOnly": "Die Zeitleiste zeigt nur Filme",
-    "film": "Film",
-    "artifact": "Artf",
+    "film": "Filme",
+    "artifact": "Artefakte",
     "toggleMode": "Anzeigemodus wechseln",
     "toggleType": "Inhaltstyp wechseln"
   },
@@ -59,7 +59,7 @@
     "emptyBody": "Wir bauen noch. Kennst du eine Geschichte, die die Welt hören muss? Nominiere sie und lies deinen Namen im Abspann.",
     "noTeaser": "Keine kontextbezogenen Referenzdetails konfiguriert.",
     "filmComingSoon": "Film demnächst",
-    "didYouMean": "Meintest du {name}?"
+    "nominateStory": "Geschichte nominieren"
   },
   "Film": {
     "play": "Abspielen {runtime}",
@@ -162,7 +162,9 @@
     "comingSoon": "Demnächst",
     "allThemes": "Alle Themen",
     "noMatches": "Keine Ergebnisse entsprechen diesen Filtern.",
-    "clear": "Zurücksetzen"
+    "clear": "Zurücksetzen",
+    "noFilmMatches": "Keine Filmergebnisse passen.",
+    "noArtifactMatches": "Keine Artefaktergebnisse passen."
   },
   "Account": {
     "modalTitle": "Anmelden oder registrieren",

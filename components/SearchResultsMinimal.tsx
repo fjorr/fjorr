@@ -106,9 +106,7 @@ export default function SearchResultsMinimal({ results }: { results: SearchItem[
   return (
     <div className="w-full max-w-[600px] mx-auto flex flex-col divide-y divide-page-faint">
       {visibleResults.length === 0 ? (
-        <div className="flex w-full justify-center py-6">
-          <SearchNadaView />
-        </div>
+        <SearchNadaView />
       ) : (
         visibleResults.map((item) => {
           const isFilm = item.item_type === 'film';
@@ -157,15 +155,9 @@ export default function SearchResultsMinimal({ results }: { results: SearchItem[
                         : t('playShort')}
                     </button>
                   )}
-                  <PrefetchLink
-                    href={infoHref}
-                    className="h-8 px-3 rounded-[6px] bg-page-chip font-sans text-[13px] font-semibold text-page-muted hover:text-page hover:bg-page-chip-hover transition-colors inline-flex items-center"
-                  >
-                    {t('info')}
-                  </PrefetchLink>
                 </div>
               ) : (
-                <div className="hidden sm:block shrink-0 w-[132px]" aria-hidden />
+                <div className="hidden sm:block shrink-0 w-[88px]" aria-hidden />
               )}
             </div>
           );

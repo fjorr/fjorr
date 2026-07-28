@@ -1,6 +1,7 @@
 import type { SearchItem } from '@/components/SearchExperience';
 import type { MinimalSortMode, ThemeOption } from '@/components/MinimalFilterContext';
 import type { HomeMix } from '@/lib/home-mix';
+import { mixIdsForType } from '@/lib/home-mix';
 
 function isComingSoon(releaseDate?: string | null) {
   if (!releaseDate) return false;
@@ -71,12 +72,18 @@ export function filterAndSortSearchItems(
   } else if (mix !== 'all') {
     const selected = mixes.find((m) => m.slug === mix);
     if (selected) {
-      const idSet = new Set(selected.filmIds);
-      next = next.filter(
-        (item) =>
-          item.item_type === 'film' &&
-          (idSet.has(filmId(item)) || idSet.has(item.id))
-      );
+      const filmSet = new Set(mixIdsForType(selected, 'film'));
+      const artifactSet = new Set(mixIdsForType(selected, 'artifact'));
+      next = next.filter((item) => {
+        const id = filmId(item);
+        if (item.item_type === 'film') {
+          return filmSet.has(id) || filmSet.has(item.id);
+        }
+        if (item.item_type === 'artifact') {
+          return artifactSet.has(id) || artifactSet.has(item.id);
+        }
+        return false;
+      });
     }
   }
 

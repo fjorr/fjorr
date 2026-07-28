@@ -313,7 +313,10 @@ function CinemaTheater({
     onTogglePlay: togglePlay,
     onToggleMute: toggleMute,
     onToggleFullscreen: toggleFullscreen,
-    onToggleCaptionsMenu: () => setShowCCMenu((v) => !v),
+    onToggleCaptionsMenu: () => {
+      if (tracks.length === 0) return;
+      setShowCCMenu((v) => !v);
+    },
     onSeekBy: seekBy,
     onClose: handleCloseNavigation,
   });
@@ -613,23 +616,25 @@ function CinemaTheater({
       >
         {isPlaying ? t('pause') : t('play')}
       </button>
-      <button
-        type="button"
-        onClick={() => setShowCCMenu((v) => !v)}
-        aria-label={t('captions')}
-        aria-expanded={showCCMenu}
-        className={`font-mono text-[13px] font-medium tracking-[0.05em] uppercase bg-transparent border-0 outline-none cursor-pointer p-0 leading-none whitespace-nowrap transition-opacity hover:opacity-100 ${
-          showCCMenu || selectedLangCode !== 'none'
-            ? isLight
-              ? 'text-[#C9A24B] opacity-100'
-              : 'text-[#ffd446] opacity-100'
-            : 'opacity-90'
-        }`}
-      >
-        {selectedLangCode !== 'none'
-          ? `${t('subs')} (${selectedLangCode.toUpperCase()})`
-          : t('subs')}
-      </button>
+      {tracks.length > 0 ? (
+        <button
+          type="button"
+          onClick={() => setShowCCMenu((v) => !v)}
+          aria-label={t('captions')}
+          aria-expanded={showCCMenu}
+          className={`font-mono text-[13px] font-medium tracking-[0.05em] uppercase bg-transparent border-0 outline-none cursor-pointer p-0 leading-none whitespace-nowrap transition-opacity hover:opacity-100 ${
+            showCCMenu || selectedLangCode !== 'none'
+              ? isLight
+                ? 'text-[#C9A24B] opacity-100'
+                : 'text-[#ffd446] opacity-100'
+              : 'opacity-90'
+          }`}
+        >
+          {selectedLangCode !== 'none'
+            ? `${t('subs')} (${selectedLangCode.toUpperCase()})`
+            : t('subs')}
+        </button>
+      ) : null}
       <button
         type="button"
         onClick={toggleMute}
@@ -761,7 +766,7 @@ function CinemaTheater({
           {currentSubtitleText}
         </div>
       )}
-      {showCCMenu && !isPlayingLogo ? (
+      {showCCMenu && tracks.length > 0 && !isPlayingLogo ? (
         <div
           data-ui-control="true"
           role="dialog"

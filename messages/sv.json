@@ -28,8 +28,8 @@
     "minimalFull": "Minimalt",
     "timelineFull": "Tidslinje",
     "timelineFilmsOnly": "Tidslinjen visar bara filmer",
-    "film": "Film",
-    "artifact": "Artf",
+    "film": "Filmer",
+    "artifact": "Artefakter",
     "toggleMode": "Växla visningsläge",
     "toggleType": "Växla innehållstyp"
   },
@@ -59,7 +59,7 @@
     "emptyBody": "Vi bygger fortfarande. Känner du till en historia som världen behöver höra? Nominera den och få ditt namn i eftertexterna.",
     "noTeaser": "Inga kontextuella referensdetaljer konfigurerade.",
     "filmComingSoon": "Filmen kommer snart",
-    "didYouMean": "Menade du {name}?"
+    "nominateStory": "Nominera en historia"
   },
   "Film": {
     "play": "Spela upp {runtime}",
@@ -162,7 +162,9 @@
     "comingSoon": "Kommer snart",
     "allThemes": "Alla teman",
     "noMatches": "Inga resultat matchar dessa filter.",
-    "clear": "Rensa"
+    "clear": "Rensa",
+    "noFilmMatches": "Inga filmresultat matchar.",
+    "noArtifactMatches": "Inga artefaktresultat matchar."
   },
   "Account": {
     "modalTitle": "Logga in eller skapa konto",

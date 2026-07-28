@@ -31,21 +31,28 @@ export default function HomeWithSearch({
     };
   }, []);
 
-  // Warm the theater chunk so first Play/Resume feels instant.
+  // Warm theater after first paint / idle — don't race hero LCP.
   useEffect(() => {
     const warm = () => {
+      const conn = (navigator as Navigator & {
+        connection?: { saveData?: boolean };
+      }).connection;
+      if (conn?.saveData) return;
       void preloadCinemaTheater();
     };
 
     const ric = (
       window as Window & {
-        requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+        requestIdleCallback?: (
+          cb: () => void,
+          opts?: { timeout: number }
+        ) => number;
         cancelIdleCallback?: (id: number) => void;
       }
     ).requestIdleCallback;
 
     if (typeof ric === 'function') {
-      const id = ric(warm, { timeout: 2500 });
+      const id = ric(warm, { timeout: 6000 });
       return () => {
         (
           window as Window & { cancelIdleCallback?: (id: number) => void }
@@ -53,7 +60,7 @@ export default function HomeWithSearch({
       };
     }
 
-    const t = window.setTimeout(warm, 800);
+    const t = window.setTimeout(warm, 2500);
     return () => window.clearTimeout(t);
   }, []);
 

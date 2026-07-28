@@ -116,6 +116,29 @@ export default function Footer({ variant }: FooterProps) {
       </div>
 
       <div className="relative mb-6 flex items-center justify-center gap-3">
+        <Link
+          href="/"
+          className={`inline-flex shrink-0 items-center justify-center w-3.5 h-3.5 transition-opacity hover:opacity-70 ${subTextColor}`}
+          aria-label="Fjorr home"
+        >
+          <svg
+            viewBox="0 0 146 146"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-full h-full"
+            aria-hidden
+          >
+            <path
+              d="M124.53 103.73V113.76H105.63C103.42 113.76 101.63 111.97 101.63 109.76V60.37C101.63 58.16 103.42 56.37 105.63 56.37H136.2L136.14 103.72C136.14 103.72 124.37 103.74 124.54 103.74L124.53 103.73Z"
+              fill="currentColor"
+            />
+            <path
+              d="M141.18 44.49C143.61 44.49 145.59 42.52 145.59 40.08V4.63C145.59 2.07 143.52 0 140.96 0H45.12C20.2 0 0 20.2 0 45.12V140.96C0 143.52 2.07 145.59 4.63 145.59H140.95C143.51 145.59 145.58 143.52 145.58 140.96V130.15C145.58 127.66 143.56 125.64 141.07 125.64H105.62C96.85 125.64 89.74 118.53 89.74 109.76V60.37C89.74 51.6 96.85 44.49 105.62 44.49H141.18Z"
+              fill="currentColor"
+            />
+          </svg>
+        </Link>
+
         <div ref={langRef} className="relative flex flex-col items-center">
           <button
             type="button"
@@ -167,7 +190,7 @@ export default function Footer({ variant }: FooterProps) {
 
       <div className="max-w-[16rem] mb-2">
         <p
-          className={`font-sans font-normal text-[12px] leading-[1.45] tracking-normal transition-colors ${subTextColor}`}
+          className={`font-sans font-semibold text-[12px] leading-[1.45] tracking-normal transition-colors ${subTextColor}`}
         >
           {t('blurb')}
         </p>

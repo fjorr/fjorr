@@ -59,7 +59,7 @@
     "emptyBody": "저희는 아직 만들어가는 중입니다. 세상이 들어야 할 이야기를 알고 계신가요? 제안하시면 크레딧에 이름이 실립니다.",
     "noTeaser": "설정된 맥락 참조 정보가 없습니다.",
     "filmComingSoon": "영화 공개 예정",
-    "didYouMean": "{name}을(를) 찾으셨나요?"
+    "nominateStory": "스토리 추천하기"
   },
   "Film": {
     "play": "재생 {runtime}",
@@ -162,7 +162,9 @@
     "comingSoon": "공개 예정",
     "allThemes": "모든 테마",
     "noMatches": "이 필터와 일치하는 결과가 없습니다.",
-    "clear": "지우기"
+    "clear": "지우기",
+    "noFilmMatches": "일치하는 영화 결과가 없습니다.",
+    "noArtifactMatches": "일치하는 유물 결과가 없습니다."
   },
   "Account": {
     "modalTitle": "로그인 또는 가입",

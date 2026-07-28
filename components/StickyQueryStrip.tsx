@@ -34,8 +34,8 @@ export default function StickyQueryStrip({
     typeLabel,
     mixLabel,
     dialLabels,
-    queryActive,
-    clearAll,
+    filtersActive,
+    clearFilters,
   } = useQueryStatusLabels();
 
   const [stuck, setStuck] = useState(false);
@@ -75,7 +75,6 @@ export default function StickyQueryStrip({
     };
   }, [panel]);
 
-  const mixesDisabled = contentType === 'artifact';
   const dialsActive = isTimeline
     ? theme !== 'all'
     : sort !== 'newest' || theme !== 'all';
@@ -102,13 +101,6 @@ export default function StickyQueryStrip({
           }}
         >
           <Chip
-            onClick={() => setMode(nextDisplayMode(mode))}
-            title={td('toggleMode')}
-          >
-            {modeLabel}
-          </Chip>
-          <Dot />
-          <Chip
             onClick={() =>
               setContentType(contentType === 'film' ? 'artifact' : 'film')
             }
@@ -118,10 +110,15 @@ export default function StickyQueryStrip({
           </Chip>
           <Dot />
           <Chip
+            onClick={() => setMode(nextDisplayMode(mode))}
+            title={td('toggleMode')}
+          >
+            {modeLabel}
+          </Chip>
+          <Dot />
+          <Chip
             active={panel === 'mixes' || mix !== 'all'}
-            disabled={mixesDisabled}
             onClick={() => {
-              if (mixesDisabled) return;
               setPanel((p) => (p === 'mixes' ? null : 'mixes'));
             }}
             title={tf('mixes')}
@@ -140,13 +137,13 @@ export default function StickyQueryStrip({
               {dialLabels.length > 0 ? dialLabels.join(' · ') : tf('filter')}
             </span>
           </Chip>
-          {queryActive && (
+          {filtersActive && (
             <>
               <Dot />
               <button
                 type="button"
                 onClick={() => {
-                  clearAll();
+                  clearFilters();
                   setPanel(null);
                 }}
                 className="shrink-0 font-sans text-[11px] font-semibold text-[#FF385C] hover:text-[#FF5A5F] transition-colors px-1"
@@ -157,7 +154,7 @@ export default function StickyQueryStrip({
           )}
         </div>
 
-        {panel === 'mixes' && !mixesDisabled && (
+        {panel === 'mixes' && (
           <MixesPanel onDone={() => setPanel(null)} />
         )}
         {panel === 'dials' && <DialsPanel />}
@@ -165,7 +162,6 @@ export default function StickyQueryStrip({
     </div>
   );
 }
-
 function Dot() {
   return <span className="text-page-faint font-sans text-[11px] select-none">·</span>;
 }

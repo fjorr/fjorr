@@ -194,6 +194,35 @@ export async function fetchCollectionNameMap(
   return map;
 }
 
+/** Localized name + description for collections. */
+export async function fetchCollectionCopyMap(
+  supabase: SupabaseClient,
+  collectionIds: string[],
+  locale: AppLocale
+): Promise<Map<string, { name?: string; description?: string }>> {
+  const map = new Map<string, { name?: string; description?: string }>();
+  if (locale === defaultLocale || collectionIds.length === 0) return map;
+
+  const { data, error } = await supabase
+    .from('collection_translation')
+    .select('collection_id, name, description')
+    .eq('locale', locale)
+    .in('collection_id', [...new Set(collectionIds.filter(Boolean))]);
+
+  if (error) {
+    console.error('collection_translation fetch failed:', error.message);
+    return map;
+  }
+  for (const row of data || []) {
+    if (!row.collection_id) continue;
+    map.set(row.collection_id, {
+      name: row.name || undefined,
+      description: row.description || undefined,
+    });
+  }
+  return map;
+}
+
 /** Apply theme_translation onto rows that have theme: { id, name }. */
 export function applyThemeNames<T extends Record<string, unknown>>(
   rows: T[],

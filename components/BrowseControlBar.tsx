@@ -9,12 +9,12 @@ import {
   useMinimalFilter,
 } from '@/components/MinimalFilterContext';
 import { useDisplayMode } from '@/components/DisplayModeProvider';
-import { DialsPanel, MixesPanel } from '@/components/BrowseFilterPanels';
+import { DialsPanel } from '@/components/BrowseFilterPanels';
 
-export type BrowseControlPanel = 'mixes' | 'dials' | null;
+export type BrowseControlPanel = 'dials' | null;
 
 /**
- * Mode / type / mixes / dials row + shared panel matching search bar width.
+ * Mode / type / dials row. Mixes live in the Search|Mixes split bar above.
  */
 export default function BrowseControlBar({
   sentinelRef,
@@ -23,17 +23,12 @@ export default function BrowseControlBar({
 }) {
   const tf = useTranslations('MinimalList');
   const { isTimeline } = useDisplayMode();
-  const { mix, contentType, sort, theme } = useMinimalFilter();
+  const { sort, theme } = useMinimalFilter();
   const [panel, setPanel] = useState<BrowseControlPanel>(null);
   const rootRef = useRef<HTMLDivElement>(null);
-  const mixesDisabled = contentType === 'artifact';
   const dialsHaveValue = isTimeline
     ? theme !== 'all'
     : sort !== 'newest' || theme !== 'all';
-
-  useEffect(() => {
-    if (mixesDisabled && panel === 'mixes') setPanel(null);
-  }, [mixesDisabled, panel]);
 
   useEffect(() => {
     if (!panel) return;
@@ -53,10 +48,6 @@ export default function BrowseControlBar({
     };
   }, [panel]);
 
-  const toggle = (next: Exclude<BrowseControlPanel, null>) => {
-    setPanel((current) => (current === next ? null : next));
-  };
-
   return (
     <div
       ref={(node) => {
@@ -67,63 +58,34 @@ export default function BrowseControlBar({
             node;
         }
       }}
-      className="relative z-0 w-full max-w-sm flex flex-col items-center gap-3.5"
+      className="relative z-0 w-full max-w-sm flex flex-col items-center gap-3"
     >
-      <div className="flex w-full items-center justify-center gap-0.5 sm:gap-2 flex-nowrap">
-        <DisplayModeToggle />
+      <div className="flex w-full items-center justify-center gap-1.5 sm:gap-2 flex-nowrap">
         <ContentTypeToggle />
+        <DisplayModeToggle />
 
-        <button
-          type="button"
-          disabled={mixesDisabled}
-          onClick={() => {
-            if (mixesDisabled) return;
-            toggle('mixes');
-          }}
-          className={`h-7 sm:h-8 px-2 sm:px-3 shrink-0 rounded-[6px] font-sans text-[11px] sm:text-xs font-semibold transition-colors inline-flex items-center gap-1 sm:gap-1.5 whitespace-nowrap ${
-            mixesDisabled
-              ? 'bg-page-chip text-page-faint cursor-not-allowed'
-              : panel === 'mixes' || mix !== 'all'
+        <div className="inline-flex shrink-0 items-center gap-0.5 rounded-[8px] p-0.5 bg-page-chip">
+          <button
+            type="button"
+            onClick={() => setPanel((p) => (p === 'dials' ? null : 'dials'))}
+            className={`h-8 px-2.5 sm:px-3 rounded-[6px] font-sans text-xs font-semibold transition-colors inline-flex items-center gap-1.5 whitespace-nowrap ${
+              panel === 'dials' || dialsHaveValue
                 ? 'bg-page-chip-active text-page'
-                : 'bg-page-chip text-page hover:bg-page-chip-hover'
-          }`}
-          aria-expanded={panel === 'mixes'}
-          aria-disabled={mixesDisabled}
-        >
-          {tf('mixes')}
-          {!mixesDisabled && mix !== 'all' && (
-            <span
-              className="w-1.5 h-1.5 rounded-full bg-[#0071E3] dark:bg-[#ffd446]"
-              aria-hidden
-            />
-          )}
-        </button>
-
-        <button
-          type="button"
-          onClick={() => toggle('dials')}
-          className={`h-7 sm:h-8 px-1.5 sm:px-2.5 shrink-0 rounded-[6px] font-sans text-[11px] sm:text-xs font-semibold transition-colors inline-flex items-center gap-1 sm:gap-1.5 whitespace-nowrap ${
-            panel === 'dials' || dialsHaveValue
-              ? 'bg-page-chip-active text-page'
-              : 'bg-transparent text-page-faint hover:text-page-muted hover:bg-page-chip'
-          }`}
-          aria-expanded={panel === 'dials'}
-        >
-          {tf('filter')}
-          {dialsHaveValue && (
-            <span
-              className="w-1.5 h-1.5 rounded-full bg-[#0071E3] dark:bg-[#ffd446]"
-              aria-hidden
-            />
-          )}
-        </button>
+                : 'text-page-faint hover:text-page-muted'
+            }`}
+            aria-expanded={panel === 'dials'}
+          >
+            {tf('filter')}
+            {dialsHaveValue && (
+              <span
+                className="w-1.5 h-1.5 rounded-full bg-[#0071E3] dark:bg-[#ffd446]"
+                aria-hidden
+              />
+            )}
+          </button>
+        </div>
       </div>
 
-      {panel === 'mixes' && !mixesDisabled && (
-        <div className="w-full self-stretch">
-          <MixesPanel onDone={() => setPanel(null)} />
-        </div>
-      )}
       {panel === 'dials' && (
         <div className="w-full self-stretch">
           <DialsPanel />

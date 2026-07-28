@@ -56,7 +56,22 @@ export default function TimelineHomeList({
 
   const items = useMemo((): TimelineRailItem[] => {
     if (showingArtifacts) {
-      return artifacts.map((a) => ({
+      let next = [...artifacts];
+
+      if (mix === 'coming-soon') {
+        next = [];
+      } else if (mix !== 'all') {
+        const selected = mixes.find((m) => m.slug === mix);
+        if (selected) {
+          const idSet = new Set(selected.artifactIds);
+          const order = new Map(selected.artifactIds.map((id, i) => [id, i]));
+          next = next
+            .filter((a) => idSet.has(a.id))
+            .sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
+        }
+      }
+
+      return next.map((a) => ({
         id: a.id,
         name: a.name,
         teaser: a.teaser,
@@ -116,12 +131,14 @@ export default function TimelineHomeList({
 
   return (
     <>
-      <TimelineRail
-        items={items}
-        storageKey={`fjorr-timeline-scroll:${contentType}`}
-        groupKeyPrefix={showingArtifacts ? 'a' : 'f'}
-        onResume={showingArtifacts ? undefined : handleResume}
-      />
+      <div className={mix === 'all' ? 'mt-6 md:mt-8' : undefined}>
+        <TimelineRail
+          items={items}
+          storageKey={`fjorr-timeline-scroll:${contentType}`}
+          groupKeyPrefix={showingArtifacts ? 'a' : 'f'}
+          onResume={showingArtifacts ? undefined : handleResume}
+        />
+      </div>
 
       {showTheater && selectedFilm && (
         <CinemaTheater

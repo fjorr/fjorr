@@ -9,7 +9,7 @@ function ModeIcon({ mode }: { mode: DisplayMode }) {
   if (mode === 'cinematic') {
     // Poster grid
     return (
-      <svg viewBox="0 0 16 16" className="w-3.5 h-3.5" fill="currentColor" aria-hidden>
+      <svg viewBox="0 0 16 16" className="w-4 h-4" fill="currentColor" aria-hidden>
         <rect x="1" y="1" width="6" height="6" rx="1" />
         <rect x="9" y="1" width="6" height="6" rx="1" />
         <rect x="1" y="9" width="6" height="6" rx="1" />
@@ -21,7 +21,7 @@ function ModeIcon({ mode }: { mode: DisplayMode }) {
   if (mode === 'minimal') {
     // List rows
     return (
-      <svg viewBox="0 0 16 16" className="w-3.5 h-3.5" fill="currentColor" aria-hidden>
+      <svg viewBox="0 0 16 16" className="w-4 h-4" fill="currentColor" aria-hidden>
         <rect x="1" y="2.5" width="14" height="2" rx="1" />
         <rect x="1" y="7" width="14" height="2" rx="1" />
         <rect x="1" y="11.5" width="14" height="2" rx="1" />
@@ -72,7 +72,7 @@ export default function DisplayModeToggle() {
             aria-label={option.label}
             aria-pressed={active}
             onClick={() => setMode(option.id)}
-            className={`w-7 h-7 sm:w-8 sm:h-8 inline-flex items-center justify-center rounded-[6px] transition-colors ${
+            className={`w-8 h-8 inline-flex items-center justify-center rounded-[6px] transition-colors ${
               active
                 ? 'bg-page-chip-active text-page'
                 : 'text-page-faint hover:text-page-muted'

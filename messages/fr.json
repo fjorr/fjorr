@@ -28,8 +28,8 @@
     "minimalFull": "Minimal",
     "timelineFull": "Frise chronologique",
     "timelineFilmsOnly": "La frise chronologique ne montre que des films",
-    "film": "Film",
-    "artifact": "Artf",
+    "film": "Films",
+    "artifact": "Artefacts",
     "toggleMode": "Changer le mode d'affichage",
     "toggleType": "Changer le type de contenu"
   },
@@ -59,7 +59,7 @@
     "emptyBody": "Nous sommes encore en construction. Vous connaissez une histoire que le monde doit entendre ? Nominez-la et voyez votre nom au générique.",
     "noTeaser": "Aucun détail de référence contextuelle configuré.",
     "filmComingSoon": "Film à venir",
-    "didYouMean": "Vouliez-vous dire {name} ?"
+    "nominateStory": "Nominer une histoire"
   },
   "Film": {
     "play": "Lire {runtime}",
@@ -162,7 +162,9 @@
     "comingSoon": "Bientôt disponible",
     "allThemes": "Tous les thèmes",
     "noMatches": "Aucun résultat ne correspond à ces filtres.",
-    "clear": "Effacer"
+    "clear": "Effacer",
+    "noFilmMatches": "Aucun résultat de film ne correspond.",
+    "noArtifactMatches": "Aucun résultat d’artefact ne correspond."
   },
   "Account": {
     "modalTitle": "Se connecter ou s'inscrire",

@@ -110,11 +110,7 @@ export default function TimelineRail({
   };
 
   if (items.length === 0) {
-    return (
-      <div className="flex w-full justify-center py-6">
-        <SearchNadaView />
-      </div>
-    );
+    return <SearchNadaView />;
   }
 
   return (
