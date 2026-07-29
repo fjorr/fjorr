@@ -1,4 +1,4 @@
-import { createBrowserClient } from "@supabase/ssr";
+import { createBrowserClient } from '@supabase/ssr';
 
 function supabaseAnonKey() {
   return (
@@ -7,9 +7,14 @@ function supabaseAnonKey() {
   );
 }
 
+/** One browser client — avoids split GoTrue state across createClient() calls. */
+let browserClient: ReturnType<typeof createBrowserClient> | null = null;
+
 export function createClient() {
-  return createBrowserClient(
+  if (browserClient) return browserClient;
+  browserClient = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    supabaseAnonKey(),
+    supabaseAnonKey()
   );
+  return browserClient;
 }

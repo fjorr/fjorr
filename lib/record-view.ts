@@ -1,22 +1,19 @@
 /**
  * Client-side view recording — fires once when watch threshold is met.
- * Counts anonymous + signed-in views toward Viewer #.
- * Film Log records only attach when signed in.
- *
- * Uses the browser Supabase client (same session as Account menu).
+ * Posts to /api/film-view with the browser access token so auth.uid() sticks.
  */
 
 import { createClient } from '@/lib/supabase/client';
 
 /** Seconds of playback before a view counts toward Viewer #. */
-export const VIEW_COUNT_SECONDS = 10;
+export const VIEW_COUNT_SECONDS = 8;
 const COMPLETE_RATIO = 0.9;
 const LOCAL_KEY = 'fjorr:view-counted';
 export const FILM_RECORDED_EVENT = 'fjorr-film-recorded';
 
-const sessionDone = new Set<string>();
-const sessionLogged = new Set<string>();
-const inflight = new Set<string>();
+const doneIds = new Set<string>();
+const loggedIds = new Set<string>();
+const pendingIds = new Set<string>();
 
 export function viewCountThreshold(duration?: number | null) {
   if (duration && duration > 0 && duration < 40) {
@@ -88,13 +85,11 @@ export function maybeRecordFilmView(
   const id = String(filmId || '').trim();
   if (!id || id === 'undefined' || id === 'null') return;
   if (typeof window === 'undefined') return;
-  if (inflight.has(id) || sessionLogged.has(id)) return;
+  if (pendingIds.has(id) || loggedIds.has(id)) return;
+  if (!force && doneIds.has(id)) return;
   if (!shouldCount(seconds, duration, force)) return;
 
-  // Anon already counted this browser — only retry when we might attach a Film Log.
-  if (sessionDone.has(id) && !force) return;
-
-  inflight.add(id);
+  pendingIds.add(id);
 
   void (async () => {
     try {
@@ -102,28 +97,37 @@ export function maybeRecordFilmView(
       const {
         data: { session },
       } = await supabase.auth.getSession();
+      const accessToken = session?.access_token || '';
       const signedIn = Boolean(session?.user);
 
-      // Already counted as anon this browser: skip unless signed in (need Film Log).
       if (!signedIn && id in readLocalCounted()) {
-        sessionDone.add(id);
+        doneIds.add(id);
         return;
       }
 
-      const { data, error } = await supabase.rpc('record_film_view', {
-        p_film_id: id,
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+
+      const res = await fetch('/api/film-view', {
+        method: 'POST',
+        headers,
+        credentials: 'same-origin',
+        body: JSON.stringify({ filmId: id }),
       });
 
-      if (error) {
-        console.error('[fjorr] record_film_view failed:', error.message);
+      if (!res.ok) {
+        const text = await res.text().catch(() => '');
+        console.error('[fjorr] film-view HTTP', res.status, text);
         return;
       }
 
-      const row = Array.isArray(data) ? data[0] : data;
-      if (!row) {
-        console.error('[fjorr] record_film_view empty result');
-        return;
-      }
+      const row = (await res.json()) as {
+        viewer_number?: number;
+        recorded?: boolean;
+        signed_in?: boolean;
+      };
 
       const viewerNumber = Number(row.viewer_number);
       const recorded = Boolean(row.recorded);
@@ -133,20 +137,19 @@ export function maybeRecordFilmView(
       }
 
       if (recorded) {
-        sessionLogged.add(id);
-        sessionDone.add(id);
-      } else if (!signedIn) {
-        sessionDone.add(id);
+        loggedIds.add(id);
+        doneIds.add(id);
+      } else if (!signedIn && !row.signed_in) {
+        doneIds.add(id);
       } else {
-        // Signed in but no Film Log row — allow retry next tick.
-        console.error('[fjorr] signed in but recorded=false', id, row);
+        console.error('[fjorr] expected Film Log but recorded=false', id, row);
       }
 
       emitRecorded(id, viewerNumber, recorded);
     } catch (err) {
       console.error('[fjorr] record film view failed:', err);
     } finally {
-      inflight.delete(id);
+      pendingIds.delete(id);
     }
   })();
 }
@@ -155,7 +158,7 @@ export function maybeRecordFilmView(
 export function rememberRecordedFilm(filmId: string) {
   const id = String(filmId || '').trim();
   if (id) {
-    sessionDone.add(id);
-    sessionLogged.add(id);
+    doneIds.add(id);
+    loggedIds.add(id);
   }
 }
