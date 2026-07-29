@@ -6,7 +6,7 @@ type IdentityProps = {
   isLight?: boolean;
   filmTitle?: string;
   filmMeta?: string;
-  /** Quiet credit, e.g. Viewer #12 — only when earned. */
+  /** Quiet credit under meta — reserved, unused for now. */
   filmCredit?: string;
   logoLabel?: string;
   onLogoClick?: () => void;

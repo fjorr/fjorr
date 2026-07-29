@@ -95,7 +95,6 @@
     "runtimeLabel": "Runtime",
     "ratingLabel": "Rating",
     "releasedLabel": "Released",
-    "viewerLabel": "Viewer",
     "audioLabel": "Audio",
     "subtitlesLabel": "Subtitles",
     "tagsLabel": "Tags",
@@ -111,8 +110,7 @@
     "pauseAutoplay": "Pause autoplay loop",
     "notFound": "Film Not Found",
     "watchOnFjorrMeta": "Watch this short film on Fjorr.",
-    "languagesAndThemes": "Languages & themes",
-    "viewerNumber": "Viewer #{number}"
+    "languagesAndThemes": "Languages & themes"
   },
   "Theater": {
     "watchOnFjorr": "Watch on Fjorr",
@@ -138,8 +136,7 @@
     "share": "Share",
     "onward": "Onward",
     "rewatch": "Rewatch",
-    "linkCopied": "Link copied to clipboard",
-    "viewerNumber": "Viewer #{number}"
+    "linkCopied": "Link copied to clipboard"
   },
   "Artifact": {
     "label": "Film Artifact",
@@ -201,14 +198,14 @@
     "scoutSlugHint": "Your number stays fixed. The name is just a label — others can use the same one.",
     "publicProfile": "Public profile",
     "publicProfileHint": "When on, others can see your profile and Film Logs at this URL. Off by default.",
-    "viewerNumber": "Viewer #{number}",
+    "viewerNumber": "Ticket No. {number}",
     "save": "Save",
     "saving": "Saving…",
     "saved": "Saved",
     "signOut": "Sign out",
     "errorGeneric": "Something went wrong. Try again.",
     "filmLogsTitle": "Film Logs",
-    "filmLogsBody": "Films you’ve logged. Viewer number is your place in that film’s watch order — members and guests both count.",
+    "filmLogsBody": "Films you’ve logged. Ticket No. is your place in that film’s watch order — members and guests both count.",
     "filmLogsEmpty": "Watch a film while signed in — after about 30 seconds, it lands here.",
     "filmLogsPublicEmpty": "No film logs yet."
   },

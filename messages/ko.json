@@ -95,7 +95,6 @@
     "runtimeLabel": "러닝타임",
     "ratingLabel": "등급",
     "releasedLabel": "공개일",
-    "viewerLabel": "Viewer",
     "audioLabel": "오디오",
     "subtitlesLabel": "자막",
     "tagsLabel": "태그",
@@ -111,8 +110,7 @@
     "pauseAutoplay": "자동 재생 일시정지",
     "notFound": "영화를 찾을 수 없습니다",
     "watchOnFjorrMeta": "Fjorr에서 이 단편 영화를 감상하세요.",
-    "languagesAndThemes": "언어 및 테마",
-    "viewerNumber": "Viewer #{number}"
+    "languagesAndThemes": "언어 및 테마"
   },
   "Theater": {
     "watchOnFjorr": "Fjorr에서 보기",
@@ -138,8 +136,7 @@
     "share": "공유",
     "onward": "계속하기",
     "rewatch": "다시보기",
-    "linkCopied": "링크가 클립보드에 복사되었습니다",
-    "viewerNumber": "Viewer #{number}"
+    "linkCopied": "링크가 클립보드에 복사되었습니다"
   },
   "Artifact": {
     "label": "영화 유물",
@@ -206,9 +203,9 @@
     "memberFallback": "Member #{number}",
     "continueGoogle": "Continue with Google",
     "orGoogle": "or",
-    "viewerNumber": "Viewer #{number}",
+    "viewerNumber": "Ticket No. {number}",
     "filmLogsTitle": "Film Logs",
-    "filmLogsBody": "Films you’ve logged. Viewer number is your place in that film’s watch order — members and guests both count.",
+    "filmLogsBody": "Films you’ve logged. Ticket No. is your place in that film’s watch order — members and guests both count.",
     "filmLogsEmpty": "Watch a film while signed in — after about 30 seconds, it lands here.",
     "filmLogsPublicEmpty": "No film logs yet."
   },

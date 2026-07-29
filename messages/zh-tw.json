@@ -95,7 +95,6 @@
     "runtimeLabel": "片長",
     "ratingLabel": "分級",
     "releasedLabel": "上映日期",
-    "viewerLabel": "Viewer",
     "audioLabel": "音訊",
     "subtitlesLabel": "字幕",
     "tagsLabel": "標籤",
@@ -111,8 +110,7 @@
     "pauseAutoplay": "暫停自動播放循環",
     "notFound": "找不到影片",
     "watchOnFjorrMeta": "在 Fjorr 上觀看這部短片。",
-    "languagesAndThemes": "語言與主題",
-    "viewerNumber": "Viewer #{number}"
+    "languagesAndThemes": "語言與主題"
   },
   "Theater": {
     "watchOnFjorr": "在 Fjorr 上觀看",
@@ -138,8 +136,7 @@
     "share": "分享",
     "onward": "繼續",
     "rewatch": "重看",
-    "linkCopied": "連結已複製到剪貼簿",
-    "viewerNumber": "Viewer #{number}"
+    "linkCopied": "連結已複製到剪貼簿"
   },
   "Artifact": {
     "label": "影片文物",
@@ -206,9 +203,9 @@
     "memberFallback": "Member #{number}",
     "continueGoogle": "Continue with Google",
     "orGoogle": "or",
-    "viewerNumber": "Viewer #{number}",
+    "viewerNumber": "Ticket No. {number}",
     "filmLogsTitle": "Film Logs",
-    "filmLogsBody": "Films you’ve logged. Viewer number is your place in that film’s watch order — members and guests both count.",
+    "filmLogsBody": "Films you’ve logged. Ticket No. is your place in that film’s watch order — members and guests both count.",
     "filmLogsEmpty": "Watch a film while signed in — after about 30 seconds, it lands here.",
     "filmLogsPublicEmpty": "No film logs yet."
   },

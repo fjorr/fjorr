@@ -95,7 +95,6 @@
     "runtimeLabel": "Duração",
     "ratingLabel": "Classificação",
     "releasedLabel": "Lançamento",
-    "viewerLabel": "Viewer",
     "audioLabel": "Áudio",
     "subtitlesLabel": "Legendas",
     "tagsLabel": "Tags",
@@ -111,8 +110,7 @@
     "pauseAutoplay": "Pausar reprodução automática",
     "notFound": "Filme não encontrado",
     "watchOnFjorrMeta": "Assista a este curta-metragem no Fjorr.",
-    "languagesAndThemes": "Idiomas e temas",
-    "viewerNumber": "Viewer #{number}"
+    "languagesAndThemes": "Idiomas e temas"
   },
   "Theater": {
     "watchOnFjorr": "Assistir no Fjorr",
@@ -138,8 +136,7 @@
     "share": "Compartilhar",
     "onward": "Continuar",
     "rewatch": "Rever",
-    "linkCopied": "Link copiado para a área de transferência",
-    "viewerNumber": "Viewer #{number}"
+    "linkCopied": "Link copiado para a área de transferência"
   },
   "Artifact": {
     "label": "Artefato do filme",
@@ -206,9 +203,9 @@
     "memberFallback": "Member #{number}",
     "continueGoogle": "Continue with Google",
     "orGoogle": "or",
-    "viewerNumber": "Viewer #{number}",
+    "viewerNumber": "Ticket No. {number}",
     "filmLogsTitle": "Film Logs",
-    "filmLogsBody": "Films you’ve logged. Viewer number is your place in that film’s watch order — members and guests both count.",
+    "filmLogsBody": "Films you’ve logged. Ticket No. is your place in that film’s watch order — members and guests both count.",
     "filmLogsEmpty": "Watch a film while signed in — after about 30 seconds, it lands here.",
     "filmLogsPublicEmpty": "No film logs yet."
   },

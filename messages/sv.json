@@ -95,7 +95,6 @@
     "runtimeLabel": "Speltid",
     "ratingLabel": "Åldersgräns",
     "releasedLabel": "Utgiven",
-    "viewerLabel": "Viewer",
     "audioLabel": "Ljud",
     "subtitlesLabel": "Undertexter",
     "tagsLabel": "Taggar",
@@ -111,8 +110,7 @@
     "pauseAutoplay": "Pausa automatisk uppspelning",
     "notFound": "Filmen hittades inte",
     "watchOnFjorrMeta": "Se den här kortfilmen på Fjorr.",
-    "languagesAndThemes": "Språk och teman",
-    "viewerNumber": "Viewer #{number}"
+    "languagesAndThemes": "Språk och teman"
   },
   "Theater": {
     "watchOnFjorr": "Se på Fjorr",
@@ -138,8 +136,7 @@
     "share": "Dela",
     "onward": "Vidare",
     "rewatch": "Titta igen",
-    "linkCopied": "Länk kopierad till urklipp",
-    "viewerNumber": "Viewer #{number}"
+    "linkCopied": "Länk kopierad till urklipp"
   },
   "Artifact": {
     "label": "Filmartefakt",
@@ -206,9 +203,9 @@
     "memberFallback": "Member #{number}",
     "continueGoogle": "Continue with Google",
     "orGoogle": "or",
-    "viewerNumber": "Viewer #{number}",
+    "viewerNumber": "Ticket No. {number}",
     "filmLogsTitle": "Film Logs",
-    "filmLogsBody": "Films you’ve logged. Viewer number is your place in that film’s watch order — members and guests both count.",
+    "filmLogsBody": "Films you’ve logged. Ticket No. is your place in that film’s watch order — members and guests both count.",
     "filmLogsEmpty": "Watch a film while signed in — after about 30 seconds, it lands here.",
     "filmLogsPublicEmpty": "No film logs yet."
   },

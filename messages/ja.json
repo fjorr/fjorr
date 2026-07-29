@@ -95,7 +95,6 @@
     "runtimeLabel": "上映時間",
     "ratingLabel": "レーティング",
     "releasedLabel": "公開日",
-    "viewerLabel": "Viewer",
     "audioLabel": "音声",
     "subtitlesLabel": "字幕",
     "tagsLabel": "タグ",
@@ -111,8 +110,7 @@
     "pauseAutoplay": "自動再生ループを一時停止",
     "notFound": "映画が見つかりません",
     "watchOnFjorrMeta": "Fjorrでこの短編映画を見る。",
-    "languagesAndThemes": "言語とテーマ",
-    "viewerNumber": "Viewer #{number}"
+    "languagesAndThemes": "言語とテーマ"
   },
   "Theater": {
     "watchOnFjorr": "Fjorrで見る",
@@ -138,8 +136,7 @@
     "share": "共有",
     "onward": "次へ",
     "rewatch": "もう一度",
-    "linkCopied": "リンクをクリップボードにコピーしました",
-    "viewerNumber": "Viewer #{number}"
+    "linkCopied": "リンクをクリップボードにコピーしました"
   },
   "Artifact": {
     "label": "映画の遺物",
@@ -206,9 +203,9 @@
     "memberFallback": "Member #{number}",
     "continueGoogle": "Continue with Google",
     "orGoogle": "or",
-    "viewerNumber": "Viewer #{number}",
+    "viewerNumber": "Ticket No. {number}",
     "filmLogsTitle": "Film Logs",
-    "filmLogsBody": "Films you’ve logged. Viewer number is your place in that film’s watch order — members and guests both count.",
+    "filmLogsBody": "Films you’ve logged. Ticket No. is your place in that film’s watch order — members and guests both count.",
     "filmLogsEmpty": "Watch a film while signed in — after about 30 seconds, it lands here.",
     "filmLogsPublicEmpty": "No film logs yet."
   },

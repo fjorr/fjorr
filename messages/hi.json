@@ -95,7 +95,6 @@
     "runtimeLabel": "अवधि",
     "ratingLabel": "रेटिंग",
     "releasedLabel": "रिलीज़",
-    "viewerLabel": "Viewer",
     "audioLabel": "ऑडियो",
     "subtitlesLabel": "उपशीर्षक",
     "tagsLabel": "टैग",
@@ -111,8 +110,7 @@
     "pauseAutoplay": "स्वतः प्ले लूप रोकें",
     "notFound": "फ़िल्म नहीं मिली",
     "watchOnFjorrMeta": "यह लघु फ़िल्म Fjorr पर देखें।",
-    "languagesAndThemes": "भाषाएँ और विषय",
-    "viewerNumber": "Viewer #{number}"
+    "languagesAndThemes": "भाषाएँ और विषय"
   },
   "Theater": {
     "watchOnFjorr": "Fjorr पर देखें",
@@ -138,8 +136,7 @@
     "share": "साझा करें",
     "onward": "आगे बढ़ें",
     "rewatch": "फिर देखें",
-    "linkCopied": "लिंक क्लिपबोर्ड पर कॉपी हो गया",
-    "viewerNumber": "Viewer #{number}"
+    "linkCopied": "लिंक क्लिपबोर्ड पर कॉपी हो गया"
   },
   "Artifact": {
     "label": "फ़िल्म कलावस्तु",
@@ -206,9 +203,9 @@
     "memberFallback": "Member #{number}",
     "continueGoogle": "Continue with Google",
     "orGoogle": "or",
-    "viewerNumber": "Viewer #{number}",
+    "viewerNumber": "Ticket No. {number}",
     "filmLogsTitle": "Film Logs",
-    "filmLogsBody": "Films you’ve logged. Viewer number is your place in that film’s watch order — members and guests both count.",
+    "filmLogsBody": "Films you’ve logged. Ticket No. is your place in that film’s watch order — members and guests both count.",
     "filmLogsEmpty": "Watch a film while signed in — after about 30 seconds, it lands here.",
     "filmLogsPublicEmpty": "No film logs yet."
   },
