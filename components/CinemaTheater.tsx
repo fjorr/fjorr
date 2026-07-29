@@ -518,6 +518,14 @@ function CinemaTheater({
       paintTimeUi();
       if (filmPlayerRef.current) filmPlayerRef.current.muted = isMuted;
     } else {
+      if (film?.id) {
+        maybeRecordFilmView(
+          String(film.id),
+          Number.POSITIVE_INFINITY,
+          durationRef.current || film.runtime || 1,
+          true
+        );
+      }
       setIsEnded(true);
       setIsPlaying(false);
       onEnded?.();
@@ -756,6 +764,13 @@ function CinemaTheater({
           if (isScrubbingRef.current) return;
           const time = e.currentTarget.currentTime;
           currentTimeRef.current = time;
+          if (film?.id && !isPlayingLogo) {
+            maybeRecordFilmView(
+              String(film.id),
+              time,
+              durationRef.current || film.runtime || null
+            );
+          }
           const now = performance.now();
           if (onTimeUpdate && now - lastParentTimePushRef.current > 250) {
             lastParentTimePushRef.current = now;

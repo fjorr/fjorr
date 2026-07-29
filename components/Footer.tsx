@@ -146,12 +146,12 @@ export default function Footer({ variant }: FooterProps) {
             aria-expanded={langOpen}
             aria-haspopup="listbox"
             onClick={() => setLangOpen((open) => !open)}
-            className={`inline-flex items-center gap-1.5 transition-colors hover:opacity-80 ${subTextColor}`}
+            className={`inline-flex items-center gap-2 transition-opacity hover:opacity-70 ${textColor}`}
           >
-            <Icon name="globe" className="w-3.5 h-3.5" />
-            <span className="font-sans text-[11px] font-medium tracking-normal leading-none">
+            <Icon name="globe" className="w-[18px] h-[18px]" />
+            <span className="font-sans text-[15px] font-semibold tracking-tight leading-none">
               {localeLabels[locale]}{' '}
-              <span className="font-mono uppercase tracking-[0.05em]">
+              <span className="font-mono text-[13px] font-medium uppercase tracking-[0.04em] opacity-60">
                 ({locale})
               </span>
             </span>
