@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 
 interface SuccessProps {
   onReset: () => void;
@@ -52,25 +53,33 @@ export default function NominateSuccessView({ onReset }: SuccessProps) {
               {t('successBody')}
             </p>
 
-            <button
-              onClick={onReset}
-              className="px-10 h-14 bg-[var(--page-fg)] text-[var(--page-bg)] font-sans font-bold text-[15px] tracking-tight rounded-full hover:opacity-90 active:scale-95 transition-all duration-150 inline-flex items-center justify-center gap-1.5 group/btn"
-            >
-              <span>{t('submitMore')}</span>
-              <svg
-                className="w-4 h-4 group-hover/btn:translate-x-0.5 transition-transform"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                viewBox="0 0 24 24"
+            <div className="flex flex-col items-center gap-3">
+              <button
+                onClick={onReset}
+                className="px-10 h-14 bg-[var(--page-fg)] text-[var(--page-bg)] font-sans font-bold text-[15px] tracking-tight rounded-full hover:opacity-90 active:scale-95 transition-all duration-150 inline-flex items-center justify-center gap-1.5 group/btn"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
-                />
-              </svg>
-            </button>
+                <span>{t('submitMore')}</span>
+                <svg
+                  className="w-4 h-4 group-hover/btn:translate-x-0.5 transition-transform"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
+                  />
+                </svg>
+              </button>
+              <Link
+                href="/account"
+                className="font-sans text-[13px] font-semibold text-page-muted hover:text-page transition-colors"
+              >
+                {t('viewAccount')}
+              </Link>
+            </div>
           </div>
         </div>
       </div>

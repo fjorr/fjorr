@@ -132,6 +132,12 @@ export default function AccountNavLink({
         <Link href="/account" onClick={onNavigate} className={className}>
           {t('account')}
         </Link>
+        <Link href="/bounties" onClick={onNavigate} className={className}>
+          {t('bounties')}
+        </Link>
+        <Link href="/nominate" onClick={onNavigate} className={className}>
+          {t('nominate')}
+        </Link>
         <button
           type="button"
           onClick={handleSignOut}
@@ -145,13 +151,21 @@ export default function AccountNavLink({
   }
 
   return (
-    <button
-      type="button"
-      onClick={() => onSignIn?.()}
-      className={`${className} inline-flex items-center gap-1.5 text-left`}
-    >
-      <span>{t('signIn')}</span>
-      <Icon name="arrowRight" className="w-3.5 h-3.5 opacity-55" />
-    </button>
+    <div className="flex flex-col gap-1.5">
+      <button
+        type="button"
+        onClick={() => onSignIn?.()}
+        className={`${className} inline-flex items-center gap-1.5 text-left`}
+      >
+        <span>{t('signIn')}</span>
+        <Icon name="arrowRight" className="w-3.5 h-3.5 opacity-55" />
+      </button>
+      <Link href="/bounties" onClick={onNavigate} className={className}>
+        {t('bounties')}
+      </Link>
+      <Link href="/nominate" onClick={onNavigate} className={className}>
+        {t('nominate')}
+      </Link>
+    </div>
   );
 }

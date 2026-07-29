@@ -1,14 +1,15 @@
 import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import NominateClient from './NominateClient'; // 🛠️ Points straight to your form code file
+import NominateClient from './NominateClient';
+import { createClient } from '@/lib/supabase/server';
+import { listActiveBounties } from '@/lib/nomination-actions';
 
-// 🎯 SERVER-SIDE METADATA ENGINE FOR NOMINATIONS
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('Meta');
   const title = t('nominateTitle');
   const description = t('nominateDescription');
   return {
-    title, // Becomes "Nominate | Fjorr" automatically via layout.tsx
+    title,
     description,
     alternates: { canonical: '/nominate' },
     openGraph: {
@@ -24,6 +25,28 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function NominatePage() {
-  return <NominateClient />;
+export default async function NominatePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ bounty?: string }>;
+}) {
+  const params = await searchParams;
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const bounties = await listActiveBounties();
+
+  const bountyParam = (params.bounty || '').trim().toLowerCase();
+  const initialBountyId =
+    bounties.find((b) => b.slug === bountyParam || b.id === bountyParam)?.id ||
+    '';
+
+  return (
+    <NominateClient
+      signedIn={!!user}
+      bounties={bounties}
+      initialBountyId={initialBountyId}
+    />
+  );
 }

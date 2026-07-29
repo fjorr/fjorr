@@ -27,7 +27,10 @@ Set these in `.env.local` (or in Vercel):
 | `NEXT_PUBLIC_MUX_DATA_ENV_KEY` | Optional. Enables Mux Data monitoring in `CinemaTheater` |
 | `SITE_PASSWORD` | Only used when `SITE_GATE_ENABLED=true` (staging preview gate) |
 | `SITE_GATE_ENABLED` | Set to `true` on staging/preview to re-enable `/password` gate. Leave unset/false in production. |
-| `SUPABASE_SERVICE_ROLE_KEY` | Optional. Used by the newsletter signup server action for writes to `intel_list`. Falls back to anon key if missing. |
+| `SUPABASE_SERVICE_ROLE_KEY` | Required for admin writes (nominations status, bounties). Also used by Edge Functions. Never expose to the client. |
+| `ADMIN_EMAILS` | Comma-separated emails allowed into `/admin` (Control). Fail-closed if empty. |
+
+**Admin (Control):** visit `/admin` while signed in as an allowlisted email. Overview, nominations inbox, bounty create/status. No public nav link — bookmark it.
 
 **Debug tip:** visit `/debug-db` to confirm the server can reach Supabase and read from the `film` table.
 

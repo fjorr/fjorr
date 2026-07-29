@@ -34,5 +34,6 @@ export function isColorSchemeLockedPath(pathname?: string | null): boolean {
   if (path === '/about' || path.startsWith('/about/')) return true;
   if (path === '/partner' || path.startsWith('/partner/')) return true;
   if (path.startsWith('/artifact/')) return true;
+  if (path === '/admin' || path.startsWith('/admin/')) return true;
   return false;
 }

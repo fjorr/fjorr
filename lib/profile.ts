@@ -23,6 +23,8 @@ const RESERVED_SLUGS = new Set([
   'fjorr',
   'film',
   'artifact',
+  'bounties',
+  'bounty',
   'nominate',
   'partner',
   'privacy',

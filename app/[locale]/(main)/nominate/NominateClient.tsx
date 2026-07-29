@@ -1,58 +1,125 @@
 'use client';
 
 import React, { useState } from 'react';
-import { createBrowserClient } from '@supabase/ssr';
 import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 import NominateSuccessView from '@/components/NominateSuccessView';
+import {
+  submitNomination,
+  type BountyRow,
+  type NominationKind,
+} from '@/lib/nomination-actions';
 
-type FieldErrorKey = 'storyRequired' | 'emailRequired' | 'emailInvalid' | 'submitError';
+type FieldErrorKey =
+  | 'storyRequired'
+  | 'whyRequired'
+  | 'settingRequired'
+  | 'proofRequired'
+  | 'premiseRequired'
+  | 'kindRequired'
+  | 'proofUrlInvalid'
+  | 'bountyInvalid'
+  | 'signInRequired'
+  | 'submitError';
+
+type FieldKey =
+  | 'story'
+  | 'why'
+  | 'setting'
+  | 'proof'
+  | 'proofUrl'
+  | 'kind'
+  | 'bounty'
+  | 'form';
 
 interface ValidationErrors {
-  story_details?: FieldErrorKey;
-  contributor_email?: FieldErrorKey;
+  story?: FieldErrorKey;
+  why?: FieldErrorKey;
+  setting?: FieldErrorKey;
+  proof?: FieldErrorKey;
+  proofUrl?: FieldErrorKey;
+  kind?: FieldErrorKey;
+  bounty?: FieldErrorKey;
+  form?: FieldErrorKey;
 }
 
-export default function NominateClient() {
+const KINDS: NominationKind[] = ['true', 'fiction'];
+
+function formatBountyAmount(cents: number, currency: string) {
+  try {
+    return new Intl.NumberFormat('en', {
+      style: 'currency',
+      currency,
+      maximumFractionDigits: 0,
+    }).format(cents / 100);
+  } catch {
+    return `$${Math.round(cents / 100)}`;
+  }
+}
+
+function fieldClass(hasError: boolean) {
+  return `w-full rounded-xl px-5 py-4 bg-page-chip font-sans font-semibold text-[15px] text-page placeholder-page-muted border focus:outline-none transition-all duration-300 ${
+    hasError
+      ? 'border-red-500/50 focus:border-red-500'
+      : 'border-page-faint focus:border-[color-mix(in_srgb,var(--page-fg)_22%,transparent)] focus:bg-[var(--page-chip-hover)]'
+  }`;
+}
+
+export default function NominateClient({
+  signedIn,
+  bounties,
+  initialBountyId = '',
+}: {
+  signedIn: boolean;
+  bounties: BountyRow[];
+  initialBountyId?: string;
+}) {
   const t = useTranslations('Nominate');
+  const [kind, setKind] = useState<NominationKind>('true');
   const [story, setStory] = useState('');
-  const [email, setEmail] = useState('');
+  const [why, setWhy] = useState('');
+  const [setting, setSetting] = useState('');
+  const [proof, setProof] = useState('');
+  const [proofUrl, setProofUrl] = useState('');
+  const [bountyId, setBountyId] = useState(initialBountyId);
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [submitting, setSubmitting] = useState(false);
   const [submittedSuccess, setSubmittedSuccess] = useState(false);
 
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-
-  const handleStoryChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setStory(e.target.value);
-    if (errors.story_details) {
-      setErrors((prev) => ({ ...prev, story_details: undefined }));
+  const clearError = (key: FieldKey) => {
+    if (errors[key]) {
+      setErrors((prev) => ({ ...prev, [key]: undefined }));
     }
   };
 
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(e.target.value);
-    if (errors.contributor_email) {
-      setErrors((prev) => ({ ...prev, contributor_email: undefined }));
-    }
+  const openSignIn = () => {
+    const next = bountyId
+      ? `/nominate?bounty=${encodeURIComponent(
+          bounties.find((b) => b.id === bountyId)?.slug || bountyId
+        )}`
+      : '/nominate';
+    window.dispatchEvent(
+      new CustomEvent('fjorr_open_signin', {
+        detail: { nextPath: next },
+      })
+    );
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!signedIn) {
+      openSignIn();
+      return;
+    }
 
     const localErrors: ValidationErrors = {};
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    if (!story.trim()) {
-      localErrors.story_details = 'storyRequired';
+    if (!story.trim()) localErrors.story = 'storyRequired';
+    if (!why.trim()) localErrors.why = 'whyRequired';
+    if (!setting.trim()) localErrors.setting = 'settingRequired';
+    if (!proof.trim()) {
+      localErrors.proof = kind === 'true' ? 'proofRequired' : 'premiseRequired';
     }
-    if (!email.trim()) {
-      localErrors.contributor_email = 'emailRequired';
-    } else if (!emailRegex.test(email)) {
-      localErrors.contributor_email = 'emailInvalid';
-    }
+    if (!KINDS.includes(kind)) localErrors.kind = 'kindRequired';
 
     if (Object.keys(localErrors).length > 0) {
       setErrors(localErrors);
@@ -60,30 +127,54 @@ export default function NominateClient() {
     }
 
     setSubmitting(true);
-
-    const { error } = await supabase.from('nominations').insert([
-      {
-        story_details: story.trim(),
-        contributor_email: email.trim().toLowerCase(),
-        status: 'pending',
-      },
-    ]);
-
+    const result = await submitNomination({
+      story,
+      kind,
+      whyFjorr: why,
+      setting,
+      proofOrPremise: proof,
+      proofUrl: proofUrl || undefined,
+      bountyId: bountyId || null,
+    });
     setSubmitting(false);
 
-    if (!error) {
+    if (result.ok) {
       setSubmittedSuccess(true);
-    } else {
-      setErrors({ story_details: 'submitError' });
+      return;
     }
+
+    const map: Record<string, FieldKey> = {
+      storyRequired: 'story',
+      whyRequired: 'why',
+      settingRequired: 'setting',
+      proofRequired: 'proof',
+      premiseRequired: 'proof',
+      kindRequired: 'kind',
+      proofUrlInvalid: 'proofUrl',
+      bountyInvalid: 'bounty',
+      signInRequired: 'form',
+      submitError: 'form',
+    };
+    const field = map[result.error] || 'form';
+    setErrors({ [field]: result.error as FieldErrorKey });
   };
 
   const handleResetForm = () => {
+    setKind('true');
     setStory('');
-    setEmail('');
+    setWhy('');
+    setSetting('');
+    setProof('');
+    setProofUrl('');
+    setBountyId(initialBountyId);
     setErrors({});
     setSubmittedSuccess(false);
   };
+
+  const proofLabel =
+    kind === 'true' ? t('proofLabel') : t('premiseLabel');
+  const proofPlaceholder =
+    kind === 'true' ? t('proofPlaceholder') : t('premisePlaceholder');
 
   return (
     <div className="w-full min-h-screen bg-[var(--page-bg)] text-page pt-5 pb-24 flex flex-col items-center overflow-x-hidden">
@@ -167,66 +258,227 @@ export default function NominateClient() {
               {t('description')}
             </p>
 
-            <form
-              onSubmit={handleSubmit}
-              noValidate
-              className="w-full flex flex-col text-left opacity-0 animate-slide-up style-delay-form"
-            >
-              <div className="w-full flex flex-col mb-4">
-                <textarea
-                  value={story}
-                  onChange={handleStoryChange}
-                  placeholder={t('storyPlaceholder')}
-                  className={`w-full min-h-64 rounded-xl p-6 bg-page-chip font-sans font-semibold text-[15px] text-page placeholder-page-muted border align-top resize-none focus:outline-none transition-all duration-300
-                    ${
-                      errors.story_details
-                        ? 'border-red-500/50 focus:border-red-500'
-                        : 'border-page-faint focus:border-[color-mix(in_srgb,var(--page-fg)_22%,transparent)] focus:bg-[var(--page-chip-hover)]'
-                    }
-                  `}
-                />
-                {errors.story_details && (
-                  <span className="mt-2.5 font-sans font-bold text-[14px] text-red-500 tracking-tight transition-all duration-200">
-                    {t(errors.story_details)}
-                  </span>
-                )}
-              </div>
-
-              <div className="w-full flex flex-col mb-6">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={handleEmailChange}
-                  placeholder={t('emailPlaceholder')}
-                  className={`w-full h-14 px-6 rounded-xl bg-page-chip font-sans font-semibold text-[15px] text-page placeholder-page-muted border focus:outline-none transition-all duration-300
-                    ${
-                      errors.contributor_email
-                        ? 'border-red-500/50 focus:border-red-500'
-                        : 'border-page-faint focus:border-[color-mix(in_srgb,var(--page-fg)_22%,transparent)] focus:bg-[var(--page-chip-hover)]'
-                    }
-                  `}
-                />
-                {errors.contributor_email && (
-                  <span className="mt-2.5 font-sans font-bold text-[14px] text-red-500 tracking-tight transition-all duration-200">
-                    {t(errors.contributor_email)}
-                  </span>
-                )}
-              </div>
-
-              <p className="font-sans font-medium text-xs leading-[1.5em] text-page-faint tracking-relaxed text-center max-w-xs mx-auto mb-8 select-none">
-                {t('disclaimer')}
-              </p>
-
-              <div className="w-full flex justify-center">
+            {!signedIn ? (
+              <div className="w-full max-w-sm flex flex-col items-center gap-5 opacity-0 animate-slide-up style-delay-form">
+                <p className="font-sans font-medium text-[14px] leading-relaxed text-page-muted tracking-tight">
+                  {t('membersOnlyBody')}
+                </p>
                 <button
-                  type="submit"
-                  disabled={submitting}
-                  className="px-10 h-14 bg-[var(--page-fg)] text-[var(--page-bg)] font-sans font-bold text-[15px] tracking-tight rounded-full shadow-2xl hover:opacity-90 active:scale-95 disabled:opacity-50 disabled:pointer-events-none transition-all duration-150"
+                  type="button"
+                  onClick={openSignIn}
+                  className="px-10 h-14 bg-[var(--page-fg)] text-[var(--page-bg)] font-sans font-bold text-[15px] tracking-tight rounded-full shadow-2xl hover:opacity-90 active:scale-95 transition-all duration-150"
                 >
-                  {submitting ? t('submitting') : t('submit')}
+                  {t('signInToNominate')}
                 </button>
               </div>
-            </form>
+            ) : (
+              <form
+                onSubmit={handleSubmit}
+                noValidate
+                className="w-full flex flex-col text-left opacity-0 animate-slide-up style-delay-form gap-4"
+              >
+                <fieldset className="flex flex-col gap-2">
+                  <legend className="font-sans text-[12px] font-semibold uppercase tracking-wide text-page-faint mb-1">
+                    {t('kindLabel')}
+                  </legend>
+                  <div className="flex flex-wrap gap-2">
+                    {KINDS.map((k) => (
+                      <button
+                        key={k}
+                        type="button"
+                        onClick={() => {
+                          setKind(k);
+                          clearError('kind');
+                          clearError('proof');
+                        }}
+                        className={`h-10 px-4 rounded-full font-sans text-[13px] font-semibold transition-all ${
+                          kind === k
+                            ? 'bg-[var(--page-fg)] text-[var(--page-bg)]'
+                            : 'bg-page-chip text-page-muted border border-page-faint hover:bg-[var(--page-chip-hover)]'
+                        }`}
+                      >
+                        {k === 'true' ? t('kindTrue') : t('kindFiction')}
+                      </button>
+                    ))}
+                  </div>
+                  {errors.kind && (
+                    <span className="font-sans font-bold text-[14px] text-red-500 tracking-tight">
+                      {t(errors.kind)}
+                    </span>
+                  )}
+                </fieldset>
+
+                <label className="flex flex-col gap-2">
+                  <span className="font-sans text-[12px] font-semibold uppercase tracking-wide text-page-faint">
+                    {t('storyLabel')}
+                  </span>
+                  <textarea
+                    value={story}
+                    onChange={(e) => {
+                      setStory(e.target.value);
+                      clearError('story');
+                    }}
+                    placeholder={t('storyPlaceholder')}
+                    rows={10}
+                    className={`${fieldClass(!!errors.story)} min-h-64 resize-y`}
+                  />
+                  {errors.story && (
+                    <span className="font-sans font-bold text-[14px] text-red-500 tracking-tight">
+                      {t(errors.story)}
+                    </span>
+                  )}
+                </label>
+
+                <label className="flex flex-col gap-2">
+                  <span className="font-sans text-[12px] font-semibold uppercase tracking-wide text-page-faint">
+                    {t('whyLabel')}
+                  </span>
+                  <textarea
+                    value={why}
+                    onChange={(e) => {
+                      setWhy(e.target.value);
+                      clearError('why');
+                    }}
+                    placeholder={t('whyPlaceholder')}
+                    rows={3}
+                    className={`${fieldClass(!!errors.why)} min-h-24 resize-none`}
+                  />
+                  {errors.why && (
+                    <span className="font-sans font-bold text-[14px] text-red-500 tracking-tight">
+                      {t(errors.why)}
+                    </span>
+                  )}
+                </label>
+
+                <label className="flex flex-col gap-2">
+                  <span className="font-sans text-[12px] font-semibold uppercase tracking-wide text-page-faint">
+                    {t('settingLabel')}
+                  </span>
+                  <input
+                    type="text"
+                    value={setting}
+                    onChange={(e) => {
+                      setSetting(e.target.value);
+                      clearError('setting');
+                    }}
+                    placeholder={t('settingPlaceholder')}
+                    className={fieldClass(!!errors.setting)}
+                  />
+                  {errors.setting && (
+                    <span className="font-sans font-bold text-[14px] text-red-500 tracking-tight">
+                      {t(errors.setting)}
+                    </span>
+                  )}
+                </label>
+
+                <label className="flex flex-col gap-2">
+                  <span className="font-sans text-[12px] font-semibold uppercase tracking-wide text-page-faint">
+                    {proofLabel}
+                  </span>
+                  <textarea
+                    value={proof}
+                    onChange={(e) => {
+                      setProof(e.target.value);
+                      clearError('proof');
+                    }}
+                    placeholder={proofPlaceholder}
+                    rows={3}
+                    className={`${fieldClass(!!errors.proof)} min-h-24 resize-none`}
+                  />
+                  {errors.proof && (
+                    <span className="font-sans font-bold text-[14px] text-red-500 tracking-tight">
+                      {t(errors.proof)}
+                    </span>
+                  )}
+                </label>
+
+                {kind === 'true' && (
+                  <label className="flex flex-col gap-2">
+                    <span className="font-sans text-[12px] font-semibold uppercase tracking-wide text-page-faint">
+                      {t('proofUrlLabel')}
+                    </span>
+                    <input
+                      type="url"
+                      value={proofUrl}
+                      onChange={(e) => {
+                        setProofUrl(e.target.value);
+                        clearError('proofUrl');
+                      }}
+                      placeholder={t('proofUrlPlaceholder')}
+                      className={fieldClass(!!errors.proofUrl)}
+                    />
+                    {errors.proofUrl && (
+                      <span className="font-sans font-bold text-[14px] text-red-500 tracking-tight">
+                        {t(errors.proofUrl)}
+                      </span>
+                    )}
+                  </label>
+                )}
+
+                <label className="flex flex-col gap-2">
+                  <span className="flex items-baseline justify-between gap-3">
+                    <span className="font-sans text-[12px] font-semibold uppercase tracking-wide text-page-faint">
+                      {t('bountyLabel')}
+                    </span>
+                    <Link
+                      href="/bounties"
+                      className="font-sans text-[12px] font-semibold text-page-muted hover:text-page transition-colors shrink-0"
+                    >
+                      {t('viewOpenBounties')}
+                    </Link>
+                  </span>
+                  <select
+                    value={bountyId}
+                    onChange={(e) => {
+                      setBountyId(e.target.value);
+                      clearError('bounty');
+                    }}
+                    className={`${fieldClass(!!errors.bounty)} appearance-none`}
+                  >
+                    <option value="">{t('bountyGeneral')}</option>
+                    {bounties.map((b) => (
+                      <option key={b.id} value={b.id}>
+                        {b.title} · {formatBountyAmount(b.amount_cents, b.currency)}
+                      </option>
+                    ))}
+                  </select>
+                  {bountyId ? (
+                    <span className="font-sans text-[13px] text-page-muted leading-snug">
+                      {bounties.find((b) => b.id === bountyId)?.brief}
+                    </span>
+                  ) : (
+                    <span className="font-sans text-[13px] text-page-muted leading-snug">
+                      {t('bountyHint')}
+                    </span>
+                  )}
+                  {errors.bounty && (
+                    <span className="font-sans font-bold text-[14px] text-red-500 tracking-tight">
+                      {t(errors.bounty)}
+                    </span>
+                  )}
+                </label>
+
+                {errors.form && (
+                  <span className="font-sans font-bold text-[14px] text-red-500 tracking-tight text-center">
+                    {t(errors.form)}
+                  </span>
+                )}
+
+                <p className="font-sans font-medium text-xs leading-[1.5em] text-page-faint tracking-relaxed text-center max-w-sm mx-auto mt-2 mb-2 select-none">
+                  {t('disclaimer')}
+                </p>
+
+                <div className="w-full flex justify-center pt-2">
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="px-10 h-14 bg-[var(--page-fg)] text-[var(--page-bg)] font-sans font-bold text-[15px] tracking-tight rounded-full shadow-2xl hover:opacity-90 active:scale-95 disabled:opacity-50 disabled:pointer-events-none transition-all duration-150"
+                  >
+                    {submitting ? t('submitting') : t('submit')}
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         )}
       </div>

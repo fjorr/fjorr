@@ -2,6 +2,7 @@ import React, { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
 import PromoSplit from '@/components/PromoSplit';
+import BountyHomePoster from '@/components/BountyHomePoster';
 import FeatureRailLoader from '@/components/FeatureRailLoader';
 import FeatureRailGate from '@/components/FeatureRailGate';
 import CineHomeLoader from '@/components/CineHomeLoader';
@@ -100,6 +101,10 @@ export default async function Home() {
 
         <Suspense fallback={<CineGridFallback />}>
           <CineHomeLoader />
+        </Suspense>
+
+        <Suspense fallback={null}>
+          <BountyHomePoster />
         </Suspense>
 
         <FeatureRailGate>
