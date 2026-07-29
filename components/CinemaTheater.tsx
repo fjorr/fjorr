@@ -14,6 +14,7 @@ import TheaterRamsChrome, { TheaterRamsIdentity, PLAQUE_WIDTH } from '@/componen
 import { useColorScheme } from '@/components/ColorSchemeProvider';
 import { LIGHT_PAGE_BG, LIGHT_PAGE_FG } from '@/lib/color-scheme';
 import { useOwnViewerNumber } from '@/lib/use-own-viewer-number';
+import { maybeRecordFilmView } from '@/lib/record-view';
 
 /** Throttle scrub-driven seeks to ~12.5Hz — UI paints immediately, video seeks lag slightly. */
 const SCRUB_SEEK_INTERVAL_MS = 80;
@@ -233,9 +234,17 @@ function CinemaTheater({
       window.open(watchOnFjorrUrl, '_blank', 'noopener,noreferrer');
       return;
     }
+    // Flush Film Log / Viewer # on close — HLS often skips the ended event.
+    if (film?.id) {
+      maybeRecordFilmView(
+        String(film.id),
+        currentTimeRef.current,
+        durationRef.current || film.runtime || null
+      );
+    }
     if (backUrl) router.push(backUrl);
     else onClose();
-  }, [isEmbed, watchOnFjorrUrl, backUrl, router, onClose]);
+  }, [isEmbed, watchOnFjorrUrl, backUrl, router, onClose, film?.id, film?.runtime]);
 
   const togglePlay = useCallback(() => {
     const player = isPlayingLogo ? logoPlayerRef.current : filmPlayerRef.current;

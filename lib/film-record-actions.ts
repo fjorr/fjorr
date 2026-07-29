@@ -25,8 +25,7 @@ export type FilmLogEntry = {
 
 /**
  * Allocate Viewer #N for this film.
- * Anonymous: increments counter only.
- * Signed-in: increments (if first time) and writes a Film Log record.
+ * Prefer lib/record-view.ts from the browser; this remains for server callers.
  */
 export async function recordFilmView(
   filmId: string

@@ -149,8 +149,11 @@ export default function Footer({ variant }: FooterProps) {
             className={`inline-flex items-center gap-1.5 transition-colors hover:opacity-80 ${subTextColor}`}
           >
             <Icon name="globe" className="w-3.5 h-3.5" />
-            <span className="font-mono text-[11px] font-medium uppercase tracking-[0.05em] leading-none">
-              {locale}
+            <span className="font-sans text-[11px] font-medium tracking-normal leading-none">
+              {localeLabels[locale]}{' '}
+              <span className="font-mono uppercase tracking-[0.05em]">
+                ({locale})
+              </span>
             </span>
           </button>
 

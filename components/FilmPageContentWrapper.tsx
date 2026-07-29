@@ -88,6 +88,14 @@ export default function FilmPageContentWrapper({
   const handleSeekHandled = useCallback(() => setSeekTo(null), []);
 
   const handleCloseTheater = useCallback(() => {
+    if (filmData?.id) {
+      trackWatchProgress({
+        filmId: filmData.id,
+        slug: filmData.slug,
+        seconds: playbackTime,
+        duration: filmData.runtime,
+      });
+    }
     setShowTheater(false);
     setStartAt(undefined);
     setSeekTo(null);
@@ -98,7 +106,7 @@ export default function FilmPageContentWrapper({
       url.searchParams.delete('t');
       window.history.replaceState({}, '', url.pathname + url.search);
     }
-  }, []);
+  }, [filmData?.id, filmData?.runtime, filmData?.slug, playbackTime]);
 
   const handlePlayClick = useCallback(() => {
     const saved = getWatchProgress(filmData.id);
