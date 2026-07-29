@@ -3,12 +3,14 @@
  * Counts anonymous + signed-in views toward Viewer #.
  * Film Log records only attach when signed in.
  *
- * Posts to /api/film-view so the server cookie session is used (auth.uid()).
+ * Uses the browser Supabase client (same session as Account menu).
  */
 
+import { createClient } from '@/lib/supabase/client';
+
 /** Seconds of playback before a view counts toward Viewer #. */
-export const VIEW_COUNT_SECONDS = 15;
-const COMPLETE_RATIO = 0.92;
+export const VIEW_COUNT_SECONDS = 10;
+const COMPLETE_RATIO = 0.9;
 const LOCAL_KEY = 'fjorr:view-counted';
 export const FILM_RECORDED_EVENT = 'fjorr-film-recorded';
 
@@ -16,10 +18,9 @@ const sessionDone = new Set<string>();
 const sessionLogged = new Set<string>();
 const inflight = new Set<string>();
 
-/** For very short films, require roughly half the runtime (min 8s). */
 export function viewCountThreshold(duration?: number | null) {
-  if (duration && duration > 0 && duration < VIEW_COUNT_SECONDS * 2) {
-    return Math.max(8, Math.floor(duration * 0.45));
+  if (duration && duration > 0 && duration < 40) {
+    return Math.max(5, Math.floor(duration * 0.4));
   }
   return VIEW_COUNT_SECONDS;
 }
@@ -30,6 +31,7 @@ function shouldCount(
   force = false
 ): boolean {
   if (force) return true;
+  if (!Number.isFinite(seconds) || seconds < 0) return false;
   if (seconds >= viewCountThreshold(duration)) return true;
   if (duration && duration > 0 && seconds / duration >= COMPLETE_RATIO) {
     return true;
@@ -60,10 +62,6 @@ function markLocalCounted(filmId: string, viewerNumber: number) {
   }
 }
 
-function hasLocalCounted(filmId: string) {
-  return filmId in readLocalCounted();
-}
-
 function emitRecorded(
   filmId: string,
   viewerNumber: number,
@@ -88,36 +86,44 @@ export function maybeRecordFilmView(
   force = false
 ) {
   const id = String(filmId || '').trim();
-  if (!id) return;
+  if (!id || id === 'undefined' || id === 'null') return;
   if (typeof window === 'undefined') return;
-  if (inflight.has(id) || sessionLogged.has(id) || sessionDone.has(id)) return;
+  if (inflight.has(id) || sessionLogged.has(id)) return;
   if (!shouldCount(seconds, duration, force)) return;
 
-  // Anonymous browser already counted in a prior visit — skip new Viewer #
-  // increments, but still try once so a signed-in member gets a Film Log.
-  const alreadyLocal = hasLocalCounted(id);
+  // Anon already counted this browser — only retry when we might attach a Film Log.
+  if (sessionDone.has(id) && !force) return;
 
   inflight.add(id);
 
   void (async () => {
     try {
-      const res = await fetch('/api/film-view', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'same-origin',
-        body: JSON.stringify({ filmId: id }),
-      });
+      const supabase = createClient();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const signedIn = Boolean(session?.user);
 
-      if (!res.ok) {
-        console.error('record film view HTTP', res.status, await res.text());
+      // Already counted as anon this browser: skip unless signed in (need Film Log).
+      if (!signedIn && id in readLocalCounted()) {
+        sessionDone.add(id);
         return;
       }
 
-      const row = (await res.json()) as {
-        viewer_number?: number;
-        recorded?: boolean;
-        signed_in?: boolean;
-      };
+      const { data, error } = await supabase.rpc('record_film_view', {
+        p_film_id: id,
+      });
+
+      if (error) {
+        console.error('[fjorr] record_film_view failed:', error.message);
+        return;
+      }
+
+      const row = Array.isArray(data) ? data[0] : data;
+      if (!row) {
+        console.error('[fjorr] record_film_view empty result');
+        return;
+      }
 
       const viewerNumber = Number(row.viewer_number);
       const recorded = Boolean(row.recorded);
@@ -129,19 +135,16 @@ export function maybeRecordFilmView(
       if (recorded) {
         sessionLogged.add(id);
         sessionDone.add(id);
-      } else if (row.signed_in) {
-        // Signed in but RPC returned recorded=false — unexpected; allow retry.
-        console.error('film view signed in but not recorded', id);
-      } else if (alreadyLocal) {
-        // Still anonymous; don't keep burning Viewer #s.
+      } else if (!signedIn) {
         sessionDone.add(id);
       } else {
-        sessionDone.add(id);
+        // Signed in but no Film Log row — allow retry next tick.
+        console.error('[fjorr] signed in but recorded=false', id, row);
       }
 
       emitRecorded(id, viewerNumber, recorded);
     } catch (err) {
-      console.error('record film view failed:', err);
+      console.error('[fjorr] record film view failed:', err);
     } finally {
       inflight.delete(id);
     }

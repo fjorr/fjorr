@@ -359,6 +359,39 @@ function CinemaTheater({
     return () => cancelAnimationFrame(raf);
   }, [isPlaying, isPlayingLogo, plaqueCompact, captionsOn, paintTimeUi, syncCueToTime]);
 
+  // Film Log / Viewer # — native listeners + interval (don't rely on React onTimeUpdate alone).
+  useEffect(() => {
+    if (isEmbed || isPlayingLogo || !filmMediaEl || !film?.id) return;
+    const filmId = String(film.id);
+    const runtime = film.runtime ?? null;
+
+    const tick = (force = false) => {
+      const seconds = filmMediaEl.currentTime || 0;
+      const duration =
+        filmMediaEl.duration && Number.isFinite(filmMediaEl.duration)
+          ? filmMediaEl.duration
+          : runtime;
+      maybeRecordFilmView(filmId, seconds, duration, force);
+    };
+
+    const onTime = () => tick(false);
+    const onEndedNative = () => tick(true);
+
+    filmMediaEl.addEventListener('timeupdate', onTime);
+    filmMediaEl.addEventListener('ended', onEndedNative);
+    const interval = window.setInterval(() => {
+      if (!filmMediaEl.paused && !filmMediaEl.ended) tick(false);
+    }, 3000);
+
+    tick(false);
+
+    return () => {
+      filmMediaEl.removeEventListener('timeupdate', onTime);
+      filmMediaEl.removeEventListener('ended', onEndedNative);
+      window.clearInterval(interval);
+    };
+  }, [isEmbed, isPlayingLogo, filmMediaEl, film?.id, film?.runtime]);
+
   useEffect(() => {
     didApplyStartAtRef.current = false;
     if (elapsedTimeRef.current) elapsedTimeRef.current.textContent = '00:00';
