@@ -13,6 +13,7 @@ import { useTheaterChrome } from '@/lib/theater/use-theater-chrome';
 import TheaterRamsChrome, { TheaterRamsIdentity, PLAQUE_WIDTH } from '@/components/TheaterRamsChrome';
 import { useColorScheme } from '@/components/ColorSchemeProvider';
 import { LIGHT_PAGE_BG, LIGHT_PAGE_FG } from '@/lib/color-scheme';
+import { useOwnViewerNumber } from '@/lib/use-own-viewer-number';
 
 /** Throttle scrub-driven seeks to ~12.5Hz — UI paints immediately, video seeks lag slightly. */
 const SCRUB_SEEK_INTERVAL_MS = 80;
@@ -105,6 +106,7 @@ function CinemaTheater({
   const locale = parseLocale(useLocale());
   const t = useTranslations('Theater');
   const { isLight } = useColorScheme();
+  const viewerNumber = useOwnViewerNumber(film?.id ? String(film.id) : null);
   const isEmbed = mode === 'embed';
   const chromeFg = isLight ? LIGHT_PAGE_FG : '#F5F5F7';
   const shellBg = isLight ? LIGHT_PAGE_BG : '#000000';
@@ -676,6 +678,9 @@ function CinemaTheater({
     return dateVal || locationVal || undefined;
   })();
 
+  const ramsFilmCredit =
+    viewerNumber != null ? t('viewerNumber', { number: viewerNumber }) : undefined;
+
   const ramsIdentity = !isPlayingLogo ? (
       <TheaterRamsIdentity
         isLight={isLight}
@@ -683,6 +688,7 @@ function CinemaTheater({
         onLogoClick={handleCloseNavigation}
         filmTitle={film?.name || undefined}
         filmMeta={ramsFilmMeta}
+        filmCredit={ramsFilmCredit}
       />
     ) : null;
 
@@ -698,6 +704,7 @@ function CinemaTheater({
       onLogoClick={handleCloseNavigation}
       filmTitle={film?.name || undefined}
       filmMeta={ramsFilmMeta}
+      filmCredit={ramsFilmCredit}
       toolsSlot={ramsToolsSlot}
       hideHeader
       onScrubStart={handleScrubStart}

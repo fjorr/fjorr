@@ -1,7 +1,10 @@
 /**
  * Local continue-watching progress (no accounts — privacy-aligned).
  * Keyed by film id in localStorage.
+ * Signed-in Film Logs are a separate ledger (see record-view.ts).
  */
+
+import { maybeRecordFilmView } from '@/lib/record-view';
 
 export type WatchProgress = {
   filmId: string;
@@ -64,6 +67,13 @@ export function clearWatchProgress(filmId: string) {
   lastWriteByFilm.delete(filmId);
 }
 
+/** Clear local resume + try to record a Film Log / viewer count on ended. */
+export function finishWatchProgress(filmId: string) {
+  if (!filmId) return;
+  clearWatchProgress(filmId);
+  maybeRecordFilmView(filmId, Number.POSITIVE_INFINITY, 1, true);
+}
+
 export function isWatchableProgress(
   progress: WatchProgress | null | undefined,
   durationHint?: number | null
@@ -84,6 +94,7 @@ export function formatResumeClock(seconds: number) {
 
 /**
  * Persist playback position (throttled). Clears when near the end.
+ * Also records a viewer count / Film Log when the watch threshold is met.
  */
 export function trackWatchProgress(input: {
   filmId: string;
@@ -92,15 +103,19 @@ export function trackWatchProgress(input: {
   duration?: number | null;
 }) {
   const { filmId, slug, seconds, duration } = input;
-  if (!filmId || !slug || !canUseStorage()) return;
+  if (!filmId || !slug) return;
 
   const dur = duration && duration > 0 ? duration : undefined;
 
   if (dur && seconds / dur >= COMPLETE_RATIO) {
     clearWatchProgress(filmId);
+    maybeRecordFilmView(filmId, seconds, dur);
     return;
   }
 
+  maybeRecordFilmView(filmId, seconds, dur);
+
+  if (!canUseStorage()) return;
   if (seconds < MIN_SECONDS) return;
 
   const now = Date.now();

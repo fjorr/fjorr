@@ -8,7 +8,7 @@ interface ContactPillProps {
 }
 
 export const ContactPill: React.FC<ContactPillProps> = ({ 
-  email = 'scout@fjorr.com', 
+  email = 'control@fjorr.com', 
   className = '' 
 }) => {
   const [copied, setCopied] = useState(false);

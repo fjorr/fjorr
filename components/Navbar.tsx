@@ -7,6 +7,7 @@ import { Icon } from '@/components/ui/Icons';
 import { localeLabels, locales, stripLocalePrefix, type AppLocale } from '@/i18n/config';
 import { Link, usePathname, useRouter } from '@/i18n/navigation';
 import ColorSchemeToggle from '@/components/ColorSchemeToggle';
+import AccountNavLink from '@/components/AccountNavLink';
 
 const SignInForm = dynamic(() => import('@/components/SignInForm'), {
   ssr: false,
@@ -41,7 +42,7 @@ function Navbar({ variant = 'light' }: NavbarProps) {
   const [emailCopied, setEmailCopied] = useState(false);
   const [scrolledPast, setScrolledPast] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
-  const contactEmail = 'scout@fjorr.com';
+  const contactEmail = 'control@fjorr.com';
 
   const isOpen = panel !== 'closed';
   const showCloseIcon = panel === 'nav' || panel === 'auth';
@@ -337,6 +338,19 @@ function Navbar({ variant = 'light' }: NavbarProps) {
                         );
                       })}
                     </nav>
+                  </div>
+
+                  <div
+                    className={`pt-5 border-t ${
+                      variant === 'light' ? 'border-white/10' : 'border-black/8'
+                    }`}
+                  >
+                    <AccountNavLink
+                      onNavigate={closePanel}
+                      onSignIn={() => openAuth('/account')}
+                      className={`font-sans text-[15px] font-semibold tracking-tight transition-opacity hover:opacity-70 ${textColor}`}
+                      mutedClassName={`font-sans text-[13px] font-medium leading-snug ${mutedLabel}`}
+                    />
                   </div>
 
                   <div

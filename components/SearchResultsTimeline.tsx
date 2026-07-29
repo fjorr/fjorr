@@ -11,7 +11,7 @@ import {
   themesFromSearchItems,
 } from '@/lib/filter-search-items';
 import {
-  clearWatchProgress,
+  finishWatchProgress,
   trackWatchProgress,
 } from '@/lib/watch-progress';
 import { createClient } from '@/lib/supabase/client';
@@ -177,7 +177,7 @@ export default function SearchResultsTimeline({
             });
           }}
           onEnded={() => {
-            if (selectedFilm?.id) clearWatchProgress(selectedFilm.id);
+            if (selectedFilm?.id) finishWatchProgress(selectedFilm.id);
           }}
           onClose={() => {
             setShowTheater(false);

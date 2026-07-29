@@ -9,7 +9,7 @@ import type { MinimalFilm } from '@/components/MinimalHomeList';
 import type { MinimalArtifact } from '@/components/MinimalArtifactList';
 import { themesFromFilms } from '@/lib/filter-search-items';
 import {
-  clearWatchProgress,
+  finishWatchProgress,
   trackWatchProgress,
 } from '@/lib/watch-progress';
 import { openTheaterFromFilm } from '@/lib/theater-open';
@@ -154,7 +154,7 @@ export default function TimelineHomeList({
             });
           }}
           onEnded={() => {
-            if (selectedFilm?.id) clearWatchProgress(selectedFilm.id);
+            if (selectedFilm?.id) finishWatchProgress(selectedFilm.id);
           }}
           onClose={() => {
             setShowTheater(false);

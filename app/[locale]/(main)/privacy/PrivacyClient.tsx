@@ -42,8 +42,8 @@ export default function PrivacyClient() {
             "@context": "https://schema.org",
             "@type": "WebPage",
             "name": "Fjorr Privacy Policy",
-            "description": "Fjorr digital privacy commitment: No accounts. No tracking. No cookies.",
-            "dateModified": "2026-01-01"
+            "description": "Fjorr privacy: optional Scout accounts, no ad tracking, no selling personal data. Watching stays open.",
+            "dateModified": "2026-07-28"
           })
         }}
       />

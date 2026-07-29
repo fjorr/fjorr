@@ -7,7 +7,7 @@ import TheaterOpenShell from '@/components/TheaterOpenShell';
 import { useDisplayMode } from '@/components/DisplayModeProvider';
 import { useMinimalFilterOptional } from '@/components/MinimalFilterContext';
 import {
-  clearWatchProgress,
+  finishWatchProgress,
   trackWatchProgress,
 } from '@/lib/watch-progress';
 import { openTheaterFromFilm } from '@/lib/theater-open';
@@ -63,7 +63,7 @@ export default function FeatureRailClient({ films }: { films: any[] }) {
   );
 
   const handleEnded = useCallback(() => {
-    if (selectedFilm?.id) clearWatchProgress(selectedFilm.id);
+    if (selectedFilm?.id) finishWatchProgress(selectedFilm.id);
   }, [selectedFilm?.id]);
 
   if (!films?.length) return null;

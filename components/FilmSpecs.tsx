@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
+import { useOwnViewerNumber } from '@/lib/use-own-viewer-number';
 
 const FilmTranscript = dynamic(() => import('./FilmTranscript'), {
   ssr: false,
@@ -61,6 +62,7 @@ export default function FilmSpecs({
   onSeek,
 }: FilmSpecsProps) {
   const t = useTranslations('Film');
+  const viewerNumber = useOwnViewerNumber(film?.id ? String(film.id) : null);
   const releaseYear = film.release_date ? new Date(film.release_date).getFullYear() : '2026';
   const displayRuntime = film.runtime
     ? t('runtimeMin', { n: Math.ceil(film.runtime / 60) })
@@ -133,6 +135,9 @@ export default function FilmSpecs({
           <SpecRow label={t('runtimeLabel')} value={displayRuntime} />
           <SpecRow label={t('ratingLabel')} value={displayRating} />
           <SpecRow label={t('releasedLabel')} value={releaseYear} />
+          {viewerNumber != null ? (
+            <SpecRow label={t('viewerLabel')} value={String(viewerNumber)} />
+          ) : null}
         </div>
       </div>
 

@@ -4,30 +4,55 @@ import React, { useState } from 'react';
 import { useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
+import { saveOwnProfile } from '@/lib/profile-actions';
+import {
+  normalizeSlug,
+  profileUrlPrefix,
+  type ScoutProfile,
+} from '@/lib/profile';
 
 export default function AccountClient({
   email,
-  initialName,
+  profile,
 }: {
   email: string;
-  initialName: string;
+  profile: ScoutProfile;
 }) {
   const t = useTranslations('Account');
   const router = useRouter();
-  const [name, setName] = useState(initialName);
-  const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [name, setName] = useState(profile.display_name);
+  const [slug, setSlug] = useState(profile.slug);
+  const [isPublic, setIsPublic] = useState(profile.is_public);
+  const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>(
+    'idle'
+  );
   const [error, setError] = useState<string | null>(null);
+
+  const urlPrefix = profileUrlPrefix(profile.member_number);
+
+  const handleSlugBlur = () => {
+    const next = normalizeSlug(slug);
+    if (next) setSlug(next);
+  };
 
   const handleSave = async (event: React.FormEvent) => {
     event.preventDefault();
     setStatus('saving');
     setError(null);
     try {
-      const supabase = createClient();
-      const { error: updateError } = await supabase.auth.updateUser({
-        data: { display_name: name.trim() },
+      const result = await saveOwnProfile({
+        displayName: name,
+        slug,
+        isPublic,
       });
-      if (updateError) throw updateError;
+      if (!result.ok) {
+        setStatus('error');
+        setError(result.error);
+        return;
+      }
+      setName(result.profile.display_name);
+      setSlug(result.profile.slug);
+      setIsPublic(result.profile.is_public);
       setStatus('saved');
       router.refresh();
       window.setTimeout(() => setStatus('idle'), 2000);
@@ -62,7 +87,16 @@ export default function AccountClient({
         <p className="font-sans text-[15px] text-white/80 truncate">{email}</p>
       </div>
 
-      <form onSubmit={handleSave} className="flex flex-col gap-4">
+      <div className="flex flex-col gap-2 text-left">
+        <span className="font-sans text-[12px] font-semibold uppercase tracking-wide text-white/35">
+          {t('memberNumber')}
+        </span>
+        <p className="font-mono text-[15px] text-white/80">
+          #{profile.member_number}
+        </p>
+      </div>
+
+      <form onSubmit={handleSave} className="flex flex-col gap-5">
         <label className="flex flex-col gap-2 text-left">
           <span className="font-sans text-[12px] font-semibold uppercase tracking-wide text-white/35">
             {t('displayName')}
@@ -73,8 +107,52 @@ export default function AccountClient({
             onChange={(e) => setName(e.target.value)}
             placeholder={t('displayNamePlaceholder')}
             maxLength={80}
+            autoComplete="nickname"
             className="h-12 rounded-[10px] bg-white/5 px-4 font-sans text-[15px] text-white placeholder:text-white/35 focus:bg-white/10 focus:outline-none transition-colors"
           />
+        </label>
+
+        <label className="flex flex-col gap-2 text-left">
+          <span className="font-sans text-[12px] font-semibold uppercase tracking-wide text-white/35">
+            {t('scoutSlug')}
+          </span>
+          <div className="flex items-center h-12 rounded-[10px] bg-white/5 focus-within:bg-white/10 transition-colors overflow-hidden">
+            <span className="pl-4 font-mono text-[13px] text-white/35 shrink-0 select-none">
+              {urlPrefix}
+            </span>
+            <input
+              type="text"
+              value={slug}
+              onChange={(e) => setSlug(e.target.value.toLowerCase())}
+              onBlur={handleSlugBlur}
+              placeholder={t('scoutSlugPlaceholder')}
+              maxLength={32}
+              spellCheck={false}
+              autoCapitalize="off"
+              autoCorrect="off"
+              className="min-w-0 flex-1 h-full bg-transparent pr-4 font-mono text-[15px] text-white placeholder:text-white/35 focus:outline-none"
+            />
+          </div>
+          <span className="font-sans text-[12px] text-white/35 leading-snug">
+            {t('scoutSlugHint')}
+          </span>
+        </label>
+
+        <label className="flex items-start gap-3 text-left cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={isPublic}
+            onChange={(e) => setIsPublic(e.target.checked)}
+            className="mt-1 w-4 h-4 rounded border-white/20 bg-white/5 accent-white"
+          />
+          <span className="flex flex-col gap-0.5">
+            <span className="font-sans text-[14px] font-semibold text-white/85">
+              {t('publicProfile')}
+            </span>
+            <span className="font-sans text-[12px] text-white/40 leading-snug">
+              {t('publicProfileHint')}
+            </span>
+          </span>
         </label>
 
         {error && (

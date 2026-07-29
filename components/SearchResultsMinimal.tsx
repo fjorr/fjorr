@@ -14,7 +14,7 @@ import {
 import SearchNadaView from '@/components/SearchNadaView';
 import SearchMatchLine from '@/components/SearchMatchLine';
 import {
-  clearWatchProgress,
+  finishWatchProgress,
   trackWatchProgress,
   formatResumeClock,
 } from '@/lib/watch-progress';
@@ -180,7 +180,7 @@ export default function SearchResultsMinimal({ results }: { results: SearchItem[
             });
           }}
           onEnded={() => {
-            if (selectedFilm?.id) clearWatchProgress(selectedFilm.id);
+            if (selectedFilm?.id) finishWatchProgress(selectedFilm.id);
           }}
           onClose={() => {
             setShowTheater(false);

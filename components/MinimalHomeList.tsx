@@ -9,7 +9,7 @@ import PrefetchLink from '@/components/PrefetchLink';
 import SearchNadaView from '@/components/SearchNadaView';
 import { themesFromFilms } from '@/lib/filter-search-items';
 import {
-  clearWatchProgress,
+  finishWatchProgress,
   trackWatchProgress,
   formatResumeClock,
 } from '@/lib/watch-progress';
@@ -201,7 +201,7 @@ export default function MinimalHomeList({ films }: { films: MinimalFilm[] }) {
             });
           }}
           onEnded={() => {
-            if (selectedFilm?.id) clearWatchProgress(selectedFilm.id);
+            if (selectedFilm?.id) finishWatchProgress(selectedFilm.id);
           }}
           onClose={() => {
             setShowTheater(false);

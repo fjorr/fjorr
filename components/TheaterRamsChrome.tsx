@@ -6,6 +6,8 @@ type IdentityProps = {
   isLight?: boolean;
   filmTitle?: string;
   filmMeta?: string;
+  /** Quiet credit, e.g. Viewer #12 — only when earned. */
+  filmCredit?: string;
   logoLabel?: string;
   onLogoClick?: () => void;
   className?: string;
@@ -16,6 +18,7 @@ export function TheaterRamsIdentity({
   isLight = false,
   filmTitle,
   filmMeta,
+  filmCredit,
   logoLabel,
   onLogoClick,
   className = '',
@@ -64,6 +67,13 @@ export function TheaterRamsIdentity({
               {filmMeta}
             </p>
           ) : null}
+          {filmCredit ? (
+            <p
+              className={`font-mono text-[11px] font-medium tracking-normal leading-snug text-center truncate w-full ${muted}`}
+            >
+              {filmCredit}
+            </p>
+          ) : null}
         </div>
       ) : null}
     </div>
@@ -79,6 +89,7 @@ type Props = {
   isLight?: boolean;
   filmTitle?: string;
   filmMeta?: string;
+  filmCredit?: string;
   toolsSlot?: React.ReactNode;
   logoLabel?: string;
   onLogoClick?: () => void;
@@ -138,6 +149,7 @@ export default function TheaterRamsChrome({
   isLight = false,
   filmTitle,
   filmMeta,
+  filmCredit,
   toolsSlot,
   logoLabel,
   onLogoClick,
@@ -163,6 +175,7 @@ export default function TheaterRamsChrome({
           isLight={isLight}
           filmTitle={filmTitle}
           filmMeta={filmMeta}
+          filmCredit={filmCredit}
           logoLabel={logoLabel}
           onLogoClick={onLogoClick}
           className="!w-full"

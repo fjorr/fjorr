@@ -10,7 +10,7 @@ import FilmSpecs from './FilmSpecs';
 import { useWatchProgress } from '@/components/useWatchProgress';
 import TheaterOpenShell from '@/components/TheaterOpenShell';
 import {
-  clearWatchProgress,
+  finishWatchProgress,
   getWatchProgress,
   isWatchableProgress,
   trackWatchProgress,
@@ -134,7 +134,7 @@ export default function FilmPageContentWrapper({
   );
 
   const handleEnded = useCallback(() => {
-    if (filmData?.id) clearWatchProgress(filmData.id);
+    if (filmData?.id) finishWatchProgress(filmData.id);
   }, [filmData?.id]);
 
   const theaterFilm = useMemo(
