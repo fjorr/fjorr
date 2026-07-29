@@ -76,7 +76,7 @@ export default function FilmSpecs({
       .from('transcript')
       .select('content, language_code')
       .eq('film_id', film.id)
-      .then(({ data }) => {
+      .then(({ data }: { data: TranscriptRow[] | null }) => {
         if (!cancelled && data) setTranscripts(data);
       });
     return () => {

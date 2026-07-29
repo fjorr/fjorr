@@ -99,7 +99,7 @@ export default function SearchResultsTimeline({
       .from('film')
       .select('id, story_date')
       .in('id', filmIds)
-      .then(({ data }) => {
+      .then(({ data }: { data: { id: string; story_date: string | null }[] | null }) => {
         if (cancelled || !data) return;
         const next: Record<string, string | null> = {};
         for (const row of data) {

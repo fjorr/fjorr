@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import type { Session } from '@supabase/supabase-js';
 import { Link, useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { Icon } from '@/components/ui/Icons';
@@ -59,7 +60,7 @@ export default function AccountNavLink({
       });
     };
 
-    supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then(({ data }: { data: { session: Session | null } }) => {
       if (!mounted) return;
       const next = !!data.session;
       setSignedIn(next);
@@ -69,7 +70,7 @@ export default function AccountNavLink({
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((_event: string, session: Session | null) => {
       if (!mounted) return;
       const next = !!session;
       setSignedIn(next);
