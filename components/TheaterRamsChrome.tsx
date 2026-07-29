@@ -91,6 +91,8 @@ type Props = {
   filmMeta?: string;
   filmCredit?: string;
   toolsSlot?: React.ReactNode;
+  /** Extra content under tools (Plus note strip). */
+  belowToolsSlot?: React.ReactNode;
   logoLabel?: string;
   onLogoClick?: () => void;
   onScrubStart: () => void;
@@ -151,6 +153,7 @@ export default function TheaterRamsChrome({
   filmMeta,
   filmCredit,
   toolsSlot,
+  belowToolsSlot,
   logoLabel,
   onLogoClick,
   onScrubStart,
@@ -235,11 +238,15 @@ export default function TheaterRamsChrome({
         <span ref={durationRef} className={`${clockClass} text-right ${clockTone}`} />
       </div>
 
-      <div className={`min-h-[18px] h-[18px] flex items-center justify-center w-full ${muted}`}>
-        <div className="flex items-center justify-center flex-nowrap min-w-0 gap-x-2 min-[400px]:gap-x-3.5">
+      <div className={`min-h-[18px] flex items-center justify-center w-full ${muted}`}>
+        <div className="flex items-center justify-center flex-wrap min-w-0 gap-x-2 gap-y-2 min-[400px]:gap-x-3.5">
           {toolsSlot}
         </div>
       </div>
+
+      {belowToolsSlot ? (
+        <div className="w-full flex justify-center">{belowToolsSlot}</div>
+      ) : null}
     </div>
   );
 }

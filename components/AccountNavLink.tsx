@@ -133,9 +133,6 @@ export default function AccountNavLink({
         <Link href="/account" onClick={onNavigate} className={className}>
           {t('account')}
         </Link>
-        <Link href="/bounties" onClick={onNavigate} className={className}>
-          {t('bounties')}
-        </Link>
         <Link href="/nominate" onClick={onNavigate} className={className}>
           {t('nominate')}
         </Link>
@@ -161,9 +158,6 @@ export default function AccountNavLink({
         <span>{t('signIn')}</span>
         <Icon name="arrowRight" className="w-3.5 h-3.5 opacity-55" />
       </button>
-      <Link href="/bounties" onClick={onNavigate} className={className}>
-        {t('bounties')}
-      </Link>
       <Link href="/nominate" onClick={onNavigate} className={className}>
         {t('nominate')}
       </Link>

@@ -4,6 +4,12 @@ import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
+import VoyageurBadgeLoader from '@/components/VoyageurBadgeLoader';
+import { useColorScheme } from '@/components/ColorSchemeProvider';
+
+const TheaterPlusInfo = dynamic(() => import('@/components/TheaterPlusInfo'), {
+  ssr: false,
+});
 
 const FilmTranscript = dynamic(() => import('./FilmTranscript'), {
   ssr: false,
@@ -19,6 +25,7 @@ interface TranscriptRow {
 
 interface CreatorMapRow {
   role: string;
+  role_code?: string | null;
   creator: {
     name: string;
   } | null;
@@ -31,6 +38,8 @@ interface FilmSpecsProps {
   tags: string[];
   creators?: CreatorMapRow[];
   onSeek?: (seconds: number) => void;
+  /** Opens theater in Plus mode. */
+  onOpenPlus?: () => void;
 }
 
 function SpecRow({
@@ -52,6 +61,11 @@ function SpecRow({
   );
 }
 
+function isDirectorCredit(row: CreatorMapRow) {
+  if (row.role_code === 'director') return true;
+  return /^director$/i.test(String(row.role || '').trim());
+}
+
 export default function FilmSpecs({
   film,
   audioLanguages,
@@ -59,14 +73,20 @@ export default function FilmSpecs({
   tags,
   creators = [],
   onSeek,
+  onOpenPlus,
 }: FilmSpecsProps) {
   const t = useTranslations('Film');
+  const { isLight } = useColorScheme();
   const releaseYear = film.release_date ? new Date(film.release_date).getFullYear() : '2026';
   const displayRuntime = film.runtime
     ? t('runtimeMin', { n: Math.ceil(film.runtime / 60) })
     : t('runtimeMin', { n: 1 });
   const displayRating = film.rating?.name ? t('ages', { n: film.rating.name }) : t('agesFallback');
   const [transcripts, setTranscripts] = useState<TranscriptRow[]>([]);
+  const [plusInfoOpen, setPlusInfoOpen] = useState(false);
+
+  const inviteLinkClass =
+    'font-semibold text-page-muted underline underline-offset-4 decoration-[color-mix(in_srgb,var(--page-fg)_22%,transparent)] hover:text-page hover:decoration-[color-mix(in_srgb,var(--page-fg)_40%,transparent)] transition-colors';
 
   useEffect(() => {
     if (!film?.id || subtitles.length === 0) return;
@@ -89,6 +109,16 @@ export default function FilmSpecs({
     audioLanguages.length > 0 || subtitles.length > 0 || tags.length > 0;
 
   const placeLine = [film.story_date, film.location].filter(Boolean).join(' · ');
+  const directorNote =
+    typeof film.director_note === 'string' ? film.director_note.trim() : '';
+  const directorCredits = creators.filter(
+    (row) => isDirectorCredit(row) && row.creator?.name?.trim()
+  );
+  const directorNames = directorCredits
+    .map((row) => row.creator!.name.trim())
+    .filter(Boolean);
+  const directorRoleLabel =
+    directorCredits[0]?.role?.trim() || t('directorRole');
 
   return (
     <div className="w-full max-w-3xl px-8 md:px-12 mx-auto text-left text-page font-sans select-none relative z-20">
@@ -106,6 +136,27 @@ export default function FilmSpecs({
           </p>
         )}
 
+        {film?.id ? <VoyageurBadgeLoader filmId={String(film.id)} /> : null}
+
+        {directorNote.length > 0 && (
+          <div className="mt-6 max-w-2xl">
+            <h3 className="text-[13px] font-medium text-page-faint mb-2 tracking-tight">
+              {t('directorNote')}
+            </h3>
+            <p className="text-[15px] md:text-base leading-relaxed text-page-muted font-medium whitespace-pre-line">
+              {directorNote}
+            </p>
+            {directorNames.length > 0 ? (
+              <p className="mt-3 text-[13px] sm:text-[14px] font-medium text-page-faint tracking-tight">
+                {t('directorNoteAttribution', {
+                  name: directorNames.join(' & '),
+                  role: directorRoleLabel,
+                })}
+              </p>
+            ) : null}
+          </div>
+        )}
+
         {hasTranscript && (
           <div className="mt-5">
             <FilmTranscript
@@ -116,7 +167,33 @@ export default function FilmSpecs({
             />
           </div>
         )}
+
+        {onOpenPlus ? (
+          <p className="mt-6 text-[13px] text-page-faint leading-snug max-w-md">
+            {t('plusInvite')}{' '}
+            <button type="button" onClick={onOpenPlus} className={inviteLinkClass}>
+              {t('plusInviteCta')}
+            </button>
+            <span className="text-page-faint/80" aria-hidden>
+              {' · '}
+            </span>
+            <button
+              type="button"
+              onClick={() => setPlusInfoOpen(true)}
+              className={inviteLinkClass}
+            >
+              {t('plusInviteInfo')}
+            </button>
+          </p>
+        ) : null}
       </div>
+
+      <TheaterPlusInfo
+        open={plusInfoOpen}
+        onClose={() => setPlusInfoOpen(false)}
+        isLight={isLight}
+        variant="page"
+      />
 
       {/* Specs — self-explanatory grid, no section title */}
       <div className="pt-8 max-w-2xl">

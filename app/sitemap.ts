@@ -45,7 +45,18 @@ function entry(
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const staticPaths = ['/', '/about', '/bounties', '/nominate', '/partner', '/privacy', '/terms'];
+  const staticPaths = [
+    '/',
+    '/about',
+    '/principles',
+    '/bounties',
+    '/bureaux',
+    '/plus',
+    '/nominate',
+    '/partner',
+    '/privacy',
+    '/terms',
+  ];
   const staticRoutes: MetadataRoute.Sitemap = staticPaths.map((path) =>
     entry(
       path,

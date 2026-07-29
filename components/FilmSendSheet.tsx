@@ -47,6 +47,16 @@ export default function FilmSendSheet({
   const timeUrl = timeSeconds != null ? `${filmUrl}?t=${timeSeconds}` : null;
   const timeLabel = timeSeconds != null ? formatCueClock(timeSeconds) : null;
 
+  const momentText =
+    timeUrl && timeLabel
+      ? t('sendMomentText', {
+          title: film.name || 'Fjorr',
+          time: timeLabel,
+        })
+      : null;
+  const momentPayload =
+    momentText && timeUrl ? `${momentText}\n${timeUrl}` : null;
+
   const runtimeLabel = film.runtime
     ? `${Math.max(1, Math.ceil(film.runtime / 60))}m`
     : null;
@@ -99,7 +109,7 @@ export default function FilmSendSheet({
     try {
       await navigator.share({
         title: film.name || 'Fjorr',
-        text: film.teaser || t('sendNativeText'),
+        text: momentText || film.teaser || t('sendNativeText'),
         url: timeUrl || filmUrl,
       });
       onClose();
@@ -130,7 +140,13 @@ export default function FilmSendSheet({
               {film.name}
             </p>
             <p className="font-sans text-[12px] text-white/45 mt-1">
-              {[runtimeLabel, 'Fjorr'].filter(Boolean).join(' · ')}
+              {[
+                timeLabel ? t('sendMomentMeta', { time: timeLabel }) : null,
+                runtimeLabel,
+                'Fjorr',
+              ]
+                .filter(Boolean)
+                .join(' · ')}
             </p>
             {film.teaser && (
               <p className="font-sans text-[13px] text-white/55 mt-2 line-clamp-2 leading-snug">
@@ -151,23 +167,29 @@ export default function FilmSendSheet({
         </div>
 
         <div className="flex flex-col gap-2">
+          {momentPayload && timeLabel ? (
+            <button
+              type="button"
+              onClick={() => handleCopy('moment', momentPayload)}
+              className="w-full h-11 rounded-[10px] bg-white text-black font-sans font-bold text-sm hover:bg-white/90 transition-colors"
+            >
+              {copied === 'moment'
+                ? t('sendCopied')
+                : t('sendMoment', { time: timeLabel })}
+            </button>
+          ) : null}
+
           <button
             type="button"
             onClick={() => handleCopy('link', filmUrl)}
-            className="w-full h-11 rounded-[10px] bg-white text-black font-sans font-bold text-sm hover:bg-white/90 transition-colors"
+            className={`w-full h-11 rounded-[10px] font-sans font-semibold text-sm transition-colors ${
+              momentPayload
+                ? 'bg-white/10 text-white hover:bg-white/15'
+                : 'bg-white text-black font-bold hover:bg-white/90'
+            }`}
           >
             {copied === 'link' ? t('sendCopied') : t('sendCopyLink')}
           </button>
-
-          {timeUrl && timeLabel && (
-            <button
-              type="button"
-              onClick={() => handleCopy('time', timeUrl)}
-              className="w-full h-11 rounded-[10px] bg-white/10 text-white font-sans font-semibold text-sm hover:bg-white/15 transition-colors"
-            >
-              {copied === 'time' ? t('sendCopied') : t('sendCopyAt', { time: timeLabel })}
-            </button>
-          )}
 
           <button
             type="button"

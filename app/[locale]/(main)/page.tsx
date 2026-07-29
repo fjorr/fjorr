@@ -1,8 +1,9 @@
 import React, { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
-import PromoSplit from '@/components/PromoSplit';
 import BountyHomePoster from '@/components/BountyHomePoster';
+import BureauxHomePoster from '@/components/BureauxHomePoster';
+import PlusHomePoster from '@/components/PlusHomePoster';
 import FeatureRailLoader from '@/components/FeatureRailLoader';
 import FeatureRailGate from '@/components/FeatureRailGate';
 import CineHomeLoader from '@/components/CineHomeLoader';
@@ -107,11 +108,13 @@ export default async function Home() {
           <BountyHomePoster />
         </Suspense>
 
-        <FeatureRailGate>
-          <div className="mt-12 md:mt-16">
-            <PromoSplit />
-          </div>
-        </FeatureRailGate>
+        <Suspense fallback={null}>
+          <BureauxHomePoster />
+        </Suspense>
+
+        <Suspense fallback={null}>
+          <PlusHomePoster />
+        </Suspense>
       </>
     ) : null;
 

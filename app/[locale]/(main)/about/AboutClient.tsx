@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -332,7 +333,14 @@ export default function AboutClient() {
 
       </div>
 
-      
+      <div className="relative z-10 w-full bg-black px-6 py-16 flex justify-center">
+        <Link
+          href="/partner"
+          className="font-sans text-[14px] font-semibold text-white/45 hover:text-white/80 transition-colors underline underline-offset-4 decoration-white/20"
+        >
+          {t('workWithUs')}
+        </Link>
+      </div>
 
     </div>
   );

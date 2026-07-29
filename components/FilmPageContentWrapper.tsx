@@ -15,7 +15,6 @@ import {
   isWatchableProgress,
   trackWatchProgress,
 } from '@/lib/watch-progress';
-
 const CinemaTheater = dynamic(() => import('@/components/CinemaTheater'), {
   ssr: false,
   loading: () => <TheaterOpenShell />,
@@ -52,6 +51,7 @@ export default function FilmPageContentWrapper({
   const [seekTo, setSeekTo] = useState<number | null>(null);
   const [playbackTime, setPlaybackTime] = useState(0);
   const [shareSeconds, setShareSeconds] = useState<number | null>(null);
+  const [openInPlus, setOpenInPlus] = useState(false);
   const theaterOpenRef = React.useRef(false);
   const lastShareFloorRef = useRef<number | null>(null);
   const resumeProgress = useWatchProgress(filmData?.id, filmData?.runtime);
@@ -100,6 +100,7 @@ export default function FilmPageContentWrapper({
     setStartAt(undefined);
     setSeekTo(null);
     setPlaybackTime(0);
+    setOpenInPlus(false);
     lastShareFloorRef.current = null;
     const url = new URL(window.location.href);
     if (url.searchParams.has('t')) {
@@ -113,6 +114,18 @@ export default function FilmPageContentWrapper({
     const resumeAt = isWatchableProgress(saved, filmData.runtime)
       ? saved.seconds
       : undefined;
+    setOpenInPlus(false);
+    setStartAt(resumeAt);
+    setSeekTo(null);
+    setShowTheater(true);
+  }, [filmData.id, filmData.runtime]);
+
+  const handleOpenPlus = useCallback(() => {
+    const saved = getWatchProgress(filmData.id);
+    const resumeAt = isWatchableProgress(saved, filmData.runtime)
+      ? saved.seconds
+      : undefined;
+    setOpenInPlus(true);
     setStartAt(resumeAt);
     setSeekTo(null);
     setShowTheater(true);
@@ -175,6 +188,7 @@ export default function FilmPageContentWrapper({
             onTimeUpdate={handleTimeUpdate}
             onEnded={handleEnded}
             film={theaterFilm}
+            initialTheaterMode={openInPlus ? 'plus' : 'watch'}
           />
 
           {subtitlesData.length > 0 && (
@@ -224,6 +238,7 @@ export default function FilmPageContentWrapper({
                 tags={tags}
                 creators={creatorRows}
                 onSeek={openFromTime}
+                onOpenPlus={handleOpenPlus}
               />
             </div>
           )}

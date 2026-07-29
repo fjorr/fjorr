@@ -43,6 +43,16 @@ export default function BountiesClient({
         <p className="font-sans font-medium text-[15px] sm:text-[16px] leading-relaxed text-page-muted max-w-md tracking-tight">
           {t('description')}
         </p>
+        <p className="font-sans text-[13px] sm:text-[14px] leading-snug text-page-faint max-w-sm tracking-tight">
+          {t('principlesLead')}{' '}
+          <Link
+            href="/principles"
+            className="underline underline-offset-2 hover:text-page-muted transition-colors"
+          >
+            {t('principlesLink')}
+          </Link>
+          .
+        </p>
         {!signedIn && (
           <p className="font-sans text-[13px] text-page-faint leading-snug max-w-sm">
             {t('membersNote')}{' '}

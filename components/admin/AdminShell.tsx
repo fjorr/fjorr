@@ -11,15 +11,27 @@ type NavFolder = {
   children: NavLeaf[];
 };
 
-const INTELLIGENCE: NavFolder = {
-  id: 'intelligence',
-  label: 'Intelligence',
-  children: [
-    { href: '/admin', label: 'Overview', exact: true },
-    { href: '/admin/nominations', label: 'Nominations' },
-    { href: '/admin/bounties', label: 'Bounties' },
-  ],
-};
+const FOLDERS: NavFolder[] = [
+  {
+    id: 'intelligence',
+    label: 'Intelligence',
+    children: [
+      { href: '/admin', label: 'Overview', exact: true },
+      { href: '/admin/nominations', label: 'Nominations' },
+      { href: '/admin/bounties', label: 'Bounties' },
+    ],
+  },
+  {
+    id: 'plus',
+    label: 'Plus Machine',
+    children: [{ href: '/admin/plus', label: 'Notes' }],
+  },
+  {
+    id: 'bureaux',
+    label: 'Bureaux',
+    children: [{ href: '/admin/bureaux', label: 'Roster' }],
+  },
+];
 
 function leafActive(pathname: string, item: NavLeaf) {
   if (item.exact) return pathname === item.href;
@@ -42,10 +54,18 @@ export default function AdminShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname() || '';
-  const [open, setOpen] = useState(true);
+  const [openById, setOpenById] = useState<Record<string, boolean>>(() =>
+    Object.fromEntries(FOLDERS.map((f) => [f.id, true]))
+  );
 
   useEffect(() => {
-    if (folderActive(pathname, INTELLIGENCE)) setOpen(true);
+    setOpenById((prev) => {
+      const next = { ...prev };
+      for (const folder of FOLDERS) {
+        if (folderActive(pathname, folder)) next[folder.id] = true;
+      }
+      return next;
+    });
   }, [pathname]);
 
   return (
@@ -63,52 +83,64 @@ export default function AdminShell({
           </p>
         </div>
 
-        <nav className="flex flex-col gap-1">
-          <button
-            type="button"
-            onClick={() => setOpen((v) => !v)}
-            aria-expanded={open}
-            className="flex items-center justify-between gap-2 w-full text-left font-sans text-[14px] font-semibold tracking-tight text-white/70 hover:text-white transition-colors py-0.5"
-          >
-            <span>{INTELLIGENCE.label}</span>
-            <span
-              className={`font-mono text-[10px] text-white/35 transition-transform duration-200 ${
-                open ? 'rotate-90' : ''
-              }`}
-              aria-hidden
-            >
-              ›
-            </span>
-          </button>
+        <nav className="flex flex-col gap-5">
+          {FOLDERS.map((folder) => {
+            const open = openById[folder.id] ?? true;
+            return (
+              <div key={folder.id} className="flex flex-col gap-1">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setOpenById((prev) => ({
+                      ...prev,
+                      [folder.id]: !prev[folder.id],
+                    }))
+                  }
+                  aria-expanded={open}
+                  className="flex items-center justify-between gap-2 w-full text-left font-sans text-[14px] font-semibold tracking-tight text-white/70 hover:text-white transition-colors py-0.5"
+                >
+                  <span>{folder.label}</span>
+                  <span
+                    className={`font-mono text-[10px] text-white/35 transition-transform duration-200 ${
+                      open ? 'rotate-90' : ''
+                    }`}
+                    aria-hidden
+                  >
+                    ›
+                  </span>
+                </button>
 
-          <div
-            className={`grid transition-[grid-template-rows] duration-200 ease-out ${
-              open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
-            }`}
-          >
-            <div className="overflow-hidden min-h-0">
-              <ul className="flex flex-col gap-1 pl-3 mt-1.5 border-l border-white/10">
-                {INTELLIGENCE.children.map((item) => {
-                  const active = leafActive(pathname, item);
-                  return (
-                    <li key={item.href}>
-                      <Link
-                        href={item.href}
-                        className={`block font-sans text-[13px] font-semibold tracking-tight py-0.5 transition-opacity ${
-                          active
-                            ? 'text-white cursor-default'
-                            : 'text-white/40 hover:text-white/70'
-                        }`}
-                        aria-current={active ? 'page' : undefined}
-                      >
-                        {item.label}
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          </div>
+                <div
+                  className={`grid transition-[grid-template-rows] duration-200 ease-out ${
+                    open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+                  }`}
+                >
+                  <div className="overflow-hidden min-h-0">
+                    <ul className="flex flex-col gap-1 pl-3 mt-1.5 border-l border-white/10">
+                      {folder.children.map((item) => {
+                        const active = leafActive(pathname, item);
+                        return (
+                          <li key={item.href}>
+                            <Link
+                              href={item.href}
+                              className={`block font-sans text-[13px] font-semibold tracking-tight py-0.5 transition-opacity ${
+                                active
+                                  ? 'text-white cursor-default'
+                                  : 'text-white/40 hover:text-white/70'
+                              }`}
+                              aria-current={active ? 'page' : undefined}
+                            >
+                              {item.label}
+                            </Link>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </nav>
 
         <div className="md:mt-auto flex flex-col gap-3 pt-4 border-t border-white/8">

@@ -13,12 +13,15 @@ import { useTheaterChrome } from '@/lib/theater/use-theater-chrome';
 import TheaterRamsChrome, { TheaterRamsIdentity, PLAQUE_WIDTH } from '@/components/TheaterRamsChrome';
 import { useColorScheme } from '@/components/ColorSchemeProvider';
 import { LIGHT_PAGE_BG, LIGHT_PAGE_FG } from '@/lib/color-scheme';
-import { maybeRecordFilmView } from '@/lib/record-view';
+import { FILM_RECORDED_EVENT, maybeRecordFilmView } from '@/lib/record-view';
 
 /** Throttle scrub-driven seeks to ~12.5Hz — UI paints immediately, video seeks lag slightly. */
 const SCRUB_SEEK_INTERVAL_MS = 80;
 
 const FilmSendSheet = dynamic(() => import('@/components/FilmSendSheet'), { ssr: false });
+const TheaterPlusPanel = dynamic(() => import('@/components/TheaterPlusPanel'), { ssr: false });
+const TheaterPlusInfo = dynamic(() => import('@/components/TheaterPlusInfo'), { ssr: false });
+const ViewerStampShare = dynamic(() => import('@/components/ViewerStampShare'), { ssr: false });
 
 interface CinemaTheaterProps {
   film: {
@@ -47,6 +50,8 @@ interface CinemaTheaterProps {
   onTimeUpdate?: (seconds: number) => void;
   onEnded?: () => void;
   mode?: 'theater' | 'embed';
+  /** Open already in Plus (plaque craft desk). */
+  initialTheaterMode?: 'watch' | 'plus';
 }
 
 /** Rams timecode — fixed-width, zero-padded, no flourish. */
@@ -101,10 +106,12 @@ function CinemaTheater({
   onTimeUpdate,
   onEnded,
   mode = 'theater',
+  initialTheaterMode = 'watch',
 }: CinemaTheaterProps) {
   const router = useRouter();
   const locale = parseLocale(useLocale());
   const t = useTranslations('Theater');
+  const tPlus = useTranslations('Plus');
   const { isLight } = useColorScheme();
   const isEmbed = mode === 'embed';
   const chromeFg = isLight ? LIGHT_PAGE_FG : '#F5F5F7';
@@ -116,6 +123,16 @@ function CinemaTheater({
   const [isLoading, setIsLoading] = useState(true);
   const [isScrubbing, setIsScrubbing] = useState(false);
   const [sendOpen, setSendOpen] = useState(false);
+  /** Watch = immersive cinema. Plus = plaque craft desk. */
+  const [theaterMode, setTheaterMode] = useState<'watch' | 'plus'>(
+    !isEmbed && initialTheaterMode === 'plus' ? 'plus' : 'watch'
+  );
+  const [plusInfoOpen, setPlusInfoOpen] = useState(false);
+  const [plusStamp, setPlusStamp] = useState(0);
+  const [stampShare, setStampShare] = useState<{
+    viewerNumber: number;
+  } | null>(null);
+  const plusMode = !isEmbed && theaterMode === 'plus';
 
   const skipBumper = isEmbed || (typeof startAt === 'number' && startAt > 0);
   const [isPlayingLogo, setIsPlayingLogo] = useState(!skipBumper);
@@ -244,6 +261,91 @@ function CinemaTheater({
     else onClose();
   }, [isEmbed, watchOnFjorrUrl, backUrl, router, onClose, film?.id, film?.runtime]);
 
+  /** Escape: dismiss info → leave Plus → close theater. */
+  const handleTheaterEscape = useCallback(() => {
+    if (plusInfoOpen) {
+      setPlusInfoOpen(false);
+      return;
+    }
+    if (theaterMode === 'plus') {
+      setTheaterMode('watch');
+      return;
+    }
+    handleCloseNavigation();
+  }, [plusInfoOpen, theaterMode, handleCloseNavigation]);
+
+  const exitFullscreenIfNeeded = useCallback(() => {
+    const container = containerRef.current;
+    const activeVideo = isPlayingLogo ? logoPlayerRef.current : filmPlayerRef.current;
+    const doc = document as Document & {
+      webkitFullscreenElement?: Element;
+      webkitExitFullscreen?: () => void;
+    };
+    const isMobileSafari =
+      /iPhone|iPod/.test(navigator.userAgent) && !(document as any).requestFullscreen;
+    const inFs =
+      !!document.fullscreenElement ||
+      !!doc.webkitFullscreenElement ||
+      !!(activeVideo as any)?.webkitDisplayingFullscreen;
+    if (!inFs) return;
+    if (isMobileSafari && (activeVideo as any)?.webkitExitFullscreen) {
+      (activeVideo as any).webkitExitFullscreen();
+    } else if (document.exitFullscreen) {
+      document.exitFullscreen().catch(() => {});
+    } else if (doc.webkitExitFullscreen) {
+      doc.webkitExitFullscreen();
+    }
+    void container;
+  }, [isPlayingLogo]);
+
+  const enterPlus = useCallback(() => {
+    if (isEmbed || isPlayingLogo) return;
+    exitFullscreenIfNeeded();
+    const player = filmPlayerRef.current;
+    if (player && !player.paused) player.pause();
+    setPlusStamp(Math.floor(currentTimeRef.current || 0));
+    setPlusInfoOpen(false);
+    setTheaterMode('plus');
+  }, [isEmbed, isPlayingLogo, exitFullscreenIfNeeded]);
+
+  const exitPlus = useCallback(() => {
+    setTheaterMode('watch');
+    setPlusInfoOpen(false);
+  }, []);
+
+  // Entered via film-page “Open Plus” — soft-pause once the film is up.
+  useEffect(() => {
+    if (isEmbed || isPlayingLogo || theaterMode !== 'plus') return;
+    const player = filmPlayerRef.current;
+    if (player && !player.paused) player.pause();
+    setPlusStamp(Math.floor(currentTimeRef.current || 0));
+  }, [isEmbed, isPlayingLogo, theaterMode]);
+
+  useEffect(() => {
+    if (!isEnded) return;
+    setTheaterMode('watch');
+    setPlusInfoOpen(false);
+  }, [isEnded]);
+
+  // First Viewer # on this film → share ritual.
+  useEffect(() => {
+    if (isEmbed || !film?.id) return;
+    const filmId = String(film.id);
+    const onRecorded = (e: Event) => {
+      const detail = (e as CustomEvent).detail as {
+        filmId?: string;
+        viewerNumber?: number;
+        firstStamp?: boolean;
+      };
+      if (String(detail?.filmId || '') !== filmId) return;
+      const n = Number(detail?.viewerNumber);
+      if (!detail?.firstStamp || !Number.isFinite(n) || n < 1) return;
+      setStampShare({ viewerNumber: n });
+    };
+    window.addEventListener(FILM_RECORDED_EVENT, onRecorded);
+    return () => window.removeEventListener(FILM_RECORDED_EVENT, onRecorded);
+  }, [isEmbed, film?.id]);
+
   const togglePlay = useCallback(() => {
     const player = isPlayingLogo ? logoPlayerRef.current : filmPlayerRef.current;
     if (!player) return;
@@ -319,6 +421,7 @@ function CinemaTheater({
     showCCMenu,
     isScrubbing,
     chassisMode: true,
+    pinControls: plusMode,
     onTogglePlay: togglePlay,
     onToggleMute: toggleMute,
     onToggleFullscreen: toggleFullscreen,
@@ -327,12 +430,12 @@ function CinemaTheater({
       setShowCCMenu((v) => !v);
     },
     onSeekBy: seekBy,
-    onClose: handleCloseNavigation,
+    onClose: handleTheaterEscape,
   });
   prepareFullscreenEnterRef.current = prepareFullscreenEnter;
 
-  /** Rams chrome visible — drives plaque shrink. */
-  const ramsChromeUp = controlsVisible && !isPlayingLogo && !isEmbed;
+  /** Rams chrome visible — drives plaque shrink. Plus pins plaque. */
+  const ramsChromeUp = (controlsVisible || plusMode) && !isPlayingLogo && !isEmbed;
   const plaqueCompact = ramsChromeUp;
   const captionsOn = selectedLangCode !== 'none';
 
@@ -623,8 +726,11 @@ function CinemaTheater({
       paintProgress(targetTime, durationRef.current);
       syncCueToTime();
       scheduleScrubSeek(targetTime);
+      if (theaterMode === 'plus') {
+        setPlusStamp(Math.floor(targetTime));
+      }
     },
-    [isPlayingLogo, paintProgress, syncCueToTime, scheduleScrubSeek]
+    [isPlayingLogo, paintProgress, syncCueToTime, scheduleScrubSeek, theaterMode]
   );
 
   const handleScrubEnd = useCallback(
@@ -656,13 +762,16 @@ function CinemaTheater({
     [tracks, selectLanguage, showUIControls]
   );
 
+  const toolBtn =
+    'font-mono text-[13px] font-medium tracking-[0.05em] uppercase bg-transparent border-0 outline-none cursor-pointer p-0 leading-none whitespace-nowrap transition-opacity hover:opacity-100';
+
   const ramsToolsSlot = (
     <>
       <button
         type="button"
         onClick={togglePlay}
         aria-label={isPlaying ? t('pause') : t('play')}
-        className="font-mono text-[13px] font-bold tracking-[0.05em] uppercase bg-transparent border-0 outline-none cursor-pointer p-0 leading-none whitespace-nowrap opacity-100 hover:opacity-100 transition-opacity"
+        className={`${toolBtn} font-bold opacity-100`}
       >
         {isPlaying ? t('pause') : t('play')}
       </button>
@@ -672,7 +781,7 @@ function CinemaTheater({
           onClick={() => setShowCCMenu((v) => !v)}
           aria-label={t('captions')}
           aria-expanded={showCCMenu}
-          className={`font-mono text-[13px] font-medium tracking-[0.05em] uppercase bg-transparent border-0 outline-none cursor-pointer p-0 leading-none whitespace-nowrap transition-opacity hover:opacity-100 ${
+          className={`${toolBtn} ${
             showCCMenu || selectedLangCode !== 'none'
               ? isLight
                 ? 'text-[#C9A24B] opacity-100'
@@ -689,7 +798,7 @@ function CinemaTheater({
         type="button"
         onClick={toggleMute}
         aria-label={isMuted ? t('unmute') : t('mute')}
-        className={`font-mono text-[13px] font-medium tracking-[0.05em] uppercase bg-transparent border-0 outline-none cursor-pointer p-0 leading-none whitespace-nowrap transition-[opacity,color,text-shadow] duration-200 hover:opacity-100 ${
+        className={`${toolBtn} transition-[opacity,color,text-shadow] duration-200 ${
           isMuted
             ? isLight
               ? 'text-[#0B0B0C] opacity-100 [text-shadow:0_0_10px_rgba(11,11,12,0.35),0_0_22px_rgba(11,11,12,0.18)]'
@@ -699,14 +808,82 @@ function CinemaTheater({
       >
         {isMuted ? t('unmute') : t('mute')}
       </button>
-      <button
-        type="button"
-        onClick={toggleFullscreen}
-        aria-label={isFullscreen ? t('exitFullscreen') : t('fullscreen')}
-        className="font-mono text-[13px] font-medium tracking-[0.05em] uppercase bg-transparent border-0 outline-none cursor-pointer p-0 leading-none whitespace-nowrap opacity-90 hover:opacity-100"
-      >
-        {isFullscreen ? t('exit') : t('full')}
-      </button>
+      {!plusMode ? (
+        <button
+          type="button"
+          onClick={() => {
+            showUIControls();
+            setSendOpen(true);
+          }}
+          aria-label={t('share')}
+          className={`${toolBtn} opacity-90`}
+        >
+          {t('share')}
+        </button>
+      ) : null}
+      {!plusMode ? (
+        <button
+          type="button"
+          onClick={toggleFullscreen}
+          aria-label={isFullscreen ? t('exitFullscreen') : t('fullscreen')}
+          className={`${toolBtn} opacity-90`}
+        >
+          {isFullscreen ? t('exit') : t('full')}
+        </button>
+      ) : null}
+      {!isEmbed && !plusMode ? (
+        <button
+          type="button"
+          onClick={enterPlus}
+          aria-label={tPlus('modePlus')}
+          className={`${toolBtn} font-bold opacity-90 hover:opacity-100`}
+        >
+          {tPlus('modePlus')}
+        </button>
+      ) : null}
+      {!isEmbed && plusMode ? (
+        <>
+          <button
+            type="button"
+            onClick={() => setPlusInfoOpen(true)}
+            aria-label={tPlus('infoTitle')}
+            title={tPlus('infoTitle')}
+            className="inline-flex items-center justify-center bg-transparent border-0 outline-none cursor-pointer p-0 opacity-70 hover:opacity-100 transition-opacity"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden
+            >
+              <circle
+                cx="8"
+                cy="8"
+                r="6.25"
+                stroke="currentColor"
+                strokeWidth="1.25"
+              />
+              <path
+                d="M8 7.25V11"
+                stroke="currentColor"
+                strokeWidth="1.25"
+                strokeLinecap="round"
+              />
+              <circle cx="8" cy="5.15" r="0.85" fill="currentColor" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            onClick={exitPlus}
+            aria-label={tPlus('modeExit')}
+            className={`${toolBtn} font-bold opacity-90 hover:opacity-100`}
+          >
+            {tPlus('modeExit')}
+          </button>
+        </>
+      ) : null}
       <button
         type="button"
         onClick={handleCloseNavigation}
@@ -749,6 +926,16 @@ function CinemaTheater({
       filmTitle={film?.name || undefined}
       filmMeta={ramsFilmMeta}
       toolsSlot={ramsToolsSlot}
+      belowToolsSlot={
+        plusMode && film?.id ? (
+          <TheaterPlusPanel
+            filmId={String(film.id)}
+            filmSlug={film.slug ? String(film.slug) : undefined}
+            atSeconds={plusStamp}
+            isLight={isLight}
+          />
+        ) : null
+      }
       hideHeader
       onScrubStart={handleScrubStart}
       onScrubChange={handleScrubChange}
@@ -801,6 +988,10 @@ function CinemaTheater({
           if (onTimeUpdate && now - lastParentTimePushRef.current > 250) {
             lastParentTimePushRef.current = now;
             onTimeUpdate(time);
+          }
+          if (theaterMode === 'plus') {
+            const floor = Math.floor(time);
+            setPlusStamp((prev) => (prev === floor ? prev : floor));
           }
         }}
         onDurationChange={(e) => {
@@ -935,7 +1126,9 @@ function CinemaTheater({
           <div
             className={`w-full flex justify-center overflow-hidden transition-all duration-500 ease-out ${
               plaqueCompact
-                ? 'opacity-100 max-h-48 translate-y-0'
+                ? plusMode
+                  ? 'opacity-100 max-h-[28rem] translate-y-0'
+                  : 'opacity-100 max-h-48 translate-y-0'
                 : 'opacity-0 max-h-0 translate-y-2 pointer-events-none'
             }`}
             aria-hidden={!plaqueCompact}
@@ -1038,6 +1231,22 @@ function CinemaTheater({
           shareSeconds={currentTimeRef.current > 0 ? currentTimeRef.current : durationRef.current || null}
         />
       )}
+
+      <TheaterPlusInfo
+        open={plusInfoOpen}
+        onClose={() => setPlusInfoOpen(false)}
+        isLight={isLight}
+      />
+
+      {stampShare && film?.slug ? (
+        <ViewerStampShare
+          open
+          onClose={() => setStampShare(null)}
+          filmName={String(film.name || 'Fjorr')}
+          filmSlug={String(film.slug)}
+          viewerNumber={stampShare.viewerNumber}
+        />
+      ) : null}
     </div>
   );
 

@@ -56,6 +56,20 @@ export async function recordFilmView(
 export async function getOwnViewerNumberForFilm(
   filmId: string
 ): Promise<number | null> {
+  const stamp = await getOwnVoyageurStampForFilm(filmId);
+  return stamp?.voyageurNumber ?? null;
+}
+
+export type VoyageurStamp = {
+  voyageurNumber: number;
+  recordedAt: string;
+  memberNumber: number;
+};
+
+/** Own Voyageur stamp for a film — number + when + member # (not a live total). */
+export async function getOwnVoyageurStampForFilm(
+  filmId: string
+): Promise<VoyageurStamp | null> {
   if (!filmId) return null;
 
   const supabase = await createClient();
@@ -64,20 +78,36 @@ export async function getOwnViewerNumberForFilm(
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const { data, error } = await supabase
-    .from('film_view_record')
-    .select('viewer_number')
-    .eq('user_id', user.id)
-    .eq('film_id', filmId)
-    .maybeSingle();
+  const [{ data: row, error }, { data: profile }] = await Promise.all([
+    supabase
+      .from('film_view_record')
+      .select('viewer_number, recorded_at')
+      .eq('user_id', user.id)
+      .eq('film_id', filmId)
+      .maybeSingle(),
+    supabase
+      .from('profiles')
+      .select('member_number')
+      .eq('id', user.id)
+      .maybeSingle(),
+  ]);
 
   if (error) {
-    console.error('getOwnViewerNumberForFilm failed:', error.message);
+    console.error('getOwnVoyageurStampForFilm failed:', error.message);
     return null;
   }
 
-  const n = Number(data?.viewer_number);
-  return Number.isFinite(n) && n >= 1 ? n : null;
+  const n = Number(row?.viewer_number);
+  const memberNumber = Number(profile?.member_number);
+  if (!Number.isFinite(n) || n < 1) return null;
+  if (!Number.isFinite(memberNumber) || memberNumber < 1) return null;
+  if (!row?.recorded_at) return null;
+
+  return {
+    voyageurNumber: n,
+    recordedAt: String(row.recorded_at),
+    memberNumber,
+  };
 }
 
 /** Own Film Logs, newest first. */

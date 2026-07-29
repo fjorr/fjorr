@@ -74,7 +74,11 @@ export default async function PublicProfilePage({ params }: Props) {
           </p>
         ) : null}
       </div>
-      <FilmLogsLedger logs={logs} emptyHint={t('filmLogsPublicEmpty')} />
+      <FilmLogsLedger
+        logs={logs}
+        emptyHint={t('filmLogsPublicEmpty')}
+        memberNumber={profile.member_number}
+      />
     </div>
   );
 }

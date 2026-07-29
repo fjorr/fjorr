@@ -71,12 +71,12 @@ export default function AccountClient({
 
   return (
     <div className="w-full max-w-sm flex flex-col gap-8">
-      <div className="flex flex-col gap-2 text-center">
+      <div className="flex flex-col gap-2 text-left">
         <h1 className="font-sans text-2xl font-bold tracking-tight text-white">
-          {t('accountTitle')}
+          {t('profileTitle')}
         </h1>
-        <p className="font-sans text-[15px] text-white/55 leading-relaxed">
-          {t('accountBody')}
+        <p className="font-sans text-[15px] text-white/50 leading-relaxed">
+          {t('profileBody')}
         </p>
       </div>
 

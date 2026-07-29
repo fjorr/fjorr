@@ -62,12 +62,13 @@ function markLocalCounted(filmId: string, viewerNumber: number) {
 function emitRecorded(
   filmId: string,
   viewerNumber: number,
-  recorded: boolean
+  recorded: boolean,
+  firstStamp: boolean
 ) {
   try {
     window.dispatchEvent(
       new CustomEvent(FILM_RECORDED_EVENT, {
-        detail: { filmId, viewerNumber, recorded },
+        detail: { filmId, viewerNumber, recorded, firstStamp },
       })
     );
   } catch {
@@ -99,8 +100,9 @@ export function maybeRecordFilmView(
       } = await supabase.auth.getSession();
       const accessToken = session?.access_token || '';
       const signedIn = Boolean(session?.user);
+      const hadLocalStamp = id in readLocalCounted();
 
-      if (!signedIn && id in readLocalCounted()) {
+      if (!signedIn && hadLocalStamp) {
         doneIds.add(id);
         return;
       }
@@ -131,6 +133,8 @@ export function maybeRecordFilmView(
 
       const viewerNumber = Number(row.viewer_number);
       const recorded = Boolean(row.recorded);
+      const firstStamp =
+        !hadLocalStamp && Number.isFinite(viewerNumber) && viewerNumber >= 1;
 
       if (Number.isFinite(viewerNumber) && viewerNumber >= 1) {
         markLocalCounted(id, viewerNumber);
@@ -145,7 +149,7 @@ export function maybeRecordFilmView(
         console.error('[fjorr] expected Film Log but recorded=false', id, row);
       }
 
-      emitRecorded(id, viewerNumber, recorded);
+      emitRecorded(id, viewerNumber, recorded, firstStamp);
     } catch (err) {
       console.error('[fjorr] record film view failed:', err);
     } finally {

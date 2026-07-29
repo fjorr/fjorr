@@ -19,23 +19,19 @@ export default async function AdminBountiesPage() {
   const bounties = await listAdminBounties();
 
   return (
-    <div className="flex flex-col gap-14 max-w-3xl">
-      <header className="flex flex-col gap-2">
-        <h1 className="font-sans text-2xl font-bold tracking-tight text-white">
-          Bounties
-        </h1>
-        <p className="font-sans text-[14px] text-white/45 leading-relaxed max-w-md">
-          Specific hunts. Public briefs on /bounties. No deadlines — Active until
-          Filled or Closed.
-        </p>
-      </header>
-
-      <section className="flex flex-col gap-5">
-        <h2 className="font-sans text-[11px] font-semibold uppercase tracking-wide text-white/35">
-          New bounty
-        </h2>
+    <div className="flex flex-col gap-10 max-w-3xl">
+      <header className="flex flex-col gap-4">
+        <div className="flex flex-col gap-2">
+          <h1 className="font-sans text-2xl font-bold tracking-tight text-white">
+            Bounties
+          </h1>
+          <p className="font-sans text-[14px] text-white/45 leading-relaxed max-w-md">
+            Specific hunts. Public briefs on /bounties. No deadlines — Active until
+            Filled or Closed.
+          </p>
+        </div>
         <BountyCreateForm />
-      </section>
+      </header>
 
       <section className="flex flex-col gap-4">
         <h2 className="font-sans text-[11px] font-semibold uppercase tracking-wide text-white/35">

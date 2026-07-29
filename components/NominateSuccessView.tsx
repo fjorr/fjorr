@@ -54,11 +54,11 @@ export default function NominateSuccessView({ onReset }: SuccessProps) {
             </p>
 
             <div className="flex flex-col items-center gap-3">
-              <button
-                onClick={onReset}
+              <Link
+                href="/account/nominations"
                 className="px-10 h-14 bg-[var(--page-fg)] text-[var(--page-bg)] font-sans font-bold text-[15px] tracking-tight rounded-full hover:opacity-90 active:scale-95 transition-all duration-150 inline-flex items-center justify-center gap-1.5 group/btn"
               >
-                <span>{t('submitMore')}</span>
+                <span>{t('viewAccount')}</span>
                 <svg
                   className="w-4 h-4 group-hover/btn:translate-x-0.5 transition-transform"
                   fill="none"
@@ -72,13 +72,14 @@ export default function NominateSuccessView({ onReset }: SuccessProps) {
                     d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
                   />
                 </svg>
-              </button>
-              <Link
-                href="/account"
+              </Link>
+              <button
+                type="button"
+                onClick={onReset}
                 className="font-sans text-[13px] font-semibold text-page-muted hover:text-page transition-colors"
               >
-                {t('viewAccount')}
-              </Link>
+                {t('submitMore')}
+              </button>
             </div>
           </div>
         </div>

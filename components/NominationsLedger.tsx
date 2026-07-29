@@ -49,21 +49,26 @@ function storyPreview(story: string) {
 
 export default async function NominationsLedger({
   nominations,
+  omitHeader = false,
 }: {
   nominations: NominationRow[];
+  /** When the page already shows title + body. */
+  omitHeader?: boolean;
 }) {
   const t = await getTranslations('Account');
 
   return (
     <section className="w-full max-w-sm flex flex-col gap-4 text-left">
-      <div className="flex flex-col gap-1">
-        <h2 className="font-sans text-[12px] font-semibold uppercase tracking-wide text-white/35">
-          {t('nominationsTitle')}
-        </h2>
-        <p className="font-sans text-[13px] text-white/40 leading-snug">
-          {t('nominationsBody')}
-        </p>
-      </div>
+      {!omitHeader ? (
+        <div className="flex flex-col gap-1">
+          <h2 className="font-sans text-[12px] font-semibold uppercase tracking-wide text-white/35">
+            {t('nominationsTitle')}
+          </h2>
+          <p className="font-sans text-[13px] text-white/40 leading-snug">
+            {t('nominationsBody')}
+          </p>
+        </div>
+      ) : null}
 
       {nominations.length === 0 ? (
         <p className="font-sans text-[14px] text-white/45 leading-relaxed">

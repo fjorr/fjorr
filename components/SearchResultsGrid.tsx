@@ -104,8 +104,8 @@ export default function SearchResultsGrid({ results, postersOnly = false }: Resu
                       ? '(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 20vw, 18vw'
                       : '(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw'
                   }
-                  priority={index < 2}
-                  fetchPriority={index < 2 ? 'high' : 'auto'}
+                  priority={!postersOnly && index < 2}
+                  fetchPriority={!postersOnly && index < 2 ? 'high' : 'auto'}
                   className="object-cover group-hover:scale-[1.01] transition-transform duration-500 pointer-events-none"
                 />
               ) : (

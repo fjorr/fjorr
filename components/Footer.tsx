@@ -203,6 +203,15 @@ export default function Footer({ variant }: FooterProps) {
         className={`flex items-center justify-center gap-2 font-sans text-[12px] transition-colors ${subTextColor}`}
       >
         <Link
+          href="/partner"
+          className={`hover:opacity-80 transition-colors ${subTextColor}`}
+        >
+          {t('partner')}
+        </Link>
+        <span className={mutedTextColor} aria-hidden>
+          ·
+        </span>
+        <Link
           href="/privacy"
           className={`hover:opacity-80 transition-colors ${subTextColor}`}
         >

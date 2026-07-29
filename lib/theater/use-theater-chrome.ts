@@ -18,6 +18,8 @@ type Args = {
   isScrubbing: boolean;
   /** When true, video click shows/hides chrome only (no play toggle). */
   chassisMode?: boolean;
+  /** Plus mode — plaque chrome stays up; idle hide / tap-dismiss off. */
+  pinControls?: boolean;
   onTogglePlay: () => void;
   onToggleMute: () => void;
   onToggleFullscreen: () => void;
@@ -51,6 +53,7 @@ export function useTheaterChrome({
   showCCMenu,
   isScrubbing,
   chassisMode = false,
+  pinControls = false,
   onTogglePlay,
   onToggleMute,
   onToggleFullscreen,
@@ -73,16 +76,35 @@ export function useTheaterChrome({
   const hideDelayMs = chassisMode ? 2200 : 2000;
   const showCCMenuRef = useRef(showCCMenu);
   const isScrubbingRef = useRef(isScrubbing);
+  const pinControlsRef = useRef(pinControls);
   showCCMenuRef.current = showCCMenu;
   isScrubbingRef.current = isScrubbing;
+  pinControlsRef.current = pinControls;
 
   const armIdleHide = useCallback(() => {
+    if (pinControlsRef.current) return;
     if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
     hideTimeoutRef.current = setTimeout(() => {
-      if (showCCMenuRef.current || isScrubbingRef.current) return;
+      if (showCCMenuRef.current || isScrubbingRef.current || pinControlsRef.current)
+        return;
       setControlsVisible(false);
     }, hideDelayMs);
   }, [hideDelayMs]);
+
+  // Plus: lock plaque chrome visible.
+  useEffect(() => {
+    if (!pinControls) return;
+    setControlsVisible(true);
+    if (hideTimeoutRef.current) {
+      clearTimeout(hideTimeoutRef.current);
+      hideTimeoutRef.current = null;
+    }
+    settleUntilRef.current = 0;
+    if (settleTimerRef.current) {
+      clearTimeout(settleTimerRef.current);
+      settleTimerRef.current = null;
+    }
+  }, [pinControls]);
 
   const showUIControls = useCallback(() => {
     if (isPlayingLogoRef.current) {
@@ -100,6 +122,10 @@ export function useTheaterChrome({
    * window ends, shrink to plaque / reveal controls; otherwise stay full.
    */
   const beginChromeSettle = useCallback(() => {
+    if (pinControlsRef.current) {
+      setControlsVisible(true);
+      return;
+    }
     setControlsVisible(false);
     if (hideTimeoutRef.current) {
       clearTimeout(hideTimeoutRef.current);
@@ -114,6 +140,10 @@ export function useTheaterChrome({
       settleUntilRef.current = 0;
       settleTimerRef.current = null;
       if (isPlayingLogoRef.current) return;
+      if (pinControlsRef.current) {
+        setControlsVisible(true);
+        return;
+      }
       const movedRecently =
         lastMoveRef.current > 0 &&
         performance.now() - lastMoveRef.current < CHROME_SETTLE_MOVE_WINDOW_MS;
@@ -195,6 +225,10 @@ export function useTheaterChrome({
       if (!armed) return;
       const target = e.target as HTMLElement;
       if (target.closest('[data-ui-control="true"]')) return;
+      if (pinControlsRef.current) {
+        showUIControls();
+        return;
+      }
       if (chassisMode) {
         // Rams plaque: tap only reveals / dismisses chrome — play is button-only.
         if (controlsVisible) {
@@ -269,6 +303,7 @@ export function useTheaterChrome({
           break;
         case 'f':
           e.preventDefault();
+          if (pinControlsRef.current) break;
           if (!readIsFullscreen(filmPlayerRef, logoPlayerRef)) {
             prepareFullscreenEnter();
           }

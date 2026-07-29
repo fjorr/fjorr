@@ -254,8 +254,19 @@ export default function NominateClient({
               {t('title')}
             </h1>
 
-            <p className="font-sans font-medium text-[15px] sm:text-[16px] leading-[1.6em] text-page-muted max-w-[280px] sm:max-w-md tracking-tight text-center mb-10 opacity-0 animate-slide-up style-delay-body">
+            <p className="font-sans font-medium text-[15px] sm:text-[16px] leading-[1.6em] text-page-muted max-w-[280px] sm:max-w-md tracking-tight text-center mb-4 opacity-0 animate-slide-up style-delay-body">
               {t('description')}
+            </p>
+
+            <p className="font-sans text-[13px] sm:text-[14px] leading-snug text-page-faint max-w-sm tracking-tight text-center mb-10 opacity-0 animate-slide-up style-delay-body">
+              {t('principlesLead')}{' '}
+              <Link
+                href="/principles"
+                className="underline underline-offset-2 hover:text-page-muted transition-colors"
+              >
+                {t('principlesLink')}
+              </Link>
+              .
             </p>
 
             {!signedIn ? (

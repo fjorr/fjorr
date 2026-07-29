@@ -25,8 +25,8 @@ Set these in `.env.local` (or in Vercel):
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Used by most app code (server + client queries) |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Used by middleware session refresh (`lib/supabase/proxy.ts`). Set this to the same value as the anon key if you only have one key. |
 | `NEXT_PUBLIC_MUX_DATA_ENV_KEY` | Optional. Enables Mux Data monitoring in `CinemaTheater` |
-| `SITE_PASSWORD` | Only used when `SITE_GATE_ENABLED=true` (staging preview gate) |
-| `SITE_GATE_ENABLED` | Set to `true` on staging/preview to re-enable `/password` gate. Leave unset/false in production. |
+| `SITE_PASSWORD` | Only used when `SITE_GATE_ENABLED=true` |
+| `SITE_GATE_ENABLED` | Set to `true` to require the `/password` gate (staging + production while pre-launch). |
 | `SUPABASE_SERVICE_ROLE_KEY` | Required for admin writes (nominations status, bounties). Also used by Edge Functions. Never expose to the client. |
 | `ADMIN_EMAILS` | Comma-separated emails allowed into `/admin` (Control). Fail-closed if empty. |
 
@@ -72,7 +72,7 @@ Page (Server or Client Component)
 Supabase query → render
 ```
 
-**Site password gate:** Disabled in production by default. Set `SITE_GATE_ENABLED=true` (and optionally `SITE_PASSWORD`) on staging/preview if you want the `/password` cookie gate. Middleware no longer forces anonymous visitors through Supabase login.
+**Site password gate:** Opt-in via `SITE_GATE_ENABLED=true` + `SITE_PASSWORD`. Keep both set on staging and production until public launch. Middleware no longer forces anonymous visitors through Supabase login.
 
 **Note:** There is also an `app/middleware.ts` file — Next.js only runs the root `middleware.ts`. The one inside `app/` is unused.
 

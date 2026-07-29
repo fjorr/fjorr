@@ -84,6 +84,7 @@ export async function saveOwnProfile(input: {
 
   const profile = data as ScoutProfile;
   revalidatePath('/account');
+  revalidatePath('/account/profile');
   revalidatePath(profilePath(profile.member_number, profile.slug));
   return { ok: true, profile };
 }

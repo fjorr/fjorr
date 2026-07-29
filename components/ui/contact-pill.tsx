@@ -6,11 +6,14 @@ import { useTranslations } from 'next-intl';
 interface ContactPillProps {
   email?: string;
   className?: string;
+  /** Button label. Defaults to Nav.letsTalk. */
+  label?: string;
 }
 
 export const ContactPill: React.FC<ContactPillProps> = ({
   email = 'control@fjorr.com',
   className = '',
+  label,
 }) => {
   const t = useTranslations('Nav');
   const [copied, setCopied] = useState(false);
@@ -32,7 +35,7 @@ export const ContactPill: React.FC<ContactPillProps> = ({
           onClick={handleCopy}
           className="h-12 px-6 py-2.5 bg-white text-black font-semibold text-[14px] rounded-full hover:bg-[#F5F5F7] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 shadow-xl font-inter"
         >
-          {t('letsTalk')}
+          {label || t('letsTalk')}
         </button>
       ) : (
         <div className="relative px-7 py-3.5 rounded-full font-semibold text-[14px] text-[#589fde] flex items-center justify-center gap-2 font-inter overflow-hidden animate-in zoom-in-95 fade-in duration-200 shadow-2xl bg-transparent">
