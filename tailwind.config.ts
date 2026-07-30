@@ -14,12 +14,11 @@ export default {
         // Core Google Fonts routed through root variables
         sans: ["var(--font-sans)", "sans-serif"],
         mono: ["var(--font-mono)", "monospace"],
-        
-        // 🎯 ADOBE FONTS DESIGN TOKENS DEFINED RIGHT HERE:
-        // Note: The double quotes nested inside the single quotes are required 
-        // to prevent the browser from misinterpreting hyphens in font names.
-        futura: ['"futura-pt-condensed"', "sans-serif"],
-        tradeGothic: ['"trade-gothic-next-compressed"', "sans-serif"],
+        // Inter Tight — opt-in for tighter UI / headlines: font-interTight
+        interTight: ["var(--font-inter-tight)", "sans-serif"],
+
+        // Headlines: Avenir Next Variable (local). Class kept as font-futura.
+        futura: ["var(--font-display)", "sans-serif"],
       },
       colors: {
         dark: {

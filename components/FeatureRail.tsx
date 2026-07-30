@@ -323,7 +323,7 @@ export default function FeatureRail({
                     </div>
                   ) : (
                     film.name && (
-                      <h2 className="text-[28px] md:text-[36px] font-sans font-black uppercase tracking-tight leading-none text-white mb-3">
+                      <h2 className="text-[28px] md:text-[36px] font-futura font-black uppercase tracking-tight leading-none text-white mb-3">
                         {film.name}
                       </h2>
                     )

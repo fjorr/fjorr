@@ -1,13 +1,15 @@
 'use client';
 
 import { useEffect } from 'react';
+import { TYPEKIT_HREF } from '@/lib/typekit';
 
-const TYPEKIT_HREF = 'https://use.typekit.net/xyf8acw.css';
-
-/** Apply Adobe Fonts after first paint so the stylesheet does not block rendering. */
+/** Ensure Adobe Fonts stylesheet is present (backup if layout <link> missed). */
 export default function TypekitLoader() {
   useEffect(() => {
-    if (document.querySelector(`link[data-fjorr-typekit="1"]`)) return;
+    const existing = document.querySelector(
+      `link[href="${TYPEKIT_HREF}"], link[data-fjorr-typekit="1"]`
+    );
+    if (existing) return;
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = TYPEKIT_HREF;

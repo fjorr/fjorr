@@ -250,15 +250,18 @@ export default function NominateClient({
           <NominateSuccessView onReset={handleResetForm} />
         ) : (
           <div className="w-full max-w-xl flex flex-col items-center">
-            <h1 className="text-6xl sm:text-7xl md:text-8xl font-extrabold uppercase tracking-tighter text-page leading-[52px] sm:leading-[64px] md:leading-[76px] font-futura mb-6 opacity-0 animate-slide-up style-delay-headline whitespace-pre-line select-none">
+            <p className="mb-4 sm:mb-5 font-sans text-[15px] sm:text-[16px] font-semibold normal-case tracking-normal text-page select-none opacity-0 animate-slide-up style-delay-headline">
+              {t('eyebrow')}
+            </p>
+            <h1 className="font-futura tracking-tighter text-page text-4xl sm:text-5xl md:text-[4rem] leading-[1.05] text-balance mb-5 sm:mb-6 opacity-0 animate-slide-up style-delay-headline select-none">
               {t('title')}
             </h1>
 
-            <p className="font-sans font-medium text-[15px] sm:text-[16px] leading-[1.6em] text-page-muted max-w-[280px] sm:max-w-md tracking-tight text-center mb-4 opacity-0 animate-slide-up style-delay-body">
+            <p className="font-sans font-medium text-[15px] sm:text-[16px] leading-[1.55] text-page-muted max-w-md tracking-normal text-center mb-4 opacity-0 animate-slide-up style-delay-body">
               {t('description')}
             </p>
 
-            <p className="font-sans text-[13px] sm:text-[14px] leading-snug text-page-faint max-w-sm tracking-tight text-center mb-10 opacity-0 animate-slide-up style-delay-body">
+            <p className="font-sans text-[13px] sm:text-[14px] leading-snug text-page-faint max-w-sm tracking-normal text-center mb-10 opacity-0 animate-slide-up style-delay-body">
               {t('principlesLead')}{' '}
               <Link
                 href="/principles"

@@ -36,14 +36,17 @@ export default function BountiesClient({
 
   return (
     <div className="w-full min-h-screen bg-[var(--page-bg)] text-page pb-28">
-      <div className="w-full max-w-5xl mx-auto px-5 sm:px-8 pt-14 sm:pt-20 flex flex-col gap-3 mb-12 sm:mb-16">
-        <h1 className="font-futura text-5xl sm:text-6xl md:text-7xl font-extrabold uppercase tracking-tighter text-page leading-[0.95] select-none">
+      <header className="w-full max-w-2xl mx-auto px-5 sm:px-8 pt-14 sm:pt-20 mb-12 sm:mb-16 text-center">
+        <p className="mb-4 sm:mb-5 font-sans text-[15px] sm:text-[16px] font-semibold normal-case tracking-normal text-page select-none">
+          {t('eyebrow')}
+        </p>
+        <h1 className="font-futura tracking-tighter text-page select-none text-4xl sm:text-5xl md:text-[4rem] leading-[1.05] text-balance">
           {t('title')}
         </h1>
-        <p className="font-sans font-medium text-[15px] sm:text-[16px] leading-relaxed text-page-muted max-w-md tracking-tight">
+        <p className="mt-5 sm:mt-6 font-sans font-medium text-[15px] sm:text-[16px] leading-snug tracking-normal text-page-muted max-w-md mx-auto">
           {t('description')}
         </p>
-        <p className="font-sans text-[13px] sm:text-[14px] leading-snug text-page-faint max-w-sm tracking-tight">
+        <p className="mt-4 font-sans text-[13px] sm:text-[14px] leading-snug text-page-faint max-w-sm mx-auto tracking-normal">
           {t('principlesLead')}{' '}
           <Link
             href="/principles"
@@ -54,7 +57,7 @@ export default function BountiesClient({
           .
         </p>
         {!signedIn && (
-          <p className="font-sans text-[13px] text-page-faint leading-snug max-w-sm">
+          <p className="mt-3 font-sans text-[13px] text-page-faint leading-snug max-w-sm mx-auto">
             {t('membersNote')}{' '}
             <button
               type="button"
@@ -65,7 +68,7 @@ export default function BountiesClient({
             </button>
           </p>
         )}
-      </div>
+      </header>
 
       {bounties.length === 0 ? (
         <div className="w-full max-w-5xl mx-auto px-5 sm:px-8">
@@ -115,13 +118,13 @@ export default function BountiesClient({
         </div>
       )}
 
-      <div className="w-full max-w-5xl mx-auto px-5 sm:px-8 mt-16 sm:mt-24 pt-10 border-t border-page-faint flex flex-col gap-3">
-        <p className="font-sans text-[14px] text-page-muted leading-relaxed max-w-md">
+      <div className="w-full max-w-5xl mx-auto px-5 sm:px-8 mt-16 sm:mt-24 pt-10 border-t border-page-faint flex flex-col items-center gap-3 text-center">
+        <p className="font-sans text-[14px] text-page-muted leading-relaxed max-w-md tracking-normal">
           {t('generalBlurb')}
         </p>
         <Link
           href="/nominate"
-          className="font-sans text-[14px] font-semibold text-page hover:opacity-70 transition-opacity w-fit"
+          className="font-sans text-[14px] font-semibold text-page-muted hover:text-page transition-colors underline underline-offset-4 decoration-page-faint"
         >
           {t('generalPitch')} →
         </Link>

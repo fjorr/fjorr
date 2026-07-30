@@ -9,13 +9,18 @@ const PRINCIPLE_KEYS = [
   { title: 'p2Title', body: 'p2Body' },
   { title: 'p3Title', body: 'p3Body' },
   { title: 'p4Title', body: 'p4Body' },
+  { title: 'p5Title', body: 'p5Body' },
+  { title: 'p6Title', body: 'p6Body' },
 ] as const;
+
+const HAIRLINE = 'color-mix(in srgb, var(--page-fg) 10%, transparent)';
+const INDEX = 'color-mix(in srgb, var(--page-fg) 35%, transparent)';
 
 export default function PrinciplesClient() {
   const t = useTranslations('Principles');
 
   return (
-    <div className="w-full min-h-screen bg-[var(--page-bg)] text-page pb-28">
+    <div className="w-full min-h-screen bg-[var(--page-bg)] text-page pb-24">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -29,60 +34,62 @@ export default function PrinciplesClient() {
         }}
       />
 
-      <div className="w-full max-w-2xl mx-auto px-5 sm:px-8 pt-14 sm:pt-20 flex flex-col gap-4 mb-14 sm:mb-20">
-        <p className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-page-faint">
-          {t('draftLabel')}
-        </p>
-        <h1 className="font-futura text-5xl sm:text-6xl md:text-7xl font-extrabold uppercase tracking-tighter text-page leading-[0.95] select-none">
-          {t('title')}
-        </h1>
-        <p className="font-sans font-medium text-[15px] sm:text-[16px] leading-relaxed text-page-muted max-w-md tracking-tight">
-          {t('intro')}
-        </p>
-      </div>
+      <div className="w-full max-w-5xl mx-auto px-5 sm:px-8 pt-14 sm:pt-20">
+        <header className="max-w-xl mx-auto mb-12 sm:mb-16 text-center">
+          <h1 className="font-futura tracking-tighter text-page select-none text-4xl sm:text-5xl md:text-[4rem] leading-[1.05] whitespace-pre-line">
+            {t('title')}
+          </h1>
+          <p className="mt-4 sm:mt-5 font-sans font-medium text-[15px] sm:text-[16px] leading-snug tracking-normal text-page-muted">
+            {t('intro')}
+          </p>
+        </header>
 
-      <ol className="w-full max-w-2xl mx-auto px-5 sm:px-8 flex flex-col gap-10 sm:gap-12 list-none m-0 p-0">
-        {PRINCIPLE_KEYS.map((item, index) => (
-          <li key={item.title} className="flex flex-col gap-2 sm:gap-2.5">
-            <div className="flex items-baseline gap-3 sm:gap-4">
-              <span className="font-mono text-[12px] font-medium tabular-nums text-page-faint shrink-0">
+        <ul className="m-0 p-0 list-none border-t" style={{ borderColor: HAIRLINE }}>
+          {PRINCIPLE_KEYS.map((item, index) => (
+            <li
+              key={item.title}
+              className="grid grid-cols-[2.5rem_minmax(0,1fr)] md:grid-cols-[3rem_minmax(0,1.1fr)_minmax(0,1fr)] gap-x-4 sm:gap-x-6 md:gap-x-8 py-6 sm:py-7 border-b items-baseline"
+              style={{ borderColor: HAIRLINE }}
+            >
+              <span
+                className="font-mono text-[12px] sm:text-[13px] font-medium tabular-nums tracking-wide select-none"
+                style={{ color: INDEX }}
+                aria-hidden
+              >
                 {String(index + 1).padStart(2, '0')}
               </span>
-              <h2 className="font-sans text-[18px] sm:text-[20px] font-semibold tracking-tight text-page leading-snug">
+
+              <h2 className="font-interTight font-bold normal-case tracking-normal text-[1.05rem] sm:text-[1.15rem] leading-[1.3] text-page text-balance">
                 {t(item.title)}
               </h2>
-            </div>
-            <p className="font-sans text-[15px] sm:text-[16px] leading-relaxed text-page-muted tracking-tight pl-[calc(1.5rem+0.75rem)] sm:pl-[calc(1.5rem+1rem)] max-w-lg">
-              {t(item.body)}
-            </p>
-          </li>
-        ))}
-      </ol>
 
-      <div className="w-full max-w-2xl mx-auto px-5 sm:px-8 mt-16 sm:mt-20 flex flex-col gap-3">
-        <p className="font-sans text-[14px] text-page-faint leading-snug max-w-sm">
-          {t('footerNote')}
-        </p>
-        <div className="flex flex-wrap gap-x-5 gap-y-2">
+              <p className="col-start-2 md:col-start-3 font-sans font-medium text-[13px] sm:text-[14px] leading-[1.5] tracking-normal text-page-muted mt-2 md:mt-0 max-w-[45ch]">
+                {t(item.body)}
+              </p>
+            </li>
+          ))}
+        </ul>
+
+        <footer className="mt-12 sm:mt-14 flex flex-wrap justify-center gap-x-5 gap-y-2">
           <Link
             href="/nominate"
-            className="font-sans text-[14px] font-semibold text-page underline underline-offset-4 decoration-page-faint hover:opacity-70 transition-opacity"
+            className="font-sans text-[14px] font-semibold text-page-muted hover:text-page transition-colors underline underline-offset-4 decoration-page-faint"
           >
             {t('nominateLink')}
           </Link>
           <Link
             href="/bounties"
-            className="font-sans text-[14px] font-semibold text-page underline underline-offset-4 decoration-page-faint hover:opacity-70 transition-opacity"
+            className="font-sans text-[14px] font-semibold text-page-muted hover:text-page transition-colors underline underline-offset-4 decoration-page-faint"
           >
             {t('bountiesLink')}
           </Link>
           <Link
             href="/about"
-            className="font-sans text-[14px] font-semibold text-page underline underline-offset-4 decoration-page-faint hover:opacity-70 transition-opacity"
+            className="font-sans text-[14px] font-semibold text-page-muted hover:text-page transition-colors underline underline-offset-4 decoration-page-faint"
           >
             {t('aboutLink')}
           </Link>
-        </div>
+        </footer>
       </div>
     </div>
   );

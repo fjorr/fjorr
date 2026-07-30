@@ -43,7 +43,7 @@ export default async function BountyHomePoster() {
           className="group relative block w-full overflow-hidden rounded-[8px] aspect-[3/4] md:aspect-[2.39/1] bg-[#2A4034] text-white"
         >
           <div className="absolute inset-0 flex flex-col justify-end md:justify-center items-start text-left p-7 sm:p-10 md:p-12 lg:p-14 max-w-xl">
-            <h2 className="font-futura font-extrabold uppercase tracking-tighter text-[clamp(2rem,6vw,3.5rem)] leading-[0.9] mb-3 sm:mb-4">
+            <h2 className="font-interTight font-extrabold capitalize tracking-normal text-[clamp(2rem,6vw,3.5rem)] leading-[0.9] mb-3 sm:mb-4">
               {t('homePosterHeadline')}
             </h2>
             <p className="font-sans font-medium text-[14px] sm:text-[15px] leading-relaxed text-white/70 mb-6 sm:mb-8 max-w-sm tracking-tight">
