@@ -468,7 +468,7 @@
   },
   "Principles": {
     "draftLabel": "Draft",
-    "title": "Prinzipien eines Mythos.",
+    "title": "Prinzipien\neines Mythos",
     "intro": "Das sind die von Fjorr. Nicht alles verdient Ausstrahlung.",
     "p1Title": "Ein Mythos handelt vom Menschsein.",
     "p1Body": "Ein Protokoll sagt, was geschah. Ein Mythos sagt, was es heißt, lebendig zu sein.",
@@ -483,11 +483,12 @@
     "p6Title": "Ein Mythos ist nie fertig.",
     "p6Body": "Geformt von denen, die ihn tragen, und weitergegeben an die, die noch nicht geboren sind.",
     "footerNote": "Nutze sie beim Pitch.",
-    "nominateLink": "Geschichten nominieren.",
-    "bountiesLink": "Open bounties",
+    "nominateLink": "Nominieren.",
+    "bountiesLink": "Bounties.",
     "aboutLink": "About Fjorr",
     "prev": "Zurück",
-    "next": "Weiter"
+    "next": "Weiter",
+    "eyebrow": "Prinzipien"
   },
   "Bureaux": {
     "headline": "Ein Kollektiv aus Weltklasse-Talent.",

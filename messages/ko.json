@@ -468,7 +468,7 @@
   },
   "Principles": {
     "draftLabel": "Draft",
-    "title": "신화의 원칙.",
+    "title": "신화의\n원칙",
     "intro": "Fjorr의 원칙이다. 모든 것이 방영될 자격을 얻는 것은 아니다.",
     "p1Title": "신화는 인간에 관한 것이다.",
     "p1Body": "기록은 무슨 일이 있었는지 말한다. 신화는 살아 있다는 것이 무엇인지 말한다.",
@@ -483,11 +483,12 @@
     "p6Title": "신화는 결코 완성되지 않는다.",
     "p6Body": "그것을 지키는 사람들에 의해 빚어지고, 아직 태어나지 않은 이들에게 건네진다.",
     "footerNote": "피치할 때 이것들을 쓰세요.",
-    "nominateLink": "이야기 제안하기.",
-    "bountiesLink": "Open bounties",
+    "nominateLink": "Nominate.",
+    "bountiesLink": "Bounties.",
     "aboutLink": "About Fjorr",
     "prev": "이전",
-    "next": "다음"
+    "next": "다음",
+    "eyebrow": "Principles"
   },
   "Bureaux": {
     "headline": "세계적 재능의 집단.",

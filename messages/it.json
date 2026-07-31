@@ -468,7 +468,7 @@
   },
   "Principles": {
     "draftLabel": "Draft",
-    "title": "Principi di un mito.",
+    "title": "Principi\ndi un mito",
     "intro": "Questi sono di Fjorr. Non tutto merita di andare in onda.",
     "p1Title": "Un mito parla dell'essere umani.",
     "p1Body": "Un verbale dice cosa è successo. Un mito dice cosa significa essere vivi.",
@@ -483,11 +483,12 @@
     "p6Title": "Un mito non è mai finito.",
     "p6Body": "Plasmato da chi lo custodisce, e consegnato a chi non è ancora nato.",
     "footerNote": "Usali quando proponi.",
-    "nominateLink": "Candida storie.",
-    "bountiesLink": "Open bounties",
+    "nominateLink": "Candida.",
+    "bountiesLink": "Bounties.",
     "aboutLink": "About Fjorr",
     "prev": "Precedente",
-    "next": "Successivo"
+    "next": "Successivo",
+    "eyebrow": "Principi"
   },
   "Bureaux": {
     "headline": "Un collettivo di talenti di livello mondiale.",

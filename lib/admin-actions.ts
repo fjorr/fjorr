@@ -441,7 +441,12 @@ export async function createBounty(input: {
     input.sortOrder == null || Number.isNaN(Number(input.sortOrder))
       ? null
       : Number(input.sortOrder);
-  const deadline = (input.deadline || '').trim() || null;
+  const deadlineRaw = (input.deadline || '').trim();
+  const deadline = deadlineRaw
+    ? deadlineRaw.length === 10
+      ? `${deadlineRaw}T12:00:00.000Z`
+      : deadlineRaw
+    : null;
 
   if (!title) return { ok: false, error: 'Title required' };
   if (!slug || slug.length < 2) return { ok: false, error: 'Slug invalid' };
@@ -492,6 +497,96 @@ export async function createBounty(input: {
   revalidatePath('/bounties');
   revalidatePath('/nominate');
   return { ok: true, id: String(data?.id) };
+}
+
+/** Edit core bounty fields (brief, reward, kind, poster, editorial). */
+export async function updateBounty(input: {
+  id: string;
+  title: string;
+  slug?: string;
+  brief: string;
+  amountDollars: number;
+  kind: BountyKind;
+  posterImageUrl?: string | null;
+  featured?: boolean;
+  sortOrder?: number | null;
+  deadline?: string | null;
+}): Promise<{ ok: true } | { ok: false; error: string }> {
+  await requireAdmin();
+
+  const title = input.title.trim();
+  const brief = input.brief.trim();
+  const slug = normalizeSlug(input.slug || title);
+  const amount = Math.round(Number(input.amountDollars) * 100);
+  const kind = input.kind;
+  const posterImageUrl = (input.posterImageUrl || '').trim() || null;
+  const featured = Boolean(input.featured);
+  const sortOrder =
+    input.sortOrder == null || Number.isNaN(Number(input.sortOrder))
+      ? null
+      : Number(input.sortOrder);
+  const deadlineRaw = (input.deadline || '').trim();
+  const deadline = deadlineRaw
+    ? deadlineRaw.length === 10
+      ? `${deadlineRaw}T12:00:00.000Z`
+      : deadlineRaw
+    : null;
+
+  if (!input.id) return { ok: false, error: 'Missing id' };
+  if (!title) return { ok: false, error: 'Title required' };
+  if (!slug || slug.length < 2) return { ok: false, error: 'Slug invalid' };
+  if (!Number.isFinite(amount) || amount < 0) {
+    return { ok: false, error: 'Amount invalid' };
+  }
+  if (!['true', 'fiction', 'both'].includes(kind)) {
+    return { ok: false, error: 'Kind invalid' };
+  }
+
+  if (posterImageUrl) {
+    try {
+      const u = new URL(posterImageUrl);
+      if (u.protocol !== 'http:' && u.protocol !== 'https:') {
+        return { ok: false, error: 'Poster image URL invalid' };
+      }
+    } catch {
+      return { ok: false, error: 'Poster image URL invalid' };
+    }
+  }
+
+  const db = createServiceClient();
+  const { data, error } = await db
+    .from('bounties')
+    .update({
+      title,
+      slug,
+      brief,
+      reward_amount: amount,
+      kind,
+      poster_image_url: posterImageUrl,
+      featured,
+      sort_order: sortOrder,
+      deadline,
+    })
+    .eq('id', input.id)
+    .select('slug')
+    .maybeSingle();
+
+  if (error) {
+    console.error('updateBounty failed:', error.message);
+    return { ok: false, error: error.message };
+  }
+
+  revalidatePath('/admin');
+  revalidatePath('/admin/bounties');
+  revalidatePath('/bounties');
+  revalidatePath('/nominate');
+  if (data?.slug) {
+    revalidatePath(`/bounties/${data.slug}`);
+  }
+  if (slug && slug !== data?.slug) {
+    revalidatePath(`/bounties/${slug}`);
+  }
+  return { ok: true };
 }
 
 export async function updateBountyStatus(input: {

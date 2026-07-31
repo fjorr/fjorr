@@ -1,7 +1,7 @@
 import { listAdminBounties } from '@/lib/admin-actions';
 import BountyCreateForm from '@/components/admin/BountyCreateForm';
+import BountyEditForm from '@/components/admin/BountyEditForm';
 import BountyStatusControl from '@/components/admin/BountyStatusControl';
-import BountyHeroControl from '@/components/admin/BountyHeroControl';
 
 function formatMoney(cents: number, currency: string) {
   try {
@@ -50,10 +50,13 @@ export default async function AdminBountiesPage() {
                       <img
                         src={b.poster_image_url}
                         alt=""
-                        className="w-20 h-20 object-cover shrink-0 bg-white/5"
+                        className="w-20 h-20 object-cover shrink-0 bg-white/5 rounded-[6px]"
                       />
                     ) : (
-                      <div className="w-20 h-20 shrink-0 bg-white/5" aria-hidden />
+                      <div
+                        className="w-20 h-20 shrink-0 bg-white/5 rounded-[6px]"
+                        aria-hidden
+                      />
                     )}
                     <div className="flex flex-col gap-1.5 min-w-0">
                       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
@@ -66,13 +69,26 @@ export default async function AdminBountiesPage() {
                         <span className="font-sans text-[11px] font-semibold uppercase tracking-wide text-white/30">
                           {b.kind}
                         </span>
+                        {b.featured ? (
+                          <span className="font-sans text-[11px] font-semibold uppercase tracking-wide text-white/45">
+                            Featured
+                          </span>
+                        ) : null}
                       </div>
-                      <p className="font-mono text-[11px] text-white/30">{b.slug}</p>
+                      <p className="font-mono text-[11px] text-white/30">
+                        {b.slug}
+                        {b.sort_order != null ? ` · sort ${b.sort_order}` : ''}
+                      </p>
                       {b.brief && (
                         <p className="font-sans text-[13px] text-white/50 leading-snug">
                           {b.brief}
                         </p>
                       )}
+                      {b.deadline ? (
+                        <p className="font-mono text-[10px] text-white/25">
+                          deadline {b.deadline.slice(0, 10)}
+                        </p>
+                      ) : null}
                       {b.winning_nomination_id ? (
                         <p className="font-mono text-[10px] text-white/25 truncate">
                           won by nomination {b.winning_nomination_id.slice(0, 8)}…
@@ -80,9 +96,11 @@ export default async function AdminBountiesPage() {
                       ) : null}
                     </div>
                   </div>
-                  <BountyStatusControl id={b.id} status={b.status} />
+                  <div className="flex flex-col items-stretch sm:items-end gap-2">
+                    <BountyStatusControl id={b.id} status={b.status} />
+                    <BountyEditForm bounty={b} />
+                  </div>
                 </div>
-                <BountyHeroControl id={b.id} posterImageUrl={b.poster_image_url} />
               </li>
             ))}
           </ul>

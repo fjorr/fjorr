@@ -468,7 +468,7 @@
   },
   "Principles": {
     "draftLabel": "Draft",
-    "title": "神話的原則。",
+    "title": "神話的\n原則",
     "intro": "這是 Fjorr 的原則。不是每件事都值得播出。",
     "p1Title": "神話關乎為人。",
     "p1Body": "紀錄告訴你發生了什麼。神話告訴你活著意味著什麼。",
@@ -483,11 +483,12 @@
     "p6Title": "神話永不完成。",
     "p6Body": "由延續它的人塑形，並交給尚未出生的人。",
     "footerNote": "提案時用這些原則。",
-    "nominateLink": "推薦故事。",
-    "bountiesLink": "Open bounties",
+    "nominateLink": "Nominate.",
+    "bountiesLink": "Bounties.",
     "aboutLink": "About Fjorr",
     "prev": "上一則",
-    "next": "下一則"
+    "next": "下一則",
+    "eyebrow": "Principles"
   },
   "Bureaux": {
     "headline": "世界級人才的集體。",

@@ -468,7 +468,8 @@
   },
   "Principles": {
     "draftLabel": "Draft",
-    "title": "Principles of a Myth",
+    "eyebrow": "Principles",
+    "title": "Principles\nof a Myth",
     "intro": "These are Fjorr's. Not everything earns air.",
     "p1Title": "A myth is about being human.",
     "p1Body": "A record tells you what occurred. A myth tells you what it means to be alive.",
@@ -483,8 +484,8 @@
     "p6Title": "A myth is never finished.",
     "p6Body": "Shaped by the people who keep it, and handed to the ones who aren't born yet.",
     "footerNote": "Use these when you pitch.",
-    "nominateLink": "Nominate stories.",
-    "bountiesLink": "Open bounties",
+    "nominateLink": "Nominate.",
+    "bountiesLink": "Bounties.",
     "aboutLink": "About Fjorr",
     "prev": "Previous",
     "next": "Next"

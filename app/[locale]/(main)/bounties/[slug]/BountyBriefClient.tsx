@@ -193,6 +193,13 @@ export default function BountyBriefClient({
             </p>
           )}
 
+          <Link
+            href="/principles"
+            className="mt-5 font-sans text-[13px] sm:text-[14px] font-semibold text-page-muted hover:text-page transition-colors underline underline-offset-2 w-fit"
+          >
+            {t('principlesLink')}
+          </Link>
+
           <div className="mt-10 hidden lg:block">{legal}</div>
         </aside>
 

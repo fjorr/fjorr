@@ -468,7 +468,7 @@
   },
   "Principles": {
     "draftLabel": "Draft",
-    "title": "Principer för en myt.",
+    "title": "Principer\nför en myt",
     "intro": "Det här är Fjorrs. Inte allt förtjänar sändningstid.",
     "p1Title": "En myt handlar om att vara människa.",
     "p1Body": "Ett protokoll säger vad som hände. En myt säger vad det betyder att vara levande.",
@@ -483,11 +483,12 @@
     "p6Title": "En myt är aldrig färdig.",
     "p6Body": "Formad av dem som bär den, och lämnad till dem som inte är födda än.",
     "footerNote": "Använd dem när du pitchar.",
-    "nominateLink": "Nominera berättelser.",
-    "bountiesLink": "Open bounties",
+    "nominateLink": "Nominera.",
+    "bountiesLink": "Bounties.",
     "aboutLink": "About Fjorr",
     "prev": "Föregående",
-    "next": "Nästa"
+    "next": "Nästa",
+    "eyebrow": "Principer"
   },
   "Bureaux": {
     "headline": "Ett kollektiv av talang i världsklass.",

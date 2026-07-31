@@ -4,17 +4,14 @@ import React from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 
-const PRINCIPLE_KEYS = [
-  { title: 'p1Title', body: 'p1Body' },
-  { title: 'p2Title', body: 'p2Body' },
-  { title: 'p3Title', body: 'p3Body' },
-  { title: 'p4Title', body: 'p4Body' },
-  { title: 'p5Title', body: 'p5Body' },
-  { title: 'p6Title', body: 'p6Body' },
+const PRINCIPLES = [
+  { title: 'p1Title', body: 'p1Body', numeral: 'I' },
+  { title: 'p2Title', body: 'p2Body', numeral: 'II' },
+  { title: 'p3Title', body: 'p3Body', numeral: 'III' },
+  { title: 'p4Title', body: 'p4Body', numeral: 'IV' },
+  { title: 'p5Title', body: 'p5Body', numeral: 'V' },
+  { title: 'p6Title', body: 'p6Body', numeral: 'VI' },
 ] as const;
-
-const HAIRLINE = 'color-mix(in srgb, var(--page-fg) 10%, transparent)';
-const INDEX = 'color-mix(in srgb, var(--page-fg) 35%, transparent)';
 
 export default function PrinciplesClient() {
   const t = useTranslations('Principles');
@@ -34,38 +31,46 @@ export default function PrinciplesClient() {
         }}
       />
 
-      <div className="w-full max-w-5xl mx-auto px-5 sm:px-8 pt-14 sm:pt-20">
-        <header className="max-w-lg mx-auto mb-12 sm:mb-16 text-center flex flex-col items-center">
-          <h1 className="font-futura tracking-tighter text-page select-none text-5xl sm:text-6xl md:text-7xl !leading-[0.9] max-w-[11ch]">
-            {t('title')}
+      <div className="w-full max-w-4xl mx-auto px-[10%] pt-14 sm:pt-20 flex flex-col items-center text-center">
+        <header className="w-full max-w-lg mb-12 sm:mb-16 flex flex-col items-center">
+          <h1 className="mb-5 sm:mb-6 font-futura tracking-tighter text-page select-none text-5xl sm:text-6xl md:text-7xl !leading-[0.9] text-center">
+            {t('title')
+              .split('\n')
+              .filter(Boolean)
+              .map((line) => (
+                <span key={line} className="block">
+                  {line}
+                </span>
+              ))}
           </h1>
-          <p className="mt-5 sm:mt-6 font-sans font-medium text-[15px] sm:text-[16px] leading-snug tracking-normal text-page">
+          <p className="font-sans font-medium text-[15px] sm:text-[16px] leading-[1.55] tracking-normal text-page max-w-md">
             {t('intro')}
           </p>
         </header>
+      </div>
 
-        <ul className="m-0 p-0 list-none border-t" style={{ borderColor: HAIRLINE }}>
-          {PRINCIPLE_KEYS.map((item, index) => (
+      <div className="w-full px-5 sm:px-8">
+        <ul className="mx-auto w-full max-w-[22rem] sm:max-w-[27rem] m-0 p-0 list-none flex flex-col gap-10 sm:gap-14">
+          {PRINCIPLES.map((item) => (
             <li
               key={item.title}
-              className="grid grid-cols-[2.5rem_minmax(0,1fr)] md:grid-cols-[3rem_minmax(0,1.1fr)_minmax(0,1fr)] gap-x-4 sm:gap-x-6 md:gap-x-8 py-6 sm:py-7 border-b items-baseline"
-              style={{ borderColor: HAIRLINE }}
+              className="grid grid-cols-1 sm:grid-cols-[6rem_minmax(0,19rem)] gap-x-8 gap-y-3 items-start text-left"
             >
               <span
-                className="font-mono text-[12px] sm:text-[13px] font-medium tabular-nums tracking-wide select-none"
-                style={{ color: INDEX }}
+                className="font-futura select-none text-[clamp(4.5rem,14vw,6.5rem)] tracking-tighter !leading-[0.85] text-page"
                 aria-hidden
               >
-                {String(index + 1).padStart(2, '0')}
+                {item.numeral}.
               </span>
 
-              <h2 className="font-interTight font-bold normal-case tracking-normal text-[1.05rem] sm:text-[1.15rem] leading-[1.3] text-page text-balance">
-                {t(item.title)}
-              </h2>
-
-              <p className="col-start-2 md:col-start-3 font-sans font-medium text-[13px] sm:text-[14px] leading-[1.5] tracking-normal text-page-muted mt-2 md:mt-0 max-w-[45ch]">
-                {t(item.body)}
-              </p>
+              <div className="min-w-0 max-w-[19rem] sm:pt-2">
+                <h2 className="font-interTight font-bold normal-case tracking-normal text-[1.7rem] sm:text-[1.8rem] md:text-[1.9rem] leading-[1.15] text-page text-balance">
+                  {t(item.title)}
+                </h2>
+                <p className="mt-2.5 sm:mt-3 font-sans font-medium text-[14px] leading-[1.5] tracking-normal text-page-muted">
+                  {t(item.body)}
+                </p>
+              </div>
             </li>
           ))}
         </ul>

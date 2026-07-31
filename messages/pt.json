@@ -468,7 +468,7 @@
   },
   "Principles": {
     "draftLabel": "Draft",
-    "title": "Princípios de um mito.",
+    "title": "Princípios\nde um mito",
     "intro": "Estes são da Fjorr. Nem tudo ganha o ar.",
     "p1Title": "Um mito é sobre ser humano.",
     "p1Body": "Um registo diz o que aconteceu. Um mito diz o que significa estar vivo.",
@@ -483,11 +483,12 @@
     "p6Title": "Um mito nunca está acabado.",
     "p6Body": "Moldado por quem o mantém, e entregue a quem ainda não nasceu.",
     "footerNote": "Usa-os quando nomeares.",
-    "nominateLink": "Indicar histórias.",
-    "bountiesLink": "Open bounties",
+    "nominateLink": "Indicar.",
+    "bountiesLink": "Bounties.",
     "aboutLink": "About Fjorr",
     "prev": "Anterior",
-    "next": "Seguinte"
+    "next": "Seguinte",
+    "eyebrow": "Princípios"
   },
   "Bureaux": {
     "headline": "Um coletivo de talento de classe mundial.",

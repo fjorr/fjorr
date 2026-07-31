@@ -468,7 +468,7 @@
   },
   "Principles": {
     "draftLabel": "Draft",
-    "title": "神話の原則。",
+    "title": "神話の\n原則",
     "intro": "これがFjorrの原則。すべてが放映に値するわけではない。",
     "p1Title": "神話は、人間であることに関わる。",
     "p1Body": "記録は何が起きたかを伝える。神話は、生きている意味を伝える。",
@@ -483,11 +483,12 @@
     "p6Title": "神話は決して完成しない。",
     "p6Body": "それを継ぐ人々によって形づくられ、まだ生まれていない者へ渡される。",
     "footerNote": "ピッチのときに使ってください。",
-    "nominateLink": "物語を推薦する。",
-    "bountiesLink": "Open bounties",
+    "nominateLink": "Nominate.",
+    "bountiesLink": "Bounties.",
     "aboutLink": "About Fjorr",
     "prev": "前へ",
-    "next": "次へ"
+    "next": "次へ",
+    "eyebrow": "Principles"
   },
   "Bureaux": {
     "headline": "世界水準の才能の集団。",

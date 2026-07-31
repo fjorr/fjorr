@@ -468,7 +468,7 @@
   },
   "Principles": {
     "draftLabel": "Draft",
-    "title": "एक मिथक के सिद्धांत।",
+    "title": "मिथक के\nसिद्धांत",
     "intro": "ये Fjorr के हैं। हर चीज़ हवा नहीं पाती।",
     "p1Title": "एक मिथक इंसान होने के बारे में है।",
     "p1Body": "रिकॉर्ड बताता है क्या हुआ। मिथक बताता है जीवित होने का मतलब क्या है।",
@@ -483,11 +483,12 @@
     "p6Title": "एक मिथक कभी पूरा नहीं होता।",
     "p6Body": "उसे रखने वालों से बनता है, और अभी न जन्मे लोगों को सौंपा जाता है।",
     "footerNote": "पिच करते समय इन्हें इस्तेमाल करो।",
-    "nominateLink": "कहानियाँ नामांकित करें।",
-    "bountiesLink": "Open bounties",
+    "nominateLink": "Nominate.",
+    "bountiesLink": "Bounties.",
     "aboutLink": "About Fjorr",
     "prev": "पिछला",
-    "next": "अगला"
+    "next": "अगला",
+    "eyebrow": "Principles"
   },
   "Bureaux": {
     "headline": "विश्वस्तरीय प्रतिभा का सामूहिक।",

@@ -468,7 +468,7 @@
   },
   "Principles": {
     "draftLabel": "Draft",
-    "title": "Principes d'un mythe.",
+    "title": "Principes\nd'un mythe",
     "intro": "Ce sont ceux de Fjorr. Tout n'a pas gagné l'antenne.",
     "p1Title": "Un mythe parle d'être humain.",
     "p1Body": "Un compte rendu dit ce qui s'est passé. Un mythe dit ce que signifie être vivant.",
@@ -483,11 +483,12 @@
     "p6Title": "Un mythe n'est jamais achevé.",
     "p6Body": "Façonné par ceux qui le portent, et remis à ceux qui ne sont pas encore nés.",
     "footerNote": "Utilisez-les pour pitcher.",
-    "nominateLink": "Nominer des histoires.",
-    "bountiesLink": "Open bounties",
+    "nominateLink": "Nominer.",
+    "bountiesLink": "Bounties.",
     "aboutLink": "About Fjorr",
     "prev": "Précédent",
-    "next": "Suivant"
+    "next": "Suivant",
+    "eyebrow": "Principes"
   },
   "Bureaux": {
     "headline": "Un collectif de talents de classe mondiale.",
