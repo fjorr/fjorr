@@ -67,7 +67,7 @@ export default function PrinciplesClient() {
                 <h2 className="font-interTight font-bold normal-case tracking-normal text-[1.7rem] sm:text-[1.8rem] md:text-[1.9rem] leading-[1.15] text-page text-balance">
                   {t(item.title)}
                 </h2>
-                <p className="mt-2.5 sm:mt-3 font-sans font-medium text-[14px] leading-[1.5] tracking-normal text-page-muted">
+                <p className="mt-2.5 sm:mt-3 font-sans font-medium text-[15px] sm:text-[16px] leading-[1.55] tracking-normal text-page-muted">
                   {t(item.body)}
                 </p>
               </div>
