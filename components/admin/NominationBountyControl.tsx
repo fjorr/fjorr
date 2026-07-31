@@ -65,8 +65,8 @@ export default function NominationBountyControl({
         </option>
         {bounties.map((b) => (
           <option key={b.id} value={b.id} className="bg-[#1F1F1F]">
-            {b.title} · {formatMoney(b.amount_cents, b.currency)}
-            {b.status !== 'active' ? ` (${b.status})` : ''}
+            {b.title} · {formatMoney(b.reward_amount, b.currency)}
+            {b.status !== 'open' ? ` (${b.status})` : ''}
           </option>
         ))}
       </select>

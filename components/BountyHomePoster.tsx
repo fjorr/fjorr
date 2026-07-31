@@ -24,8 +24,8 @@ export default async function BountyHomePoster() {
   const bounties = await listActiveBounties();
   const top = bounties.reduce<{ cents: number; currency: string } | null>(
     (best, b) => {
-      if (!best || b.amount_cents > best.cents) {
-        return { cents: b.amount_cents, currency: b.currency };
+      if (!best || b.reward_amount > best.cents) {
+        return { cents: b.reward_amount, currency: b.currency };
       }
       return best;
     },

@@ -17,11 +17,68 @@ function formatMoney(cents: number, currency: string) {
   }
 }
 
+function BountyPosterCard({
+  bounty,
+  index,
+  archived,
+  awardedLabel,
+}: {
+  bounty: BountyRow;
+  index: number;
+  archived?: boolean;
+  awardedLabel: string;
+}) {
+  return (
+    <li
+      className="flex flex-col opacity-0 animate-bounty-in"
+      style={{ animationDelay: `${80 + index * 70}ms` }}
+    >
+      <Link
+        href={`/bounties/${bounty.slug}`}
+        className="group block overflow-hidden rounded-[5px] bg-page-chip"
+      >
+        {bounty.poster_image_url ? (
+          <img
+            src={bounty.poster_image_url}
+            alt={bounty.title}
+            className="w-full aspect-[2/3] object-cover object-center block opacity-90 group-hover:opacity-100 group-hover:scale-[1.02] transition-all duration-700"
+          />
+        ) : (
+          <div className="w-full aspect-[2/3] bg-page-chip flex items-end p-4">
+            <span className="font-sans text-[13px] font-semibold text-page-muted">
+              {bounty.title}
+            </span>
+          </div>
+        )}
+      </Link>
+      <div className="mt-3 flex flex-col gap-0.5 min-w-0">
+        <Link
+          href={`/bounties/${bounty.slug}`}
+          className="font-sans text-[13px] sm:text-[14px] font-semibold text-page tracking-normal truncate hover:opacity-70 transition-opacity"
+        >
+          {bounty.title}
+        </Link>
+        {archived ? (
+          <span className="font-sans text-[13px] sm:text-[14px] font-semibold tracking-normal text-page-muted">
+            {awardedLabel}
+          </span>
+        ) : (
+          <span className="font-sans text-[15px] sm:text-[16px] font-semibold tracking-normal text-page-muted tabular-nums">
+            {formatMoney(bounty.reward_amount, bounty.currency)}
+          </span>
+        )}
+      </div>
+    </li>
+  );
+}
+
 export default function BountiesClient({
   bounties,
+  archivedBounties = [],
   signedIn,
 }: {
   bounties: BountyRow[];
+  archivedBounties?: BountyRow[];
   signedIn: boolean;
 }) {
   const t = useTranslations('Bounties');
@@ -36,99 +93,109 @@ export default function BountiesClient({
 
   return (
     <div className="w-full min-h-screen bg-[var(--page-bg)] text-page pb-28">
-      <header className="w-full max-w-2xl mx-auto px-5 sm:px-8 pt-14 sm:pt-20 mb-12 sm:mb-16 text-center">
-        <p className="mb-4 sm:mb-5 font-sans text-[15px] sm:text-[16px] font-semibold normal-case tracking-normal text-page select-none">
-          {t('eyebrow')}
-        </p>
-        <h1 className="font-futura tracking-tighter text-page select-none text-4xl sm:text-5xl md:text-[4rem] leading-[1.05] text-balance">
-          {t('title')}
-        </h1>
-        <p className="mt-5 sm:mt-6 font-sans font-medium text-[15px] sm:text-[16px] leading-snug tracking-normal text-page-muted max-w-md mx-auto">
-          {t('description')}
-        </p>
-        <p className="mt-4 font-sans text-[13px] sm:text-[14px] leading-snug text-page-faint max-w-sm mx-auto tracking-normal">
-          {t('principlesLead')}{' '}
+      <div className="w-full max-w-4xl mx-auto px-[10%] pt-14 sm:pt-20 flex flex-col items-center text-center">
+        <div className="w-full flex flex-col items-center">
+          <div className="flex flex-col items-center w-full">
+            <p className="font-sans text-lg sm:text-xl font-semibold normal-case tracking-normal text-page select-none">
+              {t('eyebrow')}
+            </p>
+            <h1 className="mt-2 sm:mt-2.5 mb-5 sm:mb-6 font-futura tracking-tighter text-page select-none text-[clamp(2.5rem,8vw,4.5rem)] !leading-[0.9] text-center max-w-[16ch] sm:max-w-[18ch]">
+              {t('title')
+                .split('\n')
+                .filter(Boolean)
+                .map((line) => (
+                  <span key={line} className="block">
+                    {line}
+                  </span>
+                ))}
+            </h1>
+            <p className="font-sans font-medium text-[15px] sm:text-[16px] leading-[1.55] tracking-normal text-page max-w-md">
+              {t('description')}
+            </p>
+          </div>
+
           <Link
             href="/principles"
-            className="underline underline-offset-2 hover:text-page-muted transition-colors"
+            className="mt-4 font-sans text-[13px] sm:text-[14px] font-semibold text-page-muted hover:text-page transition-colors underline underline-offset-2"
           >
             {t('principlesLink')}
           </Link>
-          .
-        </p>
-        {!signedIn && (
-          <p className="mt-3 font-sans text-[13px] text-page-faint leading-snug max-w-sm mx-auto">
-            {t('membersNote')}{' '}
-            <button
-              type="button"
-              onClick={openSignIn}
-              className="underline underline-offset-2 hover:text-page-muted transition-colors"
+          <p className="mt-3 font-sans text-[13px] sm:text-[14px] leading-snug text-page-muted max-w-sm tracking-normal">
+            {t('generalBlurb')}{' '}
+            <Link
+              href="/nominate"
+              className="font-semibold underline underline-offset-2 hover:text-page transition-colors"
             >
-              {t('signIn')}
-            </button>
+              {t('generalPitch')}
+            </Link>
           </p>
-        )}
-      </header>
+          {!signedIn && (
+            <p className="mt-3 font-sans text-[13px] sm:text-[14px] text-page-muted leading-snug max-w-sm">
+              {t('membersNote')}{' '}
+              <button
+                type="button"
+                onClick={openSignIn}
+                className="underline underline-offset-2 hover:text-page transition-colors"
+              >
+                {t('signIn')}
+              </button>
+            </p>
+          )}
+        </div>
+      </div>
 
       {bounties.length === 0 ? (
-        <div className="w-full max-w-5xl mx-auto px-5 sm:px-8">
+        <div className="w-full max-w-5xl mx-auto px-5 sm:px-8 mt-10 text-center">
           <p className="font-sans text-[15px] text-page-muted">{t('empty')}</p>
         </div>
       ) : (
-        <div className="w-full max-w-5xl mx-auto px-5 sm:px-8">
-          <ul className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
+        <div className="w-full max-w-5xl mx-auto px-5 sm:px-8 mt-10">
+          <h2 className="mb-5 sm:mb-6 font-sans text-[15px] sm:text-[16px] font-semibold normal-case tracking-normal text-page text-left">
+            {t('openHeading')}
+          </h2>
+          <ul className="grid grid-cols-2 md:grid-cols-4 gap-5">
             {bounties.map((bounty, index) => (
-              <li
+              <BountyPosterCard
                 key={bounty.id}
-                className="flex flex-col gap-2.5 opacity-0 animate-bounty-in"
-                style={{ animationDelay: `${80 + index * 70}ms` }}
-              >
-                <Link
-                  href={`/bounties/${bounty.slug}`}
-                  className="group block bg-page-chip overflow-hidden"
-                >
-                  {bounty.hero_image_url ? (
-                    <img
-                      src={bounty.hero_image_url}
-                      alt={bounty.title}
-                      className="w-full aspect-[2/3] object-cover object-center block opacity-90 group-hover:opacity-100 group-hover:scale-[1.02] transition-all duration-700"
-                    />
-                  ) : (
-                    <div className="w-full aspect-[2/3] bg-page-chip flex items-end p-4">
-                      <span className="font-sans text-[13px] font-semibold text-page-muted">
-                        {bounty.title}
-                      </span>
-                    </div>
-                  )}
-                </Link>
-                <div className="px-0.5 flex flex-col gap-0.5 min-w-0">
-                  <Link
-                    href={`/bounties/${bounty.slug}`}
-                    className="font-sans text-[13px] sm:text-[14px] font-semibold text-page tracking-tight truncate hover:opacity-70 transition-opacity"
-                  >
-                    {bounty.title}
-                  </Link>
-                  <span className="font-mono text-[11px] text-page-faint tabular-nums">
-                    {formatMoney(bounty.amount_cents, bounty.currency)}
-                  </span>
-                </div>
-              </li>
+                bounty={bounty}
+                index={index}
+                awardedLabel={t('awarded')}
+              />
             ))}
           </ul>
         </div>
       )}
 
-      <div className="w-full max-w-5xl mx-auto px-5 sm:px-8 mt-16 sm:mt-24 pt-10 border-t border-page-faint flex flex-col items-center gap-3 text-center">
-        <p className="font-sans text-[14px] text-page-muted leading-relaxed max-w-md tracking-normal">
-          {t('generalBlurb')}
+      {archivedBounties.length > 0 ? (
+        <div className="w-full max-w-5xl mx-auto px-5 sm:px-8 mt-16 sm:mt-20">
+          <h2 className="mb-5 sm:mb-6 font-sans text-[15px] sm:text-[16px] font-semibold normal-case tracking-normal text-page text-left">
+            {t('archiveHeading')}
+          </h2>
+          <ul className="grid grid-cols-2 md:grid-cols-4 gap-5">
+            {archivedBounties.map((bounty, index) => (
+              <BountyPosterCard
+                key={bounty.id}
+                bounty={bounty}
+                index={index}
+                archived
+                awardedLabel={t('awarded')}
+              />
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      {(bounties.length > 0 || archivedBounties.length > 0) && (
+        <p className="mt-8 sm:mt-10 mx-auto max-w-xl px-5 text-center font-sans text-[12px] sm:text-[13px] leading-snug text-page-muted tracking-normal text-pretty">
+          {t('legalLine')}{' '}
+          <Link
+            href="/terms"
+            className="whitespace-nowrap underline underline-offset-2 hover:text-page transition-colors"
+          >
+            {t('legalTerms')}
+          </Link>
         </p>
-        <Link
-          href="/nominate"
-          className="font-sans text-[14px] font-semibold text-page-muted hover:text-page transition-colors underline underline-offset-4 decoration-page-faint"
-        >
-          {t('generalPitch')} →
-        </Link>
-      </div>
+      )}
 
       <style
         dangerouslySetInnerHTML={{

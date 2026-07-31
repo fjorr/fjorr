@@ -8,6 +8,9 @@ import { createClient } from '@/lib/supabase/server';
 
 export type NominationKind = 'true' | 'fiction';
 
+/** Bounty hunt type — `both` accepts either nomination kind. */
+export type BountyKind = NominationKind | 'both';
+
 export type NominationStatus =
   | 'received'
   | 'in_review'
@@ -16,15 +19,22 @@ export type NominationStatus =
   | 'in_production'
   | 'released';
 
+export type BountyStatus = 'open' | 'claimed' | 'in_production' | 'closed';
+
 export type BountyRow = {
   id: string;
   slug: string;
   title: string;
   brief: string;
-  amount_cents: number;
+  reward_amount: number;
   currency: string;
-  status: 'active' | 'filled' | 'closed';
-  hero_image_url: string | null;
+  kind: BountyKind;
+  status: BountyStatus;
+  poster_image_url: string | null;
+  featured: boolean;
+  sort_order: number | null;
+  deadline: string | null;
+  claimed_at: string | null;
 };
 
 export type NominationRow = {
@@ -56,15 +66,39 @@ export type NominateResult =
   | { ok: true; id: string }
   | { ok: false; error: string };
 
-/** Active bounties for the nominate form (public read). */
+const BOUNTY_SELECT =
+  'id, slug, title, brief, reward_amount, currency, kind, status, poster_image_url, featured, sort_order, deadline, claimed_at';
+
+function mapBounty(row: any): BountyRow {
+  return {
+    id: String(row.id),
+    slug: String(row.slug),
+    title: String(row.title),
+    brief: String(row.brief || ''),
+    reward_amount: Number(row.reward_amount) || 0,
+    currency: String(row.currency || 'USD'),
+    kind: (row.kind || 'true') as BountyKind,
+    status: row.status as BountyStatus,
+    poster_image_url: row.poster_image_url ? String(row.poster_image_url) : null,
+    featured: Boolean(row.featured),
+    sort_order:
+      row.sort_order == null || Number.isNaN(Number(row.sort_order))
+        ? null
+        : Number(row.sort_order),
+    deadline: row.deadline ? String(row.deadline) : null,
+    claimed_at: row.claimed_at ? String(row.claimed_at) : null,
+  };
+}
+
+/** Open bounties for the public grid / nominate form. */
 export async function listActiveBounties(): Promise<BountyRow[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from('bounties')
-    .select(
-      'id, slug, title, brief, amount_cents, currency, status, hero_image_url'
-    )
-    .eq('status', 'active')
+    .select(BOUNTY_SELECT)
+    .eq('status', 'open')
+    .order('featured', { ascending: false })
+    .order('sort_order', { ascending: true, nullsFirst: false })
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -72,20 +106,29 @@ export async function listActiveBounties(): Promise<BountyRow[]> {
     return [];
   }
 
-  return (data || []).map((row: any) => ({
-    id: String(row.id),
-    slug: String(row.slug),
-    title: String(row.title),
-    brief: String(row.brief || ''),
-    amount_cents: Number(row.amount_cents) || 0,
-    currency: String(row.currency || 'USD'),
-    status: row.status as BountyRow['status'],
-    hero_image_url: row.hero_image_url ? String(row.hero_image_url) : null,
-  }));
+  return (data || []).map(mapBounty);
 }
 
-/** Single active bounty by slug (public brief page). */
-export async function getActiveBountyBySlug(
+/** Awarded bounties (claimed / in production) for the public archive. */
+export async function listArchivedBounties(): Promise<BountyRow[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('bounties')
+    .select(BOUNTY_SELECT)
+    .in('status', ['claimed', 'in_production'])
+    .order('claimed_at', { ascending: false, nullsFirst: false })
+    .order('updated_at', { ascending: false });
+
+  if (error) {
+    console.error('listArchivedBounties failed:', error.message);
+    return [];
+  }
+
+  return (data || []).map(mapBounty);
+}
+
+/** Public brief — open or awarded (not closed). */
+export async function getPublicBountyBySlug(
   slug: string
 ): Promise<BountyRow | null> {
   const cleaned = slug.trim().toLowerCase();
@@ -94,29 +137,27 @@ export async function getActiveBountyBySlug(
   const supabase = await createClient();
   const { data, error } = await supabase
     .from('bounties')
-    .select(
-      'id, slug, title, brief, amount_cents, currency, status, hero_image_url'
-    )
+    .select(BOUNTY_SELECT)
     .eq('slug', cleaned)
-    .eq('status', 'active')
+    .in('status', ['open', 'claimed', 'in_production'])
     .maybeSingle();
 
   if (error) {
-    console.error('getActiveBountyBySlug failed:', error.message);
+    console.error('getPublicBountyBySlug failed:', error.message);
     return null;
   }
   if (!data) return null;
 
-  return {
-    id: String(data.id),
-    slug: String(data.slug),
-    title: String(data.title),
-    brief: String(data.brief || ''),
-    amount_cents: Number(data.amount_cents) || 0,
-    currency: String(data.currency || 'USD'),
-    status: data.status as BountyRow['status'],
-    hero_image_url: data.hero_image_url ? String(data.hero_image_url) : null,
-  };
+  return mapBounty(data);
+}
+
+/** @deprecated Prefer getPublicBountyBySlug — kept for open-only callers. */
+export async function getActiveBountyBySlug(
+  slug: string
+): Promise<BountyRow | null> {
+  const bounty = await getPublicBountyBySlug(slug);
+  if (!bounty || bounty.status !== 'open') return null;
+  return bounty;
 }
 
 /** Own nominations, newest first. */
@@ -222,11 +263,15 @@ export async function submitNomination(
   if (bountyId) {
     const { data: bounty } = await supabase
       .from('bounties')
-      .select('id, status')
+      .select('id, status, kind')
       .eq('id', bountyId)
       .maybeSingle();
-    if (!bounty || bounty.status !== 'active') {
+    if (!bounty || bounty.status !== 'open') {
       return { ok: false, error: 'bountyInvalid' };
+    }
+    // Bounty kind may be true, fiction, or both.
+    if (bounty.kind !== 'both' && bounty.kind !== kind) {
+      return { ok: false, error: 'kindRequired' };
     }
   }
 

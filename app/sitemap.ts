@@ -84,7 +84,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     supabase
       .from('bounties')
       .select('slug, updated_at')
-      .eq('status', 'active')
+      .in('status', ['open', 'claimed', 'in_production'])
       .not('slug', 'is', null),
   ]);
 

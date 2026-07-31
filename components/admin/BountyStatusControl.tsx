@@ -3,19 +3,21 @@
 import React, { useState, useTransition } from 'react';
 import { useRouter } from '@/i18n/navigation';
 import { updateBountyStatus } from '@/lib/admin-actions';
+import type { BountyStatus } from '@/lib/nomination-actions';
 
-const OPTIONS = [
-  { value: 'active', label: 'Active' },
-  { value: 'filled', label: 'Filled' },
+const OPTIONS: { value: BountyStatus; label: string }[] = [
+  { value: 'open', label: 'Open' },
+  { value: 'claimed', label: 'Claimed' },
+  { value: 'in_production', label: 'In production' },
   { value: 'closed', label: 'Closed' },
-] as const;
+];
 
 export default function BountyStatusControl({
   id,
   status,
 }: {
   id: string;
-  status: 'active' | 'filled' | 'closed';
+  status: BountyStatus;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -28,7 +30,7 @@ export default function BountyStatusControl({
         value={value}
         disabled={pending}
         onChange={(e) => {
-          const next = e.target.value as typeof status;
+          const next = e.target.value as BountyStatus;
           setValue(next);
           setError(null);
           startTransition(async () => {

@@ -45,6 +45,53 @@ interface ValidationErrors {
 
 const KINDS: NominationKind[] = ['true', 'fiction'];
 
+/** Show fewer posters on small screens — no horizontal scroll. */
+const NOMINATE_POSTERS: Array<
+  | { kind: 'image'; src: string; alt: string; id: string; show: string; n: number }
+  | { kind: 'solid'; color: string; id: string; show: string; n: number }
+> = [
+  {
+    kind: 'image',
+    src: 'https://media.fjorr.com/assets/fjorr-nominate-poster-breakdancing.avif',
+    alt: 'Breakdancing narrative frame',
+    id: 'breakdancing',
+    show: 'block',
+    n: 143,
+  },
+  {
+    kind: 'image',
+    src: 'https://media.fjorr.com/assets/fjorr-nominate-poster-naismith.avif',
+    alt: 'Naismith basketball narrative frame',
+    id: 'naismith',
+    show: 'block',
+    n: 144,
+  },
+  {
+    kind: 'image',
+    src: 'https://media.fjorr.com/assets/fjorr-nominate-poster-ww2.avif',
+    alt: 'WWII historical narrative frame',
+    id: 'ww2',
+    show: 'block',
+    n: 145,
+  },
+  {
+    kind: 'image',
+    src: 'https://media.fjorr.com/assets/fjorr-nominate-poster-yeti.avif',
+    alt: 'Yeti legend narrative frame',
+    id: 'yeti',
+    show: 'hidden sm:block',
+    n: 146,
+  },
+  { kind: 'solid', color: '#3A3530', id: 'solid-1', show: 'hidden md:block', n: 147 },
+  { kind: 'solid', color: '#2A3340', id: 'solid-2', show: 'hidden md:block', n: 148 },
+  { kind: 'solid', color: '#3F2E2A', id: 'solid-3', show: 'hidden lg:block', n: 149 },
+  { kind: 'solid', color: '#24352C', id: 'solid-4', show: 'hidden lg:block', n: 150 },
+];
+
+function formatPosterN(n: number) {
+  return `N${String(n).padStart(3, '0')}`;
+}
+
 function formatBountyAmount(cents: number, currency: string) {
   try {
     return new Intl.NumberFormat('en', {
@@ -191,86 +238,66 @@ export default function NominateClient({
         }}
       />
 
-      <div className="w-full flex flex-nowrap justify-center gap-1.5 mb-24 sm:mb-32 select-none">
-        <div className="flex flex-col gap-2.5 w-[33%] md:w-[25%] shrink-0 opacity-0 animate-sweep-right style-delay-100">
-          <div className="bg-page-chip relative w-full overflow-hidden">
-            <img
-              src="https://media.fjorr.com/assets/fjorr-nominate-poster-breakdancing.avif"
-              className="w-full h-auto object-contain block opacity-85 hover:opacity-100 hover:scale-[1.01] transition-all duration-700"
-              alt="Breakdancing narrative frame"
-            />
+      <div className="w-full px-5 sm:px-8 flex gap-[20px] mb-8 sm:mb-10 select-none">
+        {NOMINATE_POSTERS.map((poster, index) => (
+          <div
+            key={poster.id}
+            className={`${poster.show} flex-1 min-w-0 opacity-0 animate-sweep-right`}
+            style={{ animationDelay: `${100 + index * 60}ms` }}
+          >
+            <div className="relative w-full aspect-video overflow-hidden rounded-[5px] bg-page-chip">
+              {poster.kind === 'image' ? (
+                <img
+                  src={poster.src}
+                  alt={poster.alt}
+                  className="absolute inset-0 w-full h-full object-cover opacity-85 hover:opacity-100 hover:scale-[1.02] transition-all duration-700"
+                />
+              ) : (
+                <div
+                  className="absolute inset-0"
+                  style={{ backgroundColor: poster.color }}
+                  aria-hidden
+                />
+              )}
+            </div>
+            <p className="mt-3 font-mono text-[10px] sm:text-[11px] font-medium tracking-[0.08em] text-page-faint tabular-nums">
+              {formatPosterN(poster.n)}
+            </p>
           </div>
-          <div className="film-metadata-horizontal text-[9px] text-page-faint tracking-[0.2em] font-mono uppercase font-medium px-4 truncate">
-            {t('nominationLabel', { number: 143 })}
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-2.5 w-[33%] md:w-[25%] shrink-0 opacity-0 animate-sweep-right style-delay-180">
-          <div className="bg-page-chip relative w-full overflow-hidden">
-            <img
-              src="https://media.fjorr.com/assets/fjorr-nominate-poster-naismith.avif"
-              className="w-full h-auto object-contain block opacity-85 hover:opacity-100 hover:scale-[1.01] transition-all duration-700"
-              alt="Naismith basketball narrative frame"
-            />
-          </div>
-          <div className="film-metadata-horizontal text-[9px] text-page-faint tracking-[0.2em] font-mono uppercase font-medium px-4 truncate">
-            {t('nominationLabel', { number: 144 })}
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-2.5 w-[33%] md:w-[25%] shrink-0 opacity-0 animate-sweep-right style-delay-250">
-          <div className="bg-page-chip relative w-full overflow-hidden">
-            <img
-              src="https://media.fjorr.com/assets/fjorr-nominate-poster-ww2.avif"
-              className="w-full h-auto object-contain block opacity-85 hover:opacity-100 hover:scale-[1.01] transition-all duration-700"
-              alt="WWII historical narrative frame"
-            />
-          </div>
-          <div className="film-metadata-horizontal text-[9px] text-page-faint tracking-[0.2em] font-mono uppercase font-medium px-4 truncate">
-            {t('nominationLabel', { number: 145 })}
-          </div>
-        </div>
-
-        <div className="flex-col gap-2.5 w-[25%] shrink-0 opacity-0 animate-sweep-right style-delay-320 hidden md:flex">
-          <div className="bg-page-chip relative w-full overflow-hidden">
-            <img
-              src="https://media.fjorr.com/assets/fjorr-nominate-poster-yeti.avif"
-              className="w-full h-auto object-contain block opacity-85 hover:opacity-100 hover:scale-[1.01] transition-all duration-700"
-              alt="Yeti legend narrative frame"
-            />
-          </div>
-          <div className="film-metadata-horizontal text-[9px] text-page-faint tracking-[0.2em] font-mono uppercase font-medium px-4 truncate">
-            {t('nominationLabel', { number: 146 })}
-          </div>
-        </div>
+        ))}
       </div>
 
-      <div className="w-full max-w-4xl px-[10%] flex flex-col items-center text-center mt-4">
+      <div className="w-full max-w-4xl px-[10%] flex flex-col items-center text-center mt-2">
         {submittedSuccess ? (
           <NominateSuccessView onReset={handleResetForm} />
         ) : (
-          <div className="w-full max-w-xl flex flex-col items-center">
-            <p className="mb-4 sm:mb-5 font-sans text-[15px] sm:text-[16px] font-semibold normal-case tracking-normal text-page select-none opacity-0 animate-slide-up style-delay-headline">
-              {t('eyebrow')}
-            </p>
-            <h1 className="font-futura tracking-tighter text-page text-4xl sm:text-5xl md:text-[4rem] leading-[1.05] text-balance mb-5 sm:mb-6 opacity-0 animate-slide-up style-delay-headline select-none">
-              {t('title')}
-            </h1>
+          <div className="w-full max-w-lg flex flex-col items-center">
+            <div className="flex flex-col items-center">
+              <p className="font-sans text-lg sm:text-xl font-semibold normal-case tracking-normal text-page select-none opacity-0 animate-slide-up style-delay-headline">
+                {t('eyebrow')}
+              </p>
+              <h1 className="mt-2 sm:mt-2.5 mb-5 sm:mb-6 font-futura tracking-tighter text-page text-5xl sm:text-6xl md:text-7xl !leading-[0.9] max-w-[12ch] opacity-0 animate-slide-up style-delay-headline select-none">
+                {t('title')}
+              </h1>
+              <p className="font-sans font-medium text-[15px] sm:text-[16px] leading-[1.55] text-page max-w-md tracking-normal text-center opacity-0 animate-slide-up style-delay-body">
+                {t('description')}
+              </p>
+            </div>
 
-            <p className="font-sans font-medium text-[15px] sm:text-[16px] leading-[1.55] text-page-muted max-w-md tracking-normal text-center mb-4 opacity-0 animate-slide-up style-delay-body">
-              {t('description')}
-            </p>
-
-            <p className="font-sans text-[13px] sm:text-[14px] leading-snug text-page-faint max-w-sm tracking-normal text-center mb-10 opacity-0 animate-slide-up style-delay-body">
-              {t('principlesLead')}{' '}
+            <div className="mt-4 mb-10 flex flex-col items-center gap-3 opacity-0 animate-slide-up style-delay-body">
+              <Link
+                href="/bounties"
+                className="font-sans text-[13px] sm:text-[14px] font-semibold text-page-muted hover:text-page transition-colors underline underline-offset-2"
+              >
+                {t('viewOpenBounties')}
+              </Link>
               <Link
                 href="/principles"
-                className="underline underline-offset-2 hover:text-page-muted transition-colors"
+                className="font-sans text-[13px] sm:text-[14px] font-semibold text-page-muted hover:text-page transition-colors underline underline-offset-2"
               >
                 {t('principlesLink')}
               </Link>
-              .
-            </p>
+            </div>
 
             {!signedIn ? (
               <div className="w-full max-w-sm flex flex-col items-center gap-5 opacity-0 animate-slide-up style-delay-form">
@@ -292,7 +319,7 @@ export default function NominateClient({
                 className="w-full flex flex-col text-left opacity-0 animate-slide-up style-delay-form gap-4"
               >
                 <fieldset className="flex flex-col gap-2">
-                  <legend className="font-sans text-[12px] font-semibold uppercase tracking-wide text-page-faint mb-1">
+                  <legend className="font-sans text-[13px] font-semibold normal-case tracking-normal text-page-muted mb-1">
                     {t('kindLabel')}
                   </legend>
                   <div className="flex flex-wrap gap-2">
@@ -305,7 +332,7 @@ export default function NominateClient({
                           clearError('kind');
                           clearError('proof');
                         }}
-                        className={`h-10 px-4 rounded-full font-sans text-[13px] font-semibold transition-all ${
+                        className={`h-10 px-4 rounded-[10px] font-sans text-[13px] font-semibold transition-all ${
                           kind === k
                             ? 'bg-[var(--page-fg)] text-[var(--page-bg)]'
                             : 'bg-page-chip text-page-muted border border-page-faint hover:bg-[var(--page-chip-hover)]'
@@ -323,7 +350,7 @@ export default function NominateClient({
                 </fieldset>
 
                 <label className="flex flex-col gap-2">
-                  <span className="font-sans text-[12px] font-semibold uppercase tracking-wide text-page-faint">
+                  <span className="font-sans text-[13px] font-semibold normal-case tracking-normal text-page-muted">
                     {t('storyLabel')}
                   </span>
                   <textarea
@@ -344,7 +371,7 @@ export default function NominateClient({
                 </label>
 
                 <label className="flex flex-col gap-2">
-                  <span className="font-sans text-[12px] font-semibold uppercase tracking-wide text-page-faint">
+                  <span className="font-sans text-[13px] font-semibold normal-case tracking-normal text-page-muted">
                     {t('whyLabel')}
                   </span>
                   <textarea
@@ -365,7 +392,7 @@ export default function NominateClient({
                 </label>
 
                 <label className="flex flex-col gap-2">
-                  <span className="font-sans text-[12px] font-semibold uppercase tracking-wide text-page-faint">
+                  <span className="font-sans text-[13px] font-semibold normal-case tracking-normal text-page-muted">
                     {t('settingLabel')}
                   </span>
                   <input
@@ -386,7 +413,7 @@ export default function NominateClient({
                 </label>
 
                 <label className="flex flex-col gap-2">
-                  <span className="font-sans text-[12px] font-semibold uppercase tracking-wide text-page-faint">
+                  <span className="font-sans text-[13px] font-semibold normal-case tracking-normal text-page-muted">
                     {proofLabel}
                   </span>
                   <textarea
@@ -408,7 +435,7 @@ export default function NominateClient({
 
                 {kind === 'true' && (
                   <label className="flex flex-col gap-2">
-                    <span className="font-sans text-[12px] font-semibold uppercase tracking-wide text-page-faint">
+                    <span className="font-sans text-[13px] font-semibold normal-case tracking-normal text-page-muted">
                       {t('proofUrlLabel')}
                     </span>
                     <input
@@ -431,7 +458,7 @@ export default function NominateClient({
 
                 <label className="flex flex-col gap-2">
                   <span className="flex items-baseline justify-between gap-3">
-                    <span className="font-sans text-[12px] font-semibold uppercase tracking-wide text-page-faint">
+                    <span className="font-sans text-[13px] font-semibold normal-case tracking-normal text-page-muted">
                       {t('bountyLabel')}
                     </span>
                     <Link
@@ -452,7 +479,7 @@ export default function NominateClient({
                     <option value="">{t('bountyGeneral')}</option>
                     {bounties.map((b) => (
                       <option key={b.id} value={b.id}>
-                        {b.title} · {formatBountyAmount(b.amount_cents, b.currency)}
+                        {b.title} · {formatBountyAmount(b.reward_amount, b.currency)}
                       </option>
                     ))}
                   </select>
@@ -478,7 +505,7 @@ export default function NominateClient({
                   </span>
                 )}
 
-                <p className="font-sans font-medium text-xs leading-[1.5em] text-page-faint tracking-relaxed text-center max-w-sm mx-auto mt-2 mb-2 select-none">
+                <p className="w-full font-sans font-medium text-xs leading-[1.5em] text-page-muted tracking-relaxed text-left mt-2 mb-2 select-none">
                   {t('disclaimer')}
                 </p>
 
@@ -500,10 +527,6 @@ export default function NominateClient({
       <style
         dangerouslySetInnerHTML={{
           __html: `
-        .film-metadata-horizontal {
-          font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-        }
-
         .style-delay-100 { animation-delay: 100ms; }
         .style-delay-180 { animation-delay: 180ms; }
         .style-delay-250 { animation-delay: 250ms; }

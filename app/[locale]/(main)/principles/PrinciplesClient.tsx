@@ -35,11 +35,11 @@ export default function PrinciplesClient() {
       />
 
       <div className="w-full max-w-5xl mx-auto px-5 sm:px-8 pt-14 sm:pt-20">
-        <header className="max-w-xl mx-auto mb-12 sm:mb-16 text-center">
-          <h1 className="font-futura tracking-tighter text-page select-none text-4xl sm:text-5xl md:text-[4rem] leading-[1.05] whitespace-pre-line">
+        <header className="max-w-lg mx-auto mb-12 sm:mb-16 text-center flex flex-col items-center">
+          <h1 className="font-futura tracking-tighter text-page select-none text-5xl sm:text-6xl md:text-7xl !leading-[0.9] max-w-[11ch]">
             {t('title')}
           </h1>
-          <p className="mt-4 sm:mt-5 font-sans font-medium text-[15px] sm:text-[16px] leading-snug tracking-normal text-page-muted">
+          <p className="mt-5 sm:mt-6 font-sans font-medium text-[15px] sm:text-[16px] leading-snug tracking-normal text-page">
             {t('intro')}
           </p>
         </header>

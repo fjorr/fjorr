@@ -2,24 +2,27 @@
 
 import React, { useState, useTransition } from 'react';
 import { useRouter } from '@/i18n/navigation';
-import { updateBountyHero } from '@/lib/admin-actions';
+import { updateBountyPoster } from '@/lib/admin-actions';
 
 export default function BountyHeroControl({
   id,
+  posterImageUrl,
+  /** @deprecated use posterImageUrl */
   heroImageUrl,
 }: {
   id: string;
-  heroImageUrl: string | null;
+  posterImageUrl?: string | null;
+  heroImageUrl?: string | null;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
-  const [value, setValue] = useState(heroImageUrl || '');
+  const [value, setValue] = useState(posterImageUrl || heroImageUrl || '');
   const [error, setError] = useState<string | null>(null);
 
   return (
     <div className="flex flex-col gap-1.5 w-full max-w-md">
       <span className="font-sans text-[10px] font-semibold uppercase tracking-wide text-white/30">
-        Hero image URL
+        Poster image URL
       </span>
       <div className="flex gap-2">
         <input
@@ -36,9 +39,9 @@ export default function BountyHeroControl({
           onClick={() => {
             setError(null);
             startTransition(async () => {
-              const result = await updateBountyHero({
+              const result = await updateBountyPoster({
                 id,
-                heroImageUrl: value,
+                posterImageUrl: value,
               });
               if (!result.ok) {
                 setError(result.error);

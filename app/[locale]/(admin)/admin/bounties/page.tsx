@@ -26,8 +26,8 @@ export default async function AdminBountiesPage() {
             Bounties
           </h1>
           <p className="font-sans text-[14px] text-white/45 leading-relaxed max-w-md">
-            Specific hunts. Public briefs on /bounties. No deadlines — Active until
-            Filled or Closed.
+            Specific hunts. Public briefs on /bounties. Open until Claimed, In
+            production, or Closed.
           </p>
         </div>
         <BountyCreateForm />
@@ -46,9 +46,9 @@ export default async function AdminBountiesPage() {
               <li key={b.id} className="py-6 flex flex-col gap-4">
                 <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-4 items-start">
                   <div className="flex gap-4 min-w-0">
-                    {b.hero_image_url ? (
+                    {b.poster_image_url ? (
                       <img
-                        src={b.hero_image_url}
+                        src={b.poster_image_url}
                         alt=""
                         className="w-20 h-20 object-cover shrink-0 bg-white/5"
                       />
@@ -61,7 +61,10 @@ export default async function AdminBountiesPage() {
                           {b.title}
                         </span>
                         <span className="font-mono text-[13px] text-white/50">
-                          {formatMoney(b.amount_cents, b.currency)}
+                          {formatMoney(b.reward_amount, b.currency)}
+                        </span>
+                        <span className="font-sans text-[11px] font-semibold uppercase tracking-wide text-white/30">
+                          {b.kind}
                         </span>
                       </div>
                       <p className="font-mono text-[11px] text-white/30">{b.slug}</p>
@@ -70,11 +73,16 @@ export default async function AdminBountiesPage() {
                           {b.brief}
                         </p>
                       )}
+                      {b.winning_nomination_id ? (
+                        <p className="font-mono text-[10px] text-white/25 truncate">
+                          won by nomination {b.winning_nomination_id.slice(0, 8)}…
+                        </p>
+                      ) : null}
                     </div>
                   </div>
                   <BountyStatusControl id={b.id} status={b.status} />
                 </div>
-                <BountyHeroControl id={b.id} heroImageUrl={b.hero_image_url} />
+                <BountyHeroControl id={b.id} posterImageUrl={b.poster_image_url} />
               </li>
             ))}
           </ul>

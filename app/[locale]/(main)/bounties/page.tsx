@@ -1,7 +1,10 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { createClient } from '@/lib/supabase/server';
-import { listActiveBounties } from '@/lib/nomination-actions';
+import {
+  listActiveBounties,
+  listArchivedBounties,
+} from '@/lib/nomination-actions';
 import BountiesClient from './BountiesClient';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -26,13 +29,20 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function BountiesPage() {
-  const [bounties, supabase] = await Promise.all([
+  const [bounties, archivedBounties, supabase] = await Promise.all([
     listActiveBounties(),
+    listArchivedBounties(),
     createClient(),
   ]);
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  return <BountiesClient bounties={bounties} signedIn={!!user} />;
+  return (
+    <BountiesClient
+      bounties={bounties}
+      archivedBounties={archivedBounties}
+      signedIn={!!user}
+    />
+  );
 }

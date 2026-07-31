@@ -29,9 +29,12 @@ const SCOUT_SRC = '/fjorr_scout.mp4';
 export default function AboutClient({ copy }: { copy: AboutCopy }) {
   const { heroLines, manifestoHeadline, manifestoParagraphs } = copy;
 
+  const heroSectionRef = useRef<HTMLElement>(null);
   const scoutSectionRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const markGridRef = useRef<HTMLDivElement>(null);
+  const markCardRef = useRef<HTMLElement>(null);
+  const nameCardRef = useRef<HTMLElement>(null);
 
   // Attach scout video src when section nears viewport
   useEffect(() => {
@@ -59,6 +62,8 @@ export default function AboutClient({ copy }: { copy: AboutCopy }) {
     let cancelled = false;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let openTl: any = null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let matterFade: any = null;
     let scoutTrigger: { kill: () => void } | null = null;
     let ctx: { revert: () => void } | null = null;
 
@@ -81,6 +86,23 @@ export default function AboutClient({ copy }: { copy: AboutCopy }) {
           duration: 0,
           stagger: 0.7,
         });
+
+        // "Matter fades." — scrubbed fade as the hero leaves. Obvious on purpose.
+        matterFade = gsap.fromTo(
+          '.reveal-line-matter',
+          { opacity: 1, filter: 'blur(0px)' },
+          {
+            opacity: 0,
+            filter: 'blur(10px)',
+            ease: 'power1.in',
+            scrollTrigger: {
+              trigger: heroSectionRef.current,
+              start: 'top top',
+              end: '+=35%',
+              scrub: 0.15,
+            },
+          }
+        );
       }
 
       let scoutPlayed = false;
@@ -122,11 +144,17 @@ export default function AboutClient({ copy }: { copy: AboutCopy }) {
           return;
         }
 
+        // Fire when each card is actually in view (not when the grid top peeks in).
+        const cardEnter = {
+          start: 'top 68%',
+          once: true,
+        } as const;
+
         const markTl = gsap.timeline({
+          delay: 0.2,
           scrollTrigger: {
-            trigger: markGridRef.current,
-            start: 'top 78%',
-            once: true,
+            trigger: markCardRef.current,
+            ...cardEnter,
           },
         });
 
@@ -161,7 +189,15 @@ export default function AboutClient({ copy }: { copy: AboutCopy }) {
         markTl.set('.helmet-frame-4', { opacity: 0, visibility: 'hidden' });
         markTl.to('.mark-copy-logo', { opacity: 1, y: 0, duration: 0.35 }, '-=0.05');
 
-        markTl.fromTo(
+        const nameTl = gsap.timeline({
+          delay: 0.25,
+          scrollTrigger: {
+            trigger: nameCardRef.current,
+            ...cardEnter,
+          },
+        });
+
+        nameTl.fromTo(
           '.wordmark-path',
           {
             strokeDashoffset: 800,
@@ -171,15 +207,14 @@ export default function AboutClient({ copy }: { copy: AboutCopy }) {
             strokeDashoffset: 0,
             duration: 1.05,
             ease: 'power2.inOut',
-          },
-          0.15
+          }
         );
-        markTl.to(
+        nameTl.to(
           '.wordmark-path',
           { fill: 'rgba(255,255,255,1)', duration: 0.35 },
           '-=0.25'
         );
-        markTl.to(
+        nameTl.to(
           '.mark-copy-name',
           { opacity: 1, y: 0, duration: 0.35 },
           '-=0.2'
@@ -192,6 +227,8 @@ export default function AboutClient({ copy }: { copy: AboutCopy }) {
     return () => {
       cancelled = true;
       openTl?.kill();
+      matterFade?.scrollTrigger?.kill();
+      matterFade?.kill();
       scoutTrigger?.kill();
       videoRef.current?.pause();
       ctx?.revert();
@@ -201,10 +238,16 @@ export default function AboutClient({ copy }: { copy: AboutCopy }) {
   return (
     <div className="w-full bg-black text-white relative select-none min-h-screen">
       {/* Beat 1 — Statement */}
-      <section className="relative w-full min-h-[calc(100dvh+72px)] flex flex-col items-center justify-center text-center px-6 -mt-[72px]">
+      <section
+        ref={heroSectionRef}
+        className="relative w-full min-h-[calc(100dvh+72px)] flex flex-col items-center justify-center text-center px-6 -mt-[72px]"
+      >
         <h1 className="font-futura font-extrabold uppercase tracking-tighter text-[#f5f5f7] w-full max-w-5xl text-[clamp(2.75rem,12.5vw,8.75rem)] leading-[0.88] -translate-y-[min(5vh,2.75rem)]">
-          {heroLines.map((line) => (
-            <span key={line} className="reveal-line block invisible">
+          {heroLines.map((line, i) => (
+            <span
+              key={line}
+              className={`reveal-line block invisible${i === 0 ? ' reveal-line-matter' : ''}`}
+            >
               {line}
             </span>
           ))}
@@ -260,6 +303,7 @@ export default function AboutClient({ copy }: { copy: AboutCopy }) {
         >
           {/* Mark / helmet */}
           <article
+            ref={markCardRef}
             className="relative flex min-h-[360px] flex-col overflow-hidden rounded-[8px] border border-white/15 bg-[#0c0c0c] text-white md:min-h-[400px] lg:min-h-[440px]"
             style={{
               backgroundImage: 'url(/about/dot-grid.png)',
@@ -302,6 +346,7 @@ export default function AboutClient({ copy }: { copy: AboutCopy }) {
 
           {/* Name / wordmark */}
           <article
+            ref={nameCardRef}
             className="relative flex min-h-[360px] flex-col overflow-hidden rounded-[8px] border border-white/15 bg-[#0c0c0c] text-white md:min-h-[400px] lg:min-h-[440px]"
             style={{
               backgroundImage: 'url(/about/dot-grid.png)',

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { getActiveBountyBySlug } from '@/lib/nomination-actions';
+import { getPublicBountyBySlug } from '@/lib/nomination-actions';
 import BountyBriefClient from './BountyBriefClient';
 
 type PageProps = {
@@ -12,7 +12,7 @@ export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const bounty = await getActiveBountyBySlug(slug);
+  const bounty = await getPublicBountyBySlug(slug);
   if (!bounty) {
     return { title: 'Bounty' };
   }
@@ -29,21 +29,21 @@ export async function generateMetadata({
       description,
       url: `https://www.fjorr.com/bounties/${bounty.slug}`,
       type: 'website',
-      ...(bounty.hero_image_url
-        ? { images: [{ url: bounty.hero_image_url }] }
+      ...(bounty.poster_image_url
+        ? { images: [{ url: bounty.poster_image_url }] }
         : {}),
     },
     twitter: {
       title: `${bounty.title} | Fjorr`,
       description,
-      ...(bounty.hero_image_url ? { images: [bounty.hero_image_url] } : {}),
+      ...(bounty.poster_image_url ? { images: [bounty.poster_image_url] } : {}),
     },
   };
 }
 
 export default async function BountyBriefPage({ params }: PageProps) {
   const { slug } = await params;
-  const bounty = await getActiveBountyBySlug(slug);
+  const bounty = await getPublicBountyBySlug(slug);
   if (!bounty) notFound();
 
   const supabase = await createClient();

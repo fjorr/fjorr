@@ -1,9 +1,11 @@
 'use client';
 
 import React from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
-import type { BountyRow } from '@/lib/nomination-actions';
+import type { BountyRow, BountyStatus } from '@/lib/nomination-actions';
+
+const HAIRLINE = 'color-mix(in srgb, var(--page-fg) 10%, transparent)';
 
 function formatMoney(cents: number, currency: string) {
   try {
@@ -17,6 +19,18 @@ function formatMoney(cents: number, currency: string) {
   }
 }
 
+function formatDate(iso: string, locale: string) {
+  try {
+    return new Intl.DateTimeFormat(locale, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    }).format(new Date(iso));
+  } catch {
+    return iso.slice(0, 10);
+  }
+}
+
 export default function BountyBriefClient({
   bounty,
   signedIn,
@@ -25,6 +39,8 @@ export default function BountyBriefClient({
   signedIn: boolean;
 }) {
   const t = useTranslations('Bounties');
+  const locale = useLocale();
+  const isOpen = bounty.status === 'open';
   const nominateHref = `/nominate?bounty=${encodeURIComponent(bounty.slug)}`;
 
   const openSignIn = () => {
@@ -35,72 +51,154 @@ export default function BountyBriefClient({
     );
   };
 
+  const statusLabel = (status: BountyStatus) => {
+    switch (status) {
+      case 'open':
+        return t('statusOpen');
+      case 'claimed':
+        return t('awarded');
+      case 'in_production':
+        return t('statusInProduction');
+      case 'closed':
+        return t('statusClosed');
+      default:
+        return status;
+    }
+  };
+
+  const kindLabel =
+    bounty.kind === 'fiction'
+      ? t('kindFiction')
+      : bounty.kind === 'both'
+        ? t('kindBoth')
+        : t('kindTrue');
+
+  const rewardLabel = formatMoney(bounty.reward_amount, bounty.currency);
+  const metaLine = [statusLabel(bounty.status), kindLabel]
+    .filter(Boolean)
+    .join(' · ');
+
+  const legal = (
+    <p className="font-sans text-[12px] leading-snug text-page-muted tracking-normal text-pretty max-w-sm">
+      {t('legalLine')}{' '}
+      <Link
+        href="/terms"
+        className="whitespace-nowrap underline underline-offset-2 hover:text-page transition-colors"
+      >
+        {t('legalTerms')}
+      </Link>
+    </p>
+  );
+
   return (
-    <div className="w-full min-h-screen bg-[var(--page-bg)] text-page pb-28">
-      {bounty.hero_image_url ? (
-        <div className="w-full bg-page-chip overflow-hidden">
-          <img
-            src={bounty.hero_image_url}
-            alt=""
-            className="w-full h-auto max-h-[72vh] object-cover object-center block"
-          />
-        </div>
-      ) : (
-        <div className="w-full h-48 sm:h-64 bg-page-chip" aria-hidden />
-      )}
-
-      <div className="w-full max-w-2xl mx-auto px-6 sm:px-10 pt-8 sm:pt-10 flex flex-col gap-6">
-        <Link
-          href="/bounties"
-          className="font-sans text-[13px] font-semibold text-page-faint hover:text-page-muted transition-colors w-fit"
-        >
-          ← {t('backToGrid')}
-        </Link>
-
-        <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-          <h1 className="font-futura text-4xl sm:text-5xl md:text-6xl font-extrabold uppercase tracking-tighter text-page leading-[0.95] select-none">
-            {bounty.title}
-          </h1>
-          <span className="font-mono text-[15px] text-page-muted tabular-nums">
-            {formatMoney(bounty.amount_cents, bounty.currency)}
-          </span>
-        </div>
-
-        <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-page-faint">
-          {t('active')} · {t('creativeBrief')}
-        </p>
-
-        {bounty.brief && (
-          <p className="font-sans text-[16px] sm:text-[17px] leading-relaxed text-page-muted whitespace-pre-wrap max-w-xl">
-            {bounty.brief}
-          </p>
-        )}
-
-        <div className="flex flex-wrap items-center gap-4 pt-2">
-          {signedIn ? (
-            <Link
-              href={nominateHref}
-              className="inline-flex h-12 px-8 rounded-full bg-[var(--page-fg)] text-[var(--page-bg)] font-sans text-[14px] font-bold items-center hover:opacity-90 active:scale-[0.98] transition-all"
-            >
-              {t('pitchThis')}
-            </Link>
+    <main className="w-full min-h-[calc(100dvh-72px)] bg-[var(--page-bg)] text-page flex items-center justify-center px-5 sm:px-8 py-10 sm:py-14">
+      <div className="w-full max-w-[980px] flex flex-col lg:flex-row lg:items-center gap-8 sm:gap-10 lg:gap-12">
+        {/* Poster — left on desktop, below copy on mobile */}
+        <div className="w-full lg:w-[380px] xl:w-[420px] shrink-0 order-2 lg:order-1">
+          {bounty.poster_image_url ? (
+            <img
+              src={bounty.poster_image_url}
+              alt={bounty.title}
+              className="w-full aspect-[2/3] object-cover object-center rounded-[10px] bg-page-chip block"
+            />
           ) : (
-            <button
-              type="button"
-              onClick={openSignIn}
-              className="inline-flex h-12 px-8 rounded-full bg-[var(--page-fg)] text-[var(--page-bg)] font-sans text-[14px] font-bold items-center hover:opacity-90 active:scale-[0.98] transition-all"
+            <div
+              className="w-full aspect-[2/3] rounded-[10px] bg-page-chip flex items-end p-5"
+              aria-hidden
             >
-              {t('signInToPitch')}
-            </button>
+              <span className="font-sans text-[14px] font-semibold text-page-muted">
+                {bounty.title}
+              </span>
+            </div>
           )}
         </div>
 
-        {!signedIn && (
-          <p className="font-sans text-[13px] text-page-faint leading-snug max-w-sm">
-            {t('membersNote')}
+        {/* Brief — first on mobile, right on desktop */}
+        <aside className="w-full lg:flex-1 min-w-0 flex flex-col justify-center order-1 lg:order-2">
+          <Link
+            href="/bounties"
+            className="font-sans text-[13px] font-semibold text-page-faint hover:text-page-muted transition-colors w-fit mb-6"
+          >
+            ← {t('backToGrid')}
+          </Link>
+
+          <span className="font-sans text-[10px] font-medium uppercase tracking-[0.08em] text-page-muted mb-3">
+            {t('creativeBrief')}
+          </span>
+
+          <h1 className="font-futura text-[clamp(2rem,5vw,2.75rem)] font-extrabold uppercase tracking-tighter text-page !leading-[0.92] select-none mb-5">
+            {bounty.title}
+          </h1>
+
+          <p className="font-sans text-[18px] sm:text-[20px] font-semibold tracking-tight tabular-nums text-page leading-none mb-3">
+            {rewardLabel}
           </p>
-        )}
+
+          <p className="font-sans text-[13px] sm:text-[14px] font-medium leading-snug text-page-muted mb-6">
+            {metaLine}
+          </p>
+
+          {bounty.brief ? (
+            <p className="font-sans text-[15px] sm:text-[16px] font-medium leading-[1.55] tracking-normal text-page whitespace-pre-wrap max-w-md mb-8">
+              {bounty.brief}
+            </p>
+          ) : null}
+
+          {bounty.claimed_at ? (
+            <dl
+              className="m-0 border-t mb-8"
+              style={{ borderColor: HAIRLINE }}
+            >
+              <div
+                className="grid grid-cols-[6.5rem_minmax(0,1fr)] gap-x-4 py-3 border-b items-baseline"
+                style={{ borderColor: HAIRLINE }}
+              >
+                <dt className="font-sans text-[12px] font-semibold text-page-muted">
+                  {t('fieldAwarded')}
+                </dt>
+                <dd className="font-sans text-[14px] font-medium text-page m-0">
+                  {formatDate(bounty.claimed_at, locale)}
+                </dd>
+              </div>
+            </dl>
+          ) : null}
+
+          {isOpen ? (
+            <div className="flex flex-col gap-3">
+              {signedIn ? (
+                <Link
+                  href={nominateHref}
+                  className="inline-flex h-12 px-8 rounded-full bg-[var(--page-fg)] text-[var(--page-bg)] font-sans text-[14px] font-bold items-center justify-center w-fit hover:opacity-90 active:scale-[0.98] transition-all"
+                >
+                  {t('pitchThis')}
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  onClick={openSignIn}
+                  className="inline-flex h-12 px-8 rounded-full bg-[var(--page-fg)] text-[var(--page-bg)] font-sans text-[14px] font-bold items-center justify-center w-fit hover:opacity-90 active:scale-[0.98] transition-all"
+                >
+                  {t('signInToPitch')}
+                </button>
+              )}
+              {!signedIn && (
+                <p className="font-sans text-[13px] text-page-faint leading-snug max-w-sm">
+                  {t('membersNote')}
+                </p>
+              )}
+            </div>
+          ) : (
+            <p className="font-sans text-[14px] text-page-muted leading-snug max-w-sm">
+              {t('archiveBriefNote')}
+            </p>
+          )}
+
+          <div className="mt-10 hidden lg:block">{legal}</div>
+        </aside>
+
+        {/* Legal — under poster on mobile */}
+        <div className="order-3 lg:hidden">{legal}</div>
       </div>
-    </div>
+    </main>
   );
 }

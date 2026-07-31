@@ -3,6 +3,7 @@
 import React, { useState, useTransition } from 'react';
 import { useRouter } from '@/i18n/navigation';
 import { createBounty } from '@/lib/admin-actions';
+import type { BountyKind } from '@/lib/nomination-actions';
 
 export default function BountyCreateForm() {
   const router = useRouter();
@@ -12,7 +13,8 @@ export default function BountyCreateForm() {
   const [slug, setSlug] = useState('');
   const [brief, setBrief] = useState('');
   const [amount, setAmount] = useState('500');
-  const [heroImageUrl, setHeroImageUrl] = useState('');
+  const [kind, setKind] = useState<BountyKind>('true');
+  const [posterImageUrl, setPosterImageUrl] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const resetFields = () => {
@@ -20,7 +22,8 @@ export default function BountyCreateForm() {
     setSlug('');
     setBrief('');
     setAmount('500');
-    setHeroImageUrl('');
+    setKind('true');
+    setPosterImageUrl('');
     setError(null);
   };
 
@@ -33,7 +36,8 @@ export default function BountyCreateForm() {
         slug: slug || undefined,
         brief,
         amountDollars: Number(amount),
-        heroImageUrl: heroImageUrl || undefined,
+        kind,
+        posterImageUrl: posterImageUrl || undefined,
       });
       if (!result.ok) {
         setError(result.error);
@@ -87,7 +91,7 @@ export default function BountyCreateForm() {
             required
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Civil War"
+            placeholder="First Flight"
             className={field}
           />
         </div>
@@ -113,19 +117,40 @@ export default function BountyCreateForm() {
             rows={3}
             value={brief}
             onChange={(e) => setBrief(e.target.value)}
-            placeholder="What great looks like. What you’ve ruled out."
+            placeholder="1–2 sentence hunting description."
             className={`${field} resize-none`}
           />
         </div>
 
         <div className="flex flex-col gap-1.5">
           <label className="font-sans text-[11px] font-semibold uppercase tracking-wide text-white/35">
-            Hero image URL
+            Kind
+          </label>
+          <select
+            value={kind}
+            onChange={(e) => setKind(e.target.value as BountyKind)}
+            className={field}
+          >
+            <option value="true" className="bg-[#1F1F1F]">
+              True
+            </option>
+            <option value="fiction" className="bg-[#1F1F1F]">
+              Fiction
+            </option>
+            <option value="both" className="bg-[#1F1F1F]">
+              Both
+            </option>
+          </select>
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label className="font-sans text-[11px] font-semibold uppercase tracking-wide text-white/35">
+            Poster image URL
           </label>
           <input
             type="url"
-            value={heroImageUrl}
-            onChange={(e) => setHeroImageUrl(e.target.value)}
+            value={posterImageUrl}
+            onChange={(e) => setPosterImageUrl(e.target.value)}
             placeholder="https://media.fjorr.com/assets/…"
             className={`${field} font-mono text-[12px]`}
           />

@@ -9,6 +9,8 @@ import { requireAdmin } from '@/lib/admin-auth';
 import { sendNominationStatusEmail } from '@/lib/email/nomination-mail';
 import { createServiceClient } from '@/lib/supabase/service';
 import type {
+  BountyKind,
+  BountyStatus,
   NominationKind,
   NominationStatus,
 } from '@/lib/nomination-actions';
@@ -35,10 +37,17 @@ export type AdminBounty = {
   slug: string;
   title: string;
   brief: string;
-  amount_cents: number;
+  reward_amount: number;
   currency: string;
-  status: 'active' | 'filled' | 'closed';
-  hero_image_url: string | null;
+  kind: BountyKind;
+  status: BountyStatus;
+  poster_image_url: string | null;
+  featured: boolean;
+  sort_order: number | null;
+  deadline: string | null;
+  claimed_by: string | null;
+  claimed_at: string | null;
+  winning_nomination_id: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -49,6 +58,13 @@ export type AdminOverview = {
   bountiesActive: number;
   recentNominations: AdminNomination[];
 };
+
+const BOUNTY_STATUSES: BountyStatus[] = [
+  'open',
+  'claimed',
+  'in_production',
+  'closed',
+];
 
 const STATUSES: NominationStatus[] = [
   'received',
@@ -94,10 +110,24 @@ function mapBounty(row: any): AdminBounty {
     slug: String(row.slug),
     title: String(row.title),
     brief: String(row.brief || ''),
-    amount_cents: Number(row.amount_cents) || 0,
+    reward_amount: Number(row.reward_amount) || 0,
     currency: String(row.currency || 'USD'),
-    status: row.status as AdminBounty['status'],
-    hero_image_url: row.hero_image_url ? String(row.hero_image_url) : null,
+    kind: (row.kind || 'true') as BountyKind,
+    status: row.status as BountyStatus,
+    poster_image_url: row.poster_image_url
+      ? String(row.poster_image_url)
+      : null,
+    featured: Boolean(row.featured),
+    sort_order:
+      row.sort_order == null || Number.isNaN(Number(row.sort_order))
+        ? null
+        : Number(row.sort_order),
+    deadline: row.deadline ? String(row.deadline) : null,
+    claimed_by: row.claimed_by ? String(row.claimed_by) : null,
+    claimed_at: row.claimed_at ? String(row.claimed_at) : null,
+    winning_nomination_id: row.winning_nomination_id
+      ? String(row.winning_nomination_id)
+      : null,
     created_at: String(row.created_at),
     updated_at: String(row.updated_at),
   };
@@ -113,7 +143,7 @@ export async function getAdminOverview(): Promise<AdminOverview> {
       db
         .from('bounties')
         .select('id', { count: 'exact', head: true })
-        .eq('status', 'active'),
+        .eq('status', 'open'),
       db
         .from('nominations')
         .select(
@@ -237,8 +267,8 @@ export async function updateNominationStatus(input: {
 }
 
 /**
- * Award: attach/confirm bounty, mark nomination shortlisted, fill the bounty.
- * Operational first-to-file.
+ * Award: attach/confirm bounty, mark nomination shortlisted, claim the bounty.
+ * Sets claimed_by / claimed_at / winning_nomination_id.
  */
 export async function awardNomination(input: {
   id: string;
@@ -249,7 +279,7 @@ export async function awardNomination(input: {
 
   const { data: nom, error: nomErr } = await db
     .from('nominations')
-    .select('id, bounty_id, status, story_details, contributor_email')
+    .select('id, user_id, bounty_id, status, story_details, contributor_email')
     .eq('id', input.id)
     .maybeSingle();
 
@@ -272,6 +302,10 @@ export async function awardNomination(input: {
     return { ok: false, error: 'Bounty not found' };
   }
 
+  if (bounty.status !== 'open' && bounty.status !== 'claimed') {
+    return { ok: false, error: `Bounty is ${bounty.status}` };
+  }
+
   const { error: updateNomErr } = await db
     .from('nominations')
     .update({
@@ -288,7 +322,12 @@ export async function awardNomination(input: {
 
   const { error: updateBountyErr } = await db
     .from('bounties')
-    .update({ status: 'filled' })
+    .update({
+      status: 'claimed',
+      claimed_by: nom.user_id,
+      claimed_at: new Date().toISOString(),
+      winning_nomination_id: input.id,
+    })
     .eq('id', bountyId);
 
   if (updateBountyErr) {
@@ -359,8 +398,13 @@ export async function listAdminBounties(): Promise<AdminBounty[]> {
   const { data, error } = await db
     .from('bounties')
     .select(
-      'id, slug, title, brief, amount_cents, currency, status, hero_image_url, created_at, updated_at'
+      `id, slug, title, brief, reward_amount, currency, kind, status,
+       poster_image_url, featured, sort_order, deadline,
+       claimed_by, claimed_at, winning_nomination_id,
+       created_at, updated_at`
     )
+    .order('featured', { ascending: false })
+    .order('sort_order', { ascending: true, nullsFirst: false })
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -376,8 +420,12 @@ export async function createBounty(input: {
   slug?: string;
   brief: string;
   amountDollars: number;
+  kind?: BountyKind;
   currency?: string;
-  heroImageUrl?: string;
+  posterImageUrl?: string;
+  featured?: boolean;
+  sortOrder?: number | null;
+  deadline?: string | null;
 }): Promise<{ ok: true; id: string } | { ok: false; error: string }> {
   await requireAdmin();
 
@@ -386,22 +434,32 @@ export async function createBounty(input: {
   const slug = normalizeSlug(input.slug || title);
   const amount = Math.round(Number(input.amountDollars) * 100);
   const currency = (input.currency || 'USD').trim().toUpperCase() || 'USD';
-  const heroImageUrl = (input.heroImageUrl || '').trim() || null;
+  const kind = input.kind || 'true';
+  const posterImageUrl = (input.posterImageUrl || '').trim() || null;
+  const featured = Boolean(input.featured);
+  const sortOrder =
+    input.sortOrder == null || Number.isNaN(Number(input.sortOrder))
+      ? null
+      : Number(input.sortOrder);
+  const deadline = (input.deadline || '').trim() || null;
 
   if (!title) return { ok: false, error: 'Title required' };
   if (!slug || slug.length < 2) return { ok: false, error: 'Slug invalid' };
   if (!Number.isFinite(amount) || amount < 0) {
     return { ok: false, error: 'Amount invalid' };
   }
+  if (!['true', 'fiction', 'both'].includes(kind)) {
+    return { ok: false, error: 'Kind invalid' };
+  }
 
-  if (heroImageUrl) {
+  if (posterImageUrl) {
     try {
-      const u = new URL(heroImageUrl);
+      const u = new URL(posterImageUrl);
       if (u.protocol !== 'http:' && u.protocol !== 'https:') {
-        return { ok: false, error: 'Hero image URL invalid' };
+        return { ok: false, error: 'Poster image URL invalid' };
       }
     } catch {
-      return { ok: false, error: 'Hero image URL invalid' };
+      return { ok: false, error: 'Poster image URL invalid' };
     }
   }
 
@@ -412,10 +470,14 @@ export async function createBounty(input: {
       title,
       slug,
       brief,
-      amount_cents: amount,
+      reward_amount: amount,
       currency,
-      status: 'active',
-      hero_image_url: heroImageUrl,
+      kind,
+      status: 'open',
+      poster_image_url: posterImageUrl,
+      featured,
+      sort_order: sortOrder,
+      deadline,
     })
     .select('id')
     .maybeSingle();
@@ -434,19 +496,25 @@ export async function createBounty(input: {
 
 export async function updateBountyStatus(input: {
   id: string;
-  status: 'active' | 'filled' | 'closed';
+  status: BountyStatus;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
   await requireAdmin();
 
-  if (!['active', 'filled', 'closed'].includes(input.status)) {
+  if (!BOUNTY_STATUSES.includes(input.status)) {
     return { ok: false, error: 'Invalid status' };
   }
 
   const db = createServiceClient();
-  const { error } = await db
-    .from('bounties')
-    .update({ status: input.status })
-    .eq('id', input.id);
+  const patch: Record<string, unknown> = { status: input.status };
+
+  // Re-opening clears claim linkage.
+  if (input.status === 'open') {
+    patch.claimed_by = null;
+    patch.claimed_at = null;
+    patch.winning_nomination_id = null;
+  }
+
+  const { error } = await db.from('bounties').update(patch).eq('id', input.id);
 
   if (error) {
     console.error('updateBountyStatus failed:', error.message);
@@ -460,35 +528,35 @@ export async function updateBountyStatus(input: {
   return { ok: true };
 }
 
-/** Update hero image on a bounty brief. */
-export async function updateBountyHero(input: {
+/** Update poster image on a bounty. */
+export async function updateBountyPoster(input: {
   id: string;
-  heroImageUrl: string;
+  posterImageUrl: string;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
   await requireAdmin();
-  const heroImageUrl = input.heroImageUrl.trim();
+  const posterImageUrl = input.posterImageUrl.trim();
 
-  if (heroImageUrl) {
+  if (posterImageUrl) {
     try {
-      const u = new URL(heroImageUrl);
+      const u = new URL(posterImageUrl);
       if (u.protocol !== 'http:' && u.protocol !== 'https:') {
-        return { ok: false, error: 'Hero image URL invalid' };
+        return { ok: false, error: 'Poster image URL invalid' };
       }
     } catch {
-      return { ok: false, error: 'Hero image URL invalid' };
+      return { ok: false, error: 'Poster image URL invalid' };
     }
   }
 
   const db = createServiceClient();
   const { data, error } = await db
     .from('bounties')
-    .update({ hero_image_url: heroImageUrl || null })
+    .update({ poster_image_url: posterImageUrl || null })
     .eq('id', input.id)
     .select('slug')
     .maybeSingle();
 
   if (error) {
-    console.error('updateBountyHero failed:', error.message);
+    console.error('updateBountyPoster failed:', error.message);
     return { ok: false, error: error.message };
   }
 
@@ -498,6 +566,17 @@ export async function updateBountyHero(input: {
     revalidatePath(`/bounties/${data.slug}`);
   }
   return { ok: true };
+}
+
+/** @deprecated Use updateBountyPoster */
+export async function updateBountyHero(input: {
+  id: string;
+  heroImageUrl: string;
+}): Promise<{ ok: true } | { ok: false; error: string }> {
+  return updateBountyPoster({
+    id: input.id,
+    posterImageUrl: input.heroImageUrl,
+  });
 }
 
 // -----------------------------------------------------------------------------
