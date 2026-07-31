@@ -10,7 +10,7 @@ type NavItem = {
     | '/account/voyages'
     | '/account/nominations'
     | '/account/plus'
-    | '/account/bureaux'
+    | '/bureaux'
     | '/cabinet'
     | '/account/profile'
     | '/account/privacy';
@@ -31,7 +31,7 @@ function isActive(pathname: string, item: NavItem) {
 function buildItems(): NavItem[] {
   return [
     { href: '/account/voyages', labelKey: 'navLogs' },
-    { href: '/account/bureaux', labelKey: 'navBureaux' },
+    { href: '/bureaux', labelKey: 'navBureaux' },
     { href: '/account/nominations', labelKey: 'navNominations' },
     { href: '/account/plus', labelKey: 'navPlus' },
     { href: '/cabinet', labelKey: 'navCabinet' },
@@ -62,26 +62,27 @@ function AccountIdentity({
   memberNumber,
   name,
   memberNoLabel,
-  bureauxLabel,
-  bureauxActive,
+  bureauxNoLabel,
+  bureauxNumber,
 }: {
   memberNumber: number;
   name: string | null;
   memberNoLabel: string;
-  bureauxLabel: string;
-  bureauxActive: boolean;
+  bureauxNoLabel: string;
+  bureauxNumber: number | null;
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <p className="font-sans text-[15px] font-semibold tracking-tight text-page tabular-nums">
-        {memberNoLabel} {memberNumber}
-        {bureauxActive ? (
-          <span className="text-page-faint font-medium">
-            {' '}
-            · {bureauxLabel}
-          </span>
+      <div className="flex flex-col gap-0.5">
+        <p className="font-sans text-[15px] font-semibold tracking-tight text-page tabular-nums">
+          {memberNoLabel} {memberNumber}
+        </p>
+        {bureauxNumber != null ? (
+          <p className="font-sans text-[13px] font-semibold tracking-tight text-page-muted tabular-nums">
+            {bureauxNoLabel} {bureauxNumber}
+          </p>
         ) : null}
-      </p>
+      </div>
       {name ? <AccountDisplayName name={name} /> : null}
     </div>
   );
@@ -91,11 +92,11 @@ function AccountIdentity({
 export default function AccountNav({
   memberNumber,
   displayName,
-  bureauxActive = false,
+  bureauxNumber = null,
 }: {
   memberNumber: number;
   displayName?: string | null;
-  bureauxActive?: boolean;
+  bureauxNumber?: number | null;
 }) {
   const t = useTranslations('Account');
   const pathname = usePathname() || '/account/voyages';
@@ -149,8 +150,8 @@ export default function AccountNav({
           memberNumber={memberNumber}
           name={name}
           memberNoLabel={t('memberNo')}
-          bureauxLabel={t('navBureaux')}
-          bureauxActive={bureauxActive}
+          bureauxNoLabel={t('bureauxNo')}
+          bureauxNumber={bureauxNumber}
         />
         <p className="font-sans text-[12px] text-page-faint leading-snug">
           {t('navMembershipHint')}
@@ -263,8 +264,8 @@ export default function AccountNav({
                 memberNumber={memberNumber}
                 name={name}
                 memberNoLabel={t('memberNo')}
-                bureauxLabel={t('navBureaux')}
-                bureauxActive={bureauxActive}
+                bureauxNoLabel={t('bureauxNo')}
+                bureauxNumber={bureauxNumber}
               />
               <button
                 type="button"

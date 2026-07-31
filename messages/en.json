@@ -134,6 +134,7 @@
     "stampShareShort": "Share",
     "voyageurBadgeTitle": "Voyageur No. {number}",
     "voyageurBadgeMeta": "Member #{member} · {date}",
+    "voyageurBadgeMember": "Member #{member}",
     "voyageurBadgeVersion": "watched v{version}"
   },
   "Theater": {
@@ -317,7 +318,7 @@
     "filmLogsEmptyCta": "Explore films",
     "filmLogsFirstWatcher": "First on this film",
     "navMembershipHint": "Your number. Your trail.",
-    "navBureaux": "The Bureaux",
+    "navBureaux": "Bureaux Membership",
     "bureauxTitle": "Bureaux",
     "bureauxBody": "Optional annual subscription. Access stays free. Support funds the desk.",
     "bureauxStatus": "Status",
@@ -326,11 +327,23 @@
     "bureauxRenews": "Renews",
     "bureauxEnds": "Ends",
     "bureauxManage": "Manage billing",
-    "bureauxPending": "Opening…",
+    "bureauxPending": "Working…",
     "bureauxAbout": "About the Bureaux",
     "bureauxJoined": "Welcome. Your subscription is active.",
     "bureauxJoining": "Payment received. Activating your subscription…",
-    "navCabinet": "The Cabinet"
+    "navCabinet": "The Cabinet",
+    "bureauxUpdateCard": "Update card",
+    "bureauxCancel": "Cancel at period end",
+    "bureauxResume": "Keep subscription",
+    "bureauxCancelDone": "Canceled. Access continues until the end date.",
+    "bureauxResumeDone": "Subscription will renew.",
+    "bureauxCancelHint": "You’ll keep Bureaux access until the date above. Watching stays free either way.",
+    "bureauxCardBody": "New card for renewals.",
+    "bureauxCardSave": "Save card",
+    "bureauxCardCancel": "Back",
+    "bureauxCardDone": "Card updated.",
+    "bureauxCardError": "Couldn’t update card. Try again.",
+    "bureauxNo": "Bureaux No."
   },
   "Auth": {
     "errorTitle": "Sign-in didn’t work",
@@ -748,19 +761,22 @@
     "perkNominate": "Early access to new Bounties, before they're public",
     "perkPlus": "Behind the work — the cuts, the notes, the arguments that didn't make it in",
     "ctaSubscribe": "Join the Bureaux",
-    "ctaPending": "Opening checkout…",
+    "ctaPending": "Preparing…",
     "ctaSignIn": "Join the Bureaux",
     "alreadyIn": "You're in the Bureaux.",
     "manageLink": "Manage subscription",
     "footnote": "Cancel anytime. Watching never requires a subscription.",
     "checkoutTitle": "Join the Bureaux",
-    "checkoutSignIn": "Sign in to join the Bureaux. Checkout stays on this page.",
+    "checkoutSignIn": "Sign in to join the Bureaux.",
     "checkoutAlready": "You're already in the Bureaux.",
     "checkoutConfig": "Checkout isn't configured yet. Try again shortly.",
     "checkoutError": "Couldn't open checkout. Try again.",
     "dek": "Infinite scroll. Nothing to remember.",
     "homePosterHeadline": "The Bureaux.",
     "homePosterSubhead": "Annual membership. Films stay free forever.",
-    "homePosterCta": "Enter."
+    "homePosterCta": "Enter.",
+    "checkoutRetry": "Try again",
+    "checkoutPayment": "Payment",
+    "checkoutOrCard": "Or card"
   }
 }

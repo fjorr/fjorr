@@ -3,6 +3,7 @@ import { Link } from '@/i18n/navigation';
 import AccountNav from '@/components/AccountNav';
 import type { ScoutProfile } from '@/lib/profile';
 import {
+  ensureBureauxNumber,
   getOwnBureauxMembership,
   isBureauxMembershipActive,
 } from '@/lib/bureaux';
@@ -38,15 +39,20 @@ export default async function AccountShell({
 }) {
   const name = profile.display_name?.trim() || null;
   const paneWidth = wide ? '' : narrow ? 'max-w-[560px]' : 'max-w-5xl';
-  const membership = await getOwnBureauxMembership(profile.id);
+  let membership = await getOwnBureauxMembership(profile.id);
   const bureauxActive = isBureauxMembershipActive(membership);
+  // Lazy-assign for members activated before bureaux_number existed.
+  if (bureauxActive && membership && !membership.bureaux_number) {
+    const n = await ensureBureauxNumber(profile.id);
+    if (n) membership = { ...membership, bureaux_number: n };
+  }
 
   return (
     <div className="w-full min-h-[calc(100vh-4rem)] bg-page text-page flex flex-col md:flex-row">
       <AccountNav
         memberNumber={profile.member_number}
         displayName={name}
-        bureauxActive={bureauxActive}
+        bureauxNumber={bureauxActive ? membership?.bureaux_number ?? null : null}
       />
 
       <main className="flex-1 min-w-0 px-5 sm:px-8 md:px-10 py-8 md:py-10">

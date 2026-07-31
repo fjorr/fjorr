@@ -13,7 +13,20 @@ type Props = {
   viewerNumber: number;
   filmVersion?: number;
   memberNumber?: number | null;
+  recordedAt?: string | null;
 };
+
+function formatStampDate(iso: string) {
+  try {
+    return new Intl.DateTimeFormat('en', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    }).format(new Date(iso));
+  } catch {
+    return '';
+  }
+}
 
 async function copyText(text: string) {
   await navigator.clipboard.writeText(text);
@@ -28,11 +41,13 @@ export default function ViewerStampShare({
   viewerNumber,
   filmVersion = 1,
   memberNumber,
+  recordedAt = null,
 }: Props) {
   const t = useTranslations('Film');
   const panelRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
   const [canNativeShare, setCanNativeShare] = useState(false);
+  const stampDate = recordedAt ? formatStampDate(recordedAt) : '';
 
   const filmUrl = absoluteUrl(
     filmSharePath({ slug: filmSlug, memberNumber })
@@ -114,9 +129,21 @@ export default function ViewerStampShare({
         <h2 className="font-sans text-[22px] font-bold tracking-tight text-white leading-tight mb-2">
           {t('stampShareHeadline', { number: viewerNumber })}
         </h2>
-        <p className="font-sans text-[13px] text-white/45 mb-2">
+        <p className="font-sans text-[13px] text-white/45 mb-1">
           {t('voyageurBadgeVersion', { version: filmVersion })}
         </p>
+        {memberNumber && stampDate ? (
+          <p className="font-sans text-[12px] text-white/35 mb-3">
+            {t('voyageurBadgeMeta', {
+              member: memberNumber,
+              date: stampDate,
+            })}
+          </p>
+        ) : memberNumber ? (
+          <p className="font-sans text-[12px] text-white/35 mb-3">
+            {t('voyageurBadgeMember', { member: memberNumber })}
+          </p>
+        ) : null}
         <p className="font-sans text-[14px] text-white/50 leading-relaxed mb-6">
           {t('stampShareBody', { title: filmName })}
         </p>

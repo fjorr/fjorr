@@ -8,6 +8,10 @@ import {
   fetchOwnShareIdentity,
   shareViaMemberNumber,
 } from '@/lib/own-member-client';
+import {
+  getOwnVoyageurStampForFilm,
+  type VoyageurStamp,
+} from '@/lib/film-record-actions';
 import { formatCueClock } from '@/lib/vtt';
 import { filmSharePath } from '@/lib/voyage-via';
 
@@ -15,6 +19,7 @@ type FilmSendSheetProps = {
   open: boolean;
   onClose: () => void;
   film: {
+    id?: string | null;
     name?: string | null;
     slug: string;
     teaser?: string | null;
@@ -30,6 +35,18 @@ async function copyText(text: string) {
   await navigator.clipboard.writeText(text);
 }
 
+function formatStampDate(iso: string) {
+  try {
+    return new Intl.DateTimeFormat('en', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    }).format(new Date(iso));
+  } catch {
+    return '';
+  }
+}
+
 export default function FilmSendSheet({
   open,
   onClose,
@@ -41,6 +58,7 @@ export default function FilmSendSheet({
   const [copied, setCopied] = useState<string | null>(null);
   const [canNativeShare, setCanNativeShare] = useState(false);
   const [memberNumber, setMemberNumber] = useState<number | null>(null);
+  const [stamp, setStamp] = useState<VoyageurStamp | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -48,11 +66,19 @@ export default function FilmSendSheet({
     void (async () => {
       const identity = await fetchOwnShareIdentity();
       if (!cancelled) setMemberNumber(shareViaMemberNumber(identity));
+
+      const filmId = film.id ? String(film.id) : '';
+      if (filmId) {
+        const row = await getOwnVoyageurStampForFilm(filmId);
+        if (!cancelled) setStamp(row);
+      } else if (!cancelled) {
+        setStamp(null);
+      }
     })();
     return () => {
       cancelled = true;
     };
-  }, [open]);
+  }, [open, film.id]);
 
   const filmUrl = useMemo(
     () => absoluteUrl(filmSharePath({ slug: film.slug, memberNumber })),
@@ -92,11 +118,23 @@ export default function FilmSendSheet({
   const momentPayload =
     momentText && timeUrl ? `${momentText}\n${timeUrl}` : null;
 
+  const stampText = stamp
+    ? t('stampShareText', {
+        number: stamp.voyageurNumber,
+        title: film.name || 'Fjorr',
+        version: stamp.filmVersion,
+      })
+    : null;
+  const filmPayload = stampText
+    ? `${stampText}\n${filmUrl}`
+    : filmUrl;
+
   const runtimeLabel = film.runtime
     ? `${Math.max(1, Math.ceil(film.runtime / 60))}m`
     : null;
 
   const poster = film.blok_tall || film.hero_tall || null;
+  const stampDate = stamp ? formatStampDate(stamp.recordedAt) : '';
 
   const embedSnippet = `<iframe src="${embedUrl}" title="${(film.name || 'Fjorr').replace(/"/g, '&quot;')} — Fjorr" width="100%" height="100%" style="aspect-ratio:16/9;width:100%;border:0;border-radius:12px;overflow:hidden" allow="accelerometer; autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="lazy"></iframe>`;
 
@@ -124,7 +162,10 @@ export default function FilmSendSheet({
   }, [open, onClose]);
 
   useEffect(() => {
-    if (!open) setCopied(null);
+    if (!open) {
+      setCopied(null);
+      setStamp(null);
+    }
   }, [open]);
 
   if (!open) return null;
@@ -147,7 +188,7 @@ export default function FilmSendSheet({
     try {
       await navigator.share({
         title: film.name || 'Fjorr',
-        text: momentText || film.teaser || t('sendNativeText'),
+        text: momentText || stampText || film.teaser || t('sendNativeText'),
         url: timeUrl || filmUrl,
       });
       onClose();
@@ -214,6 +255,24 @@ export default function FilmSendSheet({
           </button>
         </div>
 
+        {stamp && stampDate ? (
+          <div className="mb-5 rounded-[10px] border border-white/10 bg-white/[0.04] px-3.5 py-3">
+            <p className="font-sans text-[13px] font-medium tracking-normal text-white">
+              {t('voyageurBadgeTitle', { number: stamp.voyageurNumber })}
+              <span className="text-white/45">
+                {' — '}
+                {t('voyageurBadgeVersion', { version: stamp.filmVersion })}
+              </span>
+            </p>
+            <p className="mt-1 font-sans text-[11px] text-white/35">
+              {t('voyageurBadgeMeta', {
+                member: stamp.memberNumber,
+                date: stampDate,
+              })}
+            </p>
+          </div>
+        ) : null}
+
         <div className="flex flex-col gap-2">
           {momentPayload && timeLabel ? (
             <button
@@ -229,7 +288,7 @@ export default function FilmSendSheet({
 
           <button
             type="button"
-            onClick={() => handleCopy('link', filmUrl)}
+            onClick={() => handleCopy('link', filmPayload)}
             className={`w-full h-11 rounded-[10px] font-sans font-semibold text-sm transition-colors ${
               momentPayload
                 ? 'bg-white/10 text-white hover:bg-white/15'

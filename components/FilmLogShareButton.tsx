@@ -1,69 +1,58 @@
 'use client';
 
 import React, { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
-import { absoluteUrl } from '@/lib/site';
-import { filmSharePath } from '@/lib/voyage-via';
 
-/** Tiny share control for a Voyage row — link carries ?via=memberNumber. */
+const ViewerStampShare = dynamic(() => import('@/components/ViewerStampShare'), {
+  ssr: false,
+});
+
+/** Tiny share control for a Voyage row — opens stamp popup with Voyageur badge. */
 export default function FilmLogShareButton({
   filmName,
   filmSlug,
   viewerNumber,
   filmVersion = 1,
   memberNumber,
+  recordedAt,
 }: {
   filmName: string;
   filmSlug: string;
   viewerNumber: number;
   filmVersion?: number;
   memberNumber?: number | null;
+  recordedAt?: string | null;
 }) {
   const t = useTranslations('Film');
-  const [copied, setCopied] = useState(false);
-
-  const filmUrl = absoluteUrl(
-    filmSharePath({ slug: filmSlug, memberNumber })
-  );
-  const shareText = t('stampShareText', {
-    number: viewerNumber,
-    title: filmName,
-    version: filmVersion,
-  });
-  const payload = `${shareText}\n${filmUrl}`;
+  const [open, setOpen] = useState(false);
 
   return (
-    <button
-      type="button"
-      onClick={async (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        try {
-          if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
-            await navigator.share({
-              title: filmName,
-              text: shareText,
-              url: filmUrl,
-            });
-            return;
-          }
-          await navigator.clipboard.writeText(payload);
-          setCopied(true);
-          window.setTimeout(() => setCopied(false), 1400);
-        } catch {
-          try {
-            await navigator.clipboard.writeText(payload);
-            setCopied(true);
-            window.setTimeout(() => setCopied(false), 1400);
-          } catch {
-            /* ignore */
-          }
-        }
-      }}
-      className="shrink-0 font-sans text-[11px] font-semibold uppercase tracking-[0.06em] text-page-faint hover:text-page-muted transition-colors"
-      aria-label={t('stampShareCopy')}
-    >
-      {copied ? t('sendCopied') : t('stampShareShort')}
-    </button>
+    <>
+      <button
+        type="button"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setOpen(true);
+        }}
+        className="shrink-0 font-sans text-[11px] font-semibold uppercase tracking-[0.06em] text-page-faint hover:text-page-muted transition-colors"
+        aria-label={t('stampShareShort')}
+      >
+        {t('stampShareShort')}
+      </button>
+      {open ? (
+        <ViewerStampShare
+          open
+          onClose={() => setOpen(false)}
+          filmName={filmName}
+          filmSlug={filmSlug}
+          viewerNumber={viewerNumber}
+          filmVersion={filmVersion}
+          memberNumber={memberNumber}
+          recordedAt={recordedAt}
+        />
+      ) : null}
+    </>
   );
 }

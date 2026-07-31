@@ -183,6 +183,7 @@ export default async function FilmLogsLedger({
                   viewerNumber={entry.viewer_number}
                   filmVersion={entry.film_version}
                   memberNumber={memberNumber}
+                  recordedAt={entry.recorded_at}
                 />
               ) : null}
             </div>
@@ -342,6 +343,7 @@ export default async function FilmLogsLedger({
                         viewerNumber={entry.viewer_number}
                         filmVersion={entry.film_version}
                         memberNumber={memberNumber}
+                        recordedAt={entry.recorded_at}
                       />
                     ) : null}
                   </td>

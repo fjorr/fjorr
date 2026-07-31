@@ -133,6 +133,7 @@ function CinemaTheater({
     viewerNumber: number;
     filmVersion: number;
     memberNumber: number | null;
+    recordedAt: string | null;
   } | null>(null);
   const plusMode = !isEmbed && theaterMode === 'plus';
 
@@ -340,6 +341,7 @@ function CinemaTheater({
         filmVersion?: number;
         firstStamp?: boolean;
         memberNumber?: number | null;
+        recordedAt?: string | null;
       };
       if (String(detail?.filmId || '') !== filmId) return;
       const n = Number(detail?.viewerNumber);
@@ -350,6 +352,7 @@ function CinemaTheater({
         viewerNumber: n,
         filmVersion: Number.isFinite(v) && v >= 1 ? v : 1,
         memberNumber: Number.isFinite(m) && m >= 1 ? m : null,
+        recordedAt: detail.recordedAt || new Date().toISOString(),
       });
     };
     window.addEventListener(FILM_RECORDED_EVENT, onRecorded);
@@ -1231,6 +1234,7 @@ function CinemaTheater({
           open={sendOpen}
           onClose={() => setSendOpen(false)}
           film={{
+            id: film?.id,
             name: film?.name,
             slug: film?.slug,
             teaser: film?.teaser,
@@ -1257,6 +1261,7 @@ function CinemaTheater({
           viewerNumber={stampShare.viewerNumber}
           filmVersion={stampShare.filmVersion}
           memberNumber={stampShare.memberNumber}
+          recordedAt={stampShare.recordedAt}
         />
       ) : null}
     </div>

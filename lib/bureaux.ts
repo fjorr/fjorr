@@ -18,6 +18,8 @@ export type BureauxMembership = {
   stripe_subscription_id: string | null;
   current_period_end: string | null;
   cancel_at_period_end: boolean;
+  /** Random permanent mark — assigned once on activation. */
+  bureaux_number: number | null;
 };
 
 /** Active subscription, past_due grace, or canceled but still in paid period. */
@@ -72,7 +74,7 @@ export async function getOwnBureauxMembership(
   const { data, error } = await supabase
     .from('bureaux_memberships')
     .select(
-      'user_id, status, stripe_customer_id, stripe_subscription_id, current_period_end, cancel_at_period_end'
+      'user_id, status, stripe_customer_id, stripe_subscription_id, current_period_end, cancel_at_period_end, bureaux_number'
     )
     .eq('user_id', uid)
     .maybeSingle();
@@ -82,6 +84,8 @@ export async function getOwnBureauxMembership(
     return null;
   }
   if (!data) return null;
+
+  const n = Number(data.bureaux_number);
 
   return {
     user_id: String(data.user_id),
@@ -96,12 +100,84 @@ export async function getOwnBureauxMembership(
       ? String(data.current_period_end)
       : null,
     cancel_at_period_end: Boolean(data.cancel_at_period_end),
+    bureaux_number: Number.isFinite(n) && n >= 1 ? n : null,
   };
 }
 
 export async function isOwnBureauxActive(userId?: string): Promise<boolean> {
   const row = await getOwnBureauxMembership(userId);
   return isBureauxMembershipActive(row);
+}
+
+const BUREAUX_NUMBER_MIN = 10000;
+const BUREAUX_NUMBER_MAX = 99999;
+
+/** Random 5-digit mark; never sequential. Retries on unique collision. */
+async function allocateBureauxNumber(
+  db: ReturnType<typeof createServiceClient>
+): Promise<number> {
+  for (let attempt = 0; attempt < 24; attempt++) {
+    const n =
+      BUREAUX_NUMBER_MIN +
+      Math.floor(
+        Math.random() * (BUREAUX_NUMBER_MAX - BUREAUX_NUMBER_MIN + 1)
+      );
+    const { data } = await db
+      .from('bureaux_memberships')
+      .select('user_id')
+      .eq('bureaux_number', n)
+      .maybeSingle();
+    if (!data) return n;
+  }
+  throw new Error('Could not allocate a unique Bureaux number');
+}
+
+/**
+ * Ensure an active membership has a permanent bureaux_number.
+ * Idempotent — never changes an existing number.
+ */
+export async function ensureBureauxNumber(userId: string): Promise<number | null> {
+  const db = createServiceClient();
+  const { data: existing } = await db
+    .from('bureaux_memberships')
+    .select('bureaux_number, status, current_period_end')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (!existing) return null;
+  const have = Number(existing.bureaux_number);
+  if (Number.isFinite(have) && have >= 1) return have;
+
+  if (
+    !isBureauxActive(
+      existing.status as BureauxStatus,
+      existing.current_period_end
+        ? String(existing.current_period_end)
+        : null
+    )
+  ) {
+    return null;
+  }
+
+  const next = await allocateBureauxNumber(db);
+  const { error } = await db
+    .from('bureaux_memberships')
+    .update({ bureaux_number: next })
+    .eq('user_id', userId)
+    .is('bureaux_number', null);
+
+  if (error) {
+    // Race: another writer assigned — re-read.
+    const { data: again } = await db
+      .from('bureaux_memberships')
+      .select('bureaux_number')
+      .eq('user_id', userId)
+      .maybeSingle();
+    const n = Number(again?.bureaux_number);
+    return Number.isFinite(n) && n >= 1 ? n : null;
+  }
+
+  return next;
 }
 
 /** Upsert from Stripe webhook (service role). */
@@ -131,6 +207,10 @@ export async function upsertBureauxMembership(input: {
   if (error) {
     console.error('upsertBureauxMembership failed:', error.message);
     throw error;
+  }
+
+  if (isBureauxActive(input.status, input.currentPeriodEnd?.toISOString() ?? null)) {
+    await ensureBureauxNumber(input.userId);
   }
 }
 

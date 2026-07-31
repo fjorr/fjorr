@@ -54,15 +54,79 @@ async function ensureStripeCustomer(user: {
   return customer.id;
 }
 
-export type BureauxCheckoutSecretResult =
+export type BureauxPaymentSecretResult =
   | { ok: true; clientSecret: string }
-  | { ok: false; error: 'signInRequired' | 'alreadyActive' | 'config' | 'createFailed' };
+  | {
+      ok: false;
+      error: 'signInRequired' | 'alreadyActive' | 'config' | 'createFailed';
+      detail?: string;
+    };
+
+/** Reuse one open session; expire the rest so we never hit Stripe's open-session cap. */
+async function reuseOrClearOpenSessions(
+  customerId: string
+): Promise<string | null> {
+  const stripe = getStripe();
+  const open = await stripe.checkout.sessions.list({
+    customer: customerId,
+    status: 'open',
+    limit: 20,
+  });
+
+  const usable = open.data.filter(
+    (s) =>
+      s.mode === 'subscription' &&
+      (s.ui_mode === 'elements' || s.ui_mode === 'custom') &&
+      Boolean(s.client_secret)
+  );
+
+  const keep = usable[0] || null;
+  await Promise.all(
+    open.data
+      .filter((s) => s.id !== keep?.id)
+      .map((s) =>
+        stripe.checkout.sessions.expire(s.id).catch((err) => {
+          console.error('expire checkout session failed:', s.id, err);
+        })
+      )
+  );
+
+  return keep?.client_secret || null;
+}
+
+async function clearIncompleteSubscriptions(customerId: string, userId: string) {
+  const stripe = getStripe();
+  const list = await stripe.subscriptions.list({
+    customer: customerId,
+    status: 'incomplete',
+    limit: 10,
+  });
+  await Promise.all(
+    list.data.map((sub) =>
+      stripe.subscriptions.cancel(sub.id).catch((err) => {
+        console.error('cancel incomplete sub failed:', sub.id, err);
+      })
+    )
+  );
+
+  const db = createServiceClient();
+  await db
+    .from('bureaux_memberships')
+    .update({
+      status: 'none',
+      stripe_subscription_id: null,
+      current_period_end: null,
+      cancel_at_period_end: false,
+    })
+    .eq('user_id', userId)
+    .eq('status', 'incomplete');
+}
 
 /**
- * Create an Embedded Checkout Session and return its client secret.
- * Mount with Stripe EmbeddedCheckout on-site — no redirect to Stripe.
+ * Checkout Session (ui_mode elements) — Payment Element inside Fjorr chrome.
+ * Call on Join click — not on every page view.
  */
-export async function createBureauxCheckoutClientSecret(): Promise<BureauxCheckoutSecretResult> {
+export async function createBureauxPaymentSecret(): Promise<BureauxPaymentSecretResult> {
   const user = await requireUser();
   if (!user) return { ok: false, error: 'signInRequired' };
 
@@ -79,9 +143,16 @@ export async function createBureauxCheckoutClientSecret(): Promise<BureauxChecko
 
   try {
     const customerId = await ensureStripeCustomer(user);
+    await clearIncompleteSubscriptions(customerId, user.id);
+
+    const reused = await reuseOrClearOpenSessions(customerId);
+    if (reused) {
+      return { ok: true, clientSecret: reused };
+    }
+
     const stripe = getStripe();
     const session = await stripe.checkout.sessions.create({
-      ui_mode: 'embedded',
+      ui_mode: 'elements',
       mode: 'subscription',
       customer: customerId,
       client_reference_id: user.id,
@@ -90,28 +161,185 @@ export async function createBureauxCheckoutClientSecret(): Promise<BureauxChecko
         metadata: { supabase_user_id: user.id },
       },
       line_items: [{ price: getBureauxPriceId(), quantity: 1 }],
+      payment_method_types: ['card'],
       return_url: appUrl(
-        '/account/bureaux?joined=1&session_id={CHECKOUT_SESSION_ID}'
+        '/bureaux?joined=1&session_id={CHECKOUT_SESSION_ID}'
       ),
-      allow_promotion_codes: true,
     });
 
     if (!session.client_secret) {
-      return { ok: false, error: 'createFailed' };
+      return {
+        ok: false,
+        error: 'createFailed',
+        detail: 'Checkout Session missing client secret.',
+      };
     }
 
     return { ok: true, clientSecret: session.client_secret };
   } catch (err) {
-    console.error('createBureauxCheckoutClientSecret failed:', err);
-    return { ok: false, error: 'createFailed' };
+    const detail =
+      err instanceof Error
+        ? err.message
+        : typeof err === 'string'
+          ? err
+          : 'Unknown error';
+    console.error('createBureauxPaymentSecret failed:', err);
+    return { ok: false, error: 'createFailed', detail };
   }
 }
 
-/** Open Stripe Customer Portal for manage / cancel. */
+export type BureauxManageResult =
+  | { ok: true }
+  | { ok: false; error: string };
+
+/** Cancel at period end — access continues until renew date. */
+export async function cancelBureauxAtPeriodEnd(): Promise<BureauxManageResult> {
+  const user = await requireUser();
+  if (!user) return { ok: false, error: 'signInRequired' };
+
+  const membership = await getOwnBureauxMembership(user.id);
+  if (!membership?.stripe_subscription_id || !isBureauxMembershipActive(membership)) {
+    return { ok: false, error: 'notActive' };
+  }
+
+  try {
+    const stripe = getStripe();
+    const sub = await stripe.subscriptions.update(
+      membership.stripe_subscription_id,
+      { cancel_at_period_end: true }
+    );
+    const periodEnd =
+      (sub as { current_period_end?: number }).current_period_end ||
+      sub.items?.data?.[0]?.current_period_end;
+    const db = createServiceClient();
+    await db
+      .from('bureaux_memberships')
+      .update({
+        cancel_at_period_end: true,
+        status: sub.status === 'active' ? 'active' : membership.status,
+        current_period_end:
+          typeof periodEnd === 'number' && periodEnd > 0
+            ? new Date(periodEnd * 1000).toISOString()
+            : membership.current_period_end,
+      })
+      .eq('user_id', user.id);
+    return { ok: true };
+  } catch (err) {
+    console.error('cancelBureauxAtPeriodEnd failed:', err);
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : 'cancelFailed',
+    };
+  }
+}
+
+/** Undo cancel-at-period-end while still in the paid window. */
+export async function resumeBureauxSubscription(): Promise<BureauxManageResult> {
+  const user = await requireUser();
+  if (!user) return { ok: false, error: 'signInRequired' };
+
+  const membership = await getOwnBureauxMembership(user.id);
+  if (!membership?.stripe_subscription_id) {
+    return { ok: false, error: 'notActive' };
+  }
+
+  try {
+    const stripe = getStripe();
+    await stripe.subscriptions.update(membership.stripe_subscription_id, {
+      cancel_at_period_end: false,
+    });
+    const db = createServiceClient();
+    await db
+      .from('bureaux_memberships')
+      .update({ cancel_at_period_end: false })
+      .eq('user_id', user.id);
+    return { ok: true };
+  } catch (err) {
+    console.error('resumeBureauxSubscription failed:', err);
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : 'resumeFailed',
+    };
+  }
+}
+
+/** SetupIntent client secret to update the card on file. */
+export async function createBureauxSetupSecret(): Promise<
+  | { ok: true; clientSecret: string; email: string | null }
+  | { ok: false; error: string }
+> {
+  const user = await requireUser();
+  if (!user) return { ok: false, error: 'signInRequired' };
+
+  const membership = await getOwnBureauxMembership(user.id);
+  if (!membership?.stripe_customer_id || !isBureauxMembershipActive(membership)) {
+    return { ok: false, error: 'notActive' };
+  }
+
+  try {
+    const stripe = getStripe();
+    const setup = await stripe.setupIntents.create({
+      customer: membership.stripe_customer_id,
+      payment_method_types: ['card'],
+      usage: 'off_session',
+      metadata: { supabase_user_id: user.id },
+    });
+    if (!setup.client_secret) {
+      return { ok: false, error: 'No setup client secret' };
+    }
+    return {
+      ok: true,
+      clientSecret: setup.client_secret,
+      email: user.email || null,
+    };
+  } catch (err) {
+    console.error('createBureauxSetupSecret failed:', err);
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : 'setupFailed',
+    };
+  }
+}
+
+/** After SetupIntent succeeds, attach card as subscription default. */
+export async function setBureauxDefaultPaymentMethod(
+  paymentMethodId: string
+): Promise<BureauxManageResult> {
+  const user = await requireUser();
+  if (!user) return { ok: false, error: 'signInRequired' };
+
+  const membership = await getOwnBureauxMembership(user.id);
+  if (
+    !membership?.stripe_customer_id ||
+    !membership.stripe_subscription_id ||
+    !paymentMethodId
+  ) {
+    return { ok: false, error: 'notActive' };
+  }
+
+  try {
+    const stripe = getStripe();
+    await stripe.customers.update(membership.stripe_customer_id, {
+      invoice_settings: { default_payment_method: paymentMethodId },
+    });
+    await stripe.subscriptions.update(membership.stripe_subscription_id, {
+      default_payment_method: paymentMethodId,
+    });
+    return { ok: true };
+  } catch (err) {
+    console.error('setBureauxDefaultPaymentMethod failed:', err);
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : 'updateFailed',
+    };
+  }
+}
+
+/** @deprecated Prefer on-site BureauxManage — kept as escape hatch. */
 export async function startBureauxPortal(): Promise<void> {
   const user = await requireUser();
   if (!user) {
-    redirect(`/signin?next=${encodeURIComponent('/account/bureaux')}`);
+    redirect(`/signin?next=${encodeURIComponent('/bureaux')}`);
   }
 
   const membership = await getOwnBureauxMembership(user.id);
@@ -123,7 +351,7 @@ export async function startBureauxPortal(): Promise<void> {
   const stripe = getStripe();
   const portal = await stripe.billingPortal.sessions.create({
     customer: customerId,
-    return_url: appUrl('/account/bureaux'),
+    return_url: appUrl('/bureaux'),
   });
 
   redirect(portal.url);

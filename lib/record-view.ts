@@ -66,7 +66,8 @@ function emitRecorded(
   recorded: boolean,
   firstStamp: boolean,
   filmVersion: number,
-  memberNumber: number | null
+  memberNumber: number | null,
+  recordedAt?: string | null
 ) {
   try {
     window.dispatchEvent(
@@ -78,6 +79,7 @@ function emitRecorded(
           firstStamp,
           filmVersion,
           memberNumber,
+          recordedAt: recordedAt || null,
         },
       })
     );
@@ -179,7 +181,8 @@ export function maybeRecordFilmView(
         recorded,
         firstStamp,
         filmVersion,
-        memberNumber
+        memberNumber,
+        firstStamp ? new Date().toISOString() : null
       );
     } catch (err) {
       console.error('[fjorr] record film view failed:', err);

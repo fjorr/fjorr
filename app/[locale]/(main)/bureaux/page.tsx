@@ -2,12 +2,15 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
 import { createClient } from '@/lib/supabase/server';
+import BureauxCheckout from '@/components/BureauxCheckout';
+import BureauxJoinedRefresh from '@/components/BureauxJoinedRefresh';
+import BureauxManage from '@/components/BureauxManage';
 import {
+  ensureBureauxNumber,
   getBureauxAnnualAmountCents,
   getOwnBureauxMembership,
   isBureauxMembershipActive,
 } from '@/lib/bureaux';
-import BureauxEmbeddedCheckout from '@/components/BureauxEmbeddedCheckout';
 
 function formatAnnualPrice(cents: number, locale: string) {
   try {
@@ -18,6 +21,19 @@ function formatAnnualPrice(cents: number, locale: string) {
     }).format(cents / 100);
   } catch {
     return `$${Math.round(cents / 100)}`;
+  }
+}
+
+function formatDate(iso: string | null, locale: string) {
+  if (!iso) return null;
+  try {
+    return new Intl.DateTimeFormat(locale, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    }).format(new Date(iso));
+  } catch {
+    return null;
   }
 }
 
@@ -44,19 +60,31 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function BureauxPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ joined?: string }>;
 }) {
   const { locale } = await params;
+  const { joined } = await searchParams;
   const t = await getTranslations('Bureaux');
+  const ta = await getTranslations('Account');
   const price = formatAnnualPrice(getBureauxAnnualAmountCents(), locale);
 
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const membership = user ? await getOwnBureauxMembership(user.id) : null;
+
+  let membership = user ? await getOwnBureauxMembership(user.id) : null;
   const active = isBureauxMembershipActive(membership);
+  if (active && membership && !membership.bureaux_number && user) {
+    const n = await ensureBureauxNumber(user.id);
+    if (n) membership = { ...membership, bureaux_number: n };
+  }
+
+  const renews = formatDate(membership?.current_period_end || null, locale);
+  const justJoined = joined === '1';
 
   const perks = [
     t('perkNumber'),
@@ -90,7 +118,48 @@ export default async function BureauxPage({
           </div>
         </header>
 
+        {justJoined ? (
+          <p className="font-sans text-[14px] text-page-muted leading-relaxed">
+            {active ? ta('bureauxJoined') : ta('bureauxJoining')}
+          </p>
+        ) : null}
+        {justJoined && !active ? <BureauxJoinedRefresh /> : null}
+
         <section className="flex flex-col divide-y divide-page-faint border-y border-page-faint">
+          {active ? (
+            <>
+              <div className="py-4 flex items-baseline justify-between gap-4">
+                <span className="font-sans text-[14px] text-page-muted">
+                  {ta('bureauxStatus')}
+                </span>
+                <span className="font-sans text-[15px] font-semibold text-page">
+                  {ta('bureauxStatusActive')}
+                </span>
+              </div>
+              {membership?.bureaux_number != null ? (
+                <div className="py-4 flex items-baseline justify-between gap-4">
+                  <span className="font-sans text-[14px] text-page-muted">
+                    {ta('bureauxNo')}
+                  </span>
+                  <span className="font-mono text-[15px] text-page tabular-nums">
+                    {membership.bureaux_number}
+                  </span>
+                </div>
+              ) : null}
+              {renews ? (
+                <div className="py-4 flex items-baseline justify-between gap-4">
+                  <span className="font-sans text-[14px] text-page-muted">
+                    {membership?.cancel_at_period_end
+                      ? ta('bureauxEnds')
+                      : ta('bureauxRenews')}
+                  </span>
+                  <span className="font-mono text-[15px] text-page tabular-nums">
+                    {renews}
+                  </span>
+                </div>
+              ) : null}
+            </>
+          ) : null}
           <div className="py-4 flex items-baseline justify-between gap-4">
             <span className="font-sans text-[14px] text-page-muted">
               {t('priceLabel')}
@@ -127,19 +196,11 @@ export default async function BureauxPage({
 
         <section className="flex flex-col gap-4">
           {active ? (
-            <div className="flex flex-col gap-2 items-start">
-              <p className="font-sans text-[14px] font-semibold text-page">
-                {t('alreadyIn')}
-              </p>
-              <Link
-                href="/account/bureaux"
-                className="font-sans text-[14px] font-semibold text-page-muted underline underline-offset-2 decoration-[color-mix(in_srgb,var(--page-fg)_25%,transparent)] hover:text-page"
-              >
-                {t('manageLink')}
-              </Link>
-            </div>
+            <BureauxManage
+              cancelAtPeriodEnd={Boolean(membership?.cancel_at_period_end)}
+            />
           ) : user ? (
-            <BureauxEmbeddedCheckout />
+            <BureauxCheckout />
           ) : (
             <Link
               href={`/signin?next=${encodeURIComponent('/bureaux')}`}
