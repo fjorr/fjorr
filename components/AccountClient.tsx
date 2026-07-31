@@ -87,24 +87,24 @@ export default function AccountClient({
     <div className="w-full flex flex-col gap-10">
       <div className="flex flex-col gap-8">
         <div className="flex flex-col gap-2 text-left">
-          <span className="font-sans text-[12px] font-semibold uppercase tracking-wide text-white/35">
+          <span className="font-sans text-[12px] font-semibold uppercase tracking-wide text-page-faint">
             {t('email')}
           </span>
-          <p className="font-sans text-[15px] text-white/80 truncate">{email}</p>
+          <p className="font-sans text-[15px] text-page-muted truncate">{email}</p>
         </div>
 
         <div className="flex flex-col gap-2 text-left">
-          <span className="font-sans text-[12px] font-semibold uppercase tracking-wide text-white/35">
+          <span className="font-sans text-[12px] font-semibold uppercase tracking-wide text-page-faint">
             {t('memberNumber')}
           </span>
-          <p className="font-mono text-[15px] text-white/80">
+          <p className="font-mono text-[15px] text-page-muted">
             #{profile.member_number}
           </p>
         </div>
 
         <form onSubmit={handleSave} className="flex flex-col gap-5">
           <label className="flex flex-col gap-2 text-left">
-            <span className="font-sans text-[12px] font-semibold uppercase tracking-wide text-white/35">
+            <span className="font-sans text-[12px] font-semibold uppercase tracking-wide text-page-faint">
               {t('displayName')}
             </span>
             <input
@@ -114,16 +114,16 @@ export default function AccountClient({
               placeholder={t('displayNamePlaceholder')}
               maxLength={80}
               autoComplete="nickname"
-              className="h-12 rounded-[10px] bg-white/5 px-4 font-sans text-[15px] text-white placeholder:text-white/35 focus:bg-white/10 focus:outline-none transition-colors"
+              className="h-12 rounded-[10px] bg-page-chip px-4 font-sans text-[15px] text-page placeholder:text-page-faint focus:bg-page-chip focus:outline-none transition-colors"
             />
           </label>
 
           <label className="flex flex-col gap-2 text-left">
-            <span className="font-sans text-[12px] font-semibold uppercase tracking-wide text-white/35">
+            <span className="font-sans text-[12px] font-semibold uppercase tracking-wide text-page-faint">
               {t('scoutSlug')}
             </span>
-            <div className="flex items-center h-12 rounded-[10px] bg-white/5 focus-within:bg-white/10 transition-colors overflow-hidden">
-              <span className="pl-4 font-mono text-[13px] text-white/35 shrink-0 select-none">
+            <div className="flex items-center h-12 rounded-[10px] bg-page-chip focus-within:bg-page-chip transition-colors overflow-hidden">
+              <span className="pl-4 font-mono text-[13px] text-page-faint shrink-0 select-none">
                 {urlPrefix}
               </span>
               <input
@@ -136,10 +136,10 @@ export default function AccountClient({
                 spellCheck={false}
                 autoCapitalize="off"
                 autoCorrect="off"
-                className="min-w-0 flex-1 h-full bg-transparent pr-4 font-mono text-[15px] text-white placeholder:text-white/35 focus:outline-none"
+                className="min-w-0 flex-1 h-full bg-transparent pr-4 font-mono text-[15px] text-page placeholder:text-page-faint focus:outline-none"
               />
             </div>
-            <span className="font-sans text-[12px] text-white/35 leading-snug">
+            <span className="font-sans text-[12px] text-page-faint leading-snug">
               {t('scoutSlugHint')}
             </span>
           </label>
@@ -153,7 +153,7 @@ export default function AccountClient({
           <button
             type="submit"
             disabled={status === 'saving'}
-            className="h-12 rounded-full bg-white text-black font-sans text-[15px] font-bold hover:bg-white/90 disabled:opacity-40 transition-all active:scale-[0.98]"
+            className="h-12 rounded-full bg-[var(--page-fg)] text-[var(--page-bg)] font-sans text-[15px] font-bold hover:opacity-90 disabled:opacity-40 transition-all active:scale-[0.98]"
           >
             {status === 'saving'
               ? t('saving')
@@ -164,16 +164,16 @@ export default function AccountClient({
         </form>
       </div>
 
-      <div className="pt-6 border-t border-white/5 flex flex-col gap-2">
+      <div className="pt-6 border-t border-page-faint flex flex-col gap-2">
         <button
           type="button"
           onClick={() => void handleDelete()}
           disabled={deleting}
-          className="self-start font-sans text-[13px] font-semibold text-white/30 hover:text-red-300/80 disabled:opacity-40 transition-colors"
+          className="self-start font-sans text-[13px] font-semibold text-page-faint hover:text-red-300/80 disabled:opacity-40 transition-colors"
         >
           {deleting ? t('deleteAccountDeleting') : t('deleteAccount')}
         </button>
-        <p className="font-sans text-[12px] text-white/25 leading-snug max-w-sm">
+        <p className="font-sans text-[12px] text-page-faint leading-snug max-w-sm">
           {t('deleteAccountHint')}
         </p>
         {deleteError ? (

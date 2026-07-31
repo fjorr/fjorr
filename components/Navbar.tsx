@@ -25,6 +25,7 @@ const EXPLORE_LINKS = [
   { href: '/bounties', labelKey: 'bounties' as const },
   { href: '/nominate', labelKey: 'nominate' as const },
   { href: '/bureaux', labelKey: 'bureaux' as const },
+  { href: '/cabinet', labelKey: 'cabinet' as const },
   { href: '/about', labelKey: 'about' as const },
 ];
 
@@ -39,7 +40,7 @@ function Navbar({ variant = 'light' }: NavbarProps) {
   const pathname = usePathname() || '';
   const [isTheaterOpen, setIsTheaterOpen] = useState(false);
   const [panel, setPanel] = useState<PanelMode>('closed');
-  const [authNextPath, setAuthNextPath] = useState('/account');
+  const [authNextPath, setAuthNextPath] = useState('/account/voyages');
   const [emailCopied, setEmailCopied] = useState(false);
   const [scrolledPast, setScrolledPast] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -84,7 +85,7 @@ function Navbar({ variant = 'light' }: NavbarProps) {
     setPanel((current) => (current === 'lang' ? 'closed' : 'lang'));
   };
 
-  const openAuth = (nextPath = '/account') => {
+  const openAuth = (nextPath = '/account/voyages') => {
     setAuthNextPath(nextPath);
     setPanel('auth');
   };
@@ -127,7 +128,7 @@ function Navbar({ variant = 'light' }: NavbarProps) {
     const handleShow = () => setIsTheaterOpen(false);
     const handleOpenSignIn = (event: Event) => {
       const detail = (event as CustomEvent<{ nextPath?: string }>).detail;
-      openAuth(detail?.nextPath || '/account');
+      openAuth(detail?.nextPath || '/account/voyages');
     };
 
     window.addEventListener('fjorr_hide_main_navbar', handleHide);
@@ -348,7 +349,7 @@ function Navbar({ variant = 'light' }: NavbarProps) {
                   >
                     <AccountNavLink
                       onNavigate={closePanel}
-                      onSignIn={() => openAuth('/account')}
+                      onSignIn={() => openAuth('/account/voyages')}
                       className={`font-sans text-[15px] font-semibold tracking-tight transition-opacity hover:opacity-70 ${textColor}`}
                       mutedClassName={`font-sans text-[13px] font-medium leading-snug ${mutedLabel}`}
                     />

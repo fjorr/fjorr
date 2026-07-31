@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get("code");
   const nextFromQuery = searchParams.get("next");
   const nextFromCookie = request.cookies.get("fjorr_auth_next")?.value ?? null;
-  const next = safeInternalPath(nextFromQuery ?? nextFromCookie, "/account");
+  const next = safeInternalPath(nextFromQuery ?? nextFromCookie, "/account/voyages");
 
   const supabase = await createClient();
 

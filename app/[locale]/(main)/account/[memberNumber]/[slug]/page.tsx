@@ -60,16 +60,16 @@ export default async function PublicProfilePage({ params }: Props) {
   const logs = await getPublicFilmLogs(profile.id);
 
   return (
-    <div className="w-full min-h-[70vh] bg-[#1F1F1F] flex flex-col items-center px-5 sm:px-8 py-24 gap-16">
+    <div className="w-full min-h-[70vh] bg-page flex flex-col items-center px-5 sm:px-8 py-24 gap-16">
       <div className="w-full max-w-md flex flex-col gap-4 text-center">
-        <p className="font-mono text-[13px] text-white/35">
+        <p className="font-mono text-[13px] text-page-faint">
           {t('memberNumberLabel', { number: profile.member_number })}
         </p>
-        <h1 className="font-sans text-3xl font-bold tracking-tight text-white">
+        <h1 className="font-sans text-3xl font-bold tracking-tight text-page">
           {name}
         </h1>
         {profile.bio?.trim() ? (
-          <p className="font-sans text-[15px] text-white/55 leading-relaxed">
+          <p className="font-sans text-[15px] text-page-muted leading-relaxed">
             {profile.bio.trim()}
           </p>
         ) : null}

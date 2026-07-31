@@ -15,12 +15,19 @@ export type ProfileSaveResult =
   | { ok: false; error: string };
 
 /** Load or create the signed-in member profile. */
-export async function ensureOwnProfile(): Promise<ScoutProfile | null> {
+/** Ensure profile row exists. Pass userId to skip a second auth.getUser(). */
+export async function ensureOwnProfile(
+  userId?: string
+): Promise<ScoutProfile | null> {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
+  let uid = userId;
+  if (!uid) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return null;
+    uid = user.id;
+  }
 
   const { data, error } = await supabase.rpc('ensure_own_profile');
   if (error) {
@@ -29,7 +36,7 @@ export async function ensureOwnProfile(): Promise<ScoutProfile | null> {
     const { data: row } = await supabase
       .from('profiles')
       .select('*')
-      .eq('id', user.id)
+      .eq('id', uid)
       .maybeSingle();
     return row ? normalizeScoutProfile(row as ScoutProfile) : null;
   }
@@ -85,6 +92,7 @@ export async function saveOwnProfile(input: {
   const profile = normalizeScoutProfile(data as ScoutProfile);
   revalidatePath('/account');
   revalidatePath('/account/profile');
+  revalidatePath('/account/voyages');
   revalidatePath(profilePath(profile.member_number, profile.slug));
   return { ok: true, profile };
 }

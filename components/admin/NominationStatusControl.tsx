@@ -59,10 +59,10 @@ export default function NominationStatusControl({
             save(next);
           }
         }}
-        className="h-9 rounded-[8px] bg-white/5 px-3 font-sans text-[13px] font-semibold text-white/85 focus:outline-none focus:bg-white/10 disabled:opacity-40"
+        className="h-9 rounded-[8px] bg-page-chip px-3 font-sans text-[13px] font-semibold text-page focus:outline-none focus:bg-page-chip-active disabled:opacity-40"
       >
         {OPTIONS.map((o) => (
-          <option key={o.value} value={o.value} className="bg-[#1F1F1F]">
+          <option key={o.value} value={o.value} className="bg-page">
             {o.label}
           </option>
         ))}
@@ -76,13 +76,13 @@ export default function NominationStatusControl({
             onChange={(e) => setReason(e.target.value)}
             placeholder="Reason (optional)"
             disabled={pending}
-            className="h-9 rounded-[8px] bg-white/5 px-3 font-sans text-[12px] text-white/80 placeholder:text-white/30 focus:outline-none focus:bg-white/10"
+            className="h-9 rounded-[8px] bg-page-chip px-3 font-sans text-[12px] text-page placeholder:text-page-faint focus:outline-none focus:bg-page-chip-active"
           />
           <button
             type="button"
             disabled={pending}
             onClick={() => save('passed', reason)}
-            className="self-start h-8 px-3 rounded-full bg-white text-black font-sans text-[12px] font-bold hover:bg-white/90 disabled:opacity-40"
+            className="self-start h-8 px-3 rounded-full bg-[var(--page-fg)] text-[var(--page-bg)] font-sans text-[12px] font-bold hover:opacity-90 disabled:opacity-40"
           >
             Save
           </button>

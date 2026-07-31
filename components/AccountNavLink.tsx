@@ -120,7 +120,7 @@ export default function AccountNavLink({
           <p
             className={
               mutedClassName ||
-              'font-sans text-[13px] font-medium leading-snug text-white/35'
+              'font-sans text-[13px] font-medium leading-snug text-page-faint'
             }
           >
             {number != null && name
@@ -130,7 +130,7 @@ export default function AccountNavLink({
                 : name}
           </p>
         )}
-        <Link href="/account" onClick={onNavigate} className={className}>
+        <Link href="/account/voyages" onClick={onNavigate} className={className}>
           {t('account')}
         </Link>
         <button

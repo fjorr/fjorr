@@ -6,7 +6,7 @@ import { updateBounty, type AdminBounty } from '@/lib/admin-actions';
 import type { BountyKind } from '@/lib/nomination-actions';
 
 const field =
-  'w-full rounded-[10px] bg-white/5 px-4 py-3 font-sans text-[14px] text-white placeholder:text-white/30 focus:outline-none focus:bg-white/10 transition-colors';
+  'w-full rounded-[10px] bg-page-chip px-4 py-3 font-sans text-[14px] text-page placeholder:text-page-faint focus:outline-none focus:bg-page-chip-active transition-colors';
 
 function deadlineToInput(iso: string | null) {
   if (!iso) return '';
@@ -51,7 +51,7 @@ export default function BountyEditForm({ bounty }: { bounty: AdminBounty }) {
           syncFromBounty();
           setOpen(true);
         }}
-        className="self-start h-9 px-3 rounded-[8px] bg-white/10 text-white font-sans text-[12px] font-semibold hover:bg-white/15 transition-colors"
+        className="self-start h-9 px-3 rounded-[8px] bg-page-chip-active text-page font-sans text-[12px] font-semibold hover:bg-page-chip-active transition-colors"
       >
         Edit
       </button>
@@ -59,9 +59,9 @@ export default function BountyEditForm({ bounty }: { bounty: AdminBounty }) {
   }
 
   return (
-    <div className="flex flex-col gap-4 w-full max-w-lg rounded-[12px] border border-white/10 bg-white/[0.03] p-4 sm:p-5">
+    <div className="flex flex-col gap-4 w-full max-w-lg">
       <div className="flex items-baseline justify-between gap-4">
-        <h3 className="font-sans text-[11px] font-semibold uppercase tracking-wide text-white/35">
+        <h3 className="font-sans text-[11px] font-semibold uppercase tracking-wide text-page-faint">
           Edit bounty
         </h3>
         <button
@@ -70,7 +70,7 @@ export default function BountyEditForm({ bounty }: { bounty: AdminBounty }) {
             syncFromBounty();
             setOpen(false);
           }}
-          className="font-sans text-[13px] text-white/40 hover:text-white/70 transition-colors"
+          className="font-sans text-[13px] text-page-faint hover:text-page-muted transition-colors"
         >
           Cancel
         </button>
@@ -104,7 +104,7 @@ export default function BountyEditForm({ bounty }: { bounty: AdminBounty }) {
         className="flex flex-col gap-4"
       >
         <div className="flex flex-col gap-1.5">
-          <label className="font-sans text-[11px] font-semibold uppercase tracking-wide text-white/35">
+          <label className="font-sans text-[11px] font-semibold uppercase tracking-wide text-page-faint">
             Title
           </label>
           <input
@@ -116,7 +116,7 @@ export default function BountyEditForm({ bounty }: { bounty: AdminBounty }) {
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label className="font-sans text-[11px] font-semibold uppercase tracking-wide text-white/35">
+          <label className="font-sans text-[11px] font-semibold uppercase tracking-wide text-page-faint">
             Slug
           </label>
           <input
@@ -128,7 +128,7 @@ export default function BountyEditForm({ bounty }: { bounty: AdminBounty }) {
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label className="font-sans text-[11px] font-semibold uppercase tracking-wide text-white/35">
+          <label className="font-sans text-[11px] font-semibold uppercase tracking-wide text-page-faint">
             Brief
           </label>
           <textarea
@@ -141,7 +141,7 @@ export default function BountyEditForm({ bounty }: { bounty: AdminBounty }) {
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label className="font-sans text-[11px] font-semibold uppercase tracking-wide text-white/35">
+          <label className="font-sans text-[11px] font-semibold uppercase tracking-wide text-page-faint">
             Kind
           </label>
           <select
@@ -149,20 +149,20 @@ export default function BountyEditForm({ bounty }: { bounty: AdminBounty }) {
             onChange={(e) => setKind(e.target.value as BountyKind)}
             className={field}
           >
-            <option value="true" className="bg-[#1F1F1F]">
+            <option value="true" className="bg-page">
               True
             </option>
-            <option value="fiction" className="bg-[#1F1F1F]">
+            <option value="fiction" className="bg-page">
               Fiction
             </option>
-            <option value="both" className="bg-[#1F1F1F]">
+            <option value="both" className="bg-page">
               Both
             </option>
           </select>
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label className="font-sans text-[11px] font-semibold uppercase tracking-wide text-white/35">
+          <label className="font-sans text-[11px] font-semibold uppercase tracking-wide text-page-faint">
             Poster image URL
           </label>
           <input
@@ -176,7 +176,7 @@ export default function BountyEditForm({ bounty }: { bounty: AdminBounty }) {
 
         <div className="grid grid-cols-2 gap-3">
           <div className="flex flex-col gap-1.5">
-            <label className="font-sans text-[11px] font-semibold uppercase tracking-wide text-white/35">
+            <label className="font-sans text-[11px] font-semibold uppercase tracking-wide text-page-faint">
               Amount (USD)
             </label>
             <input
@@ -190,7 +190,7 @@ export default function BountyEditForm({ bounty }: { bounty: AdminBounty }) {
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="font-sans text-[11px] font-semibold uppercase tracking-wide text-white/35">
+            <label className="font-sans text-[11px] font-semibold uppercase tracking-wide text-page-faint">
               Sort order
             </label>
             <input
@@ -206,7 +206,7 @@ export default function BountyEditForm({ bounty }: { bounty: AdminBounty }) {
 
         <div className="grid grid-cols-2 gap-3 items-end">
           <div className="flex flex-col gap-1.5">
-            <label className="font-sans text-[11px] font-semibold uppercase tracking-wide text-white/35">
+            <label className="font-sans text-[11px] font-semibold uppercase tracking-wide text-page-faint">
               Deadline
             </label>
             <input
@@ -221,9 +221,9 @@ export default function BountyEditForm({ bounty }: { bounty: AdminBounty }) {
               type="checkbox"
               checked={featured}
               onChange={(e) => setFeatured(e.target.checked)}
-              className="rounded border-white/20 bg-white/5"
+              className="rounded border-page-faint bg-page-chip"
             />
-            <span className="font-sans text-[13px] font-semibold text-white/70">
+            <span className="font-sans text-[13px] font-semibold text-page-muted">
               Featured
             </span>
           </label>
@@ -236,7 +236,7 @@ export default function BountyEditForm({ bounty }: { bounty: AdminBounty }) {
         <button
           type="submit"
           disabled={pending}
-          className="self-start h-11 px-6 rounded-full bg-white text-black font-sans text-[14px] font-bold hover:bg-white/90 disabled:opacity-40 transition-all active:scale-[0.98]"
+          className="self-start h-11 px-6 rounded-full bg-[var(--page-fg)] text-[var(--page-bg)] font-sans text-[14px] font-bold hover:opacity-90 disabled:opacity-40 transition-all active:scale-[0.98]"
         >
           {pending ? 'Saving…' : 'Save changes'}
         </button>

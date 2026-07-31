@@ -1,0 +1,146 @@
+'use server';
+
+import { createClient } from '@/lib/supabase/server';
+import { createServiceClient } from '@/lib/supabase/service';
+import { revalidatePath } from 'next/cache';
+
+const DISCIPLINES = new Set([
+  'archivists',
+  'cinematographers',
+  'composers',
+  'curators',
+  'directors',
+  'editors',
+  'producers',
+  'researchers',
+  'sound designers',
+  'writers',
+  'other',
+]);
+
+const MIN_NOTE = 40;
+const MAX_NOTE = 800;
+const RATE_DAYS = 30;
+
+export type CabinetScoutKind = 'offer' | 'suggest';
+
+export type CabinetOfferResult =
+  | { ok: true }
+  | {
+      ok: false;
+      error:
+        | 'signInRequired'
+        | 'nameRequired'
+        | 'disciplineRequired'
+        | 'emailRequired'
+        | 'emailInvalid'
+        | 'reelRequired'
+        | 'reelInvalid'
+        | 'noteRequired'
+        | 'noteTooLong'
+        | 'rateLimited'
+        | 'submitError';
+    };
+
+/** Public Cabinet intake — self-offer or suggest someone. */
+export async function submitCabinetOffer(input: {
+  kind: CabinetScoutKind;
+  name: string;
+  discipline: string;
+  email: string;
+  reelUrl: string;
+  note: string;
+}): Promise<CabinetOfferResult> {
+  const kind: CabinetScoutKind =
+    input.kind === 'suggest' ? 'suggest' : 'offer';
+  const source = kind === 'suggest' ? 'referral' : 'offer';
+
+  const name = (input.name || '').trim().slice(0, 120);
+  if (name.length < 2) return { ok: false, error: 'nameRequired' };
+
+  const discipline = (input.discipline || '').trim().toLowerCase();
+  if (!DISCIPLINES.has(discipline)) {
+    return { ok: false, error: 'disciplineRequired' };
+  }
+
+  const email = (input.email || '').trim().toLowerCase();
+  if (!email) return { ok: false, error: 'emailRequired' };
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return { ok: false, error: 'emailInvalid' };
+  }
+
+  const reelUrl = (input.reelUrl || '').trim();
+  if (!reelUrl) return { ok: false, error: 'reelRequired' };
+  try {
+    const u = new URL(reelUrl);
+    if (u.protocol !== 'http:' && u.protocol !== 'https:') {
+      return { ok: false, error: 'reelInvalid' };
+    }
+  } catch {
+    return { ok: false, error: 'reelInvalid' };
+  }
+
+  const note = (input.note || '').trim();
+  if (note.length < MIN_NOTE) return { ok: false, error: 'noteRequired' };
+  if (note.length > MAX_NOTE) return { ok: false, error: 'noteTooLong' };
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { ok: false, error: 'signInRequired' };
+  }
+
+  const db = createServiceClient();
+  const since = new Date(
+    Date.now() - RATE_DAYS * 24 * 60 * 60 * 1000
+  ).toISOString();
+
+  // Don't re-file the same person (by email) too often, any intake source.
+  const { count, error: countError } = await db
+    .from('cabinet_members')
+    .select('id', { count: 'exact', head: true })
+    .eq('email', email)
+    .in('source', ['offer', 'referral', 'scout'])
+    .gte('created_at', since);
+
+  if (countError) {
+    console.error('submitCabinetOffer rate check failed:', countError.message);
+    return { ok: false, error: 'submitError' };
+  }
+  if ((count || 0) > 0) {
+    return { ok: false, error: 'rateLimited' };
+  }
+
+  const kindLine = kind === 'suggest' ? 'Suggested by a member' : 'Self-offer';
+  const notes = [
+    note,
+    '',
+    `— ${kindLine}`,
+    `signed in · ${user.id.slice(0, 8)}`,
+    user.email ? `from ${user.email}` : null,
+  ]
+    .filter(Boolean)
+    .join('\n');
+
+  const { error } = await db.from('cabinet_members').insert({
+    name,
+    discipline,
+    email,
+    reel_url: reelUrl,
+    notes,
+    source,
+    status: 'prospect',
+  });
+
+  if (error) {
+    console.error('submitCabinetOffer failed:', error.message);
+    return { ok: false, error: 'submitError' };
+  }
+
+  revalidatePath('/admin/cabinet');
+  revalidatePath('/admin');
+  return { ok: true };
+}

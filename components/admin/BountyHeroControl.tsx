@@ -21,7 +21,7 @@ export default function BountyHeroControl({
 
   return (
     <div className="flex flex-col gap-1.5 w-full max-w-md">
-      <span className="font-sans text-[10px] font-semibold uppercase tracking-wide text-white/30">
+      <span className="font-sans text-[10px] font-semibold uppercase tracking-wide text-page-faint">
         Poster image URL
       </span>
       <div className="flex gap-2">
@@ -31,7 +31,7 @@ export default function BountyHeroControl({
           disabled={pending}
           onChange={(e) => setValue(e.target.value)}
           placeholder="https://media.fjorr.com/…"
-          className="flex-1 min-w-0 h-9 rounded-[8px] bg-white/5 px-3 font-mono text-[11px] text-white/80 placeholder:text-white/25 focus:outline-none focus:bg-white/10"
+          className="flex-1 min-w-0 h-9 rounded-[8px] bg-page-chip px-3 font-mono text-[11px] text-page placeholder:text-page-faint focus:outline-none focus:bg-page-chip-active"
         />
         <button
           type="button"
@@ -50,7 +50,7 @@ export default function BountyHeroControl({
               router.refresh();
             });
           }}
-          className="shrink-0 h-9 px-3 rounded-full bg-white/10 text-white font-sans text-[12px] font-semibold hover:bg-white/15 disabled:opacity-40"
+          className="shrink-0 h-9 px-3 rounded-full bg-page-chip-active text-page font-sans text-[12px] font-semibold hover:bg-page-chip-active disabled:opacity-40"
         >
           Save
         </button>

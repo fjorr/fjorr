@@ -1,6 +1,6 @@
-import { redirect } from 'next/navigation';
+import { permanentRedirect } from 'next/navigation';
 
-/** Old /bureau path → /bureaux */
+/** Legacy path — The Cabinet lives at /cabinet. */
 export default function BureauRedirectPage() {
-  redirect('/bureaux');
+  permanentRedirect('/cabinet');
 }

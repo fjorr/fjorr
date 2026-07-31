@@ -37,6 +37,7 @@ const RESERVED_SLUGS = new Set([
   'bounty',
   'bureau',
   'bureaux',
+  'cabinet',
   'plus',
   'recut',
   'nominate',

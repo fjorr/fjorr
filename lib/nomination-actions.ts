@@ -4,7 +4,12 @@
 
 'use server';
 
+import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
+import {
+  bureauxNominationLimits,
+  isOwnBureauxActive,
+} from '@/lib/bureaux';
 
 export type NominationKind = 'true' | 'fiction';
 
@@ -160,13 +165,21 @@ export async function getActiveBountyBySlug(
   return bounty;
 }
 
-/** Own nominations, newest first. */
-export async function getOwnNominations(): Promise<NominationRow[]> {
+const OWN_NOMINATION_LIMIT = 100;
+
+/** Own nominations, newest first. Pass userId to skip a second auth.getUser(). */
+export async function getOwnNominations(
+  userId?: string
+): Promise<NominationRow[]> {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return [];
+  let uid = userId;
+  if (!uid) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return [];
+    uid = user.id;
+  }
 
   const { data, error } = await supabase
     .from('nominations')
@@ -186,8 +199,9 @@ export async function getOwnNominations(): Promise<NominationRow[]> {
       bounty:bounty_id ( title )
     `
     )
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false });
+    .eq('user_id', uid)
+    .order('created_at', { ascending: false })
+    .limit(OWN_NOMINATION_LIMIT);
 
   if (error) {
     console.error('getOwnNominations failed:', error.message);
@@ -223,12 +237,34 @@ const ACTIVE_NOMINATION_STATUSES = [
 ] as const;
 
 /** Count of own nominations still in flight (for account nav meta). */
-export async function countOwnActiveNominations(): Promise<number> {
-  const rows = await getOwnNominations();
-  return rows.filter((n) =>
-    (ACTIVE_NOMINATION_STATUSES as readonly string[]).includes(n.status)
-  ).length;
+export async function countOwnActiveNominations(
+  userId?: string
+): Promise<number> {
+  const supabase = await createClient();
+  let uid = userId;
+  if (!uid) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return 0;
+    uid = user.id;
+  }
+
+  const { count, error } = await supabase
+    .from('nominations')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', uid)
+    .in('status', [...ACTIVE_NOMINATION_STATUSES]);
+
+  if (error) {
+    console.error('countOwnActiveNominations failed:', error.message);
+    return 0;
+  }
+  return count || 0;
 }
+
+/** Soft spam guard window for new pitches. */
+const NOMINATION_RATE_LIMIT_HOURS = 24;
 
 /** Submit a nomination (members only). */
 export async function submitNomination(
@@ -290,6 +326,42 @@ export async function submitNomination(
     }
   }
 
+  const since = new Date(
+    Date.now() - NOMINATION_RATE_LIMIT_HOURS * 60 * 60 * 1000
+  ).toISOString();
+
+  const [{ count: recentCount, error: recentError }, { count: openCount, error: openError }] =
+    await Promise.all([
+      supabase
+        .from('nominations')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .gte('created_at', since),
+      supabase
+        .from('nominations')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .in('status', [...ACTIVE_NOMINATION_STATUSES]),
+    ]);
+
+  if (recentError) {
+    console.error('submitNomination rate check failed:', recentError.message);
+    return { ok: false, error: 'submitError' };
+  }
+  if (openError) {
+    console.error('submitNomination open check failed:', openError.message);
+    return { ok: false, error: 'submitError' };
+  }
+
+  const limits = bureauxNominationLimits(await isOwnBureauxActive(user.id));
+
+  if ((recentCount || 0) >= limits.maxPerDay) {
+    return { ok: false, error: 'rateLimited' };
+  }
+  if ((openCount || 0) >= limits.maxOpen) {
+    return { ok: false, error: 'openCap' };
+  }
+
   const { data, error } = await supabase
     .from('nominations')
     .insert({
@@ -311,6 +383,9 @@ export async function submitNomination(
     console.error('submitNomination failed:', error.message);
     return { ok: false, error: 'submitError' };
   }
+
+  revalidatePath('/account/nominations');
+  revalidatePath('/admin');
 
   return { ok: true, id: String(data?.id) };
 }

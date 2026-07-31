@@ -56,6 +56,7 @@ export type AdminOverview = {
   nominationsTotal: number;
   nominationsByStatus: Record<string, number>;
   bountiesActive: number;
+  bureauxActive: number;
   recentNominations: AdminNomination[];
 };
 
@@ -137,26 +138,34 @@ export async function getAdminOverview(): Promise<AdminOverview> {
   await requireAdmin();
   const db = createServiceClient();
 
-  const [{ data: statusRows }, { count: bountyCount }, { data: recentRows }] =
-    await Promise.all([
-      db.from('nominations').select('status'),
-      db
-        .from('bounties')
-        .select('id', { count: 'exact', head: true })
-        .eq('status', 'open'),
-      db
-        .from('nominations')
-        .select(
-          `
+  const [
+    { data: statusRows },
+    { count: bountyCount },
+    { count: bureauxCount },
+    { data: recentRows },
+  ] = await Promise.all([
+    db.from('nominations').select('status'),
+    db
+      .from('bounties')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'open'),
+    db
+      .from('bureaux_memberships')
+      .select('user_id', { count: 'exact', head: true })
+      .in('status', ['active', 'past_due']),
+    db
+      .from('nominations')
+      .select(
+        `
           id, created_at, story_details, kind, why_fjorr, setting,
           proof_or_premise, proof_url, status, status_reason,
           contributor_email, user_id, bounty_id,
           bounty:bounty_id ( title )
         `
-        )
-        .order('created_at', { ascending: false })
-        .limit(8),
-    ]);
+      )
+      .order('created_at', { ascending: false })
+      .limit(8),
+  ]);
 
   const byStatus: Record<string, number> = {};
   for (const s of STATUSES) byStatus[s] = 0;
@@ -169,6 +178,7 @@ export async function getAdminOverview(): Promise<AdminOverview> {
     nominationsTotal: Object.values(byStatus).reduce((a, b) => a + b, 0),
     nominationsByStatus: byStatus,
     bountiesActive: bountyCount || 0,
+    bureauxActive: bureauxCount || 0,
     recentNominations: (recentRows || []).map(mapNomination),
   };
 }
@@ -816,13 +826,18 @@ export async function updateFilmNoteStatus(input: {
 }
 
 // -----------------------------------------------------------------------------
-// The Bureaux — desk roster
+// The Cabinet — craft roster (desk)
 // -----------------------------------------------------------------------------
 
-export type BureauxMemberStatus = 'prospect' | 'member' | 'paused';
-export type BureauxMemberSource = 'manual' | 'scout' | 'plus' | 'referral';
+export type CabinetMemberStatus = 'prospect' | 'member' | 'paused';
+export type CabinetMemberSource =
+  | 'manual'
+  | 'scout'
+  | 'plus'
+  | 'referral'
+  | 'offer';
 
-export type AdminBureauxMember = {
+export type AdminCabinetMember = {
   id: string;
   created_at: string;
   name: string;
@@ -830,15 +845,15 @@ export type AdminBureauxMember = {
   email: string | null;
   reel_url: string | null;
   notes: string | null;
-  source: BureauxMemberSource;
-  status: BureauxMemberStatus;
+  source: CabinetMemberSource;
+  status: CabinetMemberStatus;
 };
 
-export async function listAdminBureauxMembers(): Promise<AdminBureauxMember[]> {
+export async function listAdminCabinetMembers(): Promise<AdminCabinetMember[]> {
   await requireAdmin();
   const db = createServiceClient();
   const { data, error } = await db
-    .from('bureaux_members')
+    .from('cabinet_members')
     .select(
       'id, created_at, name, discipline, email, reel_url, notes, source, status'
     )
@@ -846,7 +861,7 @@ export async function listAdminBureauxMembers(): Promise<AdminBureauxMember[]> {
     .limit(500);
 
   if (error) {
-    console.error('listAdminBureauxMembers failed:', error.message);
+    console.error('listAdminCabinetMembers failed:', error.message);
     return [];
   }
 
@@ -858,19 +873,19 @@ export async function listAdminBureauxMembers(): Promise<AdminBureauxMember[]> {
     email: row.email ? String(row.email) : null,
     reel_url: row.reel_url ? String(row.reel_url) : null,
     notes: row.notes ? String(row.notes) : null,
-    source: (row.source || 'manual') as BureauxMemberSource,
-    status: (row.status || 'prospect') as BureauxMemberStatus,
+    source: (row.source || 'manual') as CabinetMemberSource,
+    status: (row.status || 'prospect') as CabinetMemberStatus,
   }));
 }
 
-export async function createBureauxMember(input: {
+export async function createCabinetMember(input: {
   name: string;
   discipline: string;
   email?: string;
   reelUrl?: string;
   notes?: string;
-  source?: BureauxMemberSource;
-  status?: BureauxMemberStatus;
+  source?: CabinetMemberSource;
+  status?: CabinetMemberStatus;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
   await requireAdmin();
 
@@ -886,7 +901,7 @@ export async function createBureauxMember(input: {
   const source = input.source || 'manual';
   const status = input.status || 'prospect';
 
-  if (!['manual', 'scout', 'plus', 'referral'].includes(source)) {
+  if (!['manual', 'scout', 'plus', 'referral', 'offer'].includes(source)) {
     return { ok: false, error: 'Invalid source' };
   }
   if (!['prospect', 'member', 'paused'].includes(status)) {
@@ -894,7 +909,7 @@ export async function createBureauxMember(input: {
   }
 
   const db = createServiceClient();
-  const { error } = await db.from('bureaux_members').insert({
+  const { error } = await db.from('cabinet_members').insert({
     name,
     discipline,
     email,
@@ -905,18 +920,18 @@ export async function createBureauxMember(input: {
   });
 
   if (error) {
-    console.error('createBureauxMember failed:', error.message);
+    console.error('createCabinetMember failed:', error.message);
     return { ok: false, error: error.message };
   }
 
-  revalidatePath('/admin/bureaux');
+  revalidatePath('/admin/cabinet');
   revalidatePath('/admin');
   return { ok: true };
 }
 
-export async function updateBureauxMemberStatus(input: {
+export async function updateCabinetMemberStatus(input: {
   id: string;
-  status: BureauxMemberStatus;
+  status: CabinetMemberStatus;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
   await requireAdmin();
   if (!['prospect', 'member', 'paused'].includes(input.status)) {
@@ -925,16 +940,16 @@ export async function updateBureauxMemberStatus(input: {
 
   const db = createServiceClient();
   const { error } = await db
-    .from('bureaux_members')
+    .from('cabinet_members')
     .update({ status: input.status })
     .eq('id', input.id);
 
   if (error) {
-    console.error('updateBureauxMemberStatus failed:', error.message);
+    console.error('updateCabinetMemberStatus failed:', error.message);
     return { ok: false, error: error.message };
   }
 
-  revalidatePath('/admin/bureaux');
+  revalidatePath('/admin/cabinet');
   revalidatePath('/admin');
   return { ok: true };
 }

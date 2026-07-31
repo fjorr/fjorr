@@ -2,11 +2,11 @@
 
 import React, { useTransition } from 'react';
 import { useRouter } from '@/i18n/navigation';
-import { updateBureauxMemberStatus } from '@/lib/admin-actions';
+import { updateCabinetMemberStatus } from '@/lib/admin-actions';
 
 const STATUSES = ['prospect', 'member', 'paused'] as const;
 
-export default function BureauxMemberStatusControl({
+export default function CabinetMemberStatusControl({
   id,
   status,
 }: {
@@ -23,11 +23,11 @@ export default function BureauxMemberStatusControl({
       onChange={(e) => {
         const next = e.target.value as (typeof STATUSES)[number];
         startTransition(async () => {
-          await updateBureauxMemberStatus({ id, status: next });
+          await updateCabinetMemberStatus({ id, status: next });
           router.refresh();
         });
       }}
-      className="h-8 rounded-md bg-white/5 border border-white/10 px-2 font-mono text-[11px] text-white/80"
+      className="h-8 rounded-md bg-page-chip border border-page-faint px-2 font-mono text-[11px] text-page"
     >
       {STATUSES.map((s) => (
         <option key={s} value={s}>

@@ -81,7 +81,7 @@ export default function PlusClient() {
             {t('closing')}
           </p>
 
-          <div className="pt-2 flex flex-col gap-3">
+          <div id="how" className="pt-2 flex flex-col gap-3 scroll-mt-24">
             <p className="font-sans text-[12px] font-semibold uppercase tracking-wide text-page-faint">
               {t('howTitle')}
             </p>
@@ -111,10 +111,10 @@ export default function PlusClient() {
               {t('pageCta')}
             </Link>
             <Link
-              href="/bureaux"
+              href="/cabinet"
               className="inline-flex h-11 items-center font-sans text-[14px] font-semibold text-page-muted hover:text-page transition-colors underline underline-offset-4 decoration-page-faint"
             >
-              {t('pageBureauxLink')}
+              {t('pageCabinetLink')}
             </Link>
           </footer>
         </div>

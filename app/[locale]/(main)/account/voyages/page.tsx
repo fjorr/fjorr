@@ -14,9 +14,11 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function AccountVoyagesPage() {
-  const { profile } = await requireOwnAccount('/account/voyages');
-  const logs = await getOwnFilmLogs();
+  const { user, profile } = await requireOwnAccount('/account/voyages');
+  const logs = await getOwnFilmLogs(user.id);
   const t = await getTranslations('Account');
+  const hasVoyages = logs.length > 0;
+  const lineageOn = profile.voyage_lineage_enabled !== false;
 
   return (
     <AccountShell
@@ -24,16 +26,18 @@ export default async function AccountVoyagesPage() {
       title={t('filmLogsTitle')}
       description={t('filmLogsBody')}
       descriptionNote={t('filmLogsNote')}
+      headerLinks={
+        hasVoyages
+          ? undefined
+          : [{ href: '/', label: t('filmLogsEmptyCta') }]
+      }
       wide
     >
       <FilmLogsLedger
         logs={logs}
         omitHeader
-        memberNumber={
-          profile.voyage_lineage_enabled !== false
-            ? profile.member_number
-            : null
-        }
+        memberNumber={lineageOn ? profile.member_number : null}
+        showTrailHint={lineageOn && hasVoyages}
       />
     </AccountShell>
   );

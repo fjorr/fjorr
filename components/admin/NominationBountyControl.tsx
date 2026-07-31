@@ -35,7 +35,7 @@ export default function NominationBountyControl({
 
   return (
     <div className="flex flex-col gap-1 min-w-[10rem]">
-      <span className="font-sans text-[10px] font-semibold uppercase tracking-wide text-white/30">
+      <span className="font-sans text-[10px] font-semibold uppercase tracking-wide text-page-faint">
         Bounty
       </span>
       <select
@@ -58,13 +58,13 @@ export default function NominationBountyControl({
             router.refresh();
           });
         }}
-        className="h-9 rounded-[8px] bg-white/5 px-3 font-sans text-[13px] font-semibold text-white/85 focus:outline-none focus:bg-white/10 disabled:opacity-40"
+        className="h-9 rounded-[8px] bg-page-chip px-3 font-sans text-[13px] font-semibold text-page focus:outline-none focus:bg-page-chip-active disabled:opacity-40"
       >
-        <option value="" className="bg-[#1F1F1F]">
+        <option value="" className="bg-page">
           General (none)
         </option>
         {bounties.map((b) => (
-          <option key={b.id} value={b.id} className="bg-[#1F1F1F]">
+          <option key={b.id} value={b.id} className="bg-page">
             {b.title} · {formatMoney(b.reward_amount, b.currency)}
             {b.status !== 'open' ? ` (${b.status})` : ''}
           </option>

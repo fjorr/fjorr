@@ -258,20 +258,30 @@ export async function getOwnVoyageurStampForFilm(
   };
 }
 
-/** Own Voyages, newest first. */
-export async function getOwnFilmLogs(): Promise<FilmLogEntry[]> {
+const OWN_VOYAGE_LIMIT = 100;
+const PUBLIC_VOYAGE_LIMIT = 100;
+
+/** Own Voyages, newest first. Pass userId to skip a second auth.getUser(). */
+export async function getOwnFilmLogs(
+  userId?: string
+): Promise<FilmLogEntry[]> {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return [];
+  let uid = userId;
+  if (!uid) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return [];
+    uid = user.id;
+  }
 
   const [{ data, error }, passCounts] = await Promise.all([
     supabase
       .from('film_view_record')
       .select(FILM_LOG_SELECT)
-      .eq('user_id', user.id)
-      .order('recorded_at', { ascending: false }),
+      .eq('user_id', uid)
+      .order('recorded_at', { ascending: false })
+      .limit(OWN_VOYAGE_LIMIT),
     loadOwnPassCounts(supabase),
   ]);
 
@@ -295,7 +305,8 @@ export async function getPublicFilmLogs(
     .from('film_view_record')
     .select(FILM_LOG_SELECT)
     .eq('user_id', userId)
-    .order('recorded_at', { ascending: false });
+    .order('recorded_at', { ascending: false })
+    .limit(PUBLIC_VOYAGE_LIMIT);
 
   if (error) {
     console.error('getPublicFilmLogs failed:', error.message);

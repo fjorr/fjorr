@@ -43,10 +43,10 @@ export default function BountyStatusControl({
             router.refresh();
           });
         }}
-        className="h-9 rounded-[8px] bg-white/5 px-3 font-sans text-[13px] font-semibold text-white/85 focus:outline-none focus:bg-white/10 disabled:opacity-40"
+        className="h-9 rounded-[8px] bg-page-chip px-3 font-sans text-[13px] font-semibold text-page focus:outline-none focus:bg-page-chip-active disabled:opacity-40"
       >
         {OPTIONS.map((o) => (
-          <option key={o.value} value={o.value} className="bg-[#1F1F1F]">
+          <option key={o.value} value={o.value} className="bg-page">
             {o.label}
           </option>
         ))}

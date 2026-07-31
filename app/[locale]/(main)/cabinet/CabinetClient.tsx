@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useTranslations } from 'next-intl';
-import { ContactPill } from '@/components/ui/contact-pill';
+import CabinetOfferForm from '@/components/CabinetOfferForm';
 
 const DISCIPLINE_KEYS = [
   'archivists',
@@ -17,8 +17,14 @@ const DISCIPLINE_KEYS = [
   'writers',
 ] as const;
 
-export default function BureauxClient() {
-  const t = useTranslations('Bureaux');
+export default function CabinetClient({
+  signedIn = false,
+  defaultEmail = '',
+}: {
+  signedIn?: boolean;
+  defaultEmail?: string;
+}) {
+  const t = useTranslations('Cabinet');
 
   return (
     <div className="w-full min-h-screen bg-[var(--page-bg)] text-page pb-24">
@@ -28,9 +34,9 @@ export default function BureauxClient() {
           __html: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'WebPage',
-            name: 'The Bureaux | Fjorr',
+            name: 'The Cabinet | Fjorr',
             description: t('headline'),
-            url: 'https://www.fjorr.com/bureaux',
+            url: 'https://www.fjorr.com/cabinet',
           }),
         }}
       />
@@ -60,11 +66,14 @@ export default function BureauxClient() {
             ))}
           </ul>
 
-          <footer className="mt-10 flex flex-col items-center gap-4 text-center">
-            <p className="font-sans text-[13px] sm:text-[14px] font-medium text-page-muted tracking-normal leading-snug">
-              {t('suggest')}
+          <footer className="mt-10 flex flex-col items-center gap-4 w-full text-center">
+            <p className="font-sans text-[13px] sm:text-[14px] font-medium text-page-muted tracking-normal leading-snug max-w-sm">
+              {t('scoutLead')}
             </p>
-            <ContactPill email="scout@fjorr.com" label={t('cta')} />
+            <CabinetOfferForm
+              signedIn={signedIn}
+              defaultEmail={defaultEmail}
+            />
           </footer>
         </div>
       </div>

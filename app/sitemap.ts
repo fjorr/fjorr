@@ -50,6 +50,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/about',
     '/principles',
     '/bounties',
+    '/cabinet',
     '/bureaux',
     '/plus',
     '/nominate',

@@ -20,6 +20,8 @@ type FieldErrorKey =
   | 'proofUrlInvalid'
   | 'bountyInvalid'
   | 'signInRequired'
+  | 'rateLimited'
+  | 'openCap'
   | 'submitError';
 
 type FieldKey =
@@ -200,6 +202,8 @@ export default function NominateClient({
       proofUrlInvalid: 'proofUrl',
       bountyInvalid: 'bounty',
       signInRequired: 'form',
+      rateLimited: 'form',
+      openCap: 'form',
       submitError: 'form',
     };
     const field = map[result.error] || 'form';

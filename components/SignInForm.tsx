@@ -42,7 +42,7 @@ function GoogleGlyph({ className }: { className?: string }) {
 }
 
 export default function SignInForm({
-  nextPath = '/account',
+  nextPath = '/account/voyages',
   layout = 'page',
   variant = 'light',
 }: {

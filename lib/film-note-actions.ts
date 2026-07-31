@@ -1,46 +1,17 @@
 /**
- * Plus Machine — member film notes (server).
+ * Plus Machine — member film note mutations (server actions).
  */
 
 'use server';
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
-
-export type FilmNoteStatus = 'new' | 'read' | 'archived';
-
-export type FilmNoteRow = {
-  id: string;
-  created_at: string;
-  film_id: string;
-  film_name: string | null;
-  film_slug: string | null;
-  body: string;
-  at_seconds: number | null;
-  status: FilmNoteStatus;
-};
+import { bureauxPlusNoteLimit, isOwnBureauxActive } from '@/lib/bureaux';
 
 const MAX_BODY = 1000;
 const MIN_BODY = 8;
-/** Soft spam guard — one note per film per member per day. */
+/** Soft spam guard window for notes per film. */
 const RATE_LIMIT_HOURS = 24;
-
-function mapNote(row: any): FilmNoteRow {
-  const film = Array.isArray(row.film) ? row.film[0] : row.film;
-  return {
-    id: String(row.id),
-    created_at: String(row.created_at),
-    film_id: String(row.film_id),
-    film_name: film?.name ? String(film.name) : null,
-    film_slug: film?.slug ? String(film.slug) : null,
-    body: String(row.body || ''),
-    at_seconds:
-      row.at_seconds == null || Number.isNaN(Number(row.at_seconds))
-        ? null
-        : Math.floor(Number(row.at_seconds)),
-    status: (row.status || 'new') as FilmNoteStatus,
-  };
-}
 
 export async function submitFilmNote(input: {
   filmId: string;
@@ -68,6 +39,8 @@ export async function submitFilmNote(input: {
     atSeconds = Math.max(0, Math.floor(input.atSeconds));
   }
 
+  const maxNotes = bureauxPlusNoteLimit(await isOwnBureauxActive(user.id));
+
   const since = new Date(
     Date.now() - RATE_LIMIT_HOURS * 60 * 60 * 1000
   ).toISOString();
@@ -78,9 +51,25 @@ export async function submitFilmNote(input: {
     .eq('film_id', filmId)
     .gte('created_at', since);
 
-  if ((count || 0) > 0) {
+  if ((count || 0) >= maxNotes) {
     return { ok: false, error: 'rateLimited' };
   }
+
+  const { data: film, error: filmError } = await supabase
+    .from('film')
+    .select('id, version, current_version_id')
+    .eq('id', filmId)
+    .maybeSingle();
+
+  if (filmError || !film) {
+    console.error('submitFilmNote film lookup failed:', filmError?.message);
+    return { ok: false, error: 'submitError' };
+  }
+
+  const filmVersion = Math.max(1, Math.floor(Number(film.version) || 1));
+  const filmVersionId = film.current_version_id
+    ? String(film.current_version_id)
+    : null;
 
   const { error } = await supabase.from('film_notes').insert({
     film_id: filmId,
@@ -88,6 +77,8 @@ export async function submitFilmNote(input: {
     body,
     at_seconds: atSeconds,
     status: 'new',
+    film_version: filmVersion,
+    film_version_id: filmVersionId,
   });
 
   if (error) {
@@ -99,32 +90,4 @@ export async function submitFilmNote(input: {
   revalidatePath('/admin/plus');
   revalidatePath('/admin');
   return { ok: true };
-}
-
-/** Own notes, newest first. */
-export async function getOwnFilmNotes(): Promise<FilmNoteRow[]> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return [];
-
-  const { data, error } = await supabase
-    .from('film_notes')
-    .select(
-      `
-      id, created_at, film_id, body, at_seconds, status,
-      film:film_id ( name, slug )
-    `
-    )
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false })
-    .limit(100);
-
-  if (error) {
-    console.error('getOwnFilmNotes failed:', error.message);
-    return [];
-  }
-
-  return (data || []).map(mapNote);
 }

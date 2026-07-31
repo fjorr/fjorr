@@ -82,7 +82,7 @@ export default function AccountPrivacyClient({
       ) : null}
 
       {status === 'saving' || status === 'saved' ? (
-        <p className="font-sans text-[12px] text-white/35 text-left">
+        <p className="font-sans text-[12px] text-page-faint text-left">
           {status === 'saving' ? t('saving') : t('saved')}
         </p>
       ) : null}

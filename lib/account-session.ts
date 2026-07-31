@@ -6,7 +6,7 @@ import type { User } from '@supabase/supabase-js';
 
 /** Own-account gate. Redirects guests to sign-in with a return path. */
 export async function requireOwnAccount(
-  nextPath = '/account'
+  nextPath = '/account/voyages'
 ): Promise<{ user: User; profile: ScoutProfile }> {
   const supabase = await createClient();
   const {
@@ -17,7 +17,7 @@ export async function requireOwnAccount(
     redirect(`/signin?next=${encodeURIComponent(nextPath)}`);
   }
 
-  const profile = await ensureOwnProfile();
+  const profile = await ensureOwnProfile(user.id);
   if (!profile) {
     redirect(`/signin?next=${encodeURIComponent(nextPath)}`);
   }

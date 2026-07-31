@@ -39,7 +39,6 @@ export default async function BountyHomePoster() {
       subhead={t('homePosterSubhead', { amount: amountLabel })}
       cta={t('homePosterCta')}
       bgClassName="bg-[#2A4034]"
-      headlineStyle="interTight"
     />
   );
 }

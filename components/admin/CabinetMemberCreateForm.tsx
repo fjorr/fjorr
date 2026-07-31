@@ -2,7 +2,7 @@
 
 import React, { useState, useTransition } from 'react';
 import { useRouter } from '@/i18n/navigation';
-import { createBureauxMember } from '@/lib/admin-actions';
+import { createCabinetMember } from '@/lib/admin-actions';
 
 const DISCIPLINES = [
   'archivists',
@@ -20,6 +20,7 @@ const SOURCES = [
   { value: 'scout', label: 'Scout' },
   { value: 'plus', label: 'Plus' },
   { value: 'referral', label: 'Referral' },
+  { value: 'offer', label: 'Offer' },
 ] as const;
 
 const STATUSES = [
@@ -28,7 +29,7 @@ const STATUSES = [
   { value: 'paused', label: 'Paused' },
 ] as const;
 
-export default function BureauxMemberCreateForm() {
+export default function CabinetMemberCreateForm() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -56,7 +57,7 @@ export default function BureauxMemberCreateForm() {
     e.preventDefault();
     setError(null);
     startTransition(async () => {
-      const result = await createBureauxMember({
+      const result = await createCabinetMember({
         name,
         discipline,
         email: email || undefined,
@@ -80,7 +81,7 @@ export default function BureauxMemberCreateForm() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="self-start h-10 px-4 rounded-full border border-white/15 bg-transparent font-sans text-[13px] font-semibold text-white/70 hover:text-white hover:border-white/30 transition-colors"
+        className="self-start h-10 px-4 rounded-full border border-page-faint bg-transparent font-sans text-[13px] font-semibold text-page-muted hover:text-page hover:border-page-muted transition-colors"
       >
         Add person
       </button>
@@ -88,14 +89,14 @@ export default function BureauxMemberCreateForm() {
   }
 
   const field =
-    'w-full rounded-[10px] bg-white/5 px-4 py-3 font-sans text-[14px] text-white placeholder:text-white/30 focus:outline-none focus:bg-white/10 transition-colors';
+    'w-full rounded-[10px] bg-page-chip px-4 py-3 font-sans text-[14px] text-page placeholder:text-page-faint focus:outline-none focus:bg-page-chip-active transition-colors';
   const select =
-    'w-full h-11 rounded-[10px] bg-white/5 px-3 font-sans text-[14px] text-white focus:outline-none focus:bg-white/10 transition-colors border-0';
+    'w-full h-11 rounded-[10px] bg-page-chip px-3 font-sans text-[14px] text-page focus:outline-none focus:bg-page-chip-active transition-colors border-0';
 
   return (
     <div className="flex flex-col gap-4 max-w-lg">
       <div className="flex items-baseline justify-between gap-4">
-        <h2 className="font-sans text-[11px] font-semibold uppercase tracking-wide text-white/35">
+        <h2 className="font-sans text-[11px] font-semibold uppercase tracking-wide text-page-faint">
           Add person
         </h2>
         <button
@@ -104,7 +105,7 @@ export default function BureauxMemberCreateForm() {
             resetFields();
             setOpen(false);
           }}
-          className="font-sans text-[13px] text-white/40 hover:text-white/70 transition-colors"
+          className="font-sans text-[13px] text-page-faint hover:text-page-muted transition-colors"
         >
           Cancel
         </button>
@@ -112,7 +113,7 @@ export default function BureauxMemberCreateForm() {
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div className="flex flex-col gap-1.5">
-        <label className="font-sans text-[11px] font-semibold uppercase tracking-wide text-white/35">
+        <label className="font-sans text-[11px] font-semibold uppercase tracking-wide text-page-faint">
           Name
         </label>
         <input
@@ -126,7 +127,7 @@ export default function BureauxMemberCreateForm() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="flex flex-col gap-1.5">
-          <label className="font-sans text-[11px] font-semibold uppercase tracking-wide text-white/35">
+          <label className="font-sans text-[11px] font-semibold uppercase tracking-wide text-page-faint">
             Discipline
           </label>
           <select
@@ -142,7 +143,7 @@ export default function BureauxMemberCreateForm() {
           </select>
         </div>
         <div className="flex flex-col gap-1.5">
-          <label className="font-sans text-[11px] font-semibold uppercase tracking-wide text-white/35">
+          <label className="font-sans text-[11px] font-semibold uppercase tracking-wide text-page-faint">
             Status
           </label>
           <select
@@ -162,7 +163,7 @@ export default function BureauxMemberCreateForm() {
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label className="font-sans text-[11px] font-semibold uppercase tracking-wide text-white/35">
+        <label className="font-sans text-[11px] font-semibold uppercase tracking-wide text-page-faint">
           Email
         </label>
         <input
@@ -175,7 +176,7 @@ export default function BureauxMemberCreateForm() {
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label className="font-sans text-[11px] font-semibold uppercase tracking-wide text-white/35">
+        <label className="font-sans text-[11px] font-semibold uppercase tracking-wide text-page-faint">
           Reel / site
         </label>
         <input
@@ -188,7 +189,7 @@ export default function BureauxMemberCreateForm() {
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label className="font-sans text-[11px] font-semibold uppercase tracking-wide text-white/35">
+        <label className="font-sans text-[11px] font-semibold uppercase tracking-wide text-page-faint">
           Source
         </label>
         <select
@@ -207,7 +208,7 @@ export default function BureauxMemberCreateForm() {
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label className="font-sans text-[11px] font-semibold uppercase tracking-wide text-white/35">
+        <label className="font-sans text-[11px] font-semibold uppercase tracking-wide text-page-faint">
           Notes
         </label>
         <textarea
@@ -226,7 +227,7 @@ export default function BureauxMemberCreateForm() {
       <button
         type="submit"
         disabled={pending}
-        className="self-start h-11 px-5 rounded-full bg-white text-[#1F1F1F] font-sans text-[13px] font-bold hover:opacity-90 disabled:opacity-40 transition-opacity"
+        className="self-start h-11 px-5 rounded-full bg-[var(--page-fg)] text-[var(--page-bg)] font-sans text-[13px] font-bold hover:opacity-90 disabled:opacity-40 transition-opacity"
       >
         {pending ? 'Saving…' : 'Add to roster'}
       </button>

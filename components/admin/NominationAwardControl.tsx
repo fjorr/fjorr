@@ -18,7 +18,7 @@ export default function NominationAwardControl({
 
   if (!bountyId) {
     return (
-      <p className="font-sans text-[11px] text-white/30 leading-snug max-w-[10rem]">
+      <p className="font-sans text-[11px] text-page-faint leading-snug max-w-[10rem]">
         Attach a bounty to award.
       </p>
     );
@@ -48,7 +48,7 @@ export default function NominationAwardControl({
             router.refresh();
           });
         }}
-        className="h-9 px-4 rounded-full bg-white text-black font-sans text-[12px] font-bold hover:bg-white/90 disabled:opacity-40 transition-all active:scale-[0.98]"
+        className="h-9 px-4 rounded-full bg-[var(--page-fg)] text-[var(--page-bg)] font-sans text-[12px] font-bold hover:opacity-90 disabled:opacity-40 transition-all active:scale-[0.98]"
       >
         {done ? 'Awarded' : pending ? 'Awarding…' : 'Award'}
       </button>

@@ -60,7 +60,7 @@ export default function FilmLogShareButton({
           }
         }
       }}
-      className="shrink-0 font-sans text-[11px] font-semibold uppercase tracking-[0.06em] text-white/35 hover:text-white/70 transition-colors"
+      className="shrink-0 font-sans text-[11px] font-semibold uppercase tracking-[0.06em] text-page-faint hover:text-page-muted transition-colors"
       aria-label={t('stampShareCopy')}
     >
       {copied ? t('sendCopied') : t('stampShareShort')}
