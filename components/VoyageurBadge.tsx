@@ -18,7 +18,7 @@ function formatStampDate(iso: string) {
 
 /**
  * Rams-quiet honor mark on the film page.
- * Voyageur No. + Member # + date — never a live counter.
+ * Voyageur No. + cut watched + Member # + date — never a live counter.
  */
 export default function VoyageurBadge({ stamp }: { stamp: VoyageurStamp }) {
   const t = useTranslations('Film');
@@ -27,10 +27,14 @@ export default function VoyageurBadge({ stamp }: { stamp: VoyageurStamp }) {
 
   return (
     <div className="mt-6 mb-2 select-none">
-      <p className="font-mono text-[13px] font-medium tracking-normal text-page tabular-nums">
+      <p className="font-sans text-[13px] font-medium tracking-normal text-page">
         {t('voyageurBadgeTitle', { number: stamp.voyageurNumber })}
+        <span className="text-page-muted">
+          {' — '}
+          {t('voyageurBadgeVersion', { version: stamp.filmVersion })}
+        </span>
       </p>
-      <p className="mt-1 font-mono text-[11px] text-page-faint tabular-nums">
+      <p className="mt-1 font-sans text-[11px] text-page-faint">
         {t('voyageurBadgeMeta', {
           member: stamp.memberNumber,
           date,

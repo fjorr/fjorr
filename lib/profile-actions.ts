@@ -2,7 +2,9 @@
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
+import { createServiceClient } from '@/lib/supabase/service';
 import {
+  normalizeScoutProfile,
   normalizeSlug,
   profilePath,
   type ScoutProfile,
@@ -29,15 +31,14 @@ export async function ensureOwnProfile(): Promise<ScoutProfile | null> {
       .select('*')
       .eq('id', user.id)
       .maybeSingle();
-    return (row as ScoutProfile | null) ?? null;
+    return row ? normalizeScoutProfile(row as ScoutProfile) : null;
   }
-  return data as ScoutProfile;
+  return data ? normalizeScoutProfile(data as ScoutProfile) : null;
 }
 
 export async function saveOwnProfile(input: {
   displayName: string;
   slug: string;
-  isPublic: boolean;
 }): Promise<ProfileSaveResult> {
   const supabase = await createClient();
   const {
@@ -66,7 +67,6 @@ export async function saveOwnProfile(input: {
     .update({
       display_name,
       slug,
-      is_public: input.isPublic,
     })
     .eq('id', user.id)
     .select('*')
@@ -82,11 +82,80 @@ export async function saveOwnProfile(input: {
     data: { display_name },
   });
 
-  const profile = data as ScoutProfile;
+  const profile = normalizeScoutProfile(data as ScoutProfile);
   revalidatePath('/account');
   revalidatePath('/account/profile');
   revalidatePath(profilePath(profile.member_number, profile.slug));
   return { ok: true, profile };
+}
+
+/** Public profile + voyage trail toggles. */
+export async function saveOwnPrivacy(input: {
+  isPublic: boolean;
+  voyageLineageEnabled: boolean;
+}): Promise<ProfileSaveResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: 'Not signed in.' };
+
+  await ensureOwnProfile();
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .update({
+      is_public: Boolean(input.isPublic),
+      voyage_lineage_enabled: Boolean(input.voyageLineageEnabled),
+    })
+    .eq('id', user.id)
+    .select('*')
+    .single();
+
+  if (error) {
+    console.error('saveOwnPrivacy failed:', error.message);
+    return { ok: false, error: error.message };
+  }
+
+  const profile = normalizeScoutProfile(data as ScoutProfile);
+  revalidatePath('/account');
+  revalidatePath('/account/privacy');
+  revalidatePath('/account/profile');
+  revalidatePath('/account/voyages');
+  revalidatePath(profilePath(profile.member_number, profile.slug));
+  return { ok: true, profile };
+}
+
+export type DeleteAccountResult =
+  | { ok: true }
+  | { ok: false; error: string };
+
+/** Permanently delete the signed-in auth user (cascades profile when configured). */
+export async function deleteOwnAccount(): Promise<DeleteAccountResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: 'Not signed in.' };
+
+  try {
+    const admin = createServiceClient();
+    const { error } = await admin.auth.admin.deleteUser(user.id);
+    if (error) {
+      console.error('deleteOwnAccount failed:', error.message);
+      return { ok: false, error: error.message };
+    }
+  } catch (err: unknown) {
+    console.error('deleteOwnAccount failed:', err);
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : 'Could not delete account.',
+    };
+  }
+
+  await supabase.auth.signOut();
+  revalidatePath('/account');
+  return { ok: true };
 }
 
 /** Public profile lookup by member number (RLS: public or owner). */
@@ -106,5 +175,5 @@ export async function getPublicProfileByMemberNumber(
     console.error('getPublicProfileByMemberNumber failed:', error.message);
     return null;
   }
-  return (data as ScoutProfile | null) ?? null;
+  return data ? normalizeScoutProfile(data as ScoutProfile) : null;
 }

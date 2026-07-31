@@ -10,9 +10,19 @@ export type ScoutProfile = {
   slug: string;
   bio: string | null;
   is_public: boolean;
+  /** When false, omit voyage trail (no via share / no Passed by attribution). */
+  voyage_lineage_enabled: boolean;
   created_at: string;
   updated_at: string;
 };
+
+/** Normalize a row that may predate the lineage column. */
+export function normalizeScoutProfile(row: ScoutProfile): ScoutProfile {
+  return {
+    ...row,
+    voyage_lineage_enabled: row.voyage_lineage_enabled !== false,
+  };
+}
 
 const RESERVED_SLUGS = new Set([
   'account',

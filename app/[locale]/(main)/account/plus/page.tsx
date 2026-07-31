@@ -14,23 +14,17 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function AccountPlusPage() {
-  await requireOwnAccount('/account/plus');
+  const { profile } = await requireOwnAccount('/account/plus');
   const notes = await getOwnFilmNotes();
   const t = await getTranslations('Plus');
 
   return (
-    <AccountShell showBack>
-      <div className="w-full max-w-sm flex flex-col gap-8">
-        <div className="flex flex-col gap-2 text-left">
-          <h1 className="font-sans text-2xl font-bold tracking-tight text-white">
-            {t('logsTitle')}
-          </h1>
-          <p className="font-sans text-[15px] text-white/50 leading-relaxed">
-            {t('logsBody')}
-          </p>
-        </div>
-        <PlusLogsLedger notes={notes} />
-      </div>
+    <AccountShell
+      profile={profile}
+      title={t('logsTitle')}
+      description={t('logsBody')}
+    >
+      <PlusLogsLedger notes={notes} />
     </AccountShell>
   );
 }

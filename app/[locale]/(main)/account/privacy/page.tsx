@@ -1,29 +1,29 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import AccountClient from '@/components/AccountClient';
+import AccountPrivacyClient from '@/components/AccountPrivacyClient';
 import AccountShell from '@/components/AccountShell';
 import { requireOwnAccount } from '@/lib/account-session';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('Meta');
   return {
-    title: t('accountProfileTitle'),
+    title: t('accountPrivacyTitle'),
     robots: { index: false, follow: false },
   };
 }
 
-export default async function AccountProfilePage() {
-  const { user, profile } = await requireOwnAccount('/account/profile');
+export default async function AccountPrivacyPage() {
+  const { profile } = await requireOwnAccount('/account/privacy');
   const t = await getTranslations('Account');
 
   return (
     <AccountShell
       profile={profile}
-      title={t('profileTitle')}
-      description={t('profileBody')}
+      title={t('privacyTitle')}
+      description={t('privacyBody')}
       narrow
     >
-      <AccountClient email={user.email || ''} profile={profile} />
+      <AccountPrivacyClient profile={profile} />
     </AccountShell>
   );
 }

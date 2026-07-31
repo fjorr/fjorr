@@ -14,23 +14,18 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function AccountNominationsPage() {
-  await requireOwnAccount('/account/nominations');
+  const { profile } = await requireOwnAccount('/account/nominations');
   const nominations = await getOwnNominations();
   const t = await getTranslations('Account');
 
   return (
-    <AccountShell showBack>
-      <div className="w-full max-w-sm flex flex-col gap-8">
-        <div className="flex flex-col gap-2 text-left">
-          <h1 className="font-sans text-2xl font-bold tracking-tight text-white">
-            {t('nominationsTitle')}
-          </h1>
-          <p className="font-sans text-[15px] text-white/50 leading-relaxed">
-            {t('nominationsBody')}
-          </p>
-        </div>
-        <NominationsLedger nominations={nominations} omitHeader />
-      </div>
+    <AccountShell
+      profile={profile}
+      title={t('nominationsTitle')}
+      description={t('nominationsBody')}
+      wide
+    >
+      <NominationsLedger nominations={nominations} omitHeader />
     </AccountShell>
   );
 }

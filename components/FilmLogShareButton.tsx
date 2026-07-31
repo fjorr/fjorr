@@ -3,24 +3,32 @@
 import React, { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { absoluteUrl } from '@/lib/site';
+import { filmSharePath } from '@/lib/voyage-via';
 
-/** Tiny share control for a Film Log Voyageur No. row. */
+/** Tiny share control for a Voyage row — link carries ?via=memberNumber. */
 export default function FilmLogShareButton({
   filmName,
   filmSlug,
   viewerNumber,
+  filmVersion = 1,
+  memberNumber,
 }: {
   filmName: string;
   filmSlug: string;
   viewerNumber: number;
+  filmVersion?: number;
+  memberNumber?: number | null;
 }) {
   const t = useTranslations('Film');
   const [copied, setCopied] = useState(false);
 
-  const filmUrl = absoluteUrl(`/film/${filmSlug}`);
+  const filmUrl = absoluteUrl(
+    filmSharePath({ slug: filmSlug, memberNumber })
+  );
   const shareText = t('stampShareText', {
     number: viewerNumber,
     title: filmName,
+    version: filmVersion,
   });
   const payload = `${shareText}\n${filmUrl}`;
 
@@ -52,7 +60,7 @@ export default function FilmLogShareButton({
           }
         }
       }}
-      className="shrink-0 font-mono text-[11px] uppercase tracking-[0.06em] text-white/35 hover:text-white/70 transition-colors"
+      className="shrink-0 font-sans text-[11px] font-semibold uppercase tracking-[0.06em] text-white/35 hover:text-white/70 transition-colors"
       aria-label={t('stampShareCopy')}
     >
       {copied ? t('sendCopied') : t('stampShareShort')}

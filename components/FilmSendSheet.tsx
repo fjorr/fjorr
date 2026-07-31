@@ -4,7 +4,12 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { absoluteUrl } from '@/lib/site';
+import {
+  fetchOwnShareIdentity,
+  shareViaMemberNumber,
+} from '@/lib/own-member-client';
 import { formatCueClock } from '@/lib/vtt';
+import { filmSharePath } from '@/lib/voyage-via';
 
 type FilmSendSheetProps = {
   open: boolean;
@@ -35,16 +40,46 @@ export default function FilmSendSheet({
   const panelRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const [canNativeShare, setCanNativeShare] = useState(false);
+  const [memberNumber, setMemberNumber] = useState<number | null>(null);
 
-  const filmUrl = useMemo(() => absoluteUrl(`/film/${film.slug}`), [film.slug]);
-  const embedUrl = useMemo(() => absoluteUrl(`/embed/film/${film.slug}`), [film.slug]);
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    void (async () => {
+      const identity = await fetchOwnShareIdentity();
+      if (!cancelled) setMemberNumber(shareViaMemberNumber(identity));
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [open]);
+
+  const filmUrl = useMemo(
+    () => absoluteUrl(filmSharePath({ slug: film.slug, memberNumber })),
+    [film.slug, memberNumber]
+  );
+  const embedUrl = useMemo(
+    () => absoluteUrl(`/embed/film/${film.slug}`),
+    [film.slug]
+  );
 
   const timeSeconds =
-    typeof shareSeconds === 'number' && Number.isFinite(shareSeconds) && shareSeconds >= 1
+    typeof shareSeconds === 'number' &&
+    Number.isFinite(shareSeconds) &&
+    shareSeconds >= 1
       ? Math.floor(shareSeconds)
       : null;
 
-  const timeUrl = timeSeconds != null ? `${filmUrl}?t=${timeSeconds}` : null;
+  const timeUrl =
+    timeSeconds != null
+      ? absoluteUrl(
+          filmSharePath({
+            slug: film.slug,
+            memberNumber,
+            atSeconds: timeSeconds,
+          })
+        )
+      : null;
   const timeLabel = timeSeconds != null ? formatCueClock(timeSeconds) : null;
 
   const momentText =
@@ -66,7 +101,9 @@ export default function FilmSendSheet({
   const embedSnippet = `<iframe src="${embedUrl}" title="${(film.name || 'Fjorr').replace(/"/g, '&quot;')} — Fjorr" width="100%" height="100%" style="aspect-ratio:16/9;width:100%;border:0;border-radius:12px;overflow:hidden" allow="accelerometer; autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="lazy"></iframe>`;
 
   useEffect(() => {
-    setCanNativeShare(typeof navigator !== 'undefined' && typeof navigator.share === 'function');
+    setCanNativeShare(
+      typeof navigator !== 'undefined' && typeof navigator.share === 'function'
+    );
   }, []);
 
   useEffect(() => {
@@ -75,7 +112,8 @@ export default function FilmSendSheet({
       if (e.key === 'Escape') onClose();
     };
     const onPointer = (e: MouseEvent) => {
-      if (panelRef.current && !panelRef.current.contains(e.target as Node)) onClose();
+      if (panelRef.current && !panelRef.current.contains(e.target as Node))
+        onClose();
     };
     document.addEventListener('keydown', onKey);
     document.addEventListener('mousedown', onPointer);
@@ -160,8 +198,18 @@ export default function FilmSendSheet({
             aria-label={t('sendClose')}
             className="h-8 w-8 shrink-0 rounded-[8px] bg-white/5 hover:bg-white/10 text-white/50 hover:text-white inline-flex items-center justify-center"
           >
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            <svg
+              className="w-3.5 h-3.5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>

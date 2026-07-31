@@ -1,7 +1,7 @@
 /**
  * Local continue-watching progress (no accounts — privacy-aligned).
  * Keyed by film id in localStorage.
- * Signed-in Film Logs are a separate ledger (see record-view.ts).
+ * Signed-in Voyages are a separate ledger (see record-view.ts).
  */
 
 import { maybeRecordFilmView } from '@/lib/record-view';

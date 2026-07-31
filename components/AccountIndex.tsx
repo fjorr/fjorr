@@ -1,24 +1,9 @@
 import React from 'react';
-import { Link } from '@/i18n/navigation';
 import { getTranslations } from 'next-intl/server';
+import { Link } from '@/i18n/navigation';
 import type { ScoutProfile } from '@/lib/profile';
 
-type IndexLink = {
-  href:
-    | '/account/logs'
-    | '/account/nominations'
-    | '/account/plus'
-    | '/account/profile';
-  titleKey: 'navLogs' | 'navNominations' | 'navPlus' | 'navProfile';
-  hintKey:
-    | 'navLogsHint'
-    | 'navNominationsHint'
-    | 'navPlusHint'
-    | 'navProfileHint';
-  meta?: string | null;
-};
-
-/** Rams-style directory — identity + three destinations. Not a dashboard. */
+/** Account overview — main pane content; navigation lives in AccountShell. */
 export default async function AccountIndex({
   profile,
   nominationsActiveCount = 0,
@@ -29,83 +14,60 @@ export default async function AccountIndex({
   const t = await getTranslations('Account');
   const name = profile.display_name?.trim() || null;
 
-  const links: IndexLink[] = [
+  const shortcuts = [
     {
-      href: '/account/logs',
-      titleKey: 'navLogs',
-      hintKey: 'navLogsHint',
+      href: '/account/voyages' as const,
+      title: t('navLogs'),
+      hint: t('navLogsHint'),
     },
     {
-      href: '/account/nominations',
-      titleKey: 'navNominations',
-      hintKey: 'navNominationsHint',
+      href: '/account/nominations' as const,
+      title: t('navNominations'),
+      hint: t('navNominationsHint'),
       meta:
         nominationsActiveCount > 0
           ? t('navNominationsMeta', { count: nominationsActiveCount })
           : null,
     },
     {
-      href: '/account/plus',
-      titleKey: 'navPlus',
-      hintKey: 'navPlusHint',
-    },
-    {
-      href: '/account/profile',
-      titleKey: 'navProfile',
-      hintKey: 'navProfileHint',
+      href: '/account/plus' as const,
+      title: t('navPlus'),
+      hint: t('navPlusHint'),
     },
   ];
 
   return (
-    <div className="w-full max-w-sm flex flex-col gap-12">
-      <div className="flex flex-col gap-3 text-left">
+    <div className="flex flex-col gap-10">
+      <div className="flex flex-col gap-2 text-left">
         <p className="font-mono text-[13px] text-white/40 tabular-nums">
           {name
             ? t('indexIdentity', { number: profile.member_number, name })
             : t('memberNumberLabel', { number: profile.member_number })}
         </p>
-        <h1 className="font-sans text-2xl font-bold tracking-tight text-white">
-          {t('accountTitle')}
-        </h1>
-        <p className="font-sans text-[15px] text-white/50 leading-relaxed">
-          {t('accountBody')}
-        </p>
       </div>
 
-      <nav aria-label={t('accountTitle')} className="flex flex-col">
-        <ul className="flex flex-col divide-y divide-white/8 border-y border-white/8 list-none m-0 p-0">
-          {links.map((item) => (
-            <li key={item.href}>
-              <Link
-                href={item.href}
-                className="group flex items-baseline justify-between gap-4 py-4"
-              >
-                <span className="min-w-0 flex flex-col gap-0.5">
-                  <span className="font-sans text-[16px] font-semibold text-white/90 group-hover:text-white transition-colors">
-                    {t(item.titleKey)}
-                  </span>
-                  <span className="font-sans text-[13px] text-white/35 leading-snug">
-                    {t(item.hintKey)}
-                  </span>
+      <ul className="m-0 p-0 list-none grid grid-cols-1 sm:grid-cols-3 gap-3">
+        {shortcuts.map((item) => (
+          <li key={item.href}>
+            <Link
+              href={item.href}
+              className="group flex flex-col gap-1.5 rounded-[12px] border border-white/8 bg-white/[0.03] hover:bg-white/[0.06] px-4 py-4 transition-colors h-full"
+            >
+              <span className="font-sans text-[15px] font-semibold text-white/90 group-hover:text-white">
+                {item.title}
+              </span>
+              <span className="font-sans text-[13px] text-white/40 leading-snug">
+                {item.hint}
+              </span>
+              {item.meta ? (
+                <span className="font-mono text-[11px] text-white/45 tabular-nums mt-1">
+                  {item.meta}
                 </span>
-                <span className="shrink-0 flex items-center gap-3">
-                  {item.meta ? (
-                    <span className="font-mono text-[12px] text-white/45 tabular-nums">
-                      {item.meta}
-                    </span>
-                  ) : null}
-                  <span
-                    aria-hidden
-                    className="font-sans text-[16px] text-white/30 group-hover:text-white/60 transition-colors"
-                  >
-                    →
-                  </span>
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </nav>
+              ) : null}
+            </Link>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

@@ -23,6 +23,7 @@ interface NavbarProps {
 const EXPLORE_LINKS = [
   { href: '/', labelKey: 'films' as const },
   { href: '/bounties', labelKey: 'bounties' as const },
+  { href: '/nominate', labelKey: 'nominate' as const },
   { href: '/bureaux', labelKey: 'bureaux' as const },
   { href: '/about', labelKey: 'about' as const },
 ];

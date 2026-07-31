@@ -4,6 +4,7 @@
  */
 
 import { createClient } from '@/lib/supabase/client';
+import { clearViaCookie, readViaCookie } from '@/lib/voyage-via';
 
 /** Seconds of playback before a view counts toward Viewer #. */
 export const VIEW_COUNT_SECONDS = 8;
@@ -63,12 +64,21 @@ function emitRecorded(
   filmId: string,
   viewerNumber: number,
   recorded: boolean,
-  firstStamp: boolean
+  firstStamp: boolean,
+  filmVersion: number,
+  memberNumber: number | null
 ) {
   try {
     window.dispatchEvent(
       new CustomEvent(FILM_RECORDED_EVENT, {
-        detail: { filmId, viewerNumber, recorded, firstStamp },
+        detail: {
+          filmId,
+          viewerNumber,
+          recorded,
+          firstStamp,
+          filmVersion,
+          memberNumber,
+        },
       })
     );
   } catch {
@@ -112,11 +122,16 @@ export function maybeRecordFilmView(
       };
       if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
 
+      const viaMemberNumber = readViaCookie(id);
+
       const res = await fetch('/api/film-view', {
         method: 'POST',
         headers,
         credentials: 'same-origin',
-        body: JSON.stringify({ filmId: id }),
+        body: JSON.stringify({
+          filmId: id,
+          viaMemberNumber: viaMemberNumber ?? undefined,
+        }),
       });
 
       if (!res.ok) {
@@ -129,10 +144,18 @@ export function maybeRecordFilmView(
         viewer_number?: number;
         recorded?: boolean;
         signed_in?: boolean;
+        film_version?: number;
+        member_number?: number | null;
       };
 
       const viewerNumber = Number(row.viewer_number);
       const recorded = Boolean(row.recorded);
+      const versionRaw = Number(row.film_version);
+      const filmVersion =
+        Number.isFinite(versionRaw) && versionRaw >= 1 ? versionRaw : 1;
+      const memberRaw = Number(row.member_number);
+      const memberNumber =
+        Number.isFinite(memberRaw) && memberRaw >= 1 ? memberRaw : null;
       const firstStamp =
         !hadLocalStamp && Number.isFinite(viewerNumber) && viewerNumber >= 1;
 
@@ -143,13 +166,21 @@ export function maybeRecordFilmView(
       if (recorded) {
         loggedIds.add(id);
         doneIds.add(id);
+        clearViaCookie(id);
       } else if (!signedIn && !row.signed_in) {
         doneIds.add(id);
       } else {
-        console.error('[fjorr] expected Film Log but recorded=false', id, row);
+        console.error('[fjorr] expected Voyage but recorded=false', id, row);
       }
 
-      emitRecorded(id, viewerNumber, recorded, firstStamp);
+      emitRecorded(
+        id,
+        viewerNumber,
+        recorded,
+        firstStamp,
+        filmVersion,
+        memberNumber
+      );
     } catch (err) {
       console.error('[fjorr] record film view failed:', err);
     } finally {

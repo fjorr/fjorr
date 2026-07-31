@@ -1,9 +1,7 @@
 import React, { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
-import BountyHomePoster from '@/components/BountyHomePoster';
-import BureauxHomePoster from '@/components/BureauxHomePoster';
-import PlusHomePoster from '@/components/PlusHomePoster';
+import HomePromoGrid from '@/components/HomePromoGrid';
 import FeatureRailLoader from '@/components/FeatureRailLoader';
 import FeatureRailGate from '@/components/FeatureRailGate';
 import CineHomeLoader from '@/components/CineHomeLoader';
@@ -105,15 +103,7 @@ export default async function Home() {
         </Suspense>
 
         <Suspense fallback={null}>
-          <BountyHomePoster />
-        </Suspense>
-
-        <Suspense fallback={null}>
-          <BureauxHomePoster />
-        </Suspense>
-
-        <Suspense fallback={null}>
-          <PlusHomePoster />
+          <HomePromoGrid />
         </Suspense>
       </>
     ) : null;

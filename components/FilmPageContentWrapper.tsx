@@ -15,6 +15,7 @@ import {
   isWatchableProgress,
   trackWatchProgress,
 } from '@/lib/watch-progress';
+import { parseViaMemberNumber, writeViaCookie } from '@/lib/voyage-via';
 const CinemaTheater = dynamic(() => import('@/components/CinemaTheater'), {
   ssr: false,
   loading: () => <TheaterOpenShell />,
@@ -61,9 +62,15 @@ export default function FilmPageContentWrapper({
   }, [showTheater]);
 
   // Deep link: /film/slug?t=84 opens the theater at that second.
+  // Lineage: /film/slug?via={memberNumber} remembers who passed the film.
   useEffect(() => {
-    if (isComingSoon) return;
     const params = new URLSearchParams(window.location.search);
+    const via = parseViaMemberNumber(params.get('via'));
+    if (via != null && filmData?.id) {
+      writeViaCookie(String(filmData.id), via);
+    }
+
+    if (isComingSoon) return;
     const raw = params.get('t');
     if (!raw) return;
     const seconds = Number(raw);
@@ -71,7 +78,7 @@ export default function FilmPageContentWrapper({
     setStartAt(seconds);
     setShareSeconds(seconds);
     setShowTheater(true);
-  }, [isComingSoon]);
+  }, [isComingSoon, filmData?.id]);
 
   const openFromTime = useCallback((seconds: number) => {
     setPlaybackTime(seconds);

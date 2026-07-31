@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { absoluteUrl } from '@/lib/site';
+import { filmSharePath } from '@/lib/voyage-via';
 
 type Props = {
   open: boolean;
@@ -10,6 +11,8 @@ type Props = {
   filmName: string;
   filmSlug: string;
   viewerNumber: number;
+  filmVersion?: number;
+  memberNumber?: number | null;
 };
 
 async function copyText(text: string) {
@@ -23,16 +26,21 @@ export default function ViewerStampShare({
   filmName,
   filmSlug,
   viewerNumber,
+  filmVersion = 1,
+  memberNumber,
 }: Props) {
   const t = useTranslations('Film');
   const panelRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
   const [canNativeShare, setCanNativeShare] = useState(false);
 
-  const filmUrl = absoluteUrl(`/film/${filmSlug}`);
+  const filmUrl = absoluteUrl(
+    filmSharePath({ slug: filmSlug, memberNumber })
+  );
   const shareText = t('stampShareText', {
     number: viewerNumber,
     title: filmName,
+    version: filmVersion,
   });
   const sharePayload = `${shareText}\n${filmUrl}`;
 
@@ -106,6 +114,9 @@ export default function ViewerStampShare({
         <h2 className="font-sans text-[22px] font-bold tracking-tight text-white leading-tight mb-2">
           {t('stampShareHeadline', { number: viewerNumber })}
         </h2>
+        <p className="font-sans text-[13px] text-white/45 mb-2">
+          {t('voyageurBadgeVersion', { version: filmVersion })}
+        </p>
         <p className="font-sans text-[14px] text-white/50 leading-relaxed mb-6">
           {t('stampShareBody', { title: filmName })}
         </p>

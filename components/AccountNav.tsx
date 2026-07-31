@@ -1,0 +1,297 @@
+'use client';
+
+import React, { useEffect, useId, useState } from 'react';
+import { useTranslations } from 'next-intl';
+import { Link, usePathname, useRouter } from '@/i18n/navigation';
+import { createClient } from '@/lib/supabase/client';
+
+type NavItem = {
+  href:
+    | '/account'
+    | '/account/voyages'
+    | '/account/nominations'
+    | '/account/plus'
+    | '/account/profile'
+    | '/account/privacy';
+  labelKey:
+    | 'navOverview'
+    | 'navLogs'
+    | 'navNominations'
+    | 'navPlus'
+    | 'navProfile'
+    | 'navPrivacy';
+  exact?: boolean;
+};
+
+function isActive(pathname: string, item: NavItem) {
+  if (item.exact) return pathname === item.href;
+  return pathname === item.href || pathname.startsWith(`${item.href}/`);
+}
+
+function buildItems(): NavItem[] {
+  return [
+    { href: '/account', labelKey: 'navOverview', exact: true },
+    { href: '/account/voyages', labelKey: 'navLogs' },
+    { href: '/account/nominations', labelKey: 'navNominations' },
+    { href: '/account/plus', labelKey: 'navPlus' },
+    { href: '/account/profile', labelKey: 'navProfile' },
+    { href: '/account/privacy', labelKey: 'navPrivacy' },
+  ];
+}
+
+function AccountIdentity({
+  memberNumber,
+  name,
+  memberNoLabel,
+}: {
+  memberNumber: number;
+  name: string | null;
+  memberNoLabel: string;
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <p className="font-sans text-[15px] font-semibold tracking-tight text-white tabular-nums">
+        {memberNoLabel} {memberNumber}
+      </p>
+      {name ? (
+        <p className="font-sans text-[15px] font-semibold tracking-tight text-white/85 leading-snug">
+          {name}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+/** Mercury-style account sidebar — Apple-like menu overlay on mobile. */
+export default function AccountNav({
+  memberNumber,
+  displayName,
+}: {
+  memberNumber: number;
+  displayName?: string | null;
+}) {
+  const t = useTranslations('Account');
+  const pathname = usePathname() || '/account';
+  const router = useRouter();
+  const name = displayName?.trim() || null;
+  const items = buildItems();
+  const [open, setOpen] = useState(false);
+  const panelId = useId();
+
+  const close = () => setOpen(false);
+
+  const handleSignOut = async () => {
+    close();
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push('/');
+    router.refresh();
+  };
+
+  // Close on route change
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  // Escape + body scroll lock
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') close();
+    };
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
+
+  const linkClass = (active: boolean) =>
+    `flex flex-col gap-0.5 rounded-[8px] px-2.5 py-1.5 transition-colors ${
+      active
+        ? 'bg-white/10 text-white'
+        : 'text-white/65 hover:bg-white/[0.04] hover:text-white/90'
+    }`;
+
+  const desktopNav = (
+    <>
+      <div className="px-2">
+        <AccountIdentity
+          memberNumber={memberNumber}
+          name={name}
+          memberNoLabel={t('memberNo')}
+        />
+      </div>
+
+      <nav
+        aria-label={t('accountTitle')}
+        className="flex flex-col px-1 flex-1 min-h-0"
+      >
+        <ul className="flex flex-col gap-0.5 list-none m-0 p-0">
+          {items.map((item) => {
+            const active = isActive(pathname, item);
+            return (
+              <li key={item.href} className="min-w-0">
+                <Link
+                  href={item.href}
+                  aria-current={active ? 'page' : undefined}
+                  className={linkClass(active)}
+                >
+                  <span className="font-sans text-[14px] font-semibold tracking-tight">
+                    {t(item.labelKey)}
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+
+      <button
+        type="button"
+        onClick={() => void handleSignOut()}
+        className="mt-auto self-start mx-2 font-sans text-[13px] font-semibold text-white/35 hover:text-white/70 transition-colors"
+      >
+        {t('signOut')}
+      </button>
+    </>
+  );
+
+  return (
+    <>
+      {/* Mobile: Account menu trigger bar */}
+      <div className="md:hidden w-full border-b border-white/5 px-4 py-3 flex items-center justify-between gap-3">
+        <div className="min-w-0 flex flex-col gap-0.5">
+          <p className="font-sans text-[13px] font-semibold tracking-tight text-white/70 tabular-nums truncate">
+            {t('memberNo')} {memberNumber}
+            {name ? ` · ${name}` : ''}
+          </p>
+        </div>
+        <button
+          type="button"
+          aria-label={open ? t('closeAccountMenu') : t('openAccountMenu')}
+          aria-expanded={open}
+          aria-controls={panelId}
+          onClick={() => setOpen((v) => !v)}
+          className="shrink-0 inline-flex items-center gap-2 h-9 px-3 rounded-[8px] bg-white/10 hover:bg-white/15 transition-colors"
+        >
+          <span className="font-sans text-[13px] font-semibold text-white">
+            {t('accountMenu')}
+          </span>
+          <span className="relative w-[14px] h-[14px]" aria-hidden>
+            <span
+              className={`absolute left-1/2 top-1/2 block w-[12px] h-[1.5px] rounded-full bg-white transition-transform duration-300 ease-out origin-center ${
+                open
+                  ? '-translate-x-1/2 -translate-y-1/2 rotate-45'
+                  : '-translate-x-1/2 -translate-y-[3px]'
+              }`}
+            />
+            <span
+              className={`absolute left-1/2 top-1/2 block w-[12px] h-[1.5px] rounded-full bg-white transition-transform duration-300 ease-out origin-center ${
+                open
+                  ? '-translate-x-1/2 -translate-y-1/2 -rotate-45'
+                  : '-translate-x-1/2 translate-y-[3px]'
+              }`}
+            />
+          </span>
+        </button>
+      </div>
+
+      {/* Mobile: Apple-style full overlay menu */}
+      <div
+        id={panelId}
+        className={`md:hidden fixed inset-0 z-[100040] transition-[visibility] duration-300 ${
+          open ? 'visible' : 'invisible pointer-events-none'
+        }`}
+      >
+        <button
+          type="button"
+          aria-label={t('closeAccountMenu')}
+          onClick={close}
+          className={`absolute inset-0 bg-black/55 backdrop-blur-[2px] transition-opacity duration-300 ${
+            open ? 'opacity-100' : 'opacity-0'
+          }`}
+        />
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={t('accountMenu')}
+          className={`absolute inset-x-0 top-0 max-h-[min(100dvh,100%)] overflow-y-auto border-b border-white/10 bg-[#1F1F1F]/90 backdrop-blur-[28px] shadow-[0_24px_80px_rgba(0,0,0,0.55)] transition-transform duration-300 ease-out ${
+            open ? 'translate-y-0' : '-translate-y-3 opacity-0'
+          } ${open ? 'opacity-100' : ''}`}
+          style={{
+            WebkitBackdropFilter: 'blur(28px) saturate(1.4)',
+          }}
+        >
+          <div className="px-5 pt-4 pb-10 flex flex-col gap-8">
+            <div className="flex items-start justify-between gap-3">
+              <AccountIdentity
+                memberNumber={memberNumber}
+                name={name}
+                memberNoLabel={t('memberNo')}
+              />
+              <button
+                type="button"
+                aria-label={t('closeAccountMenu')}
+                onClick={close}
+                className="relative mt-1 w-9 h-9 shrink-0 rounded-[8px] bg-white/10 hover:bg-white/15 transition-colors"
+              >
+                <span
+                  aria-hidden
+                  className="absolute left-1/2 top-1/2 block w-[14px] h-[1.5px] rounded-full bg-white -translate-x-1/2 -translate-y-1/2 rotate-45"
+                />
+                <span
+                  aria-hidden
+                  className="absolute left-1/2 top-1/2 block w-[14px] h-[1.5px] rounded-full bg-white -translate-x-1/2 -translate-y-1/2 -rotate-45"
+                />
+              </button>
+            </div>
+
+            <nav aria-label={t('accountTitle')}>
+              <ul className="flex flex-col list-none m-0 p-0">
+                {items.map((item) => {
+                  const active = isActive(pathname, item);
+                  return (
+                    <li key={item.href}>
+                      {active ? (
+                        <span
+                          aria-current="page"
+                          className="block py-2.5 font-sans text-[28px] font-semibold tracking-tight leading-none text-white/35 cursor-default select-none"
+                        >
+                          {t(item.labelKey)}
+                        </span>
+                      ) : (
+                        <Link
+                          href={item.href}
+                          onClick={close}
+                          className="block py-2.5 font-sans text-[28px] font-semibold tracking-tight leading-none text-white hover:opacity-70 transition-opacity"
+                        >
+                          {t(item.labelKey)}
+                        </Link>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </nav>
+
+            <button
+              type="button"
+              onClick={() => void handleSignOut()}
+              className="self-start pt-2 font-sans text-[15px] font-semibold text-white/40 hover:text-white/70 transition-colors"
+            >
+              {t('signOut')}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Desktop sidebar */}
+      <aside className="hidden md:flex w-[15.5rem] shrink-0 border-r border-white/5 px-4 py-8 md:min-h-[calc(100vh-4rem)] flex-col gap-6">
+        {desktopNav}
+      </aside>
+    </>
+  );
+}

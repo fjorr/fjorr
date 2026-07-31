@@ -215,6 +215,21 @@ export async function getOwnNominations(): Promise<NominationRow[]> {
   });
 }
 
+const ACTIVE_NOMINATION_STATUSES = [
+  'received',
+  'in_review',
+  'shortlisted',
+  'in_production',
+] as const;
+
+/** Count of own nominations still in flight (for account nav meta). */
+export async function countOwnActiveNominations(): Promise<number> {
+  const rows = await getOwnNominations();
+  return rows.filter((n) =>
+    (ACTIVE_NOMINATION_STATUSES as readonly string[]).includes(n.status)
+  ).length;
+}
+
 /** Submit a nomination (members only). */
 export async function submitNomination(
   input: NominateInput

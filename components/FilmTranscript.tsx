@@ -4,6 +4,11 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { parseLocale } from '@/i18n/config';
 import { parseVttCues, type VttCue } from '@/lib/vtt';
+import {
+  fetchOwnShareIdentity,
+  shareViaMemberNumber,
+} from '@/lib/own-member-client';
+import { filmSharePath } from '@/lib/voyage-via';
 import { useColorScheme } from '@/components/ColorSchemeProvider';
 
 interface TranscriptRow {
@@ -68,6 +73,18 @@ export default function FilmTranscript({
 
   const [fetchedVtt, setFetchedVtt] = useState('');
   const [vttLoading, setVttLoading] = useState(false);
+  const [memberNumber, setMemberNumber] = useState<number | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      const identity = await fetchOwnShareIdentity();
+      if (!cancelled) setMemberNumber(shareViaMemberNumber(identity));
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (!activeLanguage && preferredCode) setActiveLanguage(preferredCode);
@@ -173,9 +190,11 @@ export default function FilmTranscript({
 
   const shareUrlForCue = (cue: VttCue) => {
     if (typeof window === 'undefined' || !filmSlug) return '';
-    const url = new URL(`/film/${filmSlug}`, window.location.origin);
-    url.searchParams.set('t', String(Math.floor(cue.startSeconds)));
-    return url.toString();
+    return `${window.location.origin}${filmSharePath({
+      slug: filmSlug,
+      memberNumber,
+      atSeconds: cue.startSeconds,
+    })}`;
   };
 
   const copyText = async (key: string, text: string) => {

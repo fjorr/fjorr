@@ -60,8 +60,8 @@ export default async function PublicProfilePage({ params }: Props) {
   const logs = await getPublicFilmLogs(profile.id);
 
   return (
-    <div className="w-full min-h-[70vh] bg-[#1F1F1F] flex flex-col items-center px-6 py-24 gap-16">
-      <div className="w-full max-w-sm flex flex-col gap-4 text-center">
+    <div className="w-full min-h-[70vh] bg-[#1F1F1F] flex flex-col items-center px-5 sm:px-8 py-24 gap-16">
+      <div className="w-full max-w-md flex flex-col gap-4 text-center">
         <p className="font-mono text-[13px] text-white/35">
           {t('memberNumberLabel', { number: profile.member_number })}
         </p>
@@ -74,11 +74,14 @@ export default async function PublicProfilePage({ params }: Props) {
           </p>
         ) : null}
       </div>
-      <FilmLogsLedger
-        logs={logs}
-        emptyHint={t('filmLogsPublicEmpty')}
-        memberNumber={profile.member_number}
-      />
+      <div className="w-full max-w-5xl px-0">
+        <FilmLogsLedger
+          logs={logs}
+          emptyHint={t('filmLogsPublicEmpty')}
+          memberNumber={profile.member_number}
+          showShare={false}
+        />
+      </div>
     </div>
   );
 }

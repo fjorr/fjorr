@@ -131,6 +131,8 @@ function CinemaTheater({
   const [plusStamp, setPlusStamp] = useState(0);
   const [stampShare, setStampShare] = useState<{
     viewerNumber: number;
+    filmVersion: number;
+    memberNumber: number | null;
   } | null>(null);
   const plusMode = !isEmbed && theaterMode === 'plus';
 
@@ -335,12 +337,20 @@ function CinemaTheater({
       const detail = (e as CustomEvent).detail as {
         filmId?: string;
         viewerNumber?: number;
+        filmVersion?: number;
         firstStamp?: boolean;
+        memberNumber?: number | null;
       };
       if (String(detail?.filmId || '') !== filmId) return;
       const n = Number(detail?.viewerNumber);
+      const v = Number(detail?.filmVersion);
+      const m = Number(detail?.memberNumber);
       if (!detail?.firstStamp || !Number.isFinite(n) || n < 1) return;
-      setStampShare({ viewerNumber: n });
+      setStampShare({
+        viewerNumber: n,
+        filmVersion: Number.isFinite(v) && v >= 1 ? v : 1,
+        memberNumber: Number.isFinite(m) && m >= 1 ? m : null,
+      });
     };
     window.addEventListener(FILM_RECORDED_EVENT, onRecorded);
     return () => window.removeEventListener(FILM_RECORDED_EVENT, onRecorded);
@@ -1245,6 +1255,8 @@ function CinemaTheater({
           filmName={String(film.name || 'Fjorr')}
           filmSlug={String(film.slug)}
           viewerNumber={stampShare.viewerNumber}
+          filmVersion={stampShare.filmVersion}
+          memberNumber={stampShare.memberNumber}
         />
       ) : null}
     </div>

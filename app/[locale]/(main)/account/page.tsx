@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import AccountIndex from '@/components/AccountIndex';
 import AccountShell from '@/components/AccountShell';
 import { requireOwnAccount } from '@/lib/account-session';
-import { getOwnNominations } from '@/lib/nomination-actions';
+import { countOwnActiveNominations } from '@/lib/nomination-actions';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('Meta');
@@ -15,13 +15,15 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function AccountPage() {
   const { profile } = await requireOwnAccount('/account');
-  const nominations = await getOwnNominations();
-  const nominationsActiveCount = nominations.filter((n) =>
-    ['received', 'in_review', 'shortlisted', 'in_production'].includes(n.status)
-  ).length;
+  const nominationsActiveCount = await countOwnActiveNominations();
+  const t = await getTranslations('Account');
 
   return (
-    <AccountShell>
+    <AccountShell
+      profile={profile}
+      title={t('accountTitle')}
+      description={t('accountBody')}
+    >
       <AccountIndex
         profile={profile}
         nominationsActiveCount={nominationsActiveCount}

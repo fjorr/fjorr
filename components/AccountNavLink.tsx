@@ -133,9 +133,6 @@ export default function AccountNavLink({
         <Link href="/account" onClick={onNavigate} className={className}>
           {t('account')}
         </Link>
-        <Link href="/nominate" onClick={onNavigate} className={className}>
-          {t('nominate')}
-        </Link>
         <button
           type="button"
           onClick={handleSignOut}
@@ -158,9 +155,6 @@ export default function AccountNavLink({
         <span>{t('signIn')}</span>
         <Icon name="arrowRight" className="w-3.5 h-3.5 opacity-55" />
       </button>
-      <Link href="/nominate" onClick={onNavigate} className={className}>
-        {t('nominate')}
-      </Link>
     </div>
   );
 }
