@@ -3,10 +3,7 @@ import type Stripe from 'stripe';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import { getBureauxPriceId, getStripe } from '@/lib/stripe';
-import {
-  getOwnBureauxMembership,
-  isBureauxMembershipActive,
-} from '@/lib/bureaux';
+import { isBureauxMembershipActive, type BureauxMembership } from '@/lib/bureaux';
 
 export const runtime = 'nodejs';
 
@@ -35,11 +32,79 @@ function clientSecretFromSubscription(sub: Stripe.Subscription): string | null {
   return null;
 }
 
+function normalizeEmail(raw: unknown): string | null {
+  if (typeof raw !== 'string') return null;
+  const email = raw.trim().toLowerCase();
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return null;
+  return email;
+}
+
+async function membershipForUser(
+  userId: string
+): Promise<BureauxMembership | null> {
+  const db = createServiceClient();
+  const { data, error } = await db
+    .from('bureaux_memberships')
+    .select(
+      'user_id, status, stripe_customer_id, stripe_subscription_id, current_period_end, cancel_at_period_end, bureaux_number'
+    )
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (error || !data) return null;
+  const n = Number(data.bureaux_number);
+  return {
+    user_id: String(data.user_id),
+    status: (data.status || 'none') as BureauxMembership['status'],
+    stripe_customer_id: data.stripe_customer_id
+      ? String(data.stripe_customer_id)
+      : null,
+    stripe_subscription_id: data.stripe_subscription_id
+      ? String(data.stripe_subscription_id)
+      : null,
+    current_period_end: data.current_period_end
+      ? String(data.current_period_end)
+      : null,
+    cancel_at_period_end: Boolean(data.cancel_at_period_end),
+    bureaux_number: Number.isFinite(n) && n >= 1 ? n : null,
+  };
+}
+
+/** Create or resolve auth user for Bureaux join (works with public signups off). */
+async function ensureAuthUserForEmail(
+  email: string
+): Promise<{ id: string; email: string }> {
+  const admin = createServiceClient();
+  const { data: created, error } = await admin.auth.admin.createUser({
+    email,
+    email_confirm: true,
+    user_metadata: { join_via: 'bureaux' },
+  });
+
+  if (created?.user?.id) {
+    return { id: created.user.id, email };
+  }
+
+  if (error && /already|registered|exists/i.test(error.message)) {
+    const { data: linkData, error: linkErr } =
+      await admin.auth.admin.generateLink({
+        type: 'magiclink',
+        email,
+      });
+    if (linkData?.user?.id) {
+      return { id: linkData.user.id, email };
+    }
+    throw linkErr || error;
+  }
+
+  throw error || new Error('Could not create account');
+}
+
 async function ensureStripeCustomer(user: {
   id: string;
   email?: string | null;
 }): Promise<string> {
-  const existing = await getOwnBureauxMembership(user.id);
+  const existing = await membershipForUser(user.id);
   if (existing?.stripe_customer_id) return existing.stripe_customer_id;
 
   const stripe = getStripe();
@@ -66,22 +131,49 @@ async function ensureStripeCustomer(user: {
 
 /**
  * POST — incomplete subscription + Payment Element client secret.
- * (Classic Elements path — more reliable than Checkout ui_mode=elements locally.)
+ * Signed-in: uses session user.
+ * Guest: body `{ email }` creates/resolves auth user, then same checkout.
  */
-export async function POST() {
+export async function POST(req: Request) {
   try {
     const supabase = await createClient();
     const {
-      data: { user },
+      data: { user: sessionUser },
     } = await supabase.auth.getUser();
-    if (!user) {
-      return NextResponse.json(
-        { ok: false, error: 'signInRequired' },
-        { status: 401 }
-      );
+
+    let body: { email?: string } = {};
+    try {
+      body = (await req.json()) as { email?: string };
+    } catch {
+      body = {};
     }
 
-    const membership = await getOwnBureauxMembership(user.id);
+    let userId: string;
+    let email: string | null;
+
+    if (sessionUser) {
+      userId = sessionUser.id;
+      email = sessionUser.email?.toLowerCase() || normalizeEmail(body.email);
+      if (!email) {
+        return NextResponse.json(
+          { ok: false, error: 'emailRequired', detail: 'Account email missing.' },
+          { status: 400 }
+        );
+      }
+    } else {
+      const guestEmail = normalizeEmail(body.email);
+      if (!guestEmail) {
+        return NextResponse.json(
+          { ok: false, error: 'emailRequired' },
+          { status: 400 }
+        );
+      }
+      const ensured = await ensureAuthUserForEmail(guestEmail);
+      userId = ensured.id;
+      email = ensured.email;
+    }
+
+    const membership = await membershipForUser(userId);
     if (isBureauxMembershipActive(membership)) {
       return NextResponse.json(
         { ok: false, error: 'alreadyActive' },
@@ -100,7 +192,7 @@ export async function POST() {
     }
 
     const stripe = getStripe();
-    const customerId = await ensureStripeCustomer(user);
+    const customerId = await ensureStripeCustomer({ id: userId, email });
 
     // Expire abandoned Checkout Sessions from earlier experiments.
     const open = await stripe.checkout.sessions.list({
@@ -134,7 +226,7 @@ export async function POST() {
         save_default_payment_method: 'on_subscription',
         payment_method_types: ['card'],
       },
-      metadata: { supabase_user_id: user.id },
+      metadata: { supabase_user_id: userId },
       expand: [
         'latest_invoice.confirmation_secret',
         'latest_invoice.payment_intent',
@@ -157,7 +249,7 @@ export async function POST() {
     const db = createServiceClient();
     await db.from('bureaux_memberships').upsert(
       {
-        user_id: user.id,
+        user_id: userId,
         stripe_customer_id: customerId,
         stripe_subscription_id: subscription.id,
         status: 'incomplete',
@@ -169,7 +261,8 @@ export async function POST() {
     return NextResponse.json({
       ok: true,
       clientSecret,
-      email: user.email || null,
+      email,
+      signedIn: Boolean(sessionUser),
       mode: 'payment_element',
     });
   } catch (err) {

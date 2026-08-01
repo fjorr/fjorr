@@ -13,6 +13,7 @@ export default async function BureauxHomePoster() {
       subhead={t('homePosterSubhead')}
       cta={t('homePosterCta')}
       bgClassName="bg-[#2C2622]"
+      layout="banner"
     />
   );
 }

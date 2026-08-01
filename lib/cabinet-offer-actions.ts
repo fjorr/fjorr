@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
+import { isOwnBureauxActive } from '@/lib/bureaux';
 import { revalidatePath } from 'next/cache';
 
 const DISCIPLINES = new Set([
@@ -30,6 +31,7 @@ export type CabinetOfferResult =
       ok: false;
       error:
         | 'signInRequired'
+        | 'bureauxRequired'
         | 'nameRequired'
         | 'disciplineRequired'
         | 'emailRequired'
@@ -91,6 +93,10 @@ export async function submitCabinetOffer(input: {
 
   if (!user) {
     return { ok: false, error: 'signInRequired' };
+  }
+
+  if (!(await isOwnBureauxActive(user.id))) {
+    return { ok: false, error: 'bureauxRequired' };
   }
 
   const db = createServiceClient();

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Elements,
   PaymentElement,
@@ -17,6 +17,7 @@ import {
   LIGHT_PAGE_BG,
   LIGHT_PAGE_FG,
 } from '@/lib/color-scheme';
+import { createClient } from '@/lib/supabase/client';
 import { routing } from '@/i18n/routing';
 
 const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '';
@@ -69,12 +70,43 @@ function fjorrAppearance(isLight: boolean): Appearance {
   };
 }
 
-function accountReturnUrl(locale: string) {
+function accountReturnUrl(locale: string, email?: string | null) {
   const prefix = locale === routing.defaultLocale ? '' : `/${locale}`;
-  return `${window.location.origin}${prefix}/bureaux?joined=1`;
+  const params = new URLSearchParams({ joined: '1' });
+  if (email) params.set('email', email);
+  return `${window.location.origin}${prefix}/bureaux?${params.toString()}`;
 }
 
-function CheckoutForm({ email }: { email: string | null }) {
+function authConfirmUrl() {
+  return `${window.location.origin}/auth/confirm`;
+}
+
+async function sendSignInLink(email: string) {
+  const supabase = createClient();
+  try {
+    document.cookie = `fjorr_auth_next=${encodeURIComponent('/bureaux')}; Path=/; Max-Age=900; SameSite=Lax`;
+  } catch {
+    /* ignore */
+  }
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: {
+      shouldCreateUser: false,
+      emailRedirectTo: authConfirmUrl(),
+    },
+  });
+  if (error) throw error;
+}
+
+function CheckoutForm({
+  email,
+  signedIn,
+  onPaidGuest,
+}: {
+  email: string;
+  signedIn: boolean;
+  onPaidGuest: (email: string) => void;
+}) {
   const t = useTranslations('Bureaux');
   const locale = useLocale();
   const stripe = useStripe();
@@ -86,14 +118,13 @@ function CheckoutForm({ email }: { email: string | null }) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!stripe || !elements || submitting) return;
-    if (!email) {
-      setMessage(`${t('checkoutError')} — missing account email`);
-      return;
-    }
     setSubmitting(true);
     setMessage(null);
 
-    const returnUrl = accountReturnUrl(locale);
+    const returnUrl = accountReturnUrl(
+      locale,
+      signedIn ? null : email
+    );
     const { error, paymentIntent } = await stripe.confirmPayment({
       elements,
       redirect: 'if_required',
@@ -114,7 +145,6 @@ function CheckoutForm({ email }: { email: string | null }) {
       return;
     }
 
-    // Hard navigate so account page reloads membership (webhook may have just landed).
     const status = paymentIntent?.status;
     if (
       !status ||
@@ -122,7 +152,19 @@ function CheckoutForm({ email }: { email: string | null }) {
       status === 'processing' ||
       status === 'requires_capture'
     ) {
-      window.location.assign(returnUrl);
+      if (signedIn) {
+        window.location.assign(returnUrl);
+        return;
+      }
+      try {
+        await sendSignInLink(email);
+        onPaidGuest(email);
+      } catch (err) {
+        setMessage(
+          err instanceof Error ? err.message : t('joinCheckEmailError')
+        );
+        setSubmitting(false);
+      }
       return;
     }
 
@@ -144,8 +186,6 @@ function CheckoutForm({ email }: { email: string | null }) {
               googlePay: 'auto',
               link: 'never',
             },
-            // Hide email only — we pass account email in confirmParams.
-            // Do not set phone to "never" (Stripe then requires it on confirm).
             fields: {
               billingDetails: {
                 email: 'never',
@@ -174,35 +214,55 @@ function CheckoutForm({ email }: { email: string | null }) {
   );
 }
 
-export default function BureauxCheckout() {
+export default function BureauxCheckout({
+  signedIn = false,
+  accountEmail = null,
+}: {
+  /** Session present (unpaid member finishing join). */
+  signedIn?: boolean;
+  accountEmail?: string | null;
+}) {
   const t = useTranslations('Bureaux');
   const { isLight } = useColorScheme();
-  const [started, setStarted] = useState(false);
+  const [email, setEmail] = useState(accountEmail || '');
   const [clientSecret, setClientSecret] = useState<string | null>(null);
-  const [email, setEmail] = useState<string | null>(null);
+  const [checkoutEmail, setCheckoutEmail] = useState<string | null>(null);
+  const [checkoutSignedIn, setCheckoutSignedIn] = useState(signedIn);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [paidEmail, setPaidEmail] = useState<string | null>(null);
 
   const stripePromise = useMemo(() => {
     if (!publishableKey) return null;
     return loadStripe(publishableKey);
   }, []);
 
-  const loadSecret = useCallback(async () => {
-    setStarted(true);
+  const startCheckout = async (event?: React.FormEvent) => {
+    event?.preventDefault();
+    const nextEmail = (signedIn ? accountEmail || email : email).trim().toLowerCase();
+    if (!nextEmail || !nextEmail.includes('@')) {
+      setError(t('joinEmailRequired'));
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
       const res = await fetch('/api/stripe/bureaux-checkout', {
         method: 'POST',
         credentials: 'same-origin',
-        headers: { Accept: 'application/json' },
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: nextEmail }),
       });
       const text = await res.text();
       let result: {
         ok?: boolean;
         clientSecret?: string;
         email?: string | null;
+        signedIn?: boolean;
         error?: string;
         detail?: string;
       } = {};
@@ -213,17 +273,16 @@ export default function BureauxCheckout() {
           `${t('checkoutError')} — bad response (${res.status}): ${text.slice(0, 180)}`
         );
         setClientSecret(null);
-        setEmail(null);
         setLoading(false);
         return;
       }
 
       if (!res.ok || !result.ok || !result.clientSecret) {
         const message =
-          result.error === 'signInRequired'
-            ? t('checkoutSignIn')
-            : result.error === 'alreadyActive'
-              ? t('checkoutAlready')
+          result.error === 'alreadyActive'
+            ? t('checkoutAlready')
+            : result.error === 'emailRequired'
+              ? t('joinEmailRequired')
               : result.error === 'config'
                 ? t('checkoutConfig')
                 : [
@@ -235,22 +294,21 @@ export default function BureauxCheckout() {
                     .join(' — ');
         setError(message);
         setClientSecret(null);
-        setEmail(null);
         setLoading(false);
         return;
       }
 
       setClientSecret(result.clientSecret);
-      setEmail(result.email || null);
+      setCheckoutEmail(result.email || nextEmail);
+      setCheckoutSignedIn(Boolean(result.signedIn));
       setLoading(false);
     } catch (err) {
       const detail = err instanceof Error ? err.message : 'Network error';
       setError(`${t('checkoutError')} — ${detail}`);
       setClientSecret(null);
-      setEmail(null);
       setLoading(false);
     }
-  }, [t]);
+  };
 
   if (!publishableKey || !stripePromise) {
     return (
@@ -260,83 +318,121 @@ export default function BureauxCheckout() {
     );
   }
 
-  if (!started) {
+  if (paidEmail) {
     return (
-      <button
-        type="button"
-        onClick={() => void loadSecret()}
-        className="self-start inline-flex items-center h-12 px-7 rounded-full bg-[var(--page-fg)] text-[var(--page-bg)] font-sans text-[14px] font-bold hover:opacity-90 transition-opacity"
-      >
-        {t('ctaSubscribe')}
-      </button>
-    );
-  }
-
-  if (loading) {
-    return (
-      <p className="font-sans text-[13px] text-page-faint leading-relaxed">
-        {t('ctaPending')}
-      </p>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex flex-col gap-2 items-start max-w-lg">
-        <p className="font-sans text-[13px] text-page-muted leading-snug whitespace-pre-wrap">
-          {error}
+      <div className="w-full max-w-md flex flex-col gap-3">
+        <h2 className="font-sans text-[18px] font-semibold tracking-tight text-page">
+          {t('joinCheckEmailTitle')}
+        </h2>
+        <p className="font-sans text-[14px] text-page-muted leading-relaxed">
+          {t('joinCheckEmailBody', { email: paidEmail })}
         </p>
-        {error === t('checkoutSignIn') ? (
-          <Link
-            href={`/signin?next=${encodeURIComponent('/bureaux')}`}
-            className="font-sans text-[13px] font-semibold text-page underline underline-offset-2"
-          >
-            {t('ctaSignIn')}
-          </Link>
-        ) : (
+        <Link
+          href={`/signin?next=${encodeURIComponent('/bureaux')}`}
+          className="self-start font-sans text-[13px] font-semibold text-page underline underline-offset-2"
+        >
+          {t('joinCheckEmailSignIn')}
+        </Link>
+      </div>
+    );
+  }
+
+  if (clientSecret && checkoutEmail) {
+    const options: StripeElementsOptions = {
+      clientSecret,
+      appearance: fjorrAppearance(isLight),
+    };
+
+    return (
+      <div className="w-full max-w-md flex flex-col gap-5">
+        <div className="flex flex-col gap-1">
+          <p className="font-sans text-[11px] font-semibold uppercase tracking-[0.08em] text-page-faint">
+            {t('joinEmailLabel')}
+          </p>
+          <p className="font-sans text-[14px] text-page">{checkoutEmail}</p>
           <button
             type="button"
-            onClick={() => void loadSecret()}
-            className="font-sans text-[13px] font-semibold text-page underline underline-offset-2"
+            onClick={() => {
+              setClientSecret(null);
+              setCheckoutEmail(null);
+              setError(null);
+            }}
+            className="self-start font-sans text-[12px] font-semibold text-page-faint hover:text-page underline underline-offset-2"
           >
-            {t('checkoutRetry')}
+            {t('joinChangeEmail')}
           </button>
-        )}
-      </div>
-    );
-  }
-
-  if (!clientSecret) {
-    return (
-      <div className="flex flex-col gap-2 items-start">
-        <p className="font-sans text-[13px] text-page-muted">
-          No payment session. Try again.
-        </p>
-        <button
-          type="button"
-          onClick={() => void loadSecret()}
-          className="font-sans text-[13px] font-semibold text-page underline underline-offset-2"
+        </div>
+        <Elements
+          key={`${clientSecret}-${isLight ? 'light' : 'dark'}`}
+          stripe={stripePromise}
+          options={options}
         >
-          {t('checkoutRetry')}
-        </button>
+          <CheckoutForm
+            email={checkoutEmail}
+            signedIn={checkoutSignedIn}
+            onPaidGuest={(paid) => setPaidEmail(paid)}
+          />
+        </Elements>
       </div>
     );
   }
-
-  const options: StripeElementsOptions = {
-    clientSecret,
-    appearance: fjorrAppearance(isLight),
-  };
 
   return (
-    <div className="w-full max-w-md">
-      <Elements
-        key={`${clientSecret}-${isLight ? 'light' : 'dark'}`}
-        stripe={stripePromise}
-        options={options}
+    <form
+      onSubmit={(e) => void startCheckout(e)}
+      className="w-full max-w-md flex flex-col gap-4"
+    >
+      <label className="flex flex-col gap-2 text-left">
+        <span className="font-sans text-[11px] font-semibold uppercase tracking-[0.08em] text-page-faint">
+          {t('joinEmailLabel')}
+        </span>
+        <input
+          type="email"
+          required
+          autoComplete="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder={t('joinEmailPlaceholder')}
+          disabled={loading || (signedIn && Boolean(accountEmail))}
+          className="h-12 rounded-[10px] bg-page-chip px-4 font-sans text-[15px] text-page placeholder:text-page-faint focus:outline-none focus:ring-1 focus:ring-page-faint disabled:opacity-50"
+        />
+      </label>
+
+      {error ? (
+        <div className="flex flex-col gap-2 items-start">
+          <p className="font-sans text-[13px] text-[#C45B4A] leading-snug whitespace-pre-wrap">
+            {error}
+          </p>
+          {error === t('checkoutAlready') ? (
+            <Link
+              href={`/signin?next=${encodeURIComponent('/bureaux')}`}
+              className="font-sans text-[13px] font-semibold text-page underline underline-offset-2"
+            >
+              {t('joinCheckEmailSignIn')}
+            </Link>
+          ) : null}
+        </div>
+      ) : null}
+
+      <button
+        type="submit"
+        disabled={loading || !email.trim()}
+        className="self-start inline-flex items-center h-12 px-7 rounded-full bg-[var(--page-fg)] text-[var(--page-bg)] font-sans text-[14px] font-bold hover:opacity-90 disabled:opacity-40 transition-opacity"
       >
-        <CheckoutForm email={email} />
-      </Elements>
-    </div>
+        {loading ? t('ctaPending') : t('joinContinue')}
+      </button>
+
+      {!signedIn ? (
+        <p className="font-sans text-[13px] text-page-faint leading-relaxed">
+          {t('joinReturning')}{' '}
+          <Link
+            href={`/signin?next=${encodeURIComponent('/bureaux')}`}
+            className="font-semibold text-page underline underline-offset-2"
+          >
+            {t('joinCheckEmailSignIn')}
+          </Link>
+        </p>
+      ) : null}
+    </form>
   );
 }

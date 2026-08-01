@@ -5,6 +5,7 @@ import type { Session } from '@supabase/supabase-js';
 import { Link, useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { Icon } from '@/components/ui/Icons';
+import { fetchOwnBureauxActive } from '@/lib/bureaux-client';
 import { createClient } from '@/lib/supabase/client';
 
 type MenuProfile = {
@@ -12,7 +13,7 @@ type MenuProfile = {
   member_number: number;
 };
 
-/** Sign in / Account / Log out for the hamburger explore list. */
+/** Join / Sign in / Account / Log out for the hamburger explore list. */
 export default function AccountNavLink({
   className,
   mutedClassName,
@@ -27,6 +28,7 @@ export default function AccountNavLink({
   const t = useTranslations('Nav');
   const router = useRouter();
   const [signedIn, setSignedIn] = useState<boolean | null>(null);
+  const [bureauxActive, setBureauxActive] = useState(false);
   const [profile, setProfile] = useState<MenuProfile | null>(null);
   const [signingOut, setSigningOut] = useState(false);
 
@@ -35,6 +37,10 @@ export default function AccountNavLink({
     let mounted = true;
 
     const loadProfile = async () => {
+      const active = await fetchOwnBureauxActive();
+      if (!mounted) return;
+      setBureauxActive(active);
+
       const { data: rpc, error } = await supabase.rpc('ensure_own_profile');
       if (!mounted) return;
       if (!error && rpc) {
@@ -65,7 +71,10 @@ export default function AccountNavLink({
       const next = !!data.session;
       setSignedIn(next);
       if (next) void loadProfile();
-      else setProfile(null);
+      else {
+        setProfile(null);
+        setBureauxActive(false);
+      }
     });
 
     const {
@@ -75,7 +84,10 @@ export default function AccountNavLink({
       const next = !!session;
       setSignedIn(next);
       if (next) void loadProfile();
-      else setProfile(null);
+      else {
+        setProfile(null);
+        setBureauxActive(false);
+      }
     });
 
     return () => {
@@ -91,6 +103,7 @@ export default function AccountNavLink({
       const supabase = createClient();
       await supabase.auth.signOut();
       setProfile(null);
+      setBureauxActive(false);
       onNavigate?.();
       router.push('/');
       router.refresh();
@@ -107,7 +120,7 @@ export default function AccountNavLink({
     );
   }
 
-  if (signedIn) {
+  if (signedIn && bureauxActive) {
     const name = profile?.display_name || null;
     const number =
       profile?.member_number && Number.isFinite(profile.member_number)
@@ -145,15 +158,45 @@ export default function AccountNavLink({
     );
   }
 
+  if (signedIn && !bureauxActive) {
+    return (
+      <div className="flex flex-col gap-1.5">
+        <Link
+          href="/bureaux"
+          onClick={onNavigate}
+          className={`${className} inline-flex items-center gap-1.5`}
+        >
+          <span>{t('joinBureaux')}</span>
+          <Icon name="arrowRight" className="w-3.5 h-3.5 opacity-55" />
+        </Link>
+        <button
+          type="button"
+          onClick={handleSignOut}
+          disabled={signingOut}
+          className={`${className} text-left disabled:opacity-40 opacity-80`}
+        >
+          {t('logOut')}
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-1.5">
+      <Link
+        href="/bureaux"
+        onClick={onNavigate}
+        className={`${className} inline-flex items-center gap-1.5`}
+      >
+        <span>{t('joinBureaux')}</span>
+        <Icon name="arrowRight" className="w-3.5 h-3.5 opacity-55" />
+      </Link>
       <button
         type="button"
         onClick={() => onSignIn?.()}
-        className={`${className} inline-flex items-center gap-1.5 text-left`}
+        className={`${className} text-left opacity-80 hover:opacity-100`}
       >
-        <span>{t('signIn')}</span>
-        <Icon name="arrowRight" className="w-3.5 h-3.5 opacity-55" />
+        {t('signIn')}
       </button>
     </div>
   );

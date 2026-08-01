@@ -23,10 +23,10 @@ const DISCIPLINES = [
 ] as const;
 
 export default function CabinetOfferForm({
-  signedIn = false,
+  bureauxActive = false,
   defaultEmail = '',
 }: {
-  signedIn?: boolean;
+  bureauxActive?: boolean;
   defaultEmail?: string;
 }) {
   const t = useTranslations('Cabinet');
@@ -64,17 +64,17 @@ export default function CabinetOfferForm({
     );
   }
 
-  if (!signedIn) {
+  if (!bureauxActive) {
     return (
       <div className="flex flex-col items-center gap-3">
         <p className="font-sans text-[13px] text-page-faint leading-snug max-w-xs">
-          {t('scoutSignIn')}
+          {t('scoutBureauxRequired')}
         </p>
         <Link
-          href={`/signin?next=${encodeURIComponent('/cabinet')}`}
+          href="/bureaux"
           className="h-12 px-6 inline-flex items-center justify-center bg-[var(--page-fg)] text-[var(--page-bg)] font-semibold text-[14px] rounded-full hover:opacity-90 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 shadow-xl font-sans"
         >
-          {t('ctaScoutSignIn')}
+          {t('ctaScoutBureaux')}
         </Link>
       </div>
     );

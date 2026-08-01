@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import { Link } from '@/i18n/navigation';
 import { createClient } from '@/lib/supabase/server';
 import BureauxCheckout from '@/components/BureauxCheckout';
+import BureauxJoinClaim from '@/components/BureauxJoinClaim';
 import BureauxJoinedRefresh from '@/components/BureauxJoinedRefresh';
 import BureauxManage from '@/components/BureauxManage';
 import {
@@ -63,10 +63,14 @@ export default async function BureauxPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ joined?: string }>;
+  searchParams: Promise<{ joined?: string; email?: string }>;
 }) {
   const { locale } = await params;
-  const { joined } = await searchParams;
+  const { joined, email: joinedEmailRaw } = await searchParams;
+  const joinedEmail =
+    typeof joinedEmailRaw === 'string' && joinedEmailRaw.includes('@')
+      ? joinedEmailRaw.trim().toLowerCase()
+      : null;
   const t = await getTranslations('Bureaux');
   const ta = await getTranslations('Account');
   const price = formatAnnualPrice(getBureauxAnnualAmountCents(), locale);
@@ -88,6 +92,8 @@ export default async function BureauxPage({
 
   const perks = [
     t('perkNumber'),
+    t('perkNominate'),
+    t('perkPlus'),
     t('perkEarlyFilms'),
     t('perkEarlyBounties'),
     t('perkCredits'),
@@ -118,12 +124,12 @@ export default async function BureauxPage({
           </div>
         </header>
 
-        {justJoined ? (
+        {justJoined && user ? (
           <p className="font-sans text-[14px] text-page-muted leading-relaxed">
             {active ? ta('bureauxJoined') : ta('bureauxJoining')}
           </p>
         ) : null}
-        {justJoined && !active ? <BureauxJoinedRefresh /> : null}
+        {justJoined && user && !active ? <BureauxJoinedRefresh /> : null}
 
         <section className="flex flex-col divide-y divide-page-faint border-y border-page-faint">
           {active ? (
@@ -199,15 +205,13 @@ export default async function BureauxPage({
             <BureauxManage
               cancelAtPeriodEnd={Boolean(membership?.cancel_at_period_end)}
             />
-          ) : user ? (
-            <BureauxCheckout />
+          ) : justJoined && !user && joinedEmail ? (
+            <BureauxJoinClaim email={joinedEmail} />
           ) : (
-            <Link
-              href={`/signin?next=${encodeURIComponent('/bureaux')}`}
-              className="self-start inline-flex items-center h-12 px-7 rounded-full bg-[var(--page-fg)] text-[var(--page-bg)] font-sans text-[14px] font-bold hover:opacity-90 transition-opacity"
-            >
-              {t('ctaSubscribe')}
-            </Link>
+            <BureauxCheckout
+              signedIn={Boolean(user)}
+              accountEmail={user?.email || null}
+            />
           )}
           <p className="font-sans text-[13px] text-page-faint leading-relaxed max-w-sm">
             {t('footnote')}

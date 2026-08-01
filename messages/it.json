@@ -24,7 +24,8 @@
     "memberNumberOnly": "#{number}",
     "bounties": "Bounties",
     "cabinet": "The Cabinet",
-    "bureaux": "The Bureaux"
+    "bureaux": "The Bureaux",
+    "joinBureaux": "Join the Bureaux"
   },
   "DisplayMode": {
     "cinematic": "Cine",
@@ -135,7 +136,8 @@
     "voyageurBadgeTitle": "Voyageur No. {number}",
     "voyageurBadgeMeta": "Member #{member} · {date}",
     "voyageurBadgeMember": "Member #{member}",
-    "voyageurBadgeVersion": "watched v{version}"
+    "voyageurBadgeVersion": "watched v{version}",
+    "plusInviteJoin": "Join the Bureaux"
   },
   "Theater": {
     "watchOnFjorr": "Guarda su Fjorr",
@@ -343,7 +345,11 @@
     "bureauxCardCancel": "Back",
     "bureauxCardDone": "Card updated.",
     "bureauxCardError": "Couldn’t update card. Try again.",
-    "bureauxNo": "Bureaux No."
+    "bureauxNo": "Bureaux No.",
+    "joinTitle": "Join the Bureaux",
+    "joinBody": "Create your account to subscribe. Watching stays free for everyone.",
+    "createViaBureaux": "New here? Join the Bureaux to create an account.",
+    "createViaBureauxCta": "Join the Bureaux"
   },
   "Auth": {
     "errorTitle": "L'accesso non è riuscito",
@@ -399,7 +405,9 @@
     "principlesLink": "Leggi i nostri Principi di un mito.",
     "eyebrow": "Candidatura",
     "rateLimited": "Nomination limit reached for today. Come back tomorrow.",
-    "openCap": "You have too many open nominations. Wait for one to close, or check Nominations."
+    "openCap": "You have too many open nominations. Wait for one to close, or check Nominations.",
+    "joinToNominate": "Join the Bureaux",
+    "bureauxRequired": "Join the Bureaux to nominate."
   },
   "Partner": {
     "eyebrow": "Collaborazioni",
@@ -555,7 +563,8 @@
     "fieldAwarded": "Assegnata",
     "fieldBrief": "Brief",
     "deadlineOpen": "Aperta",
-    "kindBoth": "Vero o fiction"
+    "kindBoth": "Vero o fiction",
+    "joinToPitch": "Join the Bureaux"
   },
   "Principles": {
     "draftLabel": "Draft",
@@ -646,7 +655,8 @@
       "noteTooLong": "Keep it under 800 characters.",
       "rateLimited": "You already offered recently. Try again in a few weeks.",
       "submitError": "Couldn't send. Try again in a moment.",
-      "signInRequired": "Sign in to send a name to the desk."
+      "signInRequired": "Sign in to send a name to the desk.",
+      "bureauxRequired": "Join the Bureaux to send a name."
     },
     "scoutLead": "Know someone who belongs — or is it you?",
     "ctaScout": "Send a name",
@@ -659,7 +669,9 @@
     "suggestNotePlaceholder": "A few sentences — what they make, and why the Cabinet should know them.",
     "scoutSuccess": "Received. The desk will look when it can.",
     "scoutSignIn": "Members only. Sign in to send a name to the desk.",
-    "ctaScoutSignIn": "Sign in to continue"
+    "ctaScoutSignIn": "Sign in to continue",
+    "scoutBureauxRequired": "Join the Bureaux to send a name to the desk.",
+    "ctaScoutBureaux": "Join the Bureaux"
   },
   "Plus": {
     "loading": "…",
@@ -739,7 +751,9 @@
     "logsLinkHow": "How it works",
     "logsColFrame": "Frame",
     "logsBodyEmpty": "Got an idea to make it better? Say so — timestamped to the second. The people who made it decide if you're right. If they agree, they plus it, and a new version ships.",
-    "logsLinkExplore": "Explore films"
+    "logsLinkExplore": "Explore films",
+    "joinToNote": "Join the Bureaux",
+    "bureauxRequired": "Join the Bureaux to send a note."
   },
   "Bureaux": {
     "eyebrow": "The Bureaux",
@@ -767,8 +781,8 @@
     "manageLink": "Manage subscription",
     "footnote": "Cancel anytime. Watching never requires a subscription.",
     "checkoutTitle": "Join the Bureaux",
-    "checkoutSignIn": "Sign in to join the Bureaux.",
-    "checkoutAlready": "You're already in the Bureaux.",
+    "checkoutSignIn": "Sign in to manage your Bureaux membership.",
+    "checkoutAlready": "This email already has a Bureaux membership. Sign in.",
     "checkoutConfig": "Checkout isn't configured yet. Try again shortly.",
     "checkoutError": "Couldn't open checkout. Try again.",
     "dek": "Infinite scroll. Nothing to remember.",
@@ -777,6 +791,16 @@
     "homePosterCta": "Enter.",
     "checkoutRetry": "Try again",
     "checkoutPayment": "Payment",
-    "checkoutOrCard": "Or card"
+    "checkoutOrCard": "Or card",
+    "joinEmailLabel": "Email",
+    "joinEmailPlaceholder": "you@email.com",
+    "joinEmailRequired": "Enter the email for your Bureaux account.",
+    "joinContinue": "Continue to payment",
+    "joinChangeEmail": "Use a different email",
+    "joinReturning": "Already a member?",
+    "joinCheckEmailTitle": "You're in. Check your email.",
+    "joinCheckEmailBody": "We sent a sign-in link to {email}. Open it to enter the Bureaux.",
+    "joinCheckEmailSignIn": "Sign in",
+    "joinCheckEmailError": "Payment went through, but we couldn't send the sign-in link. Use Sign in with this email."
   }
 }

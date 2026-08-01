@@ -279,6 +279,10 @@ export async function submitNomination(
     return { ok: false, error: 'signInRequired' };
   }
 
+  if (!(await isOwnBureauxActive(user.id))) {
+    return { ok: false, error: 'bureauxRequired' };
+  }
+
   const story = input.story.trim();
   const whyFjorr = input.whyFjorr.trim();
   const setting = input.setting.trim();
@@ -353,7 +357,7 @@ export async function submitNomination(
     return { ok: false, error: 'submitError' };
   }
 
-  const limits = bureauxNominationLimits(await isOwnBureauxActive(user.id));
+  const limits = bureauxNominationLimits();
 
   if ((recentCount || 0) >= limits.maxPerDay) {
     return { ok: false, error: 'rateLimited' };

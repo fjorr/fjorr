@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient as createSupabaseJsClient } from '@supabase/supabase-js';
 import { createClient as createCookieClient } from '@/lib/supabase/server';
+import { isBureauxMembershipActive } from '@/lib/bureaux-status';
 import { parseViaMemberNumber } from '@/lib/voyage-via';
 
 function supabaseAnonKey() {
@@ -15,25 +16,48 @@ type FilmViewBody = {
   viaMemberNumber?: number | string | null;
 };
 
-/** Member # for share/via — null when opted out of the voyage trail. */
-async function shareViaMemberNumberForUser(
-  supabase: {
-    from: (t: string) => {
-      select: (cols: string) => {
-        eq: (
-          col: string,
-          val: string
-        ) => {
-          maybeSingle: () => Promise<{
-            data: {
-              member_number?: number;
-              voyage_lineage_enabled?: boolean | null;
-            } | null;
-          }>;
-        };
+type MembershipClient = {
+  from: (t: string) => {
+    select: (cols: string) => {
+      eq: (
+        col: string,
+        val: string
+      ) => {
+        maybeSingle: () => Promise<{
+          data: {
+            status?: string;
+            current_period_end?: string | null;
+            member_number?: number;
+            voyage_lineage_enabled?: boolean | null;
+          } | null;
+        }>;
       };
     };
-  },
+  };
+};
+
+async function isBureauxActiveForUser(
+  supabase: MembershipClient,
+  userId: string
+): Promise<boolean> {
+  const { data } = await supabase
+    .from('bureaux_memberships')
+    .select('status, current_period_end')
+    .eq('user_id', userId)
+    .maybeSingle();
+  return isBureauxMembershipActive(
+    data
+      ? {
+          status: data.status ?? null,
+          current_period_end: data.current_period_end ?? null,
+        }
+      : null
+  );
+}
+
+/** Member # for share/via — null when opted out of the voyage trail. */
+async function shareViaMemberNumberForUser(
+  supabase: MembershipClient,
   userId: string
 ): Promise<number | null> {
   const { data } = await supabase
@@ -55,8 +79,16 @@ function mapResult(
   const referred = row.referred_by_user_id
     ? String(row.referred_by_user_id)
     : null;
+  const viewerRaw = row.viewer_number;
+  const viewerNumber =
+    viewerRaw == null || viewerRaw === ''
+      ? null
+      : Number(viewerRaw);
   return {
-    viewer_number: Number(row.viewer_number),
+    viewer_number:
+      viewerNumber != null && Number.isFinite(viewerNumber) && viewerNumber >= 1
+        ? viewerNumber
+        : null,
     recorded: Boolean(row.recorded),
     user_id: row.user_id ? String(row.user_id) : null,
     film_version:
@@ -71,9 +103,8 @@ function mapResult(
 }
 
 /**
- * Record a film view (Viewer # + Voyage when signed in).
+ * Record a film view (Voyageur # when Bureaux member).
  * Prefers Authorization: Bearer <access_token> from the browser session.
- * Optional viaMemberNumber stamps lineage on first log only.
  */
 export async function POST(request: Request) {
   let filmId = '';
@@ -107,7 +138,6 @@ export async function POST(request: Request) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const key = supabaseAnonKey();
 
-  // Bearer path: JWT from the browser — auth.uid() is reliable.
   if (bearer) {
     const supabase = createSupabaseJsClient(url, key, {
       global: { headers: { Authorization: `Bearer ${bearer}` } },
@@ -115,6 +145,23 @@ export async function POST(request: Request) {
     });
 
     const { data: userData } = await supabase.auth.getUser(bearer);
+    const user = userData.user;
+
+    // Unpaid signed-in: no Voyageur stamp (don't burn anonymous counter either).
+    if (user && !(await isBureauxActiveForUser(supabase as any, user.id))) {
+      return NextResponse.json({
+        viewer_number: null,
+        recorded: false,
+        user_id: user.id,
+        film_version: 1,
+        film_version_id: null,
+        referred_by_user_id: null,
+        member_number: null,
+        signed_in: true,
+        bureaux_required: true,
+      });
+    }
+
     const { data, error } = await supabase.rpc('record_film_view', rpcArgs);
 
     if (error) {
@@ -127,20 +174,33 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No result' }, { status: 500 });
     }
 
-    const memberNumber = userData.user
-      ? await shareViaMemberNumberForUser(supabase as any, userData.user.id)
+    const memberNumber = user
+      ? await shareViaMemberNumberForUser(supabase as any, user.id)
       : null;
 
     return NextResponse.json(
-      mapResult(row as Record<string, unknown>, Boolean(userData.user), memberNumber)
+      mapResult(row as Record<string, unknown>, Boolean(user), memberNumber)
     );
   }
 
-  // Cookie fallback
   const supabase = await createCookieClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  if (user && !(await isBureauxActiveForUser(supabase as any, user.id))) {
+    return NextResponse.json({
+      viewer_number: null,
+      recorded: false,
+      user_id: user.id,
+      film_version: 1,
+      film_version_id: null,
+      referred_by_user_id: null,
+      member_number: null,
+      signed_in: true,
+      bureaux_required: true,
+    });
+  }
 
   const { data, error } = await supabase.rpc('record_film_view', rpcArgs);
 

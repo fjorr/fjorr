@@ -1,17 +1,15 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import type { Session } from '@supabase/supabase-js';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
-import { createClient } from '@/lib/supabase/client';
+import { fetchOwnBureauxActive } from '@/lib/bureaux-client';
 import { submitFilmNote } from '@/lib/film-note-actions';
 import { formatTimestamp } from '@/lib/film-note-time';
 
 /** Compact Plus note strip — lives under Rams scrubber in Plus mode. */
 export default function TheaterPlusPanel({
   filmId,
-  filmSlug,
   atSeconds,
   isLight = false,
 }: {
@@ -22,7 +20,7 @@ export default function TheaterPlusPanel({
   isLight?: boolean;
 }) {
   const t = useTranslations('Plus');
-  const [signedIn, setSignedIn] = useState<boolean | null>(null);
+  const [bureauxActive, setBureauxActive] = useState<boolean | null>(null);
   const [body, setBody] = useState('');
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>(
     'idle'
@@ -35,43 +33,18 @@ export default function TheaterPlusPanel({
   const fieldBorder = isLight ? 'border-[#0B0B0C]/12' : 'border-[#F5F5F7]/12';
 
   useEffect(() => {
-    const supabase = createClient();
     let mounted = true;
-    supabase.auth
-      .getSession()
-      .then(({ data }: { data: { session: Session | null } }) => {
-        if (!mounted) return;
-        setSignedIn(!!data.session);
-      });
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(
-      (_event: string, session: Session | null) => {
-        if (!mounted) return;
-        setSignedIn(!!session);
-      }
-    );
+    fetchOwnBureauxActive().then((active) => {
+      if (mounted) setBureauxActive(active);
+    });
     return () => {
       mounted = false;
-      subscription.unsubscribe();
     };
   }, []);
 
-  const openSignIn = () => {
-    const next = filmSlug ? `/film/${filmSlug}` : '/';
-    window.dispatchEvent(
-      new CustomEvent('fjorr_open_signin', {
-        detail: { nextPath: next },
-      })
-    );
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!signedIn) {
-      openSignIn();
-      return;
-    }
+    if (!bureauxActive) return;
     setStatus('sending');
     setErrorKey(null);
 
@@ -91,7 +64,7 @@ export default function TheaterPlusPanel({
     setStatus('sent');
   };
 
-  if (signedIn === null) {
+  if (bureauxActive === null) {
     return (
       <p className={`font-sans text-[12px] ${muted} w-full text-center`}>
         {t('loading')}
@@ -99,23 +72,24 @@ export default function TheaterPlusPanel({
     );
   }
 
-  if (!signedIn) {
+  if (!bureauxActive) {
     return (
       <div className="w-full flex flex-col items-center gap-3 pt-1">
-        <p className={`font-sans text-[13px] leading-snug text-center max-w-[20rem] ${muted}`}>
+        <p
+          className={`font-sans text-[13px] leading-snug text-center max-w-[20rem] ${muted}`}
+        >
           {t('modeInvite')}
         </p>
-        <button
-          type="button"
-          onClick={openSignIn}
-          className={`h-9 px-4 rounded-full font-sans text-[12px] font-bold ${
+        <Link
+          href="/bureaux"
+          className={`h-9 px-4 inline-flex items-center justify-center rounded-full font-sans text-[12px] font-bold ${
             isLight
               ? 'bg-[#0B0B0C] text-[#F5F5F7]'
               : 'bg-[#F5F5F7] text-[#0B0B0C]'
           }`}
         >
-          {t('signInToNote')}
-        </button>
+          {t('joinToNote')}
+        </Link>
       </div>
     );
   }

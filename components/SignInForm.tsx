@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import type { Provider } from '@supabase/supabase-js';
+import { Link } from '@/i18n/navigation';
 import { createClient } from '@/lib/supabase/client';
 
 function stashAuthNext(nextPath: string) {
@@ -42,7 +43,7 @@ function GoogleGlyph({ className }: { className?: string }) {
 }
 
 export default function SignInForm({
-  nextPath = '/account/voyages',
+  nextPath = '/bureaux',
   layout = 'page',
   variant = 'light',
 }: {
@@ -110,7 +111,7 @@ export default function SignInForm({
       const { error: otpError } = await supabase.auth.signInWithOtp({
         email: email.trim(),
         options: {
-          shouldCreateUser: true,
+          shouldCreateUser: false,
           emailRedirectTo: authRedirectTo(),
         },
       });
@@ -119,7 +120,13 @@ export default function SignInForm({
       setStatus('sent');
     } catch (err: unknown) {
       setStatus('error');
-      setError(err instanceof Error ? err.message : t('errorGeneric'));
+      const message = err instanceof Error ? err.message : t('errorGeneric');
+      // Unknown email / signups disabled — accounts come from paid Bureaux join.
+      if (/signups not allowed|user not found|unable to validate/i.test(message)) {
+        setError(t('createViaBureaux'));
+      } else {
+        setError(message);
+      }
     }
   };
 
@@ -149,13 +156,16 @@ export default function SignInForm({
     );
   }
 
+  const heading = isMenu ? t('modalTitle') : t('signInTitle');
+  const body = t('signInBody');
+
   return (
     <div
       className={`w-full ${isMenu ? '' : 'max-w-sm'} flex flex-col ${isMenu ? 'gap-4' : 'gap-5'}`}
     >
       <div className={`flex flex-col ${isMenu ? 'gap-1.5' : 'gap-2'}`}>
-        <h2 className={titleClass}>{isMenu ? t('modalTitle') : t('signInTitle')}</h2>
-        <p className={bodyClass}>{t('signInBody')}</p>
+        <h2 className={titleClass}>{heading}</h2>
+        <p className={bodyClass}>{body}</p>
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -185,7 +195,19 @@ export default function SignInForm({
         </label>
 
         {error && (
-          <p className="font-sans text-[13px] text-red-400/90 text-left">{error}</p>
+          <div className="flex flex-col gap-2 text-left">
+            <p className="font-sans text-[13px] text-red-400/90">{error}</p>
+            {error === t('createViaBureaux') ? (
+              <Link
+                href="/bureaux"
+                className={`font-sans text-[13px] font-semibold underline underline-offset-2 ${
+                  onDarkGlass ? 'text-white/80' : 'text-black/80'
+                }`}
+              >
+                {t('createViaBureauxCta')}
+              </Link>
+            ) : null}
+          </div>
         )}
 
         <button
@@ -218,6 +240,16 @@ export default function SignInForm({
         <GoogleGlyph className="w-[18px] h-[18px]" />
         {t('continueGoogle')}
       </button>
+
+      <p className={`font-sans text-[12px] leading-snug ${bodyColor}`}>
+        {t('createViaBureaux')}{' '}
+        <Link
+          href="/bureaux"
+          className="font-semibold underline underline-offset-2"
+        >
+          {t('createViaBureauxCta')}
+        </Link>
+      </p>
     </div>
   );
 }

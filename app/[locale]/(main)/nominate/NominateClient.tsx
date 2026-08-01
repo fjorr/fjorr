@@ -20,6 +20,7 @@ type FieldErrorKey =
   | 'proofUrlInvalid'
   | 'bountyInvalid'
   | 'signInRequired'
+  | 'bureauxRequired'
   | 'rateLimited'
   | 'openCap'
   | 'submitError';
@@ -115,11 +116,11 @@ function fieldClass(hasError: boolean) {
 }
 
 export default function NominateClient({
-  signedIn,
+  bureauxActive,
   bounties,
   initialBountyId = '',
 }: {
-  signedIn: boolean;
+  bureauxActive: boolean;
   bounties: BountyRow[];
   initialBountyId?: string;
 }) {
@@ -141,25 +142,9 @@ export default function NominateClient({
     }
   };
 
-  const openSignIn = () => {
-    const next = bountyId
-      ? `/nominate?bounty=${encodeURIComponent(
-          bounties.find((b) => b.id === bountyId)?.slug || bountyId
-        )}`
-      : '/nominate';
-    window.dispatchEvent(
-      new CustomEvent('fjorr_open_signin', {
-        detail: { nextPath: next },
-      })
-    );
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!signedIn) {
-      openSignIn();
-      return;
-    }
+    if (!bureauxActive) return;
 
     const localErrors: ValidationErrors = {};
     if (!story.trim()) localErrors.story = 'storyRequired';
@@ -202,6 +187,7 @@ export default function NominateClient({
       proofUrlInvalid: 'proofUrl',
       bountyInvalid: 'bounty',
       signInRequired: 'form',
+      bureauxRequired: 'form',
       rateLimited: 'form',
       openCap: 'form',
       submitError: 'form',
@@ -303,18 +289,17 @@ export default function NominateClient({
               </Link>
             </div>
 
-            {!signedIn ? (
+            {!bureauxActive ? (
               <div className="w-full max-w-sm flex flex-col items-center gap-5 opacity-0 animate-slide-up style-delay-form">
                 <p className="font-sans font-medium text-[14px] leading-relaxed text-page-muted tracking-tight">
                   {t('membersOnlyBody')}
                 </p>
-                <button
-                  type="button"
-                  onClick={openSignIn}
-                  className="px-10 h-14 bg-[var(--page-fg)] text-[var(--page-bg)] font-sans font-bold text-[15px] tracking-tight rounded-full shadow-2xl hover:opacity-90 active:scale-95 transition-all duration-150"
+                <Link
+                  href="/bureaux"
+                  className="px-10 h-14 inline-flex items-center justify-center bg-[var(--page-fg)] text-[var(--page-bg)] font-sans font-bold text-[15px] tracking-tight rounded-full shadow-2xl hover:opacity-90 active:scale-95 transition-all duration-150"
                 >
-                  {t('signInToNominate')}
-                </button>
+                  {t('joinToNominate')}
+                </Link>
               </div>
             ) : (
               <form

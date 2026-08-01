@@ -75,21 +75,13 @@ function BountyPosterCard({
 export default function BountiesClient({
   bounties,
   archivedBounties = [],
-  signedIn,
+  bureauxActive,
 }: {
   bounties: BountyRow[];
   archivedBounties?: BountyRow[];
-  signedIn: boolean;
+  bureauxActive: boolean;
 }) {
   const t = useTranslations('Bounties');
-
-  const openSignIn = () => {
-    window.dispatchEvent(
-      new CustomEvent('fjorr_open_signin', {
-        detail: { nextPath: '/bounties' },
-      })
-    );
-  };
 
   return (
     <div className="w-full min-h-screen bg-[var(--page-bg)] text-page pb-28">
@@ -129,16 +121,15 @@ export default function BountiesClient({
               {t('generalPitch')}
             </Link>
           </p>
-          {!signedIn && (
+          {!bureauxActive && (
             <p className="mt-3 font-sans text-[13px] sm:text-[14px] text-page-muted leading-snug max-w-sm">
               {t('membersNote')}{' '}
-              <button
-                type="button"
-                onClick={openSignIn}
-                className="underline underline-offset-2 hover:text-page transition-colors"
+              <Link
+                href="/bureaux"
+                className="font-semibold underline underline-offset-2 hover:text-page transition-colors"
               >
-                {t('signIn')}
-              </button>
+                {t('joinToPitch')}
+              </Link>
             </p>
           )}
         </div>

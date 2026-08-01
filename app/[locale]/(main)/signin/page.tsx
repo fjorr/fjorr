@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import SignInPageClient from './SignInPageClient';
 import { createClient } from '@/lib/supabase/server';
+import { isOwnBureauxActive } from '@/lib/bureaux';
 import { safeInternalPath } from '@/lib/site-gate';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -19,7 +20,7 @@ export default async function SignInPage({
   searchParams: Promise<{ next?: string }>;
 }) {
   const params = await searchParams;
-  const nextPath = safeInternalPath(params.next ?? null, '/account/voyages');
+  const nextPath = safeInternalPath(params.next ?? null, '/bureaux');
 
   const supabase = await createClient();
   const {
@@ -27,6 +28,12 @@ export default async function SignInPage({
   } = await supabase.auth.getUser();
 
   if (user) {
+    const active = await isOwnBureauxActive(user.id);
+    const path = nextPath.split('?')[0];
+    const joining = path === '/bureaux' || path.startsWith('/bureaux/');
+    if (!active && !joining) {
+      redirect('/bureaux');
+    }
     redirect(nextPath);
   }
 

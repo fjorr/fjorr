@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { isOwnBureauxActive } from '@/lib/bureaux';
 import { getPublicBountyBySlug } from '@/lib/nomination-actions';
 import BountyBriefClient from './BountyBriefClient';
 
@@ -50,6 +51,9 @@ export default async function BountyBriefPage({ params }: PageProps) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  const bureauxActive = user ? await isOwnBureauxActive(user.id) : false;
 
-  return <BountyBriefClient bounty={bounty} signedIn={!!user} />;
+  return (
+    <BountyBriefClient bounty={bounty} bureauxActive={bureauxActive} />
+  );
 }

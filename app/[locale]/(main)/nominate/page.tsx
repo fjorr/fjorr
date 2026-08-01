@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import NominateClient from './NominateClient';
 import { createClient } from '@/lib/supabase/server';
+import { isOwnBureauxActive } from '@/lib/bureaux';
 import { listActiveBounties } from '@/lib/nomination-actions';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -35,6 +36,7 @@ export default async function NominatePage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  const bureauxActive = user ? await isOwnBureauxActive(user.id) : false;
   const bounties = await listActiveBounties();
 
   const bountyParam = (params.bounty || '').trim().toLowerCase();
@@ -44,7 +46,7 @@ export default async function NominatePage({
 
   return (
     <NominateClient
-      signedIn={!!user}
+      bureauxActive={bureauxActive}
       bounties={bounties}
       initialBountyId={initialBountyId}
     />

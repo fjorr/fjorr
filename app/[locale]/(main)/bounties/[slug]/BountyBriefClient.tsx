@@ -33,23 +33,15 @@ function formatDate(iso: string, locale: string) {
 
 export default function BountyBriefClient({
   bounty,
-  signedIn,
+  bureauxActive,
 }: {
   bounty: BountyRow;
-  signedIn: boolean;
+  bureauxActive: boolean;
 }) {
   const t = useTranslations('Bounties');
   const locale = useLocale();
   const isOpen = bounty.status === 'open';
   const nominateHref = `/nominate?bounty=${encodeURIComponent(bounty.slug)}`;
-
-  const openSignIn = () => {
-    window.dispatchEvent(
-      new CustomEvent('fjorr_open_signin', {
-        detail: { nextPath: nominateHref },
-      })
-    );
-  };
 
   const statusLabel = (status: BountyStatus) => {
     switch (status) {
@@ -165,7 +157,7 @@ export default function BountyBriefClient({
 
           {isOpen ? (
             <div className="flex flex-col gap-3">
-              {signedIn ? (
+              {bureauxActive ? (
                 <Link
                   href={nominateHref}
                   className="inline-flex h-12 px-8 rounded-full bg-[var(--page-fg)] text-[var(--page-bg)] font-sans text-[14px] font-bold items-center justify-center w-fit hover:opacity-90 active:scale-[0.98] transition-all"
@@ -173,15 +165,14 @@ export default function BountyBriefClient({
                   {t('pitchThis')}
                 </Link>
               ) : (
-                <button
-                  type="button"
-                  onClick={openSignIn}
+                <Link
+                  href="/bureaux"
                   className="inline-flex h-12 px-8 rounded-full bg-[var(--page-fg)] text-[var(--page-bg)] font-sans text-[14px] font-bold items-center justify-center w-fit hover:opacity-90 active:scale-[0.98] transition-all"
                 >
-                  {t('signInToPitch')}
-                </button>
+                  {t('joinToPitch')}
+                </Link>
               )}
-              {!signedIn && (
+              {!bureauxActive && (
                 <p className="font-sans text-[13px] text-page-faint leading-snug max-w-sm">
                   {t('membersNote')}
                 </p>

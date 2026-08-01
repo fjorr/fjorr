@@ -18,10 +18,10 @@ const DISCIPLINE_KEYS = [
 ] as const;
 
 export default function CabinetClient({
-  signedIn = false,
+  bureauxActive = false,
   defaultEmail = '',
 }: {
-  signedIn?: boolean;
+  bureauxActive?: boolean;
   defaultEmail?: string;
 }) {
   const t = useTranslations('Cabinet');
@@ -71,7 +71,7 @@ export default function CabinetClient({
               {t('scoutLead')}
             </p>
             <CabinetOfferForm
-              signedIn={signedIn}
+              bureauxActive={bureauxActive}
               defaultEmail={defaultEmail}
             />
           </footer>

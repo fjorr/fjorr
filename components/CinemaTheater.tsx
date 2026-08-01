@@ -14,11 +14,11 @@ import TheaterRamsChrome, { TheaterRamsIdentity, PLAQUE_WIDTH } from '@/componen
 import { useColorScheme } from '@/components/ColorSchemeProvider';
 import { LIGHT_PAGE_BG, LIGHT_PAGE_FG } from '@/lib/color-scheme';
 import { FILM_RECORDED_EVENT, maybeRecordFilmView } from '@/lib/record-view';
+import { fetchOwnBureauxActive } from '@/lib/bureaux-client';
 
 /** Throttle scrub-driven seeks to ~12.5Hz — UI paints immediately, video seeks lag slightly. */
 const SCRUB_SEEK_INTERVAL_MS = 80;
 
-const FilmSendSheet = dynamic(() => import('@/components/FilmSendSheet'), { ssr: false });
 const TheaterPlusPanel = dynamic(() => import('@/components/TheaterPlusPanel'), { ssr: false });
 const TheaterPlusInfo = dynamic(() => import('@/components/TheaterPlusInfo'), { ssr: false });
 const ViewerStampShare = dynamic(() => import('@/components/ViewerStampShare'), { ssr: false });
@@ -122,11 +122,10 @@ function CinemaTheater({
   const [isEnded, setIsEnded] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isScrubbing, setIsScrubbing] = useState(false);
-  const [sendOpen, setSendOpen] = useState(false);
-  /** Watch = immersive cinema. Plus = plaque craft desk. */
-  const [theaterMode, setTheaterMode] = useState<'watch' | 'plus'>(
-    !isEmbed && initialTheaterMode === 'plus' ? 'plus' : 'watch'
-  );
+  /** Watch = immersive cinema. Plus = plaque craft desk (members only). */
+  const [theaterMode, setTheaterMode] = useState<'watch' | 'plus'>('watch');
+  /** Plus Machine — Bureaux members only. */
+  const [plusMember, setPlusMember] = useState<boolean | null>(null);
   const [plusInfoOpen, setPlusInfoOpen] = useState(false);
   const [plusStamp, setPlusStamp] = useState(0);
   const [stampShare, setStampShare] = useState<{
@@ -301,22 +300,57 @@ function CinemaTheater({
     void container;
   }, [isPlayingLogo]);
 
+  useEffect(() => {
+    if (isEmbed) {
+      setPlusMember(false);
+      return;
+    }
+    let mounted = true;
+    const refresh = () => {
+      fetchOwnBureauxActive().then((active) => {
+        if (!mounted) return;
+        setPlusMember(active);
+        if (!active) {
+          setTheaterMode('watch');
+          setPlusInfoOpen(false);
+        }
+      });
+    };
+    refresh();
+    const onFocus = () => refresh();
+    window.addEventListener('focus', onFocus);
+    return () => {
+      mounted = false;
+      window.removeEventListener('focus', onFocus);
+    };
+  }, [isEmbed]);
+
   const enterPlus = useCallback(() => {
-    if (isEmbed || isPlayingLogo) return;
+    if (isEmbed || isPlayingLogo || !plusMember) return;
     exitFullscreenIfNeeded();
     const player = filmPlayerRef.current;
     if (player && !player.paused) player.pause();
     setPlusStamp(Math.floor(currentTimeRef.current || 0));
     setPlusInfoOpen(false);
     setTheaterMode('plus');
-  }, [isEmbed, isPlayingLogo, exitFullscreenIfNeeded]);
+  }, [isEmbed, isPlayingLogo, plusMember, exitFullscreenIfNeeded]);
 
   const exitPlus = useCallback(() => {
     setTheaterMode('watch');
     setPlusInfoOpen(false);
   }, []);
 
-  // Entered via film-page “Open Plus” — soft-pause once the film is up.
+  // Film-page “Open Plus” — Bureaux members only.
+  useEffect(() => {
+    if (isEmbed || initialTheaterMode !== 'plus' || plusMember === null) return;
+    if (!plusMember) {
+      router.push('/bureaux');
+      return;
+    }
+    setTheaterMode('plus');
+  }, [isEmbed, initialTheaterMode, plusMember, router]);
+
+  // Soft-pause once Plus is up.
   useEffect(() => {
     if (isEmbed || isPlayingLogo || theaterMode !== 'plus') return;
     const player = filmPlayerRef.current;
@@ -824,19 +858,6 @@ function CinemaTheater({
       {!plusMode ? (
         <button
           type="button"
-          onClick={() => {
-            showUIControls();
-            setSendOpen(true);
-          }}
-          aria-label={t('share')}
-          className={`${toolBtn} opacity-90`}
-        >
-          {t('share')}
-        </button>
-      ) : null}
-      {!plusMode ? (
-        <button
-          type="button"
           onClick={toggleFullscreen}
           aria-label={isFullscreen ? t('exitFullscreen') : t('fullscreen')}
           className={`${toolBtn} opacity-90`}
@@ -844,7 +865,7 @@ function CinemaTheater({
           {isFullscreen ? t('exit') : t('full')}
         </button>
       ) : null}
-      {!isEmbed && !plusMode ? (
+      {!isEmbed && !plusMode && plusMember ? (
         <button
           type="button"
           onClick={enterPlus}
@@ -1199,13 +1220,6 @@ function CinemaTheater({
             </button>
             <button
               type="button"
-              onClick={() => setSendOpen(true)}
-              className="font-mono text-[13px] font-medium tracking-[0.05em] uppercase bg-transparent border-0 outline-none cursor-pointer p-0 leading-none whitespace-nowrap opacity-90 hover:opacity-100 transition-opacity"
-            >
-              {t('share')}
-            </button>
-            <button
-              type="button"
               onClick={handleRewatch}
               className="font-mono text-[13px] font-medium tracking-[0.05em] uppercase bg-transparent border-0 outline-none cursor-pointer p-0 leading-none whitespace-nowrap opacity-90 hover:opacity-100 transition-opacity"
             >
@@ -1228,23 +1242,6 @@ function CinemaTheater({
           </svg>
         </div>
       </div>
-
-      {sendOpen && (
-        <FilmSendSheet
-          open={sendOpen}
-          onClose={() => setSendOpen(false)}
-          film={{
-            id: film?.id,
-            name: film?.name,
-            slug: film?.slug,
-            teaser: film?.teaser,
-            runtime: film?.runtime,
-            blok_tall: film?.blok_tall,
-            hero_tall: film?.hero_tall,
-          }}
-          shareSeconds={currentTimeRef.current > 0 ? currentTimeRef.current : durationRef.current || null}
-        />
-      )}
 
       <TheaterPlusInfo
         open={plusInfoOpen}

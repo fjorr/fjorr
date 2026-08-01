@@ -2,14 +2,14 @@ import 'server-only';
 
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
+import {
+  isBureauxActive,
+  isBureauxMembershipActive,
+  type BureauxStatus,
+} from '@/lib/bureaux-status';
 
-export type BureauxStatus =
-  | 'none'
-  | 'active'
-  | 'past_due'
-  | 'canceled'
-  | 'incomplete'
-  | 'unpaid';
+export type { BureauxStatus };
+export { isBureauxActive, isBureauxMembershipActive };
 
 export type BureauxMembership = {
   user_id: string;
@@ -22,33 +22,14 @@ export type BureauxMembership = {
   bureaux_number: number | null;
 };
 
-/** Active subscription, past_due grace, or canceled but still in paid period. */
-export function isBureauxActive(
-  status: BureauxStatus | string | null | undefined,
-  currentPeriodEnd?: string | null
-) {
-  if (status === 'active' || status === 'past_due') return true;
-  if (status === 'canceled' && currentPeriodEnd) {
-    return new Date(currentPeriodEnd).getTime() > Date.now();
-  }
-  return false;
+/** Daily / open caps for Bureaux members (participation is members-only). */
+export function bureauxNominationLimits() {
+  return { maxPerDay: 2, maxOpen: 8 };
 }
 
-export function isBureauxMembershipActive(
-  membership: Pick<BureauxMembership, 'status' | 'current_period_end'> | null
-) {
-  if (!membership) return false;
-  return isBureauxActive(membership.status, membership.current_period_end);
-}
-
-export function bureauxNominationLimits(active: boolean) {
-  return active
-    ? { maxPerDay: 2, maxOpen: 8 }
-    : { maxPerDay: 1, maxOpen: 4 };
-}
-
-export function bureauxPlusNoteLimit(active: boolean) {
-  return active ? 3 : 1;
+/** Notes per film per day for Bureaux members. */
+export function bureauxPlusNoteLimit() {
+  return 3;
 }
 
 /** Display price for UI (cents). Default $48/year until env overrides. */

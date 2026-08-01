@@ -27,6 +27,10 @@ export async function submitFilmNote(input: {
     return { ok: false, error: 'signInRequired' };
   }
 
+  if (!(await isOwnBureauxActive(user.id))) {
+    return { ok: false, error: 'bureauxRequired' };
+  }
+
   const filmId = (input.filmId || '').trim();
   if (!filmId) return { ok: false, error: 'submitError' };
 
@@ -39,7 +43,7 @@ export async function submitFilmNote(input: {
     atSeconds = Math.max(0, Math.floor(input.atSeconds));
   }
 
-  const maxNotes = bureauxPlusNoteLimit(await isOwnBureauxActive(user.id));
+  const maxNotes = bureauxPlusNoteLimit();
 
   const since = new Date(
     Date.now() - RATE_LIMIT_HOURS * 60 * 60 * 1000

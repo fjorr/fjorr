@@ -38,8 +38,10 @@ interface FilmSpecsProps {
   tags: string[];
   creators?: CreatorMapRow[];
   onSeek?: (seconds: number) => void;
-  /** Opens theater in Plus mode. */
+  /** Opens theater in Plus mode (or join Bureaux). */
   onOpenPlus?: () => void;
+  /** When false, CTA sends people to join rather than open Plus. */
+  plusMember?: boolean;
 }
 
 function SpecRow({
@@ -74,6 +76,7 @@ export default function FilmSpecs({
   creators = [],
   onSeek,
   onOpenPlus,
+  plusMember = false,
 }: FilmSpecsProps) {
   const t = useTranslations('Film');
   const { isLight } = useColorScheme();
@@ -172,7 +175,7 @@ export default function FilmSpecs({
           <p className="mt-6 text-[13px] text-page-faint leading-snug max-w-md">
             {t('plusInvite')}{' '}
             <button type="button" onClick={onOpenPlus} className={inviteLinkClass}>
-              {t('plusInviteCta')}
+              {plusMember ? t('plusInviteCta') : t('plusInviteJoin')}
             </button>
             <span className="text-page-faint/80" aria-hidden>
               {' · '}

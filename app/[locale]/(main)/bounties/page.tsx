@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { createClient } from '@/lib/supabase/server';
+import { isOwnBureauxActive } from '@/lib/bureaux';
 import {
   listActiveBounties,
   listArchivedBounties,
@@ -37,12 +38,13 @@ export default async function BountiesPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  const bureauxActive = user ? await isOwnBureauxActive(user.id) : false;
 
   return (
     <BountiesClient
       bounties={bounties}
       archivedBounties={archivedBounties}
-      signedIn={!!user}
+      bureauxActive={bureauxActive}
     />
   );
 }

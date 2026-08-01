@@ -16,6 +16,8 @@ import {
   trackWatchProgress,
 } from '@/lib/watch-progress';
 import { parseViaMemberNumber, writeViaCookie } from '@/lib/voyage-via';
+import { fetchOwnBureauxActive } from '@/lib/bureaux-client';
+import { useRouter } from '@/i18n/navigation';
 const CinemaTheater = dynamic(() => import('@/components/CinemaTheater'), {
   ssr: false,
   loading: () => <TheaterOpenShell />,
@@ -47,15 +49,27 @@ export default function FilmPageContentWrapper({
   isComingSoon,
 }: WrapperProps) {
   const t = useTranslations('Film');
+  const router = useRouter();
   const [showTheater, setShowTheater] = useState(false);
   const [startAt, setStartAt] = useState<number | undefined>(undefined);
   const [seekTo, setSeekTo] = useState<number | null>(null);
   const [playbackTime, setPlaybackTime] = useState(0);
   const [shareSeconds, setShareSeconds] = useState<number | null>(null);
   const [openInPlus, setOpenInPlus] = useState(false);
+  const [bureauxActive, setBureauxActive] = useState<boolean | null>(null);
   const theaterOpenRef = React.useRef(false);
   const lastShareFloorRef = useRef<number | null>(null);
   const resumeProgress = useWatchProgress(filmData?.id, filmData?.runtime);
+
+  useEffect(() => {
+    let mounted = true;
+    fetchOwnBureauxActive().then((active) => {
+      if (mounted) setBureauxActive(active);
+    });
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     theaterOpenRef.current = showTheater;
@@ -127,7 +141,13 @@ export default function FilmPageContentWrapper({
     setShowTheater(true);
   }, [filmData.id, filmData.runtime]);
 
-  const handleOpenPlus = useCallback(() => {
+  const handleOpenPlus = useCallback(async () => {
+    const active =
+      bureauxActive === true ? true : await fetchOwnBureauxActive();
+    if (!active) {
+      router.push('/bureaux');
+      return;
+    }
     const saved = getWatchProgress(filmData.id);
     const resumeAt = isWatchableProgress(saved, filmData.runtime)
       ? saved.seconds
@@ -136,7 +156,7 @@ export default function FilmPageContentWrapper({
     setStartAt(resumeAt);
     setSeekTo(null);
     setShowTheater(true);
-  }, [filmData.id, filmData.runtime]);
+  }, [bureauxActive, filmData.id, filmData.runtime, router]);
 
   const handleTimeUpdate = useCallback(
     (seconds: number) => {
@@ -246,6 +266,7 @@ export default function FilmPageContentWrapper({
                 creators={creatorRows}
                 onSeek={openFromTime}
                 onOpenPlus={handleOpenPlus}
+                plusMember={bureauxActive === true}
               />
             </div>
           )}
