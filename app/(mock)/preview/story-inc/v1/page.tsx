@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import AppleChrome from '../AppleChrome';
 import FollowButton from '../FollowButton';
 import MarketCard from '../MarketCard';
 import RewardPlaceholder from '../RewardPlaceholder';
@@ -38,8 +37,6 @@ export default function StoryIncApplePage() {
       className="min-h-screen scroll-smooth bg-white text-[#1d1d1f]"
       style={{ fontFamily: 'Montserrat, Arial, sans-serif' }}
     >
-      <AppleChrome />
-
       <main>
         {/* Hero — Rewards first */}
         <section className="relative overflow-hidden bg-[#fbfbfd]">
@@ -491,17 +488,6 @@ export default function StoryIncApplePage() {
           </div>
         </section>
       </main>
-
-      <footer className="border-t border-black/[0.06] py-8 text-center">
-        <img
-          src="/preview/story-inc/logo.png"
-          alt="Story Inc"
-          className="mx-auto h-7 w-auto opacity-80"
-        />
-        <p className="mt-3 text-[11px] text-[#86868b]">
-          © Story Inc · Preview mock · v1
-        </p>
-      </footer>
 
       <VariantSwitch active="v1" />
     </div>

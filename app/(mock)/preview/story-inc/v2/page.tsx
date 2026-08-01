@@ -8,7 +8,6 @@ import {
   FAN_COUNT,
   GENRES,
   MARKETS,
-  NAV,
   REWARDS,
   SUMMARY,
   TEAM,
@@ -71,49 +70,7 @@ function Card({
 export default function StoryIncProjectMockPage() {
   return (
     <div className="flex min-h-screen flex-col bg-[#fafafa] text-[#171717]">
-      <header className="sticky top-0 z-50 border-b border-black/[0.06] bg-white/90 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between px-4">
-          <div className="flex items-center gap-6">
-            <DeadLink className="flex items-center">
-              <img
-                src="/preview/story-inc/logo.png"
-                alt="Story Inc. Logo"
-                className="h-9 w-auto"
-              />
-            </DeadLink>
-            <nav className="hidden items-center gap-5 lg:flex">
-              {NAV.map((label) => (
-                <DeadLink
-                  key={label}
-                  className="text-sm font-medium text-[#171717] hover:opacity-70"
-                >
-                  {label}
-                </DeadLink>
-              ))}
-            </nav>
-          </div>
-          <div className="flex items-center gap-2 sm:gap-3">
-            <button
-              type="button"
-              className="hidden h-10 rounded-full px-4 text-sm font-semibold text-[#171717] hover:bg-black/[0.04] sm:inline-flex sm:items-center"
-            >
-              Sign in
-            </button>
-            <button
-              type="button"
-              className="inline-flex h-10 items-center rounded-full bg-[#00a6ff] px-4 text-sm font-semibold text-white hover:bg-[#0095e6]"
-            >
-              Sign up
-            </button>
-          </div>
-        </div>
-      </header>
-
       <main className="mx-auto w-full max-w-[1200px] flex-1 px-4 pb-20 pt-8">
-        <DeadLink className="mb-5 inline-flex items-center gap-1 text-sm text-[#8e8e8e] hover:text-[#171717]">
-          ← Back to Projects
-        </DeadLink>
-
         <section className="overflow-hidden rounded-3xl border border-black/[0.08] bg-white shadow-[0_20px_60px_rgba(0,0,0,0.06)]">
           <TrailerHero rounded="rounded-none" />
 
@@ -566,23 +523,6 @@ export default function StoryIncProjectMockPage() {
         </div>
       </main>
 
-      <footer className="border-t border-black/[0.06] bg-white py-12">
-        <div className="mx-auto max-w-[1200px] px-4 text-center">
-          <div className="flex items-center justify-center gap-5 text-sm">
-            <DeadLink className="text-black">Resources</DeadLink>
-            <DeadLink className="text-black">Contact</DeadLink>
-          </div>
-          <p className="mt-3 text-xs text-gray-600">
-            © Story Inc. All rights reserved. · Mock preview on Fjorr — not
-            affiliated.
-          </p>
-          <p className="mx-auto mt-4 max-w-3xl text-[11px] leading-relaxed text-gray-500">
-            Story Inc. is an independent entity. Unless otherwise noted, Story
-            Inc. is not supported, endorsed, or affiliated with any individual
-            or entities depicted on this platform.
-          </p>
-        </div>
-      </footer>
       <VariantSwitch active="v2" />
     </div>
   );
