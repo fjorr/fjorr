@@ -35,6 +35,11 @@ export async function middleware(request: NextRequest) {
     return await updateSession(request);
   }
 
+  // Partner embeds + temp client mocks: no i18n prefix, no site-password gate.
+  if (pathname.startsWith("/embed") || pathname.startsWith("/preview")) {
+    return await updateSession(request);
+  }
+
   if (gateEnabled) {
     const sitePassword = process.env.SITE_PASSWORD;
     const gateCookie = request.cookies.get("site-auth")?.value;
@@ -50,11 +55,6 @@ export async function middleware(request: NextRequest) {
   } else if (pathname === "/password") {
     // Gate off in production — don't leave a public password entry page.
     return NextResponse.redirect(new URL("/", request.nextUrl));
-  }
-
-  // Partner embeds keep stable unprefixed URLs (no /fr/embed/...).
-  if (pathname.startsWith("/embed")) {
-    return await updateSession(request);
   }
 
   const response = handleI18nRouting(request);
