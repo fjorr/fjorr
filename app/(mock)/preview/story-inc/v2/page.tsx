@@ -15,10 +15,9 @@ import {
 } from '../content';
 
 export const metadata: Metadata = {
-  title: 'Angry Birds 3 | v2 | Story Inc',
+  title: 'Angry Birds 3',
   description:
-    'Story Inc project page mock v2 — denser full pitch.',
-  robots: { index: false, follow: false },
+    'Follow Angry Birds 3 on Story Inc — rewards, markets, and the project page.',
 };
 
 function DeadLink({
