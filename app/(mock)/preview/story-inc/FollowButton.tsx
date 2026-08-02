@@ -39,11 +39,7 @@ export default function FollowButton({
         : 'h-10 px-5 text-sm';
 
   return (
-    <div
-      className={`flex items-center gap-2 sm:gap-3 ${
-        showCount ? 'flex-col sm:flex-row sm:flex-wrap' : ''
-      }`}
-    >
+    <div className="flex flex-row flex-wrap items-center gap-2 sm:gap-3">
       <button
         type="button"
         onClick={() => {

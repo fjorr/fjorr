@@ -166,3 +166,67 @@ export const SUMMARY =
   "Red has saved Bird Island more than once — but this holiday season he faces his greatest challenge yet: fatherhood. Now raising a family of three, the world's angriest bird has to survive diaper duty, sugar-fueled chaos, and the particular humiliation of unimpressed kids… all while the world still needs saving. With Chuck, Bomb, and Silver back in the flock — and proving to be questionable babysitters — Red's biggest adventure is the one happening at home. In theaters December 23.";
 
 export const FAN_COUNT = 84200;
+
+/** Filmmaker updates — visible when Following the project. */
+export const CREW_UPDATES = [
+  {
+    from: 'John Rice',
+    role: 'Director',
+    time: 'Yesterday',
+    body: 'Just locked a new cut of the holiday spot. Followers get first look next week — keep an eye on your notifications.',
+  },
+  {
+    from: 'Story Inc Desk',
+    role: 'Updates',
+    time: '3d ago',
+    body: 'Voice booth day with the hatchlings. Clips dropping for Followers only before they hit social.',
+  },
+] as const;
+
+/** Platform-level Projects index copy (not project-page specific). */
+export const PROJECTS_PAGE_LEAD =
+  'Follow your favorite projects, unlock special perks, discuss with your friends, get early notifications and updates from the filmmaker.';
+
+/** Mock grid — layout matches app.storyincmedia.com/projects. */
+export const PROJECTS_INDEX = [
+  {
+    href: '/preview/story-inc/v1',
+    title: 'Angry Birds 3',
+    image: '/preview/story-inc/hero.jpg',
+  },
+  {
+    href: null,
+    title: 'A Knight of Seven Kingdoms',
+    image: '/preview/story-inc/market-2.jpg',
+  },
+  {
+    href: null,
+    title: 'American Hostage',
+    image: '/preview/story-inc/team/mcbride.jpg',
+  },
+  {
+    href: null,
+    title: 'Avatar: Fire and Ash',
+    image: '/preview/story-inc/market-3.jpg',
+  },
+  {
+    href: null,
+    title: 'Avengers: Doomsday',
+    image: '/preview/story-inc/market-1.jpg',
+  },
+  {
+    href: null,
+    title: 'Cliffhanger',
+    image: '/preview/story-inc/hero-banner.jpg',
+  },
+  {
+    href: null,
+    title: "Conan O'Brien Must Go: Season 3",
+    image: '/preview/story-inc/trailer-poster.png',
+  },
+  {
+    href: null,
+    title: 'Dune: Part Three',
+    image: '/preview/story-inc/market-2.jpg',
+  },
+] as const;
