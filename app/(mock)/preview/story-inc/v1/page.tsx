@@ -14,12 +14,15 @@ import {
   TEAM,
   TRAILERS,
 } from '../content';
+import { projectPageMetadata } from '../project-metadata';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = projectPageMetadata({
   title: 'Angry Birds 3',
   description:
     'Follow Angry Birds 3 on Story Inc — rewards, markets, and the project page.',
-};
+  path: '/preview/story-inc/v1',
+  image: '/preview/story-inc/trailer-poster.png',
+});
 
 /**
  * v1 — client-revised Angry Birds project page.
@@ -443,7 +446,7 @@ export default function StoryIncApplePage() {
                     <img
                       src={member.image}
                       alt={member.name}
-                      className="h-14 w-14 rounded-full object-cover object-top ring-1 ring-black/5 sm:h-16 sm:w-16"
+                      className="h-14 w-14 rounded-full object-cover object-center ring-1 ring-black/5 sm:h-16 sm:w-16"
                     />
                     <span className="min-w-0 text-[15px] font-semibold text-[#1d1d1f] sm:text-[16px]">
                       {member.name}

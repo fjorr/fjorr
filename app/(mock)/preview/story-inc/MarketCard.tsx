@@ -13,7 +13,7 @@ export default function MarketCard({
   volume,
   traders,
   projectLabel = 'Angry Birds 3',
-  imagePosition = 'top',
+  imagePosition = 'center',
 }: {
   image?: string;
   question: string;
@@ -22,6 +22,7 @@ export default function MarketCard({
   volume: string;
   traders: string;
   projectLabel?: string;
+  /** Crop anchor — center keeps faces in frame; use top for tall stage/full-body shots. */
   imagePosition?: 'top' | 'center';
 }) {
   const [hover, setHover] = useState<string | null>(null);

@@ -28,8 +28,20 @@ export default function ProjectPage({ data }: { data: ProjectPageData }) {
               className="mt-3 text-[40px] font-bold leading-[1.05] tracking-[-0.03em] sm:text-[56px] md:text-[64px]"
               style={{ fontFamily: 'Montserrat, Arial, sans-serif' }}
             >
-              {data.title}
+              {data.titleLines?.length
+                ? data.titleLines.map((line, i) => (
+                    <span key={line}>
+                      {i > 0 ? <br /> : null}
+                      {line}
+                    </span>
+                  ))
+                : data.title}
             </h1>
+            {data.tagline ? (
+              <p className="mx-auto mt-4 max-w-[22ch] text-[18px] font-medium leading-[1.25] tracking-[-0.01em] text-[#6e6e73] sm:text-[22px]">
+                {data.tagline}
+              </p>
+            ) : null}
           </div>
 
           <div className="mx-auto max-w-[980px] px-5">
@@ -38,6 +50,7 @@ export default function ProjectPage({ data }: { data: ProjectPageData }) {
               teaserLabel={data.teaserLabel ?? 'Official teaser'}
               poster={data.heroPoster}
               youtubeId={data.youtubeId}
+              trailerUrl={data.trailerUrl}
             />
           </div>
 
@@ -149,6 +162,7 @@ export default function ProjectPage({ data }: { data: ProjectPageData }) {
                         color={r.color}
                         caption={r.caption}
                         image={r.image}
+                        imagePosition={r.imagePosition}
                         className="aspect-[16/10] w-full shrink-0"
                       />
                       <div className="flex flex-1 flex-col gap-2 p-4">
@@ -429,7 +443,7 @@ export default function ProjectPage({ data }: { data: ProjectPageData }) {
                       <img
                         src={member.image}
                         alt={member.name}
-                        className="h-14 w-14 rounded-full object-cover object-top ring-1 ring-black/5 sm:h-16 sm:w-16"
+                        className="h-14 w-14 rounded-full object-cover object-center ring-1 ring-black/5 sm:h-16 sm:w-16"
                       />
                     ) : (
                       <div

@@ -9,6 +9,8 @@ export type ProjectReward = {
   color: string;
   /** Optional photo — falls back to color placeholder. */
   image?: string;
+  /** Crop anchor for the photo. Default center (faces). */
+  imagePosition?: 'top' | 'center';
   /** e.g. "750 SC" or "Free entry" */
   price?: string;
   /** e.g. "Redeem" / "Drawing" */
@@ -28,7 +30,7 @@ export type ProjectMarket = {
   traders: string;
   /** Omit for a plain black media area (no matched asset yet). */
   image?: string;
-  /** Crop anchor for the hero image. Default top (faces). */
+  /** Crop anchor for the hero image. Default center (faces). */
   imagePosition?: 'top' | 'center';
 };
 
@@ -71,6 +73,10 @@ export type ProjectJumpTile = {
 export type ProjectPageData = {
   slug: string;
   title: string;
+  /** Optional hero h1 lines (line break between). Falls back to `title`. */
+  titleLines?: string[];
+  /** Optional line under the hero title (e.g. film question / tagline). */
+  tagline?: string;
   kick: string;
   castLine: string[];
   credits: string;
@@ -81,6 +87,8 @@ export type ProjectPageData = {
   teaserLabel?: string;
   /** YouTube video id for hero trailer play. */
   youtubeId?: string;
+  /** External trailer URL (e.g. Frame.io) — opens on play when set. */
+  trailerUrl?: string;
   fanCount: number;
   rewardGroups: ProjectRewardGroup[];
   markets: ProjectMarket[];

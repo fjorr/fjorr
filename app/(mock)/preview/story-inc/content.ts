@@ -200,6 +200,16 @@ export const PROJECTS_INDEX = [
     image: '/preview/story-inc/rolling-loud/title-dark.png',
   },
   {
+    href: '/preview/story-inc/hello-darkness',
+    title: 'Hello Darkness, My Old Friend',
+    image: '/preview/story-inc/hello-darkness/hero-title.png',
+  },
+  {
+    href: '/preview/story-inc/notorious-god',
+    title: 'The Notorious G.O.D.',
+    image: '/preview/story-inc/notorious-god/hero-title.jpg',
+  },
+  {
     href: null,
     title: 'A Knight of Seven Kingdoms',
     image: '/preview/story-inc/market-2.jpg',

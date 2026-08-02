@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-/** Poster + play — YouTube embed when youtubeId is set. */
+/** Poster + play — YouTube embed, or external trailer URL (Frame.io, etc.). */
 export default function TrailerHero({
   className = '',
   rounded = 'rounded-[28px]',
@@ -10,6 +10,7 @@ export default function TrailerHero({
   title = 'Angry Birds 3',
   teaserLabel = 'Official teaser',
   youtubeId,
+  trailerUrl,
 }: {
   className?: string;
   rounded?: string;
@@ -18,8 +19,11 @@ export default function TrailerHero({
   teaserLabel?: string;
   /** When set, play loads this YouTube embed in the hero. */
   youtubeId?: string;
+  /** External trailer (e.g. Frame.io) — opens in a new tab on play. */
+  trailerUrl?: string;
 }) {
   const [playing, setPlaying] = useState(false);
+  const playable = Boolean(youtubeId || trailerUrl);
   const posterSrc =
     poster ||
     (youtubeId
@@ -46,11 +50,17 @@ export default function TrailerHero({
     <button
       type="button"
       onClick={() => {
-        if (youtubeId) setPlaying(true);
+        if (youtubeId) {
+          setPlaying(true);
+          return;
+        }
+        if (trailerUrl) {
+          window.open(trailerUrl, '_blank', 'noopener,noreferrer');
+        }
       }}
       aria-label={`Play ${title} trailer`}
       className={`group relative block w-full overflow-hidden bg-black text-left ${rounded} ${className} ${
-        youtubeId ? 'cursor-pointer' : 'cursor-default'
+        playable ? 'cursor-pointer' : 'cursor-default'
       }`}
     >
       <img

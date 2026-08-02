@@ -3,11 +3,14 @@ export default function RewardPlaceholder({
   color,
   caption,
   image,
+  imagePosition = 'center',
   className = '',
 }: {
   color: string;
   caption: string;
   image?: string;
+  /** Crop anchor — center keeps faces in frame; use top for tall stage/full-body shots. */
+  imagePosition?: 'top' | 'center';
   className?: string;
 }) {
   if (image) {
@@ -20,7 +23,9 @@ export default function RewardPlaceholder({
         <img
           src={image}
           alt=""
-          className="absolute inset-0 h-full w-full object-cover object-top"
+          className={`absolute inset-0 h-full w-full object-cover ${
+            imagePosition === 'top' ? 'object-top' : 'object-center'
+          }`}
         />
       </div>
     );

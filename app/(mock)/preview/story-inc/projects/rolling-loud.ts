@@ -59,7 +59,7 @@ export const ROLLING_LOUD: ProjectPageData = {
   youtubeId: '4lE0FY7a6rA',
   heroPoster: img.heroTrailer,
   teaserLabel: 'Official trailer',
-  fanCount: 12653,
+  fanCount: 28419,
   rewardGroups: [
     {
       heading: 'Redeem with Story Cash',

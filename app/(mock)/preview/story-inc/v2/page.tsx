@@ -14,11 +14,15 @@ import {
   TRAILERS,
 } from '../content';
 
-export const metadata: Metadata = {
+import { projectPageMetadata } from '../project-metadata';
+
+export const metadata: Metadata = projectPageMetadata({
   title: 'Angry Birds 3',
   description:
     'Follow Angry Birds 3 on Story Inc — rewards, markets, and the project page.',
-};
+  path: '/preview/story-inc/v2',
+  image: '/preview/story-inc/trailer-poster.png',
+});
 
 function DeadLink({
   children,
@@ -487,7 +491,7 @@ export default function StoryIncProjectMockPage() {
                     <img
                       src={member.image}
                       alt={member.name}
-                      className="h-10 w-10 shrink-0 rounded-full object-cover object-top"
+                      className="h-10 w-10 shrink-0 rounded-full object-cover object-center"
                     />
                     <span className="text-[15px] font-medium text-gray-900">
                       {member.name}
