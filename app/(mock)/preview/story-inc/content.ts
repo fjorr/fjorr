@@ -197,7 +197,7 @@ export const PROJECTS_INDEX = [
   {
     href: '/preview/story-inc/rolling-loud',
     title: 'Rolling Loud',
-    image: '/preview/story-inc/rolling-loud/title-dark.jpg',
+    image: '/preview/story-inc/rolling-loud/title-dark.png',
   },
   {
     href: null,

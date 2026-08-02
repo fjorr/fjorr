@@ -1,22 +1,30 @@
 import type { ProjectPageData } from '../project-types';
 
+/**
+ * Rolling Loud assets — mapped to client placement screenshots:
+ * hero = Owen close-up · wife market = Owen stage · box office neon ·
+ * cameo = Carti · Rife B&W · VMA · merch tee · lineup poster ·
+ * shout-outs = Owen stage / Matt / Travis · VIP = concert crowd.
+ */
 const A = '/preview/story-inc/rolling-loud';
 const img = {
-  owenStage: `${A}/market-owen-stage.jpg`,
-  owenClose: `${A}/market-owen-close.jpg`,
-  carti: `${A}/market-carti.jpg`,
-  boxOffice: `${A}/market-box-office.jpg`,
-  rife: `${A}/market-rife.jpg`,
-  vma: `${A}/market-vma.jpg`,
-  merch: `${A}/reward-merch.jpg`,
-  merchLips: `${A}/reward-merch-lips.jpg`,
-  poster: `${A}/reward-poster.jpg`,
-  shoutOwen: `${A}/shout-owen.jpg`,
-  shoutRife: `${A}/shout-matt-rife.jpg`,
-  shoutTravis: `${A}/shout-travis.jpg`,
-  festivalVip: `${A}/reward-festival-vip.jpg`,
-  crowd: `${A}/reward-crowd.jpg`,
-  titleDark: `${A}/title-dark.jpg`,
+  heroTrailer: `${A}/hero-trailer.png`,
+  owenStage: `${A}/market-owen-wife.png`,
+  owenClose: `${A}/hero-trailer.png`,
+  carti: `${A}/market-carti.png`,
+  boxOffice: `${A}/market-box-office.png`,
+  rife: `${A}/market-rife.png`,
+  rifeLive: `${A}/shout-matt-rife.png`,
+  vma: `${A}/market-vma.png`,
+  merch: `${A}/reward-merch.png`,
+  merchLips: `${A}/reward-merch-lips.png`,
+  poster: `${A}/reward-poster.png`,
+  shoutOwen: `${A}/shout-owen-stage.png`,
+  shoutRife: `${A}/shout-matt-rife.png`,
+  shoutTravis: `${A}/shout-travis.png`,
+  festivalVip: `${A}/reward-festival-vip.png`,
+  crowd: `${A}/reward-crowd.png`,
+  titleDark: `${A}/title-dark.png`,
 } as const;
 
 /** Rolling Loud — Story Inc client comp from partner HTML brief. */
@@ -49,7 +57,7 @@ export const ROLLING_LOUD: ProjectPageData = {
   ],
   // Official trailer — https://www.youtube.com/watch?v=4lE0FY7a6rA
   youtubeId: '4lE0FY7a6rA',
-  heroPoster: `${A}/title-dark.jpg`,
+  heroPoster: img.heroTrailer,
   teaserLabel: 'Official trailer',
   fanCount: 12653,
   rewardGroups: [
@@ -58,22 +66,21 @@ export const ROLLING_LOUD: ProjectPageData = {
       rewards: [
         {
           id: 'bts',
-          caption: 'Behind the scenes · digital',
+          caption: '',
           status: 'Open now',
           title: 'Behind the scenes',
           body: 'Uncut festival footage, cut scenes, and desk notes from the edit.',
-          color: '#12324a',
+          color: '#000000',
           price: '750 SC',
           priceHint: 'Redeem',
         },
         {
           id: 'soundtrack',
-          caption: 'Soundtrack · early listen',
+          caption: '',
           status: 'Open now',
           title: 'Soundtrack early listen',
           body: 'Hear it before it drops anywhere else.',
-          color: '#1a3a2e',
-          image: img.merchLips,
+          color: '#000000',
           price: '1,000 SC',
           priceHint: 'Redeem',
         },
@@ -106,12 +113,11 @@ export const ROLLING_LOUD: ProjectPageData = {
       rewards: [
         {
           id: 'shout-owen',
-          caption: 'Personal video message',
+          caption: '',
           status: 'Weekly drawing',
           title: 'Shout-out — Owen Wilson',
           body: 'A personal video message. Yours to keep, yours to post.',
-          color: '#0f1a2e',
-          image: img.shoutOwen,
+          color: '#000000',
           price: 'Free entry',
           priceHint: 'Drawing',
         },
@@ -139,12 +145,11 @@ export const ROLLING_LOUD: ProjectPageData = {
         },
         {
           id: 'campus-vip',
-          caption: 'Local venue · 2 tickets',
+          caption: '',
           status: 'Campus drawing',
           title: 'Local venue tickets',
           body: "Two tickets to a Live Nation show near your school. Students at that week's tour stop only.",
-          color: '#163040',
-          image: img.crowd,
+          color: '#000000',
           price: 'Free entry',
           priceHint: 'Campus only',
         },
@@ -155,12 +160,11 @@ export const ROLLING_LOUD: ProjectPageData = {
       rewards: [
         {
           id: 'premiere',
-          caption: 'Premiere night · 2 tickets',
+          caption: '',
           status: 'Grand drawing',
           title: 'LA premiere + afterparty',
           body: 'Two tickets to opening night. Red carpet, screening, afterparty.',
-          color: '#0f1a2e',
-          image: img.titleDark,
+          color: '#000000',
           price: 'Free entry',
           priceHint: 'Grand drawing',
         },
@@ -177,23 +181,21 @@ export const ROLLING_LOUD: ProjectPageData = {
         },
         {
           id: 'travis-show',
-          caption: 'Live Nation · 2 VIP',
+          caption: '',
           status: 'Grand drawing',
           title: 'VIP — next Travis Scott show',
           body: 'Two VIP tickets to an upcoming Live Nation date.',
-          color: '#2a1820',
-          image: img.shoutTravis,
+          color: '#000000',
           price: 'Free entry',
           priceHint: 'Grand drawing',
         },
         {
           id: 'rife-live',
-          caption: 'Stand-up · VIP + backstage',
+          caption: '',
           status: 'Grand drawing',
           title: 'VIP + backstage — Matt Rife',
           body: 'Two VIP seats and a meet-and-greet at an upcoming stand-up date.',
-          color: '#1e2430',
-          image: img.rife,
+          color: '#000000',
           price: 'Free entry',
           priceHint: 'Grand drawing',
         },
@@ -250,7 +252,6 @@ export const ROLLING_LOUD: ProjectPageData = {
       closes: '10.2.26',
     },
     {
-      image: img.boxOffice,
       question: 'Domestic box office 30 days from opening?',
       outcomes: [
         { label: 'Under $35M', pct: 22 },
@@ -262,7 +263,6 @@ export const ROLLING_LOUD: ProjectPageData = {
       closes: '11.1.26',
     },
     {
-      image: img.crowd,
       question: 'Will a cast member show up at the Auburn campus stop?',
       outcomes: [
         { label: 'Yes', pct: 44 },
@@ -273,7 +273,6 @@ export const ROLLING_LOUD: ProjectPageData = {
       closes: 'in 3 days',
     },
     {
-      image: img.titleDark,
       question: 'How many artists appear in Trailer 2?',
       outcomes: [
         { label: 'Under 3', pct: 19 },
@@ -285,7 +284,6 @@ export const ROLLING_LOUD: ProjectPageData = {
       closes: 'in 6 days',
     },
     {
-      image: img.boxOffice,
       question: 'Opening weekend rank against Digger and Verity?',
       outcomes: [
         { label: '1st', pct: 18 },
@@ -298,6 +296,7 @@ export const ROLLING_LOUD: ProjectPageData = {
     },
     {
       image: img.vma,
+      imagePosition: 'center',
       question: 'Will Travis Scott or Sexyy Red perform at the VMAs?',
       outcomes: [
         { label: 'Yes', pct: 61 },
@@ -308,7 +307,6 @@ export const ROLLING_LOUD: ProjectPageData = {
       closes: 'Resolves that night',
     },
     {
-      image: img.shoutTravis,
       question: 'How many named artists appear on screen?',
       outcomes: [
         { label: 'Under 3', pct: 9 },
@@ -320,7 +318,6 @@ export const ROLLING_LOUD: ProjectPageData = {
       closes: '10.2.26',
     },
     {
-      image: img.owenClose,
       question: 'Who has more screen time — Wilson or Rife?',
       outcomes: [
         { label: 'Owen Wilson', pct: 72 },
@@ -331,7 +328,6 @@ export const ROLLING_LOUD: ProjectPageData = {
       closes: '10.2.26',
     },
     {
-      image: img.titleDark,
       question: 'Popcornmeter score one week after release?',
       outcomes: [
         { label: 'Under 60%', pct: 16 },
@@ -343,7 +339,6 @@ export const ROLLING_LOUD: ProjectPageData = {
       closes: '10.9.26',
     },
     {
-      image: img.owenClose,
       question: 'Is there a post-credits scene?',
       outcomes: [
         { label: 'Yes', pct: 57 },
@@ -354,7 +349,6 @@ export const ROLLING_LOUD: ProjectPageData = {
       closes: '10.2.26',
     },
     {
-      image: img.shoutTravis,
       question: 'Will a surprise artist be revealed at the LA premiere?',
       outcomes: [
         { label: 'Yes', pct: 49 },
@@ -365,7 +359,6 @@ export const ROLLING_LOUD: ProjectPageData = {
       closes: '9.30.26',
     },
     {
-      image: img.crowd,
       question: 'Which campus gets announced as the next tour stop?',
       outcomes: [
         { label: 'University of Miami', pct: 36 },
@@ -377,7 +370,6 @@ export const ROLLING_LOUD: ProjectPageData = {
       closes: 'in 2 days',
     },
     {
-      image: img.shoutRife,
       question: 'Will Matt Rife announce new tour dates during the press run?',
       outcomes: [
         { label: 'Yes', pct: 54 },
@@ -428,27 +420,13 @@ export const ROLLING_LOUD: ProjectPageData = {
       title: 'Official teaser',
       meta: 'Released',
       status: 'Watch',
-      thumb: img.titleDark,
+      thumb: img.heroTrailer,
     },
     {
       title: 'Fan-share invite',
       meta: 'Filmmakers invite trusted fans to share Trailer 2 early',
       status: 'Request access',
-      thumb: img.owenStage,
-    },
-    {
-      title: 'Red band spot',
-      meta: 'Unlock with Follow + one correct prediction',
-      status: 'Locked',
-      thumb: img.shoutTravis,
-      locked: true,
-    },
-    {
-      title: 'Campus tour cut',
-      meta: 'Drops the week your school gets the pull-up',
-      status: 'Locked',
-      thumb: img.crowd,
-      locked: true,
+      thumb: img.owenClose,
     },
   ],
   hasTickets: true,

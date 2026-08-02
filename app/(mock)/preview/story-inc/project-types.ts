@@ -26,7 +26,10 @@ export type ProjectMarket = {
   closes: string;
   volume: string;
   traders: string;
-  image: string;
+  /** Omit for a plain black media area (no matched asset yet). */
+  image?: string;
+  /** Crop anchor for the hero image. Default top (faces). */
+  imagePosition?: 'top' | 'center';
 };
 
 export type ProjectComment = {

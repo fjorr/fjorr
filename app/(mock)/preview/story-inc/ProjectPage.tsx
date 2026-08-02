@@ -212,6 +212,7 @@ export default function ProjectPage({ data }: { data: ProjectPageData }) {
                   volume={m.volume}
                   traders={m.traders}
                   projectLabel={data.title}
+                  imagePosition={m.imagePosition}
                 />
               ))}
             </div>

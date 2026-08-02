@@ -13,7 +13,7 @@ export default function RewardPlaceholder({
   if (image) {
     return (
       <div
-        className={`relative overflow-hidden bg-[#f5f5f7] ${className}`}
+        className={`relative overflow-hidden bg-black ${className}`}
         role="img"
         aria-label={caption}
       >
@@ -22,14 +22,18 @@ export default function RewardPlaceholder({
           alt=""
           className="absolute inset-0 h-full w-full object-cover object-top"
         />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent"
-        />
-        <p className="absolute bottom-0 left-0 right-0 z-[1] p-4 text-[13px] font-semibold tracking-tight text-white sm:p-5 sm:text-[14px]">
-          {caption}
-        </p>
       </div>
+    );
+  }
+
+  // No matched asset — plain black (or legacy color fill + caption for older mocks).
+  if (!caption) {
+    return (
+      <div
+        className={`bg-black ${className}`}
+        role="img"
+        aria-label="Reward"
+      />
     );
   }
 
