@@ -14,7 +14,7 @@ export type ManualAction = {
 };
 
 export type ManualEntry = {
-  /** 01 … 11 */
+  /** 00 … 11 */
   number: string;
   slug: string;
   title: string;
@@ -39,6 +39,16 @@ function sameWho(text: string): Record<ManualAudience, string> {
 }
 
 export const MANUAL_ENTRIES: ManualEntry[] = [
+  {
+    number: '00',
+    slug: 'why',
+    title: 'Why',
+    what: 'Why Fjorr exists.',
+    who: sameWho('Anyone who landed here first.'),
+    happens:
+      "The algorithm doesn't care who you become. Fjorr does. It's built for the opposite — short films with something real in them, made for people who still want to become something.",
+    actions: both([{ href: '/about', label: 'Read the full story' }]),
+  },
   {
     number: '01',
     slug: 'watch',

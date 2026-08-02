@@ -4,6 +4,7 @@ import React, { useEffect, useId, useState } from 'react';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Link, usePathname } from '@/i18n/navigation';
+import ColorSchemeToggle from '@/components/ColorSchemeToggle';
 import FjorrMark from '@/components/help/FjorrMark';
 import {
   MANUAL_ENTRIES,
@@ -172,6 +173,7 @@ export default function HelpShell({ children }: { children: React.ReactNode }) {
                 aria-hidden
               />
               {spine}
+              <ColorSchemeToggle className="self-start" />
             </div>
           </div>
         </div>
@@ -203,7 +205,10 @@ export default function HelpShell({ children }: { children: React.ReactNode }) {
               className="h-px w-full bg-[color-mix(in_srgb,var(--page-fg)_45%,transparent)] relative"
               aria-hidden
             />
-            <div className="relative">{spine}</div>
+            <div className="relative flex-1 min-h-0">{spine}</div>
+            <div className="relative mt-auto pt-4">
+              <ColorSchemeToggle className="w-full justify-stretch [&>button]:flex-1" />
+            </div>
           </aside>
 
           <main
