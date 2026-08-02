@@ -8,6 +8,7 @@ import { localeLabels, locales, stripLocalePrefix, type AppLocale } from '@/i18n
 import { Link, usePathname, useRouter } from '@/i18n/navigation';
 import ColorSchemeToggle from '@/components/ColorSchemeToggle';
 import AccountNavLink from '@/components/AccountNavLink';
+import NavbarBureauxCue from '@/components/NavbarBureauxCue';
 
 const SignInForm = dynamic(() => import('@/components/SignInForm'), {
   ssr: false,
@@ -182,7 +183,7 @@ function Navbar({ variant = 'light' }: NavbarProps) {
               {t('tagline')}
             </span>
           ) : null}
-          <div className="w-[4.75rem] shrink-0" />
+          <div className="w-[8.5rem] shrink-0" />
         </div>
 
         <div
@@ -231,6 +232,7 @@ function Navbar({ variant = 'light' }: NavbarProps) {
             </div>
 
             <div className="flex items-center gap-3 shrink-0 ml-auto sm:ml-0">
+              <NavbarBureauxCue className={iconColor} />
               <button
                 type="button"
                 aria-label={showCloseIcon ? t('closeMenu') : t('openMenu')}

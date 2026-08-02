@@ -25,7 +25,9 @@
     "bounties": "Bounties",
     "cabinet": "The Cabinet",
     "bureaux": "The Bureaux",
-    "joinBureaux": "Join the Bureaux"
+    "joinBureaux": "Join the Bureaux",
+    "bureauxMark": "№ {number}",
+    "bureauxMarkAria": "Bureaux № {number}, open account"
   },
   "DisplayMode": {
     "cinematic": "Cine",

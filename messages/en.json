@@ -20,6 +20,8 @@
     "logOut": "Log out",
     "memberLine": "#{number} · {name}",
     "memberNumberOnly": "#{number}",
+    "bureauxMark": "№ {number}",
+    "bureauxMarkAria": "Bureaux № {number}, open account",
     "appearance": "Appearance",
     "appearanceDark": "Dark",
     "appearanceLight": "Light",
@@ -496,7 +498,6 @@
     "s16Title": "Contact",
     "s16Body": "Privacy questions, rights requests, or concerns:"
   },
-
   "Terms": {
     "titleLine1": "Terms",
     "titleLine2": "Sheet",
