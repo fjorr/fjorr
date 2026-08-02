@@ -23,10 +23,8 @@ export default function TermsClient() {
         />
 
         <div className="w-full text-center mb-4 select-none animate-in fade-in zoom-in-95 duration-500 fill-mode-both">
-          <h1 className="font-futura text-[56px]/[48px] md:text-[72px]/[62px] uppercase tracking-tight font-black text-page">
-            {t('titleLine1')}
-            <br />
-            {t('titleLine2')}
+          <h1 className="font-futura text-[48px]/[44px] md:text-[72px]/[62px] uppercase tracking-tight font-black text-page">
+            {t('titleLine1')} {t('titleLine2')}
           </h1>
         </div>
 

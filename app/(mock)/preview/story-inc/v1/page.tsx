@@ -50,9 +50,15 @@ export default function StoryIncApplePage() {
             >
               Angry Birds 3
             </h1>
+          </div>
 
-            {/* Cast billing up top — names are the sell */}
-            <p className="mx-auto mt-5 max-w-[40rem] text-[15px] font-semibold leading-[1.45] tracking-[-0.01em] text-[#1d1d1f] sm:mt-6 sm:text-[17px]">
+          <div className="mx-auto max-w-[980px] px-5">
+            <TrailerHero />
+          </div>
+
+          {/* Cast after media — keeps first viewport on title + image */}
+          <div className="mx-auto max-w-[680px] px-5 pt-8 text-center sm:pt-10">
+            <p className="text-[15px] font-semibold leading-[1.45] tracking-[-0.01em] text-[#1d1d1f] sm:text-[17px]">
               {TEAM.map((m, i) => (
                 <span key={m.name}>
                   {i > 0 ? (
@@ -70,13 +76,7 @@ export default function StoryIncApplePage() {
             </p>
           </div>
 
-          <div className="mx-auto max-w-[980px] px-5">
-            <div>
-              <TrailerHero />
-            </div>
-          </div>
-
-          <div className="mx-auto max-w-[680px] px-5 pb-6 pt-12 text-center sm:pt-14">
+          <div className="mx-auto max-w-[680px] px-5 pb-6 pt-10 text-center sm:pt-12">
             <h2 className="text-[28px] font-bold tracking-[-0.02em] text-[#1d1d1f] sm:text-[32px]">
               The story
             </h2>
@@ -85,7 +85,7 @@ export default function StoryIncApplePage() {
             </p>
           </div>
 
-          {/* CTAs + jump tiles — VIP Follow benefit stated up top */}
+          {/* Four jump tiles only — no duplicate Explore / Follow CTAs */}
           <div
             id="hero-cta"
             className="mx-auto flex max-w-[980px] flex-col items-center gap-5 px-5 pb-16 pt-2"
@@ -94,17 +94,8 @@ export default function StoryIncApplePage() {
               Follow this page for VIP access, early notifications, and reward
               drops from the filmmakers.
             </p>
-            <div className="flex flex-wrap items-center justify-center gap-3">
-              <a
-                href="#rewards"
-                className="inline-flex h-12 items-center justify-center rounded-full bg-[#00a6ff] px-8 text-[15px] font-semibold text-white hover:bg-[#0095e6]"
-              >
-                Explore rewards
-              </a>
-              <FollowButton initialCount={FAN_COUNT} size="lg" secondary />
-            </div>
 
-            <div className="mt-2 grid w-full max-w-[720px] grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="grid w-full max-w-[720px] grid-cols-2 gap-3 sm:grid-cols-4">
               {[
                 {
                   label: 'Rewards',

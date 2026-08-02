@@ -114,16 +114,25 @@ export default function HelpShell({ children }: { children: React.ReactNode }) {
               {t('title')}
             </p>
           </Link>
-          <button
-            type="button"
-            aria-label={open ? t('closeMenu') : t('openMenu')}
-            aria-expanded={open}
-            aria-controls={panelId}
-            onClick={() => setOpen((v) => !v)}
-            className="shrink-0 inline-flex items-center h-9 px-3 font-sans text-[13px] font-semibold text-page border border-[color-mix(in_srgb,var(--page-fg)_45%,transparent)]"
-          >
-            {t('menu')}
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <Link
+              href="/"
+              aria-label={t('exitAria')}
+              className="inline-flex items-center h-9 px-3 font-sans text-[13px] font-semibold text-page-faint hover:text-page border border-[color-mix(in_srgb,var(--page-fg)_45%,transparent)] transition-colors"
+            >
+              {t('exit')}
+            </Link>
+            <button
+              type="button"
+              aria-label={open ? t('closeMenu') : t('openMenu')}
+              aria-expanded={open}
+              aria-controls={panelId}
+              onClick={() => setOpen((v) => !v)}
+              className="inline-flex items-center h-9 px-3 font-sans text-[13px] font-semibold text-page border border-[color-mix(in_srgb,var(--page-fg)_45%,transparent)]"
+            >
+              {t('menu')}
+            </button>
+          </div>
         </div>
 
         {/* Mobile menu */}
@@ -173,6 +182,18 @@ export default function HelpShell({ children }: { children: React.ReactNode }) {
                 aria-hidden
               />
               {spine}
+              <Link
+                href="/"
+                onClick={close}
+                aria-label={t('exitAria')}
+                className="font-sans text-[13px] font-semibold text-page-faint hover:text-page transition-colors"
+              >
+                {t('exit')}
+                <span className="text-page-faint/50 font-medium">
+                  {' · '}
+                  {t('backToSite')}
+                </span>
+              </Link>
               <ColorSchemeToggle className="self-start" />
             </div>
           </div>
@@ -206,7 +227,18 @@ export default function HelpShell({ children }: { children: React.ReactNode }) {
               aria-hidden
             />
             <div className="relative flex-1 min-h-0">{spine}</div>
-            <div className="relative mt-auto pt-4">
+            <div className="relative mt-auto pt-4 flex flex-col gap-3">
+              <Link
+                href="/"
+                aria-label={t('exitAria')}
+                className="font-sans text-[13px] font-semibold text-page-faint hover:text-page transition-colors"
+              >
+                {t('exit')}
+                <span className="text-page-faint/50 font-medium">
+                  {' · '}
+                  {t('backToSite')}
+                </span>
+              </Link>
               <ColorSchemeToggle className="w-full justify-stretch [&>button]:flex-1" />
             </div>
           </aside>
@@ -223,11 +255,23 @@ export default function HelpShell({ children }: { children: React.ReactNode }) {
         {/* Two-column footer — version / updated · page */}
         <footer className="border-t border-[color-mix(in_srgb,var(--page-fg)_45%,transparent)] shrink-0">
           <div className="flex items-start justify-between gap-6 px-5 sm:px-6 py-3.5 font-sans text-[11px] sm:text-[12px] leading-snug text-page">
-            <div className="min-w-0 truncate">
-              <span>{t('colophonMark')}</span>
-              <span className="text-page-faint">
-                {' · '}
-                {t('footerUpdated', { date: MANUAL_UPDATED })}
+            <div className="min-w-0 truncate flex items-center gap-2.5">
+              <Link
+                href="/"
+                aria-label={t('exitAria')}
+                className="shrink-0 font-semibold text-page-faint hover:text-page transition-colors"
+              >
+                {t('exit')}
+              </Link>
+              <span className="text-page-faint/40" aria-hidden>
+                ·
+              </span>
+              <span className="min-w-0 truncate">
+                <span>{t('colophonMark')}</span>
+                <span className="text-page-faint">
+                  {' · '}
+                  {t('footerUpdated', { date: MANUAL_UPDATED })}
+                </span>
               </span>
             </div>
             <div className="shrink-0 flex items-center gap-2.5">

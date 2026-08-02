@@ -63,6 +63,16 @@ function SpecRow({
   );
 }
 
+/** Playbill line — name leads; role is the quiet label beside it. */
+function CreditRow({ name, role }: { name: string; role: string }) {
+  return (
+    <p className="text-sm leading-snug tracking-tight">
+      <span className="text-page font-semibold">{name}</span>{' '}
+      <span className="text-page-faint font-medium">{role}</span>
+    </p>
+  );
+}
+
 function isDirectorCredit(row: CreatorMapRow) {
   if (row.role_code === 'director') return true;
   return /^director$/i.test(String(row.role || '').trim());
@@ -108,8 +118,6 @@ export default function FilmSpecs({
   }, [film?.id, subtitles.length]);
 
   const hasTranscript = subtitles.length > 0;
-  const hasSecondary =
-    audioLanguages.length > 0 || subtitles.length > 0 || tags.length > 0;
 
   const placeLine = [film.story_date, film.location].filter(Boolean).join(' · ');
   const directorNote =
@@ -198,61 +206,49 @@ export default function FilmSpecs({
         variant="page"
       />
 
-      {/* Specs — self-explanatory grid, no section title */}
+      {/* Specs — credits name-first; facts stay label → value */}
       <div className="pt-8 max-w-2xl">
-        <div className="flex flex-col gap-2">
-          {creators.map((item, idx) => (
-            <SpecRow
-              key={idx}
-              label={item.role}
-              value={item.creator?.name || t('unknownCreator')}
-              emphasize
-            />
-          ))}
+        {creators.length > 0 ? (
+          <div className="flex flex-col gap-2.5">
+            {creators.map((item, idx) => (
+              <CreditRow
+                key={idx}
+                name={item.creator?.name || t('unknownCreator')}
+                role={item.role}
+              />
+            ))}
+          </div>
+        ) : null}
 
+        <div
+          className={`flex flex-col gap-2 ${
+            creators.length > 0
+              ? 'mt-6 pt-6 border-t border-[color-mix(in_srgb,var(--page-fg)_6%,transparent)]'
+              : ''
+          }`}
+        >
           <SpecRow label={t('runtimeLabel')} value={displayRuntime} />
           <SpecRow label={t('ratingLabel')} value={displayRating} />
           <SpecRow label={t('releasedLabel')} value={releaseYear} />
+          {audioLanguages.length > 0 ? (
+            <SpecRow label={t('audioLabel')} value={audioLanguages.join(', ')} />
+          ) : null}
+          {subtitles.length > 0 ? (
+            <SpecRow
+              label={t('subtitlesLabel')}
+              value={subtitles.map((s) => s.name).join(', ')}
+            />
+          ) : null}
+          {tags.length > 0 ? (
+            <SpecRow
+              label={t('tagsLabel')}
+              value={tags
+                .map((tag) => tag.charAt(0).toUpperCase() + tag.slice(1))
+                .join(', ')}
+            />
+          ) : null}
         </div>
       </div>
-
-      {/* Languages & themes — whisper heading */}
-      {hasSecondary && (
-        <div className="mt-8 pt-8 border-t border-[color-mix(in_srgb,var(--page-fg)_6%,transparent)] max-w-2xl">
-          <h3 className="text-[13px] font-medium text-page-faint mb-3 tracking-tight">
-            {t('languagesAndThemes')}
-          </h3>
-
-          <div className="flex flex-col gap-2 text-[13px] text-page-muted font-medium">
-            {audioLanguages.length > 0 && (
-              <p>
-                <span className="text-page-faint">{t('audioLabel')}</span>
-                {' · '}
-                {audioLanguages.join(', ')}
-              </p>
-            )}
-            {subtitles.length > 0 && (
-              <p>
-                <span className="text-page-faint">{t('subtitlesLabel')}</span>
-                {' · '}
-                {subtitles.map((s) => s.name).join(', ')}
-              </p>
-            )}
-            {tags.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 pt-1">
-                {tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="bg-page-chip rounded-[4px] px-2 py-0.5 text-[11px] text-page-muted font-medium"
-                  >
-                    {tag.charAt(0).toUpperCase() + tag.slice(1)}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
