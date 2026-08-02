@@ -106,12 +106,20 @@ export default function BountiesClient({
             </p>
           </div>
 
-          <Link
-            href="/principles"
-            className="mt-4 font-sans text-[13px] sm:text-[14px] font-semibold text-page-muted hover:text-page transition-colors underline underline-offset-2"
-          >
-            {t('principlesLink')}
-          </Link>
+          <div className="mt-4 flex flex-col items-start gap-2">
+            <Link
+              href="/principles"
+              className="font-sans text-[13px] sm:text-[14px] font-semibold text-page-muted hover:text-page transition-colors underline underline-offset-2"
+            >
+              {t('principlesLink')}
+            </Link>
+            <Link
+              href="/manual/bounties"
+              className="font-sans text-[13px] sm:text-[14px] font-semibold text-page-muted hover:text-page transition-colors underline underline-offset-2"
+            >
+              Manual · Bounties
+            </Link>
+          </div>
           <p className="mt-3 font-sans text-[13px] sm:text-[14px] leading-snug text-page-muted max-w-sm tracking-normal">
             {t('generalBlurb')}{' '}
             <Link

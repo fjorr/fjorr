@@ -106,6 +106,28 @@ body {
   animation: fadeUpReveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* Manual folio — one entrance gesture */
+@keyframes manualFolioIn {
+  0% {
+    opacity: 0;
+    transform: translateY(0.35em);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.manual-folio-in {
+  animation: manualFolioIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .manual-folio-in {
+    animation: none;
+  }
+}
+
 /* Theme-aware ink / chips for browse chrome */
 @layer utilities {
   .text-page {

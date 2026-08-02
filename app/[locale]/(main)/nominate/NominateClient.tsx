@@ -287,6 +287,12 @@ export default function NominateClient({
               >
                 {t('principlesLink')}
               </Link>
+              <Link
+                href="/manual/nominate"
+                className="font-sans text-[13px] sm:text-[14px] font-semibold text-page-muted hover:text-page transition-colors underline underline-offset-2"
+              >
+                Manual · Nominate
+              </Link>
             </div>
 
             {!bureauxActive ? (

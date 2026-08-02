@@ -116,6 +116,12 @@ export default function PlusClient() {
             >
               {t('pageCabinetLink')}
             </Link>
+            <Link
+              href="/manual/plus"
+              className="inline-flex h-11 items-center font-sans text-[14px] font-semibold text-page-muted hover:text-page transition-colors underline underline-offset-4 decoration-page-faint"
+            >
+              Manual · Plus Machine
+            </Link>
           </footer>
         </div>
       </div>

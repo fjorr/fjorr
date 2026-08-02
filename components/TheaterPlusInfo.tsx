@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 
 /** Short doctrine sheet — living films / Plus Machine. */
 export default function TheaterPlusInfo({
@@ -68,6 +69,13 @@ export default function TheaterPlusInfo({
           <p>{t('infoP2')}</p>
           <p>{t('infoP3')}</p>
         </div>
+        <Link
+          href="/manual/plus"
+          onClick={onClose}
+          className={`self-start font-sans text-[13px] font-semibold underline underline-offset-2 ${muted} hover:opacity-100`}
+        >
+          Manual · Plus Machine
+        </Link>
         <button
           type="button"
           onClick={onClose}

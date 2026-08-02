@@ -1,11 +1,8 @@
 import type { Metadata } from 'next';
+import { ArrowRight } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
-import {
-  HELP_CATEGORIES,
-  getHelpArticle,
-  helpArticleHref,
-} from '@/lib/help/content';
+import { listManualEntries, manualEntryHref } from '@/lib/help/content';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('Meta');
@@ -16,53 +13,39 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function HelpHomePage() {
+export default async function ManualIndexPage() {
   const t = await getTranslations('Help');
+  const first = listManualEntries()[0];
 
   return (
-    <div className="flex flex-col gap-10">
-      <header className="flex flex-col gap-3 border-b border-page-faint pb-8">
-        <p className="font-sans text-[12px] font-semibold uppercase tracking-[0.08em] text-page-faint">
+    <div className="h-full min-h-[min(28rem,60dvh)] flex flex-col justify-center">
+      <header className="flex flex-col gap-5 max-w-[22rem] sm:max-w-[36rem]">
+        <p className="m-0 font-mono text-[11px] font-semibold uppercase tracking-[0.22em] text-page-faint">
           {t('eyebrow')}
         </p>
-        <h1 className="font-futura text-[2.25rem] sm:text-[2.75rem] tracking-tighter text-page leading-[0.95] select-none">
+        <h1 className="font-interTight font-bold tracking-tight text-[clamp(3rem,9vw,5.5rem)] text-page leading-[0.98] select-none text-balance">
           {t('homeHeadline')}
         </h1>
-        <p className="font-sans text-[15px] sm:text-[16px] text-page-muted leading-relaxed max-w-xl">
+        <p className="font-sans text-[15px] sm:text-[16px] text-page-muted leading-relaxed max-w-[22rem]">
           {t('homeLead')}
         </p>
+        {first ? (
+          <Link
+            href={manualEntryHref(first.slug)}
+            className="self-start inline-flex h-9 items-center gap-1.5 px-3.5 rounded-[8px] bg-[color-mix(in_srgb,var(--page-fg)_8%,var(--page-bg))] text-page font-sans text-[13px] font-semibold tracking-tight hover:bg-[color-mix(in_srgb,var(--page-fg)_12%,var(--page-bg))] transition-colors mt-2"
+          >
+            <span>
+              {t('beginCta', { number: first.number, title: first.title })}
+            </span>
+            <ArrowRight
+              size={14}
+              strokeWidth={1.75}
+              className="shrink-0 text-page-faint translate-y-px"
+              aria-hidden
+            />
+          </Link>
+        ) : null}
       </header>
-
-      <div className="flex flex-col gap-8">
-        {HELP_CATEGORIES.map((group) => (
-          <section key={group.id} className="flex flex-col gap-3">
-            <h2 className="font-sans text-[11px] font-semibold uppercase tracking-[0.08em] text-page-faint">
-              {group.label}
-            </h2>
-            <ul className="m-0 p-0 list-none flex flex-col divide-y divide-page-faint border-y border-page-faint">
-              {group.articleSlugs.map((slug) => {
-                const article = getHelpArticle(slug);
-                if (!article) return null;
-                return (
-                  <li key={slug}>
-                    <Link
-                      href={helpArticleHref(slug)}
-                      className="block py-3.5 group"
-                    >
-                      <p className="font-sans text-[15px] font-semibold tracking-tight text-page group-hover:opacity-70 transition-opacity">
-                        {article.title}
-                      </p>
-                      <p className="mt-0.5 font-sans text-[13px] text-page-faint leading-snug">
-                        {article.description}
-                      </p>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
-        ))}
-      </div>
     </div>
   );
 }

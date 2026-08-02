@@ -1,13 +1,16 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import HelpArticleView from '@/components/help/HelpArticleView';
+import { notFound, permanentRedirect } from 'next/navigation';
+import ManualEntryView from '@/components/help/ManualEntryView';
+import { getManualViewer } from '@/lib/help/audience';
 import {
-  getHelpArticle,
-  listHelpArticles,
+  MANUAL_LEGACY_REDIRECTS,
+  getManualEntry,
+  listManualEntries,
+  manualEntryHref,
 } from '@/lib/help/content';
 
 export function generateStaticParams() {
-  return listHelpArticles().map((a) => ({ slug: a.slug }));
+  return listManualEntries().map((e) => ({ slug: e.slug }));
 }
 
 export async function generateMetadata({
@@ -16,23 +19,41 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const article = getHelpArticle(slug);
-  if (!article) return { title: 'Help' };
+  const legacy = MANUAL_LEGACY_REDIRECTS[slug];
+  if (legacy) {
+    const entry = getManualEntry(legacy);
+    return { title: entry?.title || 'The Manual' };
+  }
+  const entry = getManualEntry(slug);
+  if (!entry) return { title: 'The Manual' };
   return {
-    title: article.title,
-    description: article.description,
-    alternates: { canonical: `/manual/${article.slug}` },
+    title: `${entry.number} ${entry.title}`,
+    description: entry.what,
+    alternates: { canonical: manualEntryHref(entry.slug) },
   };
 }
 
-export default async function HelpArticlePage({
+export default async function ManualEntryPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const article = getHelpArticle(slug);
-  if (!article) notFound();
+  const legacy = MANUAL_LEGACY_REDIRECTS[slug];
+  if (legacy && legacy !== slug) {
+    permanentRedirect(manualEntryHref(legacy));
+  }
 
-  return <HelpArticleView article={article} />;
+  const entry = getManualEntry(slug);
+  if (!entry) notFound();
+
+  const viewer = await getManualViewer();
+
+  return (
+    <ManualEntryView
+      entry={entry}
+      audience={viewer.audience}
+      bureauxNumber={viewer.bureauxNumber}
+    />
+  );
 }

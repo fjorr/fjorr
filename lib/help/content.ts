@@ -1,349 +1,242 @@
 /**
- * The Manual IA — mirrors the product surface.
- * Placeholder copy until real docs land.
+ * The Manual — numbered instrument.
+ * Fixed entries. State-aware CTAs. One (or two) actions each.
  */
 
-export type HelpArticle = {
+/** Bump when Manual copy or structure ships. Shown in footer. */
+export const MANUAL_UPDATED = '1 Aug 2026';
+
+export type ManualAudience = 'guest' | 'member';
+
+export type ManualAction = {
+  href: string;
+  label: string;
+};
+
+export type ManualEntry = {
+  /** 01 … 11 */
+  number: string;
   slug: string;
   title: string;
-  description: string;
-  /** Sidebar group id */
-  categoryId: string;
-  /** Short lead under the title */
-  lead: string;
-  sections: HelpSection[];
+  what: string;
+  who: Record<ManualAudience, string>;
+  happens: string;
+  /** CTAs — usually one; Terms uses two */
+  actions: Record<ManualAudience, ManualAction[]>;
+  /**
+   * Optional inline reference image under public/
+   * e.g. `/manual/watch.jpg`. Omit for empty crosshatched frame.
+   */
+  plate?: string;
 };
 
-export type HelpSection =
-  | { type: 'p'; text: string }
-  | { type: 'h2'; text: string }
-  | { type: 'ul'; items: string[] };
+function both(actions: ManualAction[]): Record<ManualAudience, ManualAction[]> {
+  return { guest: actions, member: actions };
+}
 
-export type HelpCategory = {
-  id: string;
-  label: string;
-  articleSlugs: string[];
-};
+function sameWho(text: string): Record<ManualAudience, string> {
+  return { guest: text, member: text };
+}
 
-export const HELP_CATEGORIES: HelpCategory[] = [
+export const MANUAL_ENTRIES: ManualEntry[] = [
   {
-    id: 'start',
-    label: 'Start here',
-    articleSlugs: ['what-is-fjorr', 'watching-films', 'getting-started'],
+    number: '01',
+    slug: 'watch',
+    title: 'Watch',
+    what: 'Short films of the world’s greatest stories. Free. No expiry.',
+    who: sameWho('Anyone. Membership is not required to watch.'),
+    happens: 'Open a film. Watch. A Voyage record is optional.',
+    actions: both([{ href: '/', label: 'Watch a film' }]),
   },
   {
-    id: 'bureaux',
-    label: 'The Bureaux',
-    articleSlugs: ['what-is-the-bureaux', 'joining-and-billing', 'member-perks'],
+    number: '02',
+    slug: 'join',
+    title: 'Join',
+    what: 'The Bureaux — annual membership. It funds the work. It is how one takes part.',
+    who: sameWho('Anyone who elects to join. One price. One year. No tiers.'),
+    happens:
+      'Pay once. Receive a permanent Bureaux number, the member tools, and a seat that may be passed on.',
+    actions: {
+      guest: [{ href: '/bureaux', label: 'Join the Bureaux' }],
+      member: [{ href: '/bureaux', label: 'Your Bureaux' }],
+    },
   },
   {
-    id: 'participate',
-    label: 'Take part',
-    articleSlugs: [
-      'nominating-stories',
-      'bounties',
-      'plus-machine',
-      'the-cabinet',
-    ],
+    number: '03',
+    slug: 'nominate',
+    title: 'Nominate',
+    what: 'Propose a story Fjorr ought to make, or open a bounty upon one.',
+    who: {
+      guest: 'Members only. Quality over volume. Caps apply.',
+      member: 'You. Quality over volume. Caps apply.',
+    },
+    happens:
+      'Write the brief. Fjorr reviews. Most are declined. A few are made — with credit, and a bounty if one is attached.',
+    actions: {
+      guest: [{ href: '/bureaux', label: 'Join the Bureaux' }],
+      member: [{ href: '/nominate', label: 'Nominate a story' }],
+    },
   },
   {
-    id: 'account',
-    label: 'Your account',
-    articleSlugs: ['sign-in', 'voyages-and-profile', 'privacy-and-data'],
+    number: '04',
+    slug: 'plus',
+    title: 'Plus Machine',
+    what: 'Mark a moment in a film. Send a craft note to Fjorr.',
+    who: {
+      guest: 'Members, while watching — from inside the film.',
+      member: 'You, while watching — from inside the film.',
+    },
+    happens:
+      'Notes reach Fjorr alone. Not a public thread. Films ship as v1, then sharpen.',
+    actions: {
+      guest: [{ href: '/bureaux', label: 'Join the Bureaux' }],
+      member: [{ href: '/plus', label: 'Open Plus Machine' }],
+    },
   },
   {
-    id: 'desk',
-    label: 'The desk',
-    articleSlugs: ['contact', 'principles'],
-  },
-];
-
-const ARTICLES: HelpArticle[] = [
-  {
-    slug: 'what-is-fjorr',
-    title: 'What is Fjorr?',
-    description: 'Short films of the world’s greatest stories.',
-    categoryId: 'start',
-    lead: 'Fjorr is home to short cinematic films about the stories that shaped people — free to watch, forever.',
-    sections: [
-      {
-        type: 'p',
-        text: 'Placeholder. Fjorr exists so great stories stay easy to find and hard to forget. Films are free. Membership is how the desk stays funded and how members take part.',
-      },
-      {
-        type: 'h2',
-        text: 'What you’ll find',
-      },
-      {
-        type: 'ul',
-        items: [
-          'Films you can watch without an account',
-          'The Bureaux — annual membership',
-          'Ways to nominate, Plus, and suggest people for the Cabinet',
-        ],
-      },
-      {
-        type: 'p',
-        text: 'This article is placeholder copy for The Manual template. Replace with the real orientation piece when you’re ready.',
-      },
-    ],
+    number: '05',
+    slug: 'account',
+    title: 'Account',
+    what: 'Where members manage Voyages, nominations, and privacy.',
+    who: {
+      guest: 'Signed-in members only.',
+      member: 'You. Voyages, nominations, and privacy live here.',
+    },
+    happens:
+      'Sign in by magic link or Google. Cancel from the Bureaux page. The Privacy Notice covers the rest.',
+    actions: {
+      guest: [{ href: '/signin', label: 'Open account' }],
+      member: [{ href: '/account/voyages', label: 'Open account' }],
+    },
   },
   {
-    slug: 'watching-films',
-    title: 'Watching films',
-    description: 'How to watch on Fjorr — no account required.',
-    categoryId: 'start',
-    lead: 'Anyone can watch. Open a film, press play, and stay as long as you like.',
-    sections: [
-      {
-        type: 'p',
-        text: 'Placeholder. Watching never requires a subscription. Sign-in and Bureaux membership unlock participation — not access to the catalog.',
-      },
-      {
-        type: 'h2',
-        text: 'Tips',
-      },
-      {
-        type: 'ul',
-        items: [
-          'Browse from the home page or search',
-          'Use the theater controls for fullscreen and captions when available',
-          'Share a film link — watching stays open for whoever receives it',
-        ],
-      },
-    ],
+    number: '06',
+    slug: 'contact',
+    title: 'Contact',
+    what: 'Partnership, press, or a matter worth raising. Write in.',
+    who: sameWho('Anyone with a clear ask. Members included.'),
+    happens:
+      'Mail reaches a person. For how stories earn a place, see the Principles of a Myth.',
+    actions: both([{ href: 'mailto:control@fjorr.com', label: 'Write in' }]),
   },
   {
-    slug: 'getting-started',
-    title: 'Getting started',
-    description: 'First steps on Fjorr.',
-    categoryId: 'start',
-    lead: 'Watch freely. Join the Bureaux when you want an account and a seat at the desk.',
-    sections: [
-      {
-        type: 'p',
-        text: 'Placeholder. There is no free membership tier. An account is a paid Bureaux membership. Until then, explore films without signing in.',
-      },
-      {
-        type: 'ul',
-        items: [
-          'Watch anything on the site',
-          'Join the Bureaux with email and card when you’re ready',
-          'Sign in later with the same email to open your account',
-        ],
-      },
-    ],
+    number: '07',
+    slug: 'voyages',
+    title: 'Voyages',
+    what: 'Your Voyageur No. — where you fall in a film’s watch order.',
+    who: {
+      guest: 'Anyone who watches. Member or guest; both count.',
+      member: 'You, and every viewer. Your numbers accumulate here.',
+    },
+    happens:
+      'Watch a film. Receive a number. It is permanent. It traces who came before you, and who came because of you.',
+    actions: {
+      guest: [{ href: '/signin?next=/account/voyages', label: 'Open Voyages' }],
+      member: [{ href: '/account/voyages', label: 'Open Voyages' }],
+    },
   },
   {
-    slug: 'what-is-the-bureaux',
-    title: 'What is the Bureaux?',
-    description: 'Annual membership — how Fjorr stays free to watch.',
-    categoryId: 'bureaux',
-    lead: 'The Bureaux is Fjorr’s annual membership. It’s how films stay free, and how members take part.',
-    sections: [
-      {
-        type: 'p',
-        text: 'Placeholder. Members get a permanent Bureaux number, early access, and the ability to nominate, Plus, and send names to the Cabinet.',
-      },
-      {
-        type: 'p',
-        text: 'Watching remains free for everyone — membership is for people who want to help make the next films possible.',
-      },
-    ],
-  },
-  {
-    slug: 'joining-and-billing',
-    title: 'Joining & billing',
-    description: 'How to join the Bureaux and manage your subscription.',
-    categoryId: 'bureaux',
-    lead: 'Join with your email and card on the Bureaux page. Manage renewal from the same place once you’re in.',
-    sections: [
-      {
-        type: 'h2',
-        text: 'Join',
-      },
-      {
-        type: 'ul',
-        items: [
-          'Go to The Bureaux',
-          'Enter your email and continue to payment',
-          'Check your email for a sign-in link after you pay',
-        ],
-      },
-      {
-        type: 'h2',
-        text: 'Billing',
-      },
-      {
-        type: 'p',
-        text: 'Placeholder. Membership is billed annually. You can update your card or cancel at period end from the Bureaux page while signed in.',
-      },
-    ],
-  },
-  {
-    slug: 'member-perks',
-    title: 'Member perks',
-    description: 'What Bureaux membership includes.',
-    categoryId: 'bureaux',
-    lead: 'A short list of what membership unlocks — placeholder until the live perk sheet is finalized.',
-    sections: [
-      {
-        type: 'ul',
-        items: [
-          'A Bureaux number, permanent, yours',
-          'Nominate stories for Bounties',
-          'Plus Machine — mark moments for the desk',
-          'Early access to films and bounties',
-          'Credit on films you help make possible',
-        ],
-      },
-    ],
-  },
-  {
-    slug: 'nominating-stories',
-    title: 'Nominating stories',
-    description: 'How Bureaux members nominate stories.',
-    categoryId: 'participate',
-    lead: 'Nominations are for Bureaux members — quality over volume.',
-    sections: [
-      {
-        type: 'p',
-        text: 'Placeholder. From Nominate, pick a kind of story, write a clear brief, and send it to the desk. Limits keep the queue readable.',
-      },
-      {
-        type: 'p',
-        text: 'Open bounties can attach to a nomination when they fit.',
-      },
-    ],
-  },
-  {
+    number: '08',
     slug: 'bounties',
     title: 'Bounties',
-    description: 'Open story bounties on Fjorr.',
-    categoryId: 'participate',
-    lead: 'Bounties are open calls for specific stories the desk wants made.',
-    sections: [
-      {
-        type: 'p',
-        text: 'Placeholder. Browse active bounties, read the brief, and nominate toward one if you’re a Bureaux member. Rewards and credit rules live on each bounty page.',
-      },
-    ],
+    what: 'Open hunts for stories Fjorr wants made — reward attached.',
+    who: sameWho(
+      'Anyone with a fitting story. Nominate into an open bounty, or pitch generally.'
+    ),
+    happens:
+      'Read the brief. Nominate. If selected and the film is made, the reward is paid and you are credited.',
+    actions: both([{ href: '/bounties', label: 'Browse Bounties' }]),
   },
   {
-    slug: 'plus-machine',
-    title: 'Plus Machine',
-    description: 'Mark moments in a film for the desk.',
-    categoryId: 'participate',
-    lead: 'Plus is how members leave precise notes on a cut — timestamped, useful, not a comment thread.',
-    sections: [
-      {
-        type: 'p',
-        text: 'Placeholder. Open Plus while watching, mark a moment, and say what you noticed. Bureaux membership is required.',
-      },
-    ],
+    number: '09',
+    slug: 'living-films',
+    title: 'Living films',
+    what: 'No film on Fjorr is final. Each may be sharpened. That is Plus Machine.',
+    who: sameWho(
+      'Members, by Plus note. Only the film’s maker decides what changes.'
+    ),
+    happens:
+      'A film ships as v1. A note may yield a patch. v2 goes live; v1 remains archived.',
+    actions: both([{ href: '/plus', label: 'Read Plus Machine' }]),
   },
   {
-    slug: 'the-cabinet',
-    title: 'The Cabinet',
-    description: 'Suggest people who belong in the craft network.',
-    categoryId: 'participate',
-    lead: 'The Cabinet is a desk list of craft people — members can offer themselves or suggest someone else.',
-    sections: [
-      {
-        type: 'p',
-        text: 'Placeholder. Sending a name requires an active Bureaux membership. Keep the note short and specific.',
-      },
-    ],
+    number: '10',
+    slug: 'cancel',
+    title: 'Cancel',
+    what: 'What follows when Bureaux payment stops.',
+    who: {
+      guest: 'Any paying member.',
+      member: 'You, while the seat is yours.',
+    },
+    happens:
+      'Cancel at any time from the Bureaux page. Your number is kept. Watching remains free. Member tools alone are removed.',
+    actions: {
+      guest: [{ href: '/signin?next=/bureaux', label: 'Manage membership' }],
+      member: [{ href: '/bureaux', label: 'Manage membership' }],
+    },
   },
   {
-    slug: 'sign-in',
-    title: 'Sign in',
-    description: 'How returning members sign in.',
-    categoryId: 'account',
-    lead: 'Sign in is for people who already joined the Bureaux. New accounts are created through membership, not a free signup form.',
-    sections: [
-      {
-        type: 'ul',
-        items: [
-          'Use Sign in with the email you joined with',
-          'Open the magic link we send',
-          'Google works for returning members who already linked it',
-        ],
-      },
-      {
-        type: 'p',
-        text: 'Placeholder. If you don’t have an account yet, join the Bureaux first.',
-      },
-    ],
-  },
-  {
-    slug: 'voyages-and-profile',
-    title: 'Voyages & profile',
-    description: 'Your member home — watches, notes, and profile.',
-    categoryId: 'account',
-    lead: 'Once you’re in the Bureaux, Account holds Voyages, nominations, Plus logs, and your profile.',
-    sections: [
-      {
-        type: 'p',
-        text: 'Placeholder. Voyages tracks films you’ve stamped as a member. Profile holds the name and details you want on the desk.',
-      },
-    ],
-  },
-  {
-    slug: 'privacy-and-data',
-    title: 'Privacy & data',
-    description: 'What we collect and how to manage it.',
-    categoryId: 'account',
-    lead: 'Watching stays open. Accounts are optional and tied to membership.',
-    sections: [
-      {
-        type: 'p',
-        text: 'Placeholder. See the Privacy Notice for the full picture. From Account → Privacy you can review member-facing controls when those ship.',
-      },
-    ],
-  },
-  {
-    slug: 'contact',
-    title: 'Contact the desk',
-    description: 'How to reach Fjorr.',
-    categoryId: 'desk',
-    lead: 'For partnership, press, or general questions — write the desk.',
-    sections: [
-      {
-        type: 'p',
-        text: 'Placeholder. Email control@fjorr.com. For The Manual article feedback, say which page you were on.',
-      },
-    ],
-  },
-  {
-    slug: 'principles',
-    title: 'Principles',
-    description: 'How Fjorr thinks about stories and the work.',
-    categoryId: 'desk',
-    lead: 'A short pointer to the public Principles page — placeholder bridge article.',
-    sections: [
-      {
-        type: 'p',
-        text: 'Placeholder. The living principles live on the site under Principles. This Help entry exists so the sidebar can point people there from the docs chrome.',
-      },
-    ],
+    number: '11',
+    slug: 'terms-privacy',
+    title: 'Terms & privacy',
+    what: 'The rules. What becomes of your data.',
+    who: sameWho('Everyone.'),
+    happens:
+      'Terms Sheet: the rules of use. Privacy Notice: what is collected, and why.',
+    actions: both([
+      { href: '/terms', label: 'Read Terms Sheet' },
+      { href: '/privacy', label: 'Read Privacy Notice' },
+    ]),
   },
 ];
 
-const bySlug = new Map(ARTICLES.map((a) => [a.slug, a]));
+/** Old category/article slugs → new Manual entry. */
+export const MANUAL_LEGACY_REDIRECTS: Record<string, string> = {
+  'what-is-fjorr': 'watch',
+  'watching-films': 'watch',
+  'getting-started': 'join',
+  'what-is-the-bureaux': 'join',
+  'joining-and-billing': 'join',
+  'member-perks': 'join',
+  'nominating-stories': 'nominate',
+  'plus-machine': 'plus',
+  'the-cabinet': 'contact',
+  desk: 'contact',
+  'sign-in': 'account',
+  'voyages-and-profile': 'voyages',
+  'privacy-and-data': 'terms-privacy',
+  principles: 'contact',
+  privacy: 'terms-privacy',
+  terms: 'terms-privacy',
+};
 
-export function listHelpArticles(): HelpArticle[] {
-  return ARTICLES;
+export function listManualEntries(): ManualEntry[] {
+  return MANUAL_ENTRIES;
 }
 
-export function getHelpArticle(slug: string): HelpArticle | null {
-  return bySlug.get(slug) || null;
+export function getManualEntry(slug: string): ManualEntry | null {
+  return MANUAL_ENTRIES.find((e) => e.slug === slug) || null;
 }
 
-export function getHelpCategory(id: string): HelpCategory | null {
-  return HELP_CATEGORIES.find((c) => c.id === id) || null;
-}
-
-export function helpArticleHref(slug: string) {
+export function manualEntryHref(slug: string) {
   return `/manual/${slug}` as const;
+}
+
+export function getManualEntryNeighbors(slug: string): {
+  index: number;
+  total: number;
+  prev: ManualEntry | null;
+  next: ManualEntry | null;
+} {
+  const total = MANUAL_ENTRIES.length;
+  const index = MANUAL_ENTRIES.findIndex((e) => e.slug === slug);
+  if (index < 0) {
+    return { index: -1, total, prev: null, next: null };
+  }
+  return {
+    index,
+    total,
+    prev: index > 0 ? MANUAL_ENTRIES[index - 1] : null,
+    next: index < total - 1 ? MANUAL_ENTRIES[index + 1] : null,
+  };
 }

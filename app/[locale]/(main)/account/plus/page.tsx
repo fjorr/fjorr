@@ -26,10 +26,14 @@ export default async function AccountPlusPage() {
       description={hasRecords ? t('logsBody') : t('logsBodyEmpty')}
       headerLinks={
         hasRecords
-          ? [{ href: '/plus#how', label: t('logsLinkHow') }]
+          ? [
+              { href: '/plus#how', label: t('logsLinkHow') },
+              { href: '/manual/plus', label: 'Manual · Plus Machine' },
+            ]
           : [
               { href: '/plus#how', label: t('logsLinkHow') },
               { href: '/', label: t('logsLinkExplore') },
+              { href: '/manual/plus', label: 'Manual · Plus Machine' },
             ]
       }
       wide

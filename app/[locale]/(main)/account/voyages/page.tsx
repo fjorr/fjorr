@@ -28,8 +28,11 @@ export default async function AccountVoyagesPage() {
       descriptionNote={t('filmLogsNote')}
       headerLinks={
         hasVoyages
-          ? undefined
-          : [{ href: '/', label: t('filmLogsEmptyCta') }]
+          ? [{ href: '/manual/voyages', label: 'Manual · Voyages' }]
+          : [
+              { href: '/', label: t('filmLogsEmptyCta') },
+              { href: '/manual/voyages', label: 'Manual · Voyages' },
+            ]
       }
       wide
     >

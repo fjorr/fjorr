@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
+import { Link } from '@/i18n/navigation';
 import { createClient } from '@/lib/supabase/server';
 import BureauxCheckout from '@/components/BureauxCheckout';
 import BureauxGiftSeat from '@/components/BureauxGiftSeat';
@@ -288,7 +289,21 @@ export default async function BureauxPage({
             />
           )}
           <p className="font-sans text-[13px] text-page-faint leading-relaxed max-w-sm">
-            {t('footnote')}
+            {t('footnote')}{' '}
+            <Link
+              href="/manual/join"
+              className="font-semibold text-page-muted underline underline-offset-2 hover:text-page transition-colors"
+            >
+              Manual · Join
+            </Link>
+            {' · '}
+            <Link
+              href="/manual/cancel"
+              className="font-semibold text-page-muted underline underline-offset-2 hover:text-page transition-colors"
+            >
+              Cancel
+            </Link>
+            .
           </p>
         </section>
       </div>

@@ -9,7 +9,7 @@ import {
 } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { useTranslations } from 'next-intl';
-import { useRouter } from '@/i18n/navigation';
+import { Link, useRouter } from '@/i18n/navigation';
 import { useColorScheme } from '@/components/ColorSchemeProvider';
 import { fjorrStripeAppearance } from '@/lib/stripe-appearance';
 import {
@@ -255,9 +255,24 @@ export default function BureauxManage({
 
       {cancelAtPeriodEnd ? (
         <p className="font-sans text-[12px] text-page-faint leading-relaxed">
-          {t('bureauxCancelHint')}
+          {t('bureauxCancelHint')}{' '}
+          <Link
+            href="/manual/cancel"
+            className="font-semibold text-page-muted underline underline-offset-2 hover:text-page transition-colors"
+          >
+            Manual · Cancel
+          </Link>
         </p>
-      ) : null}
+      ) : (
+        <p className="font-sans text-[12px] text-page-faint leading-relaxed">
+          <Link
+            href="/manual/cancel"
+            className="font-semibold text-page-muted underline underline-offset-2 hover:text-page transition-colors"
+          >
+            Manual · Cancel
+          </Link>
+        </p>
+      )}
     </div>
   );
 }
