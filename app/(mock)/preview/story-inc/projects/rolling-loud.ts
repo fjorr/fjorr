@@ -12,6 +12,8 @@ const img = {
   owenStage: `${A}/market-owen-wife.png`,
   owenClose: `${A}/hero-trailer.png`,
   carti: `${A}/market-carti.png`,
+  /** Face-cropped for wide market media (source is a tall portrait). */
+  cartiFace: `${A}/market-carti-face.jpg`,
   boxOffice: `${A}/market-box-office.png`,
   rife: `${A}/market-rife.png`,
   rifeLive: `${A}/shout-matt-rife.png`,
@@ -216,7 +218,8 @@ export const ROLLING_LOUD: ProjectPageData = {
       closes: '10.2.26',
     },
     {
-      image: img.carti,
+      image: img.cartiFace,
+      imagePosition: 'center',
       question: 'Which artists cameo in the film?',
       outcomes: [
         { label: 'Playboi Carti', pct: 71 },
