@@ -3,7 +3,11 @@ import type Stripe from 'stripe';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import { getBureauxPriceId, getStripe } from '@/lib/stripe';
-import { isBureauxMembershipActive, type BureauxMembership } from '@/lib/bureaux';
+import {
+  ensureAuthUserByEmail,
+  getBureauxMembershipByUserId,
+  isBureauxMembershipActive,
+} from '@/lib/bureaux';
 
 export const runtime = 'nodejs';
 
@@ -39,72 +43,11 @@ function normalizeEmail(raw: unknown): string | null {
   return email;
 }
 
-async function membershipForUser(
-  userId: string
-): Promise<BureauxMembership | null> {
-  const db = createServiceClient();
-  const { data, error } = await db
-    .from('bureaux_memberships')
-    .select(
-      'user_id, status, stripe_customer_id, stripe_subscription_id, current_period_end, cancel_at_period_end, bureaux_number'
-    )
-    .eq('user_id', userId)
-    .maybeSingle();
-
-  if (error || !data) return null;
-  const n = Number(data.bureaux_number);
-  return {
-    user_id: String(data.user_id),
-    status: (data.status || 'none') as BureauxMembership['status'],
-    stripe_customer_id: data.stripe_customer_id
-      ? String(data.stripe_customer_id)
-      : null,
-    stripe_subscription_id: data.stripe_subscription_id
-      ? String(data.stripe_subscription_id)
-      : null,
-    current_period_end: data.current_period_end
-      ? String(data.current_period_end)
-      : null,
-    cancel_at_period_end: Boolean(data.cancel_at_period_end),
-    bureaux_number: Number.isFinite(n) && n >= 1 ? n : null,
-  };
-}
-
-/** Create or resolve auth user for Bureaux join (works with public signups off). */
-async function ensureAuthUserForEmail(
-  email: string
-): Promise<{ id: string; email: string }> {
-  const admin = createServiceClient();
-  const { data: created, error } = await admin.auth.admin.createUser({
-    email,
-    email_confirm: true,
-    user_metadata: { join_via: 'bureaux' },
-  });
-
-  if (created?.user?.id) {
-    return { id: created.user.id, email };
-  }
-
-  if (error && /already|registered|exists/i.test(error.message)) {
-    const { data: linkData, error: linkErr } =
-      await admin.auth.admin.generateLink({
-        type: 'magiclink',
-        email,
-      });
-    if (linkData?.user?.id) {
-      return { id: linkData.user.id, email };
-    }
-    throw linkErr || error;
-  }
-
-  throw error || new Error('Could not create account');
-}
-
 async function ensureStripeCustomer(user: {
   id: string;
   email?: string | null;
 }): Promise<string> {
-  const existing = await membershipForUser(user.id);
+  const existing = await getBureauxMembershipByUserId(user.id);
   if (existing?.stripe_customer_id) return existing.stripe_customer_id;
 
   const stripe = getStripe();
@@ -168,12 +111,12 @@ export async function POST(req: Request) {
           { status: 400 }
         );
       }
-      const ensured = await ensureAuthUserForEmail(guestEmail);
+      const ensured = await ensureAuthUserByEmail(guestEmail);
       userId = ensured.id;
       email = ensured.email;
     }
 
-    const membership = await membershipForUser(userId);
+    const membership = await getBureauxMembershipByUserId(userId);
     if (isBureauxMembershipActive(membership)) {
       return NextResponse.json(
         { ok: false, error: 'alreadyActive' },

@@ -7,8 +7,8 @@ import { routing } from "@/i18n/routing";
 const handleI18nRouting = createMiddleware(routing);
 
 /**
- * Site password gate is opt-in via SITE_GATE_ENABLED=true (staging/preview).
- * Production should leave it unset/false so the site is public.
+ * Site password gate is opt-in via SITE_GATE_ENABLED=true.
+ * Keep enabled on staging + production until public launch.
  * When enabled, SITE_PASSWORD must be set; cookie value is an HMAC, not a forgeable flag.
  */
 export async function middleware(request: NextRequest) {

@@ -2,15 +2,22 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { createClient } from '@/lib/supabase/server';
 import BureauxCheckout from '@/components/BureauxCheckout';
+import BureauxGiftSeat from '@/components/BureauxGiftSeat';
 import BureauxJoinClaim from '@/components/BureauxJoinClaim';
 import BureauxJoinedRefresh from '@/components/BureauxJoinedRefresh';
 import BureauxManage from '@/components/BureauxManage';
 import {
   ensureBureauxNumber,
   getBureauxAnnualAmountCents,
+  getOwnBureauxLineage,
   getOwnBureauxMembership,
   isBureauxMembershipActive,
 } from '@/lib/bureaux';
+import {
+  getOwnGiftSeatState,
+  syncBureauxGiftFromCheckoutSession,
+} from '@/lib/bureaux-gift';
+import { appUrl } from '@/lib/site';
 
 function formatAnnualPrice(cents: number, locale: string) {
   try {
@@ -63,10 +70,20 @@ export default async function BureauxPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ joined?: string; email?: string }>;
+  searchParams: Promise<{
+    joined?: string;
+    email?: string;
+    gift?: string;
+    session_id?: string;
+  }>;
 }) {
   const { locale } = await params;
-  const { joined, email: joinedEmailRaw } = await searchParams;
+  const {
+    joined,
+    email: joinedEmailRaw,
+    gift,
+    session_id: giftSessionId,
+  } = await searchParams;
   const joinedEmail =
     typeof joinedEmailRaw === 'string' && joinedEmailRaw.includes('@')
       ? joinedEmailRaw.trim().toLowerCase()
@@ -80,6 +97,14 @@ export default async function BureauxPage({
     data: { user },
   } = await supabase.auth.getUser();
 
+  if (user && gift === '1' && giftSessionId) {
+    try {
+      await syncBureauxGiftFromCheckoutSession(giftSessionId, user.id);
+    } catch (err) {
+      console.error('gift session sync failed:', err);
+    }
+  }
+
   let membership = user ? await getOwnBureauxMembership(user.id) : null;
   const active = isBureauxMembershipActive(membership);
   if (active && membership && !membership.bureaux_number && user) {
@@ -87,11 +112,19 @@ export default async function BureauxPage({
     if (n) membership = { ...membership, bureaux_number: n };
   }
 
+  const lineage = user && active ? await getOwnBureauxLineage(user.id) : null;
+  const giftSeat = user && active ? await getOwnGiftSeatState(user.id) : null;
+  const openGiftUrl =
+    giftSeat?.openGift?.status === 'open'
+      ? appUrl(`/bureaux/gift/${giftSeat.openGift.token}`)
+      : null;
+
   const renews = formatDate(membership?.current_period_end || null, locale);
   const justJoined = joined === '1';
 
   const perks = [
     t('perkNumber'),
+    t('perkGift'),
     t('perkNominate'),
     t('perkPlus'),
     t('perkEarlyFilms'),
@@ -152,7 +185,16 @@ export default async function BureauxPage({
                   </span>
                 </div>
               ) : null}
-              {renews ? (
+              {membership?.comp_lifetime ? (
+                <div className="py-4 flex items-baseline justify-between gap-4">
+                  <span className="font-sans text-[14px] text-page-muted">
+                    {ta('bureauxLifetime')}
+                  </span>
+                  <span className="font-sans text-[15px] font-semibold text-page">
+                    {ta('bureauxLifetimeYes')}
+                  </span>
+                </div>
+              ) : renews ? (
                 <div className="py-4 flex items-baseline justify-between gap-4">
                   <span className="font-sans text-[14px] text-page-muted">
                     {membership?.cancel_at_period_end
@@ -161,6 +203,26 @@ export default async function BureauxPage({
                   </span>
                   <span className="font-mono text-[15px] text-page tabular-nums">
                     {renews}
+                  </span>
+                </div>
+              ) : null}
+              {lineage?.sponsoredByNumber != null ? (
+                <div className="py-4 flex items-baseline justify-between gap-4">
+                  <span className="font-sans text-[14px] text-page-muted">
+                    {ta('bureauxBroughtBy')}
+                  </span>
+                  <span className="font-mono text-[15px] text-page tabular-nums">
+                    № {lineage.sponsoredByNumber}
+                  </span>
+                </div>
+              ) : null}
+              {lineage && lineage.broughtInCount > 0 ? (
+                <div className="py-4 flex items-baseline justify-between gap-4">
+                  <span className="font-sans text-[14px] text-page-muted">
+                    {ta('bureauxBroughtIn')}
+                  </span>
+                  <span className="font-mono text-[15px] text-page tabular-nums">
+                    {lineage.broughtInCount}
                   </span>
                 </div>
               ) : null}
@@ -202,9 +264,21 @@ export default async function BureauxPage({
 
         <section className="flex flex-col gap-4">
           {active ? (
-            <BureauxManage
-              cancelAtPeriodEnd={Boolean(membership?.cancel_at_period_end)}
-            />
+            <>
+              {!membership?.comp_lifetime ? (
+                <BureauxManage
+                  cancelAtPeriodEnd={Boolean(membership?.cancel_at_period_end)}
+                />
+              ) : null}
+              {giftSeat ? (
+                <BureauxGiftSeat
+                  canGift={giftSeat.canGift}
+                  reason={giftSeat.reason}
+                  openGiftUrl={openGiftUrl}
+                  openGiftEmail={giftSeat.openGift?.to_email || null}
+                />
+              ) : null}
+            </>
           ) : justJoined && !user && joinedEmail ? (
             <BureauxJoinClaim email={joinedEmail} />
           ) : (

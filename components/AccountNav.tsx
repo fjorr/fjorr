@@ -64,12 +64,20 @@ function AccountIdentity({
   memberNoLabel,
   bureauxNoLabel,
   bureauxNumber,
+  broughtByLabel,
+  broughtByNumber,
+  broughtInLabel,
+  broughtInCount,
 }: {
   memberNumber: number;
   name: string | null;
   memberNoLabel: string;
   bureauxNoLabel: string;
   bureauxNumber: number | null;
+  broughtByLabel: string;
+  broughtByNumber: number | null;
+  broughtInLabel: string;
+  broughtInCount: number;
 }) {
   return (
     <div className="flex flex-col gap-1.5">
@@ -80,6 +88,16 @@ function AccountIdentity({
         {bureauxNumber != null ? (
           <p className="font-sans text-[13px] font-semibold tracking-tight text-page-muted tabular-nums">
             {bureauxNoLabel} {bureauxNumber}
+          </p>
+        ) : null}
+        {broughtByNumber != null ? (
+          <p className="font-sans text-[12px] text-page-faint tabular-nums">
+            {broughtByLabel} № {broughtByNumber}
+          </p>
+        ) : null}
+        {broughtInCount > 0 ? (
+          <p className="font-sans text-[12px] text-page-faint tabular-nums">
+            {broughtInLabel} {broughtInCount}
           </p>
         ) : null}
       </div>
@@ -93,10 +111,14 @@ export default function AccountNav({
   memberNumber,
   displayName,
   bureauxNumber = null,
+  broughtByNumber = null,
+  broughtInCount = 0,
 }: {
   memberNumber: number;
   displayName?: string | null;
   bureauxNumber?: number | null;
+  broughtByNumber?: number | null;
+  broughtInCount?: number;
 }) {
   const t = useTranslations('Account');
   const pathname = usePathname() || '/account/voyages';
@@ -152,6 +174,10 @@ export default function AccountNav({
           memberNoLabel={t('memberNo')}
           bureauxNoLabel={t('bureauxNo')}
           bureauxNumber={bureauxNumber}
+          broughtByLabel={t('bureauxBroughtBy')}
+          broughtByNumber={broughtByNumber}
+          broughtInLabel={t('bureauxBroughtIn')}
+          broughtInCount={broughtInCount}
         />
         <p className="font-sans text-[12px] text-page-faint leading-snug">
           {t('navMembershipHint')}
@@ -266,6 +292,10 @@ export default function AccountNav({
                 memberNoLabel={t('memberNo')}
                 bureauxNoLabel={t('bureauxNo')}
                 bureauxNumber={bureauxNumber}
+                broughtByLabel={t('bureauxBroughtBy')}
+                broughtByNumber={broughtByNumber}
+                broughtInLabel={t('bureauxBroughtIn')}
+                broughtInCount={broughtInCount}
               />
               <button
                 type="button"

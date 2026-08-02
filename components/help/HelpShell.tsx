@@ -1,57 +1,26 @@
 'use client';
 
 import React, { useEffect, useId, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Link, usePathname } from '@/i18n/navigation';
+import FjorrMark from '@/components/help/FjorrMark';
+import {
+  HELP_CATEGORIES,
+  getHelpArticle,
+  helpArticleHref,
+} from '@/lib/help/content';
 
-type NavItem = {
-  href: string;
-  label: string;
-  exact?: boolean;
-};
-
-type NavGroup = {
-  label: string;
-  items: NavItem[];
-};
-
-const GROUPS: NavGroup[] = [
-  {
-    label: 'Intelligence',
-    items: [
-      { href: '/admin', label: 'Overview', exact: true },
-      { href: '/admin/nominations', label: 'Nominations' },
-      { href: '/admin/bounties', label: 'Bounties' },
-    ],
-  },
-  {
-    label: 'Craft',
-    items: [
-      { href: '/admin/plus', label: 'Plus Machine' },
-      { href: '/admin/cabinet', label: 'Cabinet' },
-    ],
-  },
-  {
-    label: 'House',
-    items: [{ href: '/admin/bureaux', label: 'Bureaux' }],
-  },
-];
-
-function isActive(pathname: string, item: NavItem) {
-  if (item.exact) return pathname === item.href;
-  return pathname === item.href || pathname.startsWith(`${item.href}/`);
+function isActive(pathname: string, href: string, exact?: boolean) {
+  if (exact) return pathname === href;
+  return pathname === href || pathname.startsWith(`${href}/`);
 }
 
 /**
- * Control — admin chrome aligned with account (sidebar + soft dividers).
+ * The Manual chrome — logo + title in the left sidebar (Control/Account pattern).
  */
-export default function AdminShell({
-  email,
-  children,
-}: {
-  email: string;
-  children: React.ReactNode;
-}) {
-  const pathname = usePathname() || '/admin';
+export default function HelpShell({ children }: { children: React.ReactNode }) {
+  const t = useTranslations('Help');
+  const pathname = usePathname() || '/manual';
   const [open, setOpen] = useState(false);
   const panelId = useId();
 
@@ -82,26 +51,64 @@ export default function AdminShell({
         : 'text-page-muted hover:bg-page-chip hover:text-page'
     }`;
 
+  const brand = (
+    <Link
+      href="/manual"
+      onClick={close}
+      className="flex flex-col gap-3 px-2 group"
+    >
+      <FjorrMark className="w-[46px] text-page" />
+      <div className="flex flex-col gap-0.5">
+        <p className="font-sans text-[15px] font-semibold tracking-tight text-page group-hover:opacity-80 transition-opacity">
+          {t('title')}
+        </p>
+        <p className="font-sans text-[12px] text-page-faint leading-snug">
+          {t('tagline')}
+        </p>
+      </div>
+    </Link>
+  );
+
   const navList = (
-    <nav aria-label="Control" className="flex flex-col gap-5 flex-1 min-h-0">
-      {GROUPS.map((group) => (
-        <div key={group.label} className="flex flex-col gap-1">
+    <nav aria-label={t('navLabel')} className="flex flex-col gap-5 flex-1 min-h-0">
+      <div className="flex flex-col gap-1">
+        <ul className="flex flex-col gap-0.5 list-none m-0 p-0">
+          <li>
+            <Link
+              href="/manual"
+              onClick={close}
+              aria-current={pathname === '/manual' ? 'page' : undefined}
+              className={linkClass(pathname === '/manual')}
+            >
+              <span className="font-sans text-[14px] font-semibold tracking-tight">
+                {t('home')}
+              </span>
+            </Link>
+          </li>
+        </ul>
+      </div>
+
+      {HELP_CATEGORIES.map((group) => (
+        <div key={group.id} className="flex flex-col gap-1">
           <p className="px-2.5 font-sans text-[11px] font-semibold uppercase tracking-[0.08em] text-page-faint">
             {group.label}
           </p>
           <ul className="flex flex-col gap-0.5 list-none m-0 p-0">
-            {group.items.map((item) => {
-              const active = isActive(pathname, item);
+            {group.articleSlugs.map((slug) => {
+              const article = getHelpArticle(slug);
+              if (!article) return null;
+              const href = helpArticleHref(slug);
+              const active = isActive(pathname, href);
               return (
-                <li key={item.href}>
+                <li key={slug}>
                   <Link
-                    href={item.href}
+                    href={href}
                     onClick={close}
                     aria-current={active ? 'page' : undefined}
                     className={linkClass(active)}
                   >
                     <span className="font-sans text-[14px] font-semibold tracking-tight">
-                      {item.label}
+                      {article.title}
                     </span>
                   </Link>
                 </li>
@@ -115,29 +122,25 @@ export default function AdminShell({
 
   return (
     <div className="w-full min-h-screen bg-page text-page flex flex-col md:flex-row">
-      {/* Mobile trigger */}
       <div className="md:hidden w-full border-b border-page-faint px-4 py-3 flex items-center justify-between gap-3">
-        <div className="min-w-0 flex flex-col gap-0.5">
-          <p className="font-sans text-[13px] font-semibold tracking-tight text-page">
-            Control
+        <Link href="/manual" className="flex items-center gap-3 min-w-0">
+          <FjorrMark className="w-[36px] shrink-0 text-page" />
+          <p className="font-sans text-[14px] font-semibold tracking-tight text-page truncate">
+            {t('title')}
           </p>
-          <p className="font-mono text-[11px] text-page-faint truncate">
-            {email}
-          </p>
-        </div>
+        </Link>
         <button
           type="button"
-          aria-label={open ? 'Close menu' : 'Open menu'}
+          aria-label={open ? t('closeMenu') : t('openMenu')}
           aria-expanded={open}
           aria-controls={panelId}
           onClick={() => setOpen((v) => !v)}
           className="shrink-0 inline-flex items-center h-9 px-3 rounded-[8px] bg-page-chip hover:bg-page-chip-hover transition-colors font-sans text-[13px] font-semibold text-page"
         >
-          Menu
+          {t('menu')}
         </button>
       </div>
 
-      {/* Mobile overlay */}
       <div
         id={panelId}
         className={`md:hidden fixed inset-0 z-[100040] transition-[visibility] duration-300 ${
@@ -146,7 +149,7 @@ export default function AdminShell({
       >
         <button
           type="button"
-          aria-label="Close menu"
+          aria-label={t('closeMenu')}
           onClick={close}
           className={`absolute inset-0 bg-black/40 transition-opacity duration-300 ${
             open ? 'opacity-100' : 'opacity-0'
@@ -155,28 +158,21 @@ export default function AdminShell({
         <div
           role="dialog"
           aria-modal="true"
-          aria-label="Control menu"
-          className={`absolute inset-x-0 top-0 border-b border-page-faint bg-page transition-transform duration-300 ease-out ${
+          aria-label={t('navLabel')}
+          className={`absolute inset-x-0 top-0 max-h-[min(92vh,40rem)] overflow-y-auto border-b border-page-faint bg-page transition-transform duration-300 ease-out ${
             open ? 'translate-y-0' : '-translate-y-3 opacity-0'
           }`}
         >
           <div className="px-4 pt-4 pb-8 flex flex-col gap-6">
             <div className="flex items-start justify-between gap-3">
-              <div className="flex flex-col gap-1">
-                <p className="font-sans text-[15px] font-semibold tracking-tight text-page">
-                  Control
-                </p>
-                <p className="font-mono text-[11px] text-page-faint truncate max-w-[16rem]">
-                  {email}
-                </p>
-              </div>
+              {brand}
               <button
                 type="button"
-                aria-label="Close menu"
+                aria-label={t('closeMenu')}
                 onClick={close}
-                className="h-9 px-3 rounded-[8px] bg-page-chip font-sans text-[13px] font-semibold text-page"
+                className="h-9 px-3 rounded-[8px] bg-page-chip font-sans text-[13px] font-semibold text-page shrink-0"
               >
-                Close
+                {t('close')}
               </button>
             </div>
             {navList}
@@ -185,38 +181,25 @@ export default function AdminShell({
               onClick={close}
               className="self-start font-sans text-[13px] font-semibold text-page-faint hover:text-page-muted transition-colors"
             >
-              ← Site
+              {t('backToSite')}
             </Link>
           </div>
         </div>
       </div>
 
-      {/* Desktop sidebar */}
-      <aside className="hidden md:flex w-[15.5rem] shrink-0 border-r border-page-faint px-4 py-8 md:min-h-screen flex-col gap-6">
-        <div className="px-2 flex flex-col gap-1.5">
-          <p className="font-sans text-[15px] font-semibold tracking-tight text-page">
-            Control
-          </p>
-          <p
-            className="font-mono text-[11px] text-page-faint truncate"
-            title={email}
-          >
-            {email}
-          </p>
-        </div>
-
+      <aside className="hidden md:flex w-[16.5rem] shrink-0 border-r border-page-faint px-4 py-8 md:min-h-screen flex-col gap-7">
+        {brand}
         {navList}
-
         <Link
           href="/"
           className="mt-auto self-start mx-2 font-sans text-[13px] font-semibold text-page-faint hover:text-page-muted transition-colors"
         >
-          ← Site
+          {t('backToSite')}
         </Link>
       </aside>
 
       <main className="flex-1 min-w-0 px-5 sm:px-8 md:px-10 py-8 md:py-10">
-        {children}
+        <div className="w-full max-w-2xl">{children}</div>
       </main>
     </div>
   );

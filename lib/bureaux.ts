@@ -11,6 +11,8 @@ import {
 export type { BureauxStatus };
 export { isBureauxActive, isBureauxMembershipActive };
 
+export type BureauxSource = 'stripe' | 'gift' | 'comp';
+
 export type BureauxMembership = {
   user_id: string;
   status: BureauxStatus;
@@ -20,7 +22,41 @@ export type BureauxMembership = {
   cancel_at_period_end: boolean;
   /** Random permanent mark — assigned once on activation. */
   bureaux_number: number | null;
+  source: BureauxSource;
+  sponsored_by_user_id: string | null;
+  comp_lifetime: boolean;
 };
+
+const MEMBERSHIP_SELECT =
+  'user_id, status, stripe_customer_id, stripe_subscription_id, current_period_end, cancel_at_period_end, bureaux_number, source, sponsored_by_user_id, comp_lifetime';
+
+function mapMembershipRow(data: Record<string, unknown>): BureauxMembership {
+  const n = Number(data.bureaux_number);
+  const source = String(data.source || 'stripe') as BureauxSource;
+  return {
+    user_id: String(data.user_id),
+    status: (data.status || 'none') as BureauxStatus,
+    stripe_customer_id: data.stripe_customer_id
+      ? String(data.stripe_customer_id)
+      : null,
+    stripe_subscription_id: data.stripe_subscription_id
+      ? String(data.stripe_subscription_id)
+      : null,
+    current_period_end: data.current_period_end
+      ? String(data.current_period_end)
+      : null,
+    cancel_at_period_end: Boolean(data.cancel_at_period_end),
+    bureaux_number: Number.isFinite(n) && n >= 1 ? n : null,
+    source:
+      source === 'gift' || source === 'comp' || source === 'stripe'
+        ? source
+        : 'stripe',
+    sponsored_by_user_id: data.sponsored_by_user_id
+      ? String(data.sponsored_by_user_id)
+      : null,
+    comp_lifetime: Boolean(data.comp_lifetime),
+  };
+}
 
 /** Daily / open caps for Bureaux members (participation is members-only). */
 export function bureauxNominationLimits() {
@@ -54,9 +90,7 @@ export async function getOwnBureauxMembership(
 
   const { data, error } = await supabase
     .from('bureaux_memberships')
-    .select(
-      'user_id, status, stripe_customer_id, stripe_subscription_id, current_period_end, cancel_at_period_end, bureaux_number'
-    )
+    .select(MEMBERSHIP_SELECT)
     .eq('user_id', uid)
     .maybeSingle();
 
@@ -66,23 +100,22 @@ export async function getOwnBureauxMembership(
   }
   if (!data) return null;
 
-  const n = Number(data.bureaux_number);
+  return mapMembershipRow(data as Record<string, unknown>);
+}
 
-  return {
-    user_id: String(data.user_id),
-    status: (data.status || 'none') as BureauxStatus,
-    stripe_customer_id: data.stripe_customer_id
-      ? String(data.stripe_customer_id)
-      : null,
-    stripe_subscription_id: data.stripe_subscription_id
-      ? String(data.stripe_subscription_id)
-      : null,
-    current_period_end: data.current_period_end
-      ? String(data.current_period_end)
-      : null,
-    cancel_at_period_end: Boolean(data.cancel_at_period_end),
-    bureaux_number: Number.isFinite(n) && n >= 1 ? n : null,
-  };
+/** Service-role read (admin / gift redeem). */
+export async function getBureauxMembershipByUserId(
+  userId: string
+): Promise<BureauxMembership | null> {
+  const db = createServiceClient();
+  const { data, error } = await db
+    .from('bureaux_memberships')
+    .select(MEMBERSHIP_SELECT)
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (error || !data) return null;
+  return mapMembershipRow(data as Record<string, unknown>);
 }
 
 export async function isOwnBureauxActive(userId?: string): Promise<boolean> {
@@ -121,7 +154,7 @@ export async function ensureBureauxNumber(userId: string): Promise<number | null
   const db = createServiceClient();
   const { data: existing } = await db
     .from('bureaux_memberships')
-    .select('bureaux_number, status, current_period_end')
+    .select('bureaux_number, status, current_period_end, comp_lifetime')
     .eq('user_id', userId)
     .maybeSingle();
 
@@ -134,7 +167,8 @@ export async function ensureBureauxNumber(userId: string): Promise<number | null
       existing.status as BureauxStatus,
       existing.current_period_end
         ? String(existing.current_period_end)
-        : null
+        : null,
+      Boolean(existing.comp_lifetime)
     )
   ) {
     return null;
@@ -148,7 +182,6 @@ export async function ensureBureauxNumber(userId: string): Promise<number | null
     .is('bureaux_number', null);
 
   if (error) {
-    // Race: another writer assigned — re-read.
     const { data: again } = await db
       .from('bureaux_memberships')
       .select('bureaux_number')
@@ -161,7 +194,7 @@ export async function ensureBureauxNumber(userId: string): Promise<number | null
   return next;
 }
 
-/** Upsert from Stripe webhook (service role). */
+/** Upsert from Stripe webhook (service role). Preserves comp/gift fields. */
 export async function upsertBureauxMembership(input: {
   userId: string;
   stripeCustomerId?: string | null;
@@ -171,6 +204,25 @@ export async function upsertBureauxMembership(input: {
   cancelAtPeriodEnd?: boolean;
 }) {
   const db = createServiceClient();
+
+  const existing = await getBureauxMembershipByUserId(input.userId);
+  // Lifetime comps are not overwritten by Stripe lifecycle events.
+  if (existing?.comp_lifetime) {
+    if (input.stripeCustomerId || input.stripeSubscriptionId) {
+      await db
+        .from('bureaux_memberships')
+        .update({
+          stripe_customer_id:
+            input.stripeCustomerId ?? existing.stripe_customer_id,
+          stripe_subscription_id:
+            input.stripeSubscriptionId ?? existing.stripe_subscription_id,
+        })
+        .eq('user_id', input.userId);
+    }
+    await ensureBureauxNumber(input.userId);
+    return;
+  }
+
   const { error } = await db.from('bureaux_memberships').upsert(
     {
       user_id: input.userId,
@@ -181,6 +233,7 @@ export async function upsertBureauxMembership(input: {
         ? input.currentPeriodEnd.toISOString()
         : null,
       cancel_at_period_end: input.cancelAtPeriodEnd ?? false,
+      source: existing?.source === 'gift' ? 'gift' : 'stripe',
     },
     { onConflict: 'user_id' }
   );
@@ -190,7 +243,9 @@ export async function upsertBureauxMembership(input: {
     throw error;
   }
 
-  if (isBureauxActive(input.status, input.currentPeriodEnd?.toISOString() ?? null)) {
+  if (
+    isBureauxActive(input.status, input.currentPeriodEnd?.toISOString() ?? null)
+  ) {
     await ensureBureauxNumber(input.userId);
   }
 }
@@ -231,4 +286,125 @@ export function mapStripeSubscriptionStatus(
     default:
       return 'none';
   }
+}
+
+/** Create or resolve auth user by email (public signups may be disabled). */
+export async function ensureAuthUserByEmail(
+  email: string
+): Promise<{ id: string; email: string }> {
+  const trimmed = email.trim().toLowerCase();
+  const admin = createServiceClient();
+  const { data: created, error } = await admin.auth.admin.createUser({
+    email: trimmed,
+    email_confirm: true,
+    user_metadata: { join_via: 'bureaux' },
+  });
+
+  if (created?.user?.id) {
+    return { id: created.user.id, email: trimmed };
+  }
+
+  if (error && /already|registered|exists/i.test(error.message)) {
+    const { data: linkData, error: linkErr } =
+      await admin.auth.admin.generateLink({
+        type: 'magiclink',
+        email: trimmed,
+      });
+    if (linkData?.user?.id) {
+      return { id: linkData.user.id, email: trimmed };
+    }
+    throw linkErr || error;
+  }
+
+  throw error || new Error('Could not create account');
+}
+
+/** Admin: lifetime complimentary Bureaux seat. */
+export async function grantBureauxLifetime(email: string): Promise<{
+  userId: string;
+  bureauxNumber: number | null;
+}> {
+  const ensured = await ensureAuthUserByEmail(email);
+  const db = createServiceClient();
+  const { error } = await db.from('bureaux_memberships').upsert(
+    {
+      user_id: ensured.id,
+      status: 'active',
+      source: 'comp',
+      comp_lifetime: true,
+      current_period_end: null,
+      cancel_at_period_end: false,
+    },
+    { onConflict: 'user_id' }
+  );
+  if (error) throw new Error(error.message);
+
+  const n = await ensureBureauxNumber(ensured.id);
+  return { userId: ensured.id, bureauxNumber: n };
+}
+
+/** Activate a 1-year gift membership (no Stripe sub). */
+export async function activateGiftMembership(input: {
+  userId: string;
+  sponsoredByUserId: string;
+}): Promise<void> {
+  const db = createServiceClient();
+  const existing = await getBureauxMembershipByUserId(input.userId);
+  if (existing?.comp_lifetime) return;
+  if (isBureauxMembershipActive(existing)) {
+    throw new Error('alreadyActive');
+  }
+
+  const periodEnd = new Date();
+  periodEnd.setFullYear(periodEnd.getFullYear() + 1);
+
+  const { error } = await db.from('bureaux_memberships').upsert(
+    {
+      user_id: input.userId,
+      status: 'active',
+      source: 'gift',
+      sponsored_by_user_id: input.sponsoredByUserId,
+      comp_lifetime: false,
+      current_period_end: periodEnd.toISOString(),
+      cancel_at_period_end: true,
+      stripe_subscription_id: null,
+    },
+    { onConflict: 'user_id' }
+  );
+  if (error) throw new Error(error.message);
+  await ensureBureauxNumber(input.userId);
+}
+
+export type BureauxLineage = {
+  sponsoredByNumber: number | null;
+  broughtInCount: number;
+};
+
+/** Lineage for the signed-in member’s mark. */
+export async function getOwnBureauxLineage(
+  userId: string
+): Promise<BureauxLineage> {
+  const db = createServiceClient();
+  const own = await getBureauxMembershipByUserId(userId);
+
+  let sponsoredByNumber: number | null = null;
+  if (own?.sponsored_by_user_id) {
+    const { data: sponsor } = await db
+      .from('bureaux_memberships')
+      .select('bureaux_number')
+      .eq('user_id', own.sponsored_by_user_id)
+      .maybeSingle();
+    const n = Number(sponsor?.bureaux_number);
+    if (Number.isFinite(n) && n >= 1) sponsoredByNumber = n;
+  }
+
+  const { count } = await db
+    .from('bureaux_memberships')
+    .select('user_id', { count: 'exact', head: true })
+    .eq('sponsored_by_user_id', userId);
+
+  return {
+    sponsoredByNumber,
+    broughtInCount: count || 0,
+  };
 }

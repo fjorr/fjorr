@@ -36,32 +36,44 @@ export default function HomePromoTile({
       href={href}
       className={`group relative block w-full overflow-hidden rounded-[8px] text-white ${bgClassName} ${
         isBanner
-          ? 'aspect-[16/10] sm:aspect-[21/9] min-h-[220px] sm:min-h-[260px]'
-          : 'aspect-[3/4] sm:aspect-square lg:aspect-[5/4]'
+          ? // Lead tile: tall on mobile, wide banner from sm up.
+            'aspect-[4/5] min-h-[340px] sm:aspect-[21/9] sm:min-h-[260px]'
+          : // Secondary: compact on mobile stack, square/landscape in the row.
+            'aspect-[16/10] min-h-[160px] sm:aspect-square sm:min-h-0 lg:aspect-[5/4]'
       }`}
     >
       <div
-        className={`absolute inset-0 flex flex-col justify-end items-start text-left p-6 sm:p-8 md:p-10 ${
-          isBanner ? 'max-w-xl' : 'max-w-md'
+        className={`absolute inset-0 flex flex-col justify-end items-start text-left ${
+          isBanner
+            ? 'p-6 sm:p-8 md:p-10 max-w-xl'
+            : 'p-5 sm:p-8 md:p-10 max-w-md'
         }`}
       >
         <h2
           className={`${headlineClass} leading-[0.95] mb-2.5 sm:mb-3 ${
             isBanner
-              ? 'text-[clamp(2rem,4.5vw,3.25rem)]'
-              : 'text-[clamp(1.65rem,3.6vw,2.5rem)]'
+              ? 'text-[clamp(2.25rem,8vw,3.25rem)]'
+              : 'text-[clamp(1.35rem,4vw,2.5rem)]'
           }`}
         >
           {headline}
         </h2>
         <p
-          className={`font-sans font-medium text-[13px] sm:text-[14px] leading-relaxed text-white/70 mb-5 sm:mb-6 tracking-tight ${
-            isBanner ? 'max-w-sm' : 'max-w-xs'
+          className={`font-sans font-medium leading-relaxed text-white/70 tracking-tight ${
+            isBanner
+              ? 'text-[13px] sm:text-[14px] mb-5 sm:mb-6 max-w-sm'
+              : 'text-[12px] sm:text-[14px] mb-4 sm:mb-6 max-w-xs line-clamp-2 sm:line-clamp-none'
           }`}
         >
           {subhead}
         </p>
-        <span className="inline-flex h-10 px-5 rounded-full bg-white text-black font-sans text-[13px] font-bold items-center group-hover:bg-white/90 transition-colors">
+        <span
+          className={`inline-flex items-center rounded-full bg-white text-black font-sans font-bold group-hover:bg-white/90 transition-colors ${
+            isBanner
+              ? 'h-10 px-5 text-[13px]'
+              : 'h-9 px-4 text-[12px] sm:h-10 sm:px-5 sm:text-[13px]'
+          }`}
+        >
           {cta}
         </span>
       </div>

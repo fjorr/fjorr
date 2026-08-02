@@ -6,6 +6,7 @@ import {
   mapStripeSubscriptionStatus,
   upsertBureauxMembership,
 } from '@/lib/bureaux';
+import { markBureauxGiftPaid } from '@/lib/bureaux-gift';
 
 export const runtime = 'nodejs';
 
@@ -89,6 +90,13 @@ export async function POST(req: Request) {
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
+        if (
+          session.mode === 'payment' &&
+          session.metadata?.kind === 'bureaux_gift'
+        ) {
+          await markBureauxGiftPaid(session);
+          break;
+        }
         if (session.mode !== 'subscription') break;
         const subId =
           typeof session.subscription === 'string'

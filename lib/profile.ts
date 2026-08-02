@@ -53,6 +53,7 @@ const RESERVED_SLUGS = new Set([
   'www',
   'support',
   'help',
+  'manual',
   'roster',
   'passport',
   'u',

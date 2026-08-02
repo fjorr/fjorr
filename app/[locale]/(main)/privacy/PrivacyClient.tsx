@@ -1,186 +1,163 @@
-'use client';
+import { getTranslations } from 'next-intl/server';
 
-import React, { useState, useEffect } from 'react';
-import { useTranslations } from 'next-intl';
+function Paras({ lines }: { lines: string[] }) {
+  return (
+    <div className="flex flex-col gap-3 font-sans text-[15px] leading-relaxed text-page-muted">
+      {lines.map((line) => (
+        <p key={line.slice(0, 64)}>{line}</p>
+      ))}
+    </div>
+  );
+}
 
-export default function PrivacyClient() {
-  const t = useTranslations('Privacy');
-  const targetText = t('title');
-  const [displayedText, setDisplayedText] = useState("•••••••");
-  // 🎯 ANIMATION BLOCKER STATE: Holds back content until headline finishes decoding
-  const [isDecrypted, setIsDecrypted] = useState(false);
+export default async function PrivacyClient() {
+  const t = await getTranslations('Privacy');
 
-  // 🎯 MONOSPACE CHARACTER DECRYPT ENGINES
-  useEffect(() => {
-    let frame = 0;
-    const totalFrames = targetText.length;
-    
-    const interval = setInterval(() => {
-      if (frame <= totalFrames) {
-        const revealed = targetText.slice(0, frame);
-        const masked = "•".repeat(totalFrames - frame);
-        setDisplayedText(revealed + masked);
-        frame++;
-      } else {
-        clearInterval(interval);
-        setIsDecrypted(true); // 🎯 Flip state to unleash the body text cascade
-      }
-    }, 80); 
+  const sections: { title: string; lines: string[] }[] = [
+    {
+      title: t('s1Title'),
+      lines: [t('s1p1'), t('s1p2'), t('s1p3')],
+    },
+    {
+      title: t('s2Title'),
+      lines: [t('s2p1'), t('s2p2')],
+    },
+    {
+      title: t('s3Title'),
+      lines: [t('s3p1'), t('s3p2'), t('s3p3'), t('s3p4'), t('s3p5')],
+    },
+    {
+      title: t('s4Title'),
+      lines: [t('s4p1'), t('s4p2')],
+    },
+    {
+      title: t('s5Title'),
+      lines: [t('s5Body')],
+    },
+    {
+      title: t('s6Title'),
+      lines: [t('s6p1'), t('s6p2'), t('s6p3')],
+    },
+    {
+      title: t('s7Title'),
+      lines: [t('s7p1'), t('s7p2')],
+    },
+    {
+      title: t('s8Title'),
+      lines: [t('s8p1'), t('s8p2')],
+    },
+    {
+      title: t('s9Title'),
+      lines: [t('s9Body')],
+    },
+    {
+      title: t('s10Title'),
+      lines: [t('s10Body')],
+    },
+    {
+      title: t('s11Title'),
+      lines: [t('s11Body')],
+    },
+    {
+      title: t('s12Title'),
+      lines: [t('s12p1'), t('s12p2'), t('s12p3')],
+    },
+  ];
 
-    return () => clearInterval(interval);
-  }, [targetText]);
+  const afterList: { title: string; lines: string[] }[] = [
+    { title: t('s14Title'), lines: [t('s14Body')] },
+    { title: t('s15Title'), lines: [t('s15Body')] },
+  ];
+
+  const doNotItems = [
+    t('s13Item1'),
+    t('s13Item2'),
+    t('s13Item3'),
+    t('s13Item4'),
+    t('s13Item5'),
+    t('s13Item6'),
+    t('s13Item7'),
+    t('s13Item8'),
+  ];
 
   return (
     <div className="w-full min-h-screen bg-[var(--page-bg)] text-page pt-16 pb-24 px-[10%] text-left flex flex-col items-center">
       <div className="w-full max-w-lg flex flex-col">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'WebPage',
+              name: 'Fjorr Privacy Notice',
+              description:
+                'Fjorr privacy: watching stays open, no ad tracking, no selling personal data. Membership data only when you join the Bureaux.',
+              dateModified: '2026-08-01',
+            }),
+          }}
+        />
 
-        {/* 🧠 STRUCTURED DATA: AI Compliance Schema */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "WebPage",
-            "name": "Fjorr Privacy Policy",
-            "description": "Fjorr privacy: optional Scout accounts, no ad tracking, no selling personal data. Watching stays open.",
-            "dateModified": "2026-07-28"
-          })
-        }}
-      />
-        
-        {/* HERO TITLE (Pure Monospace Decrypt String) */}
-        <div className="w-full text-center mb-4 select-none">
-          <h1 className="font-mono text-5xl md:text-6xl uppercase tracking-tight leading-none font-semibold text-page min-h-[48px] md:min-h-[60px]">
-            {displayedText}
+        <div className="w-full text-center mb-4">
+          <h1 className="font-futura text-4xl sm:text-5xl md:text-6xl tracking-tighter text-page select-none">
+            {t('title')}
           </h1>
         </div>
 
-        {/* 🎯 THE CASCADE WRAPPER: Entire body waits for the decrypt cue before dropping in */}
-        {isDecrypted && (
-          <div className="w-full flex flex-col animate-in fade-in slide-in-from-bottom-3 duration-700 fill-mode-both">
-            
-            {/* THE EDITORIAL DATE TRACKER HEADER */}
-            <div className="w-full text-center flex flex-col gap-1.5 mb-16 font-mono font-bold text-xs tracking-relaxed text-page-faint uppercase">
-              <span>{t('lastUpdated')}</span>
-              <span>{t('date')}</span>
-            </div>
+        <div className="w-full text-center flex flex-col gap-1.5 mb-14 font-mono font-bold text-xs tracking-relaxed text-page-faint uppercase">
+          <span>{t('lastUpdated')}</span>
+          <span>{t('date')}</span>
+        </div>
 
-            {/* CONTENT SECTIONS GRID STACK */}
-            <div className="flex flex-col gap-10">
-              
-              {/* SECTION 1 */}
-              <section className="flex flex-col gap-2">
-                <h2 className="font-sans text-lg font-bold text-page">
-                  {t('s1Title')}
-                </h2>
-                <p className="font-sans text-[15px] leading-normal text-page-muted ">
-                  {t('s1Body')}
-                </p>
-              </section>
+        <div className="flex flex-col gap-10">
+          {sections.map((section) => (
+            <section key={section.title} className="flex flex-col gap-3">
+              <h2 className="font-sans text-lg font-bold text-page">
+                {section.title}
+              </h2>
+              <Paras lines={section.lines} />
+            </section>
+          ))}
 
-              {/* SECTION 2 */}
-              <section className="flex flex-col gap-4">
-                <h2 className="font-sans text-lg font-bold text-page ">
-                  {t('s2Title')}
-                </h2>
-                <div className="flex flex-col gap-3 font-sans text-[15px] leading-normal text-page-muted">
-                  <p>
-                    {t('s2p1')}
-                  </p>
-                  <p>
-                    {t('s2p2')}
-                  </p>
-                  <p>
-                    {t('s2p3')}
-                  </p>
-                </div>
-              </section>
+          <section className="flex flex-col gap-3">
+            <h2 className="font-sans text-lg font-bold text-page">
+              {t('s13Title')}
+            </h2>
+            <ul className="list-none flex flex-col gap-2 font-sans text-[15px] leading-relaxed text-page-muted pl-1.5">
+              {doNotItems.map((item) => (
+                <li key={item} className="flex items-start gap-2">
+                  <span className="text-page-faint text-xs font-bold mt-1.5">
+                    •
+                  </span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
 
-              {/* SECTION 3 */}
-              <section className="flex flex-col gap-2">
-                <h2 className="font-sans text-lg font-bold text-page ">
-                  {t('s3Title')}
-                </h2>
-                <p className="font-sans text-[15px] leading-normal text-page-muted ">
-                  {t('s3Body')}
-                </p>
-              </section>
+          {afterList.map((section) => (
+            <section key={section.title} className="flex flex-col gap-3">
+              <h2 className="font-sans text-lg font-bold text-page">
+                {section.title}
+              </h2>
+              <Paras lines={section.lines} />
+            </section>
+          ))}
 
-              {/* SECTION 4 (THE BULLET POINT MATRIX) */}
-              <section className="flex flex-col gap-3">
-                <h2 className="font-sans text-lg font-bold text-page ">
-                  {t('s4Title')}
-                </h2>
-                <ul className="list-none flex flex-col gap-1.5 font-sans text-[15px] text-page-muted  pl-1.5">
-                  <li className="flex items-center gap-2">
-                    <span className="text-page-faint text-xs font-bold">•</span> {t('s4Item1')}
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-page-faint text-xs font-bold">•</span> {t('s4Item2')}
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-page-faint text-xs font-bold">•</span> {t('s4Item3')}
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-page-faint text-xs font-bold">•</span> {t('s4Item4')}
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-page-faint text-xs font-bold">•</span> {t('s4Item5')}
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-page-faint text-xs font-bold">•</span> {t('s4Item6')}
-                  </li>
-                </ul>
-              </section>
-
-              {/* SECTION 5 */}
-              <section className="flex flex-col gap-2">
-                <h2 className="font-sans text-lg font-bold text-page ">
-                  {t('s5Title')}
-                </h2>
-                <p className="font-sans text-base leading-normal text-page-muted ">
-                  {t('s5Body')}
-                </p>
-              </section>
-
-              {/* SECTION 6 */}
-              <section className="flex flex-col gap-2">
-                <h2 className="font-sans text-lg font-bold text-page ">
-                  {t('s6Title')}
-                </h2>
-                <p className="font-sans text-base leading-normal text-page-muted ">
-                  {t('s6Body')}
-                </p>
-              </section>
-
-              {/* SECTION 7 */}
-              <section className="flex flex-col gap-2">
-                <h2 className="font-sans text-lg font-bold text-page ">
-                  {t('s7Title')}
-                </h2>
-                <p className="font-sans text-base leading-normal text-page-muted ">
-                  {t('s7Body')}
-                </p>
-              </section>
-
-              {/* SECTION 8 */}
-              <section className="flex flex-col gap-1.5">
-                <h2 className="font-sans text-lg font-bold text-page ">
-                  {t('s8Title')}
-                </h2>
-                <p className="font-sans text-base text-page-muted ">
-                  {t('s8Body')}{' '}
-                  <a 
-                    href="mailto:team@fjorr.com" 
-                    className="text-page hover:opacity-80 underline underline-offset-4 decoration-[color-mix(in_srgb,var(--page-fg)_20%,transparent)] transition-opacity"
-                  > team@fjorr.com
-                  </a>
-                </p>
-              </section>
-
-            </div>
-          </div>
-        )}
+          <section className="flex flex-col gap-1.5">
+            <h2 className="font-sans text-lg font-bold text-page">
+              {t('s16Title')}
+            </h2>
+            <p className="font-sans text-[15px] leading-relaxed text-page-muted">
+              {t('s16Body')}{' '}
+              <a
+                href="mailto:control@fjorr.com"
+                className="text-page hover:opacity-80 underline underline-offset-4 decoration-[color-mix(in_srgb,var(--page-fg)_20%,transparent)] transition-opacity"
+              >
+                control@fjorr.com
+              </a>
+            </p>
+          </section>
+        </div>
       </div>
     </div>
   );

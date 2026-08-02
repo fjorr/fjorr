@@ -8,11 +8,15 @@ export type BureauxStatus =
   | 'incomplete'
   | 'unpaid';
 
-/** Active subscription, past_due grace, or canceled but still in paid period. */
+/** Active subscription, past_due grace, canceled-but-paid, or admin lifetime. */
 export function isBureauxActive(
   status: BureauxStatus | string | null | undefined,
-  currentPeriodEnd?: string | null
+  currentPeriodEnd?: string | null,
+  compLifetime?: boolean | null
 ) {
+  if (compLifetime && (status === 'active' || status === 'past_due')) {
+    return true;
+  }
   if (status === 'active' || status === 'past_due') return true;
   if (status === 'canceled' && currentPeriodEnd) {
     return new Date(currentPeriodEnd).getTime() > Date.now();
@@ -24,8 +28,13 @@ export function isBureauxMembershipActive(
   membership: {
     status: BureauxStatus | string | null | undefined;
     current_period_end?: string | null;
+    comp_lifetime?: boolean | null;
   } | null
 ) {
   if (!membership) return false;
-  return isBureauxActive(membership.status, membership.current_period_end);
+  return isBureauxActive(
+    membership.status,
+    membership.current_period_end,
+    membership.comp_lifetime
+  );
 }

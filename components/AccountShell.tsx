@@ -4,6 +4,7 @@ import AccountNav from '@/components/AccountNav';
 import type { ScoutProfile } from '@/lib/profile';
 import {
   ensureBureauxNumber,
+  getOwnBureauxLineage,
   getOwnBureauxMembership,
   isBureauxMembershipActive,
 } from '@/lib/bureaux';
@@ -47,12 +48,18 @@ export default async function AccountShell({
     if (n) membership = { ...membership, bureaux_number: n };
   }
 
+  const lineage = bureauxActive
+    ? await getOwnBureauxLineage(profile.id)
+    : null;
+
   return (
     <div className="w-full min-h-[calc(100vh-4rem)] bg-page text-page flex flex-col md:flex-row">
       <AccountNav
         memberNumber={profile.member_number}
         displayName={name}
         bureauxNumber={bureauxActive ? membership?.bureaux_number ?? null : null}
+        broughtByNumber={lineage?.sponsoredByNumber ?? null}
+        broughtInCount={lineage?.broughtInCount ?? 0}
       />
 
       <main className="flex-1 min-w-0 px-5 sm:px-8 md:px-10 py-8 md:py-10">

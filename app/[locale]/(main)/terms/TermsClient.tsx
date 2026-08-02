@@ -8,104 +8,60 @@ export default function TermsClient() {
   return (
     <div className="w-full min-h-screen bg-[var(--page-bg)] text-page pt-16 pb-24 px-[10%] text-left flex flex-col items-center">
       <div className="w-full max-w-lg flex flex-col">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'WebPage',
+              name: 'Fjorr Terms Sheet',
+              description:
+                'How you’re welcome to use Fjorr — watching, membership, submissions, and the work.',
+              dateModified: '2026-08-01',
+            }),
+          }}
+        />
 
-        {/* 🧠 STRUCTURED DATA: AI Legal Terms Compliance Schema */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "WebPage",
-            "name": "Fjorr Terms of Use",
-            "description": "Fjorr standard usage terms and intellectual property parameters: Watching and sharing conditions for personal use.",
-            "dateModified": "2026-01-01"
-          })
-        }}
-      />
-        
-        {/* 🎯 HERO TITLE: Fades and settles smoothly instantly on mount */}
         <div className="w-full text-center mb-4 select-none animate-in fade-in zoom-in-95 duration-500 fill-mode-both">
           <h1 className="font-futura text-[56px]/[48px] md:text-[72px]/[62px] uppercase tracking-tight font-black text-page">
-            {t('titleLine1')}<br />
+            {t('titleLine1')}
+            <br />
             {t('titleLine2')}
           </h1>
         </div>
 
-        {/* 🎯 BODY CONTENT PACK: Waits 300ms for the headline to finish, then slides up smoothly */}
         <div className="w-full flex flex-col animate-in fade-in slide-in-from-bottom-3 duration-700 delay-300 fill-mode-both">
-          
-          {/* THE EDITORIAL DATE TRACKER HEADER */}
           <div className="w-full text-center flex flex-col gap-1.5 mb-16 font-mono font-bold text-xs tracking-relaxed text-page-faint uppercase">
             <span>{t('lastUpdated')}</span>
             <span>{t('date')}</span>
           </div>
 
-          {/* CONTENT SECTIONS GRID STACK */}
           <div className="flex flex-col gap-10">
-            
-            {/* SECTION 1 */}
-            <section className="flex flex-col gap-2">
-              <h2 className="font-sans text-lg font-bold text-page">
-                {t('s1Title')}
-              </h2>
-              <p className="font-sans text-[15px] leading-normal text-page-muted">
-                {t('s1Body')}
-              </p>
-            </section>
-
-            {/* SECTION 2 */}
-            <section className="flex flex-col gap-2">
-              <h2 className="font-sans text-lg font-bold text-page">
-                {t('s2Title')}
-              </h2>
-              <p className="font-sans text-[15px] leading-normal text-page-muted">
-                {t('s2Body')}
-              </p>
-            </section>
-
-            {/* SECTION 3 */}
-            <section className="flex flex-col gap-2">
-              <h2 className="font-sans text-lg font-bold text-page">
-                {t('s3Title')}
-              </h2>
-              <p className="font-sans text-[15px] leading-normal text-page-muted">
-                {t('s3Body')}
-              </p>
-            </section>
-
-            {/* SECTION 4 */}
-            <section className="flex flex-col gap-2">
-              <h2 className="font-sans text-lg font-bold text-page">
-                {t('s4Title')}
-              </h2>
-              <p className="font-sans text-[15px] leading-normal text-page-muted">
-                {t('s4Body')}
-              </p>
-            </section>
-
-            {/* SECTION 5 */}
-            <section className="flex flex-col gap-2">
-              <h2 className="font-sans text-lg font-bold text-page">
-                {t('s5Title')}
-              </h2>
-              <p className="font-sans text-[15px] leading-normal text-page-muted">
-                {t('s5Body')}
-              </p>
-            </section>
-
-            {/* SECTION 6 */}
-            <section className="flex flex-col gap-2">
-              <h2 className="font-sans text-lg font-bold text-page">
-                {t('s6Title')}
-              </h2>
-              <p className="font-sans text-[15px] leading-normal text-page-muted">
-                {t('s6Body')}
-              </p>
-            </section>
-
+            {(
+              [
+                's1',
+                's2',
+                's3',
+                's4',
+                's5',
+                's6',
+                's7',
+                's8',
+                's9',
+                's10',
+              ] as const
+            ).map((id) => (
+              <section key={id} className="flex flex-col gap-2">
+                <h2 className="font-sans text-lg font-bold text-page">
+                  {t(`${id}Title`)}
+                </h2>
+                <p className="font-sans text-[15px] leading-normal text-page-muted">
+                  {t(`${id}Body`)}
+                </p>
+              </section>
+            ))}
           </div>
         </div>
-
       </div>
     </div>
   );
