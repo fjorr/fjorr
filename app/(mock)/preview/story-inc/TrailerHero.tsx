@@ -1,20 +1,61 @@
-/** Poster + play — mock trailer hero (no real video). */
+'use client';
+
+import { useState } from 'react';
+
+/** Poster + play — YouTube embed when youtubeId is set. */
 export default function TrailerHero({
   className = '',
   rounded = 'rounded-[28px]',
+  poster = '/preview/story-inc/trailer-poster.png',
+  title = 'Angry Birds 3',
+  teaserLabel = 'Official teaser',
+  youtubeId,
 }: {
   className?: string;
   rounded?: string;
+  poster?: string;
+  title?: string;
+  teaserLabel?: string;
+  /** When set, play loads this YouTube embed in the hero. */
+  youtubeId?: string;
 }) {
+  const [playing, setPlaying] = useState(false);
+  const posterSrc =
+    poster ||
+    (youtubeId
+      ? `https://i.ytimg.com/vi/${youtubeId}/maxresdefault.jpg`
+      : '/preview/story-inc/trailer-poster.png');
+
+  if (playing && youtubeId) {
+    return (
+      <div
+        className={`relative aspect-video overflow-hidden bg-black ${rounded} ${className}`}
+      >
+        <iframe
+          title={`${title} trailer`}
+          src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&rel=0`}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowFullScreen
+          className="absolute inset-0 h-full w-full border-0"
+        />
+      </div>
+    );
+  }
+
   return (
-    <a
-      href="#mock"
-      aria-label="Play trailer"
-      className={`group relative block overflow-hidden bg-black ${rounded} ${className}`}
+    <button
+      type="button"
+      onClick={() => {
+        if (youtubeId) setPlaying(true);
+      }}
+      aria-label={`Play ${title} trailer`}
+      className={`group relative block w-full overflow-hidden bg-black text-left ${rounded} ${className} ${
+        youtubeId ? 'cursor-pointer' : 'cursor-default'
+      }`}
     >
       <img
-        src="/preview/story-inc/trailer-poster.png"
-        alt="Angry Birds 3 trailer"
+        src={posterSrc}
+        alt={`${title} trailer`}
         className="aspect-video w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
       />
       <span className="absolute inset-0 bg-black/15 transition-colors group-hover:bg-black/25" />
@@ -31,12 +72,12 @@ export default function TrailerHero({
       </span>
       <span className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-5 pb-4 pt-12">
         <span className="block text-[12px] font-semibold uppercase tracking-[0.12em] text-white/70">
-          Official teaser
+          {teaserLabel}
         </span>
         <span className="mt-0.5 block text-[15px] font-bold text-white sm:text-[16px]">
-          Angry Birds 3
+          {title}
         </span>
       </span>
-    </a>
+    </button>
   );
 }

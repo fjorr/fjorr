@@ -27,6 +27,7 @@ const EXPLORE_LINKS = [
   { href: '/nominate', labelKey: 'nominate' as const },
   { href: '/cabinet', labelKey: 'cabinet' as const },
   { href: '/about', labelKey: 'about' as const },
+  { href: '/manual', labelKey: 'manual' as const },
 ];
 
 type PanelMode = 'closed' | 'nav' | 'lang' | 'auth';
@@ -41,10 +42,8 @@ function Navbar({ variant = 'light' }: NavbarProps) {
   const [isTheaterOpen, setIsTheaterOpen] = useState(false);
   const [panel, setPanel] = useState<PanelMode>('closed');
   const [authNextPath, setAuthNextPath] = useState('/bureaux');
-  const [emailCopied, setEmailCopied] = useState(false);
   const [scrolledPast, setScrolledPast] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
-  const contactEmail = 'control@fjorr.com';
 
   const isOpen = panel !== 'closed';
   const showCloseIcon = panel === 'nav' || panel === 'auth';
@@ -104,10 +103,6 @@ function Navbar({ variant = 'light' }: NavbarProps) {
     const href = stripLocalePrefix(raw || '/') || '/';
     router.replace(href, { locale: next });
   };
-
-  useEffect(() => {
-    if (panel !== 'nav') setEmailCopied(false);
-  }, [panel]);
 
   // Slogan on every page load / route; hide only after scroll.
   useEffect(() => {
@@ -196,7 +191,7 @@ function Navbar({ variant = 'light' }: NavbarProps) {
               : `top-0 rounded-[10px] overflow-visible ${glassAnimClass}`}
           `}
         >
-          <div className="flex h-[44px] w-full pl-3 pr-4 sm:pl-5 sm:pr-[30px] items-center gap-3 sm:gap-5">
+          <div className="flex h-[44px] w-full pl-3 pr-4 sm:pl-5 sm:pr-5 items-center gap-3 sm:gap-4">
             <Link
               href="/"
               onClick={closePanel}
@@ -212,10 +207,10 @@ function Navbar({ variant = 'light' }: NavbarProps) {
             </Link>
 
             <div
-              className={`min-w-0 overflow-hidden transition-[flex,opacity,max-width] duration-300 ease-out ${
+              className={`min-w-0 flex-1 overflow-hidden transition-[opacity,max-width] duration-300 ease-out ${
                 showTagline
-                  ? 'flex-1 sm:flex-initial opacity-100 max-w-[22rem]'
-                  : 'flex-none opacity-0 max-w-0 pointer-events-none'
+                  ? 'opacity-100 max-w-[22rem]'
+                  : 'opacity-0 max-w-0 pointer-events-none'
               }`}
             >
               <Link
@@ -231,7 +226,7 @@ function Navbar({ variant = 'light' }: NavbarProps) {
               </Link>
             </div>
 
-            <div className="flex items-center gap-3 shrink-0 ml-auto sm:ml-0">
+            <div className="flex items-center gap-3.5 sm:gap-4 shrink-0 ml-auto">
               <NavbarBureauxCue className={iconColor} />
               <button
                 type="button"
@@ -272,11 +267,13 @@ function Navbar({ variant = 'light' }: NavbarProps) {
           >
             <div className="overflow-hidden min-h-0">
               {panel === 'lang' ? (
-                <div className="px-[30px] pb-11 pt-4 flex flex-col gap-2">
-                  <p className={`font-sans text-[13px] font-medium ${mutedLabel}`}>
-                    {t('languages')}
+                <div className="px-[30px] pb-11 pt-4 flex flex-col gap-3">
+                  <p
+                    className={`font-sans text-[15px] font-semibold tracking-tight ${textColor}`}
+                  >
+                    {t('languagesHeadline')}
                   </p>
-                  <nav className="flex flex-col gap-1.5">
+                  <nav className="flex flex-col gap-1.5" aria-label={t('languages')}>
                     {locales.map((code) => (
                       <button
                         key={code}
@@ -357,43 +354,15 @@ function Navbar({ variant = 'light' }: NavbarProps) {
                   </div>
 
                   <div
-                    className={`pt-5 flex flex-col gap-2 border-t ${
+                    className={`pt-5 flex flex-col items-start gap-2 border-t ${
                       variant === 'light' ? 'border-white/10' : 'border-black/8'
                     }`}
                   >
-                    <p className={`font-sans text-[13px] font-medium leading-snug ${mutedLabel}`}>
-                      {t('contactBlurb')}
-                    </p>
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        try {
-                          await navigator.clipboard.writeText(contactEmail);
-                          setEmailCopied(true);
-                          window.setTimeout(() => setEmailCopied(false), 3500);
-                        } catch (err) {
-                          console.error('Clipboard copy failed:', err);
-                        }
-                      }}
-                      className={`mt-1 self-start h-8 px-3 rounded-[6px] font-sans text-[13px] font-semibold transition-colors ${
-                        emailCopied
-                          ? variant === 'light'
-                            ? 'bg-white/10 text-white/55 cursor-default'
-                            : 'bg-black/8 text-black/50 cursor-default'
-                          : variant === 'light'
-                            ? 'bg-white/15 text-white hover:bg-white/22'
-                            : 'bg-black/10 text-black hover:bg-black/15'
-                      }`}
+                    <p
+                      className={`font-sans text-[13px] font-medium leading-snug ${mutedLabel}`}
                     >
-                      {emailCopied ? t('emailCopied') : t('letsTalk')}
-                    </button>
-                  </div>
-
-                  <div
-                    className={`pt-5 flex items-center border-t ${
-                      variant === 'light' ? 'border-white/10' : 'border-black/8'
-                    }`}
-                  >
+                      {t('appearance')}
+                    </p>
                     <ColorSchemeToggle />
                   </div>
                 </div>

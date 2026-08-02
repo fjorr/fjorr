@@ -3,8 +3,8 @@ import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
+import ManualCopyEmailButton from '@/components/help/ManualCopyEmailButton';
 import ManualPager from '@/components/help/ManualPager';
-import { manualWhoLine } from '@/lib/help/member-lines';
 import {
   getManualEntryNeighbors,
   manualEntryHref,
@@ -75,6 +75,9 @@ function ReferenceFigure({
   );
 }
 
+const primaryActionClass =
+  'self-start inline-flex h-9 items-center gap-1.5 px-3.5 rounded-[8px] bg-[color-mix(in_srgb,var(--page-fg)_8%,var(--page-bg))] text-page font-sans text-[13px] font-semibold tracking-tight hover:bg-[color-mix(in_srgb,var(--page-fg)_12%,var(--page-bg))] transition-colors print:hidden';
+
 function ActionLink({
   href,
   label,
@@ -87,6 +90,11 @@ function ActionLink({
   children?: React.ReactNode;
 }) {
   const body = children ?? label;
+  if (href.startsWith('clipboard:')) {
+    return (
+      <ManualCopyEmailButton label={label || 'Write in'} className={className} />
+    );
+  }
   if (href.startsWith('mailto:')) {
     return (
       <a href={href} className={className}>
@@ -105,12 +113,18 @@ function EntryActions({ actions }: { actions: ManualAction[] }) {
   if (actions.length === 0) return null;
 
   if (actions.length === 1) {
+    const action = actions[0];
+    if (action.href.startsWith('clipboard:')) {
+      return (
+        <ManualCopyEmailButton
+          label={action.label}
+          className={primaryActionClass}
+        />
+      );
+    }
     return (
-      <ActionLink
-        href={actions[0].href}
-        className="self-start inline-flex h-9 items-center gap-1.5 px-3.5 rounded-[8px] bg-[color-mix(in_srgb,var(--page-fg)_8%,var(--page-bg))] text-page font-sans text-[13px] font-semibold tracking-tight hover:bg-[color-mix(in_srgb,var(--page-fg)_12%,var(--page-bg))] transition-colors print:hidden"
-      >
-        <span>{actions[0].label}</span>
+      <ActionLink href={action.href} className={primaryActionClass}>
+        <span>{action.label}</span>
         <ArrowRight
           size={14}
           strokeWidth={1.75}
@@ -170,7 +184,6 @@ function SpecField({
 
 type Labels = {
   labelWhat: string;
-  labelWho: string;
   labelHappens: string;
   actionRequired: string;
   actionNone: string;
@@ -181,7 +194,6 @@ type Labels = {
 export function ManualEntryArticle({
   entry,
   audience,
-  bureauxNumber,
   labels,
   animateFolio = false,
   showReference = true,
@@ -189,14 +201,14 @@ export function ManualEntryArticle({
 }: {
   entry: ManualEntry;
   audience: ManualAudience;
-  bureauxNumber: number | null;
+  /** Kept for call-site compatibility; copy no longer varies by seat. */
+  bureauxNumber?: number | null;
   labels: Labels;
   animateFolio?: boolean;
   showReference?: boolean;
   showActions?: boolean;
 }) {
   const actions = entry.actions[audience];
-  const whoLine = manualWhoLine(entry, audience, bureauxNumber);
   const actionLine =
     actions.length === 0 ? labels.actionNone : labels.actionRequired;
 
@@ -228,11 +240,11 @@ export function ManualEntryArticle({
       <div className="flex flex-col gap-10 min-w-0 w-full lg:w-[min(100%,26rem)] lg:shrink-0 lg:pt-3 lg:pr-8 xl:pr-10 print:pt-0 print:pr-0 print:max-w-none">
         <dl className="m-0 flex flex-col gap-8">
           <SpecField label={labels.labelWhat}>{entry.what}</SpecField>
-          <SpecField label={labels.labelWho}>{whoLine}</SpecField>
           <SpecField label={labels.labelHappens} last>
             {entry.slug === 'contact' ? (
               <>
-                Mail reaches a person. For how stories earn a place, see the{' '}
+                Email reaches a real person. For how stories earn a place on
+                Fjorr, read the{' '}
                 <Link
                   href="/principles"
                   className="text-page underline underline-offset-2 decoration-[color-mix(in_srgb,var(--page-fg)_30%,transparent)] hover:decoration-[color-mix(in_srgb,var(--page-fg)_55%,transparent)]"
@@ -273,7 +285,6 @@ export default async function ManualEntryView({
   const { prev, next } = getManualEntryNeighbors(entry.slug);
   const labels = {
     labelWhat: t('labelWhat'),
-    labelWho: t('labelWho'),
     labelHappens: t('labelHappens'),
     actionRequired: t('actionRequired'),
     actionNone: t('actionNone'),

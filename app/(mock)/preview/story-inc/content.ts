@@ -195,6 +195,11 @@ export const PROJECTS_INDEX = [
     image: '/preview/story-inc/hero.jpg',
   },
   {
+    href: '/preview/story-inc/rolling-loud',
+    title: 'Rolling Loud',
+    image: '/preview/story-inc/hero-banner.jpg',
+  },
+  {
     href: null,
     title: 'A Knight of Seven Kingdoms',
     image: '/preview/story-inc/market-2.jpg',
