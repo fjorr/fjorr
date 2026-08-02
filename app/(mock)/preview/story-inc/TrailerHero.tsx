@@ -19,7 +19,7 @@ export default function TrailerHero({
       />
       <span className="absolute inset-0 bg-black/15 transition-colors group-hover:bg-black/25" />
       <span className="absolute inset-0 flex items-center justify-center">
-        <span className="flex h-16 w-16 items-center justify-center rounded-full bg-white/95 text-[#1d1d1f] shadow-[0_8px_32px_rgba(0,0,0,0.35)] transition-transform group-hover:scale-105 sm:h-[4.5rem] sm:w-[4.5rem]">
+        <span className="flex h-16 w-16 items-center justify-center rounded-full bg-white/95 text-[#1d1d1f] transition-transform group-hover:scale-105 sm:h-[4.5rem] sm:w-[4.5rem]">
           <svg
             viewBox="0 0 24 24"
             className="ml-1 h-7 w-7 fill-current sm:h-8 sm:w-8"

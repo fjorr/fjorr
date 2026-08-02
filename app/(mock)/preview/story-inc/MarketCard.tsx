@@ -25,7 +25,7 @@ export default function MarketCard({
 
   return (
     <article
-      className="group overflow-hidden rounded-3xl bg-[#fbfbfd] ring-1 ring-black/[0.05] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_48px_rgba(0,0,0,0.1)] hover:ring-[#00a6ff]/25"
+      className="group overflow-hidden rounded-3xl bg-[#fbfbfd] ring-1 ring-black/[0.05] transition-all duration-300 hover:-translate-y-1 hover:ring-[#00a6ff]/25"
       onMouseLeave={() => setHover(null)}
     >
       <div className="relative aspect-[16/10] overflow-hidden bg-[#f5f5f7]">

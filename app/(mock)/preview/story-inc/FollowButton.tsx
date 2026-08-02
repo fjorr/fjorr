@@ -33,7 +33,7 @@ export default function FollowButton({
 
   const sizeClass =
     size === 'lg'
-      ? 'h-12 px-8 text-[15px] shadow-[0_8px_24px_rgba(0,166,255,0.35)]'
+      ? 'h-12 px-8 text-[15px]'
       : size === 'sm'
         ? 'h-8 px-3.5 text-[12px]'
         : 'h-10 px-5 text-sm';
