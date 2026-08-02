@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 
 /**
  * v1 — client-revised Angry Birds project page.
- * Trailers+tickets bundled; markets card style; rewards compact (v2 size).
+ * Trailers full-width; tickets as a slim bar; markets card style; rewards compact.
  *
  * Stage flags: hide trailers/tickets blocks when a project has no content yet.
  */
@@ -44,9 +44,30 @@ export default function StoryIncApplePage() {
             <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-[#00a6ff]">
               In theaters December 23
             </p>
-            <h1 className="mt-3 text-[40px] font-bold leading-[1.05] tracking-[-0.03em] sm:text-[56px] md:text-[64px]">
+            <h1
+              className="mt-3 text-[40px] font-bold leading-[1.05] tracking-[-0.03em] sm:text-[56px] md:text-[64px]"
+              style={{ fontFamily: 'Montserrat, Arial, sans-serif' }}
+            >
               Angry Birds 3
             </h1>
+
+            {/* Cast billing up top — names are the sell */}
+            <p className="mx-auto mt-5 max-w-[40rem] text-[15px] font-semibold leading-[1.45] tracking-[-0.01em] text-[#1d1d1f] sm:mt-6 sm:text-[17px]">
+              {TEAM.map((m, i) => (
+                <span key={m.name}>
+                  {i > 0 ? (
+                    <span className="mx-1.5 text-[#c7c7cc] sm:mx-2" aria-hidden>
+                      ·
+                    </span>
+                  ) : null}
+                  {m.name}
+                </span>
+              ))}
+            </p>
+            <p className="mx-auto mt-3 max-w-[36rem] text-[10px] font-semibold uppercase tracking-[0.14em] text-[#86868b] sm:text-[11px]">
+              Directed by John Rice · Written for the screen by Thurop Van Orman
+              · Produced by Rovio and SEGA
+            </p>
           </div>
 
           <div className="mx-auto max-w-[980px] px-5">
@@ -56,10 +77,10 @@ export default function StoryIncApplePage() {
           </div>
 
           <div className="mx-auto max-w-[680px] px-5 pb-6 pt-12 text-center sm:pt-14">
-            <h2 className="text-[28px] font-bold tracking-[-0.02em] sm:text-[32px]">
+            <h2 className="text-[28px] font-bold tracking-[-0.02em] text-[#1d1d1f] sm:text-[32px]">
               The story
             </h2>
-            <p className="mt-5 text-[17px] leading-[1.7] text-[#6e6e73] sm:text-[19px]">
+            <p className="mt-4 text-[15px] font-medium leading-[1.55] tracking-normal text-[#6e6e73] sm:text-[16px]">
               {SUMMARY}
             </p>
           </div>
@@ -135,20 +156,20 @@ export default function StoryIncApplePage() {
                     caption={r.caption}
                     className="aspect-[16/10] w-full"
                   />
-                  <div className="p-4">
-                    <div
-                      className={`mb-2 inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${
+                  <div className="flex flex-col gap-2 p-4">
+                    <p
+                      className={`m-0 self-start rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${
                         r.status === 'Granted'
                           ? 'bg-black/[0.06] text-[#666]'
                           : 'bg-[#00a6ff]/12 text-[#0077c8]'
                       }`}
                     >
                       {r.status === 'Granted' ? 'Granted' : 'Open now'}
-                    </div>
-                    <h3 className="text-[15px] font-bold tracking-[-0.02em] text-[#1d1d1f]">
+                    </p>
+                    <h3 className="m-0 text-[15px] font-bold leading-[1.25] tracking-[-0.02em] text-[#1d1d1f]">
                       {r.title}
                     </h3>
-                    <p className="mt-2 text-[13px] leading-relaxed text-[#6e6e73]">
+                    <p className="m-0 text-[13px] font-medium leading-[1.55] text-[#6e6e73]">
                       {r.body}
                     </p>
                   </div>
@@ -159,7 +180,7 @@ export default function StoryIncApplePage() {
         </section>
 
         {/* Markets */}
-        <section id="markets" className="scroll-mt-[52px] py-16 sm:py-20">
+        <section id="markets" className="scroll-mt-[52px] pb-10 pt-16 sm:pb-12 sm:pt-20">
           <div className="mx-auto max-w-[980px] px-5">
             <div className="text-center sm:text-left">
               <div className="mb-2 inline-flex items-center gap-2 text-[12px] font-semibold text-[#00a6ff]">
@@ -172,7 +193,7 @@ export default function StoryIncApplePage() {
               <h2 className="text-[28px] font-bold tracking-[-0.02em] sm:text-[32px]">
                 Project Markets
               </h2>
-              <p className="mt-2 text-[15px] text-[#6e6e73]">
+              <p className="mt-2 text-[15px] font-medium leading-[1.55] text-[#6e6e73]">
                 Predict what happens next. Earn Story Cash toward rewards.
               </p>
             </div>
@@ -193,10 +214,10 @@ export default function StoryIncApplePage() {
           </div>
         </section>
 
-        {/* Ideas — same name as markets page */}
+        {/* Ideas — pulled up a smidge under markets */}
         <section
           id="ideas"
-          className="scroll-mt-[52px] bg-[#fbfbfd] py-16 sm:py-20"
+          className="scroll-mt-[52px] bg-[#fbfbfd] pb-16 pt-10 sm:pb-20 sm:pt-12"
         >
           <div className="mx-auto max-w-[680px] px-5">
             <h2 className="text-center text-[28px] font-bold tracking-[-0.02em] sm:text-[32px]">
@@ -278,43 +299,32 @@ export default function StoryIncApplePage() {
           </div>
         </section>
 
-        {/* Trailers + tickets — bundled; hide empty stages */}
+        {/* Trailers full-width; tickets as a slim bar underneath (easy to hide) */}
         {HAS_TRAILERS || HAS_TICKETS ? (
           <section id="tickets" className="scroll-mt-[52px] py-16 sm:py-20">
             <div className="mx-auto max-w-[980px] px-5">
-              <h2 className="text-center text-[28px] font-bold tracking-[-0.02em] sm:text-[32px]">
-                {HAS_TRAILERS && HAS_TICKETS
-                  ? 'Trailers & tickets'
-                  : HAS_TRAILERS
-                    ? 'Trailers'
-                    : 'Tickets'}
-              </h2>
-              <p className="mx-auto mt-2 max-w-md text-center text-[15px] text-[#6e6e73]">
-                Early shares and opening-weekend access for fans who Follow.
-              </p>
+              {HAS_TRAILERS ? (
+                <>
+                  <h2 className="text-center text-[28px] font-bold tracking-[-0.02em] sm:text-[32px]">
+                    Trailers
+                  </h2>
+                  <p className="mx-auto mt-2 max-w-md text-center text-[15px] font-medium leading-[1.55] text-[#6e6e73]">
+                    Early shares for fans who Follow.
+                  </p>
 
-              <div
-                className={`mt-10 grid gap-4 ${
-                  HAS_TRAILERS && HAS_TICKETS ? 'md:grid-cols-2' : ''
-                }`}
-              >
-                {HAS_TRAILERS ? (
-                  <div className="rounded-3xl bg-[#fbfbfd] p-6 sm:p-8">
+                  <div className="mt-10 rounded-3xl bg-[#fbfbfd] p-6 sm:p-8">
                     <p className="text-[12px] font-semibold uppercase tracking-wide text-[#00a6ff]">
-                      Trailers
-                    </p>
-                    <h3 className="mt-2 text-[22px] font-bold tracking-[-0.02em]">
                       Watch & share
-                    </h3>
-                    <ul className="mt-6 space-y-4">
+                    </p>
+                    <ul className="mt-6 space-y-5">
                       {TRAILERS.map((t) => (
                         <li
                           key={t.title}
-                          className="flex items-center gap-3.5 border-b border-black/[0.06] pb-4 last:border-0 last:pb-0"
+                          className="flex items-center gap-4 border-b border-black/[0.06] pb-5 last:border-0 last:pb-0 sm:gap-5"
                         >
                           <button
                             type="button"
-                            className="group relative aspect-video w-[88px] shrink-0 overflow-hidden rounded-xl bg-[#1d1d1f] sm:w-[104px]"
+                            className="group relative aspect-video w-[120px] shrink-0 overflow-hidden rounded-xl bg-[#1d1d1f] sm:w-[160px]"
                             aria-label={`${t.status}: ${t.title}`}
                           >
                             <img
@@ -325,7 +335,7 @@ export default function StoryIncApplePage() {
                               }`}
                             />
                             <span className="absolute inset-0 bg-black/25" />
-                            <span className="absolute left-1/2 top-1/2 flex h-8 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white/95 text-[#1d1d1f] shadow-md">
+                            <span className="absolute left-1/2 top-1/2 flex h-9 w-9 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white/95 text-[#1d1d1f] shadow-md sm:h-10 sm:w-10">
                               {t.locked ? (
                                 <svg
                                   viewBox="0 0 16 16"
@@ -336,20 +346,20 @@ export default function StoryIncApplePage() {
                                   <path d="M8 1a3 3 0 0 0-3 3v2H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1h-1V4a3 3 0 0 0-3-3Zm1.5 5h-3V4a1.5 1.5 0 1 1 3 0v2Z" />
                                 </svg>
                               ) : (
-                                <span className="ml-0.5 text-[10px] leading-none">
+                                <span className="ml-0.5 text-[11px] leading-none">
                                   ▶
                                 </span>
                               )}
                             </span>
                           </button>
                           <div className="min-w-0 flex-1">
-                            <p className="text-[15px] font-semibold">
+                            <p className="text-[16px] font-semibold sm:text-[17px]">
                               {t.title}
                             </p>
-                            <p className="mt-0.5 text-[13px] leading-snug text-[#6e6e73]">
+                            <p className="mt-1 text-[14px] font-medium leading-[1.55] text-[#6e6e73]">
                               {t.meta}
                             </p>
-                            <p className="mt-1.5 text-[12px] font-semibold text-[#00a6ff]">
+                            <p className="mt-2 text-[13px] font-semibold text-[#00a6ff]">
                               {t.status}
                             </p>
                           </div>
@@ -357,29 +367,32 @@ export default function StoryIncApplePage() {
                       ))}
                     </ul>
                   </div>
-                ) : null}
+                </>
+              ) : null}
 
-                {HAS_TICKETS ? (
-                  <div className="flex flex-col rounded-3xl bg-[#e8f4fc] p-6 ring-1 ring-[#00a6ff]/15 sm:p-8">
+              {HAS_TICKETS ? (
+                <div
+                  className={`flex flex-col gap-3 rounded-2xl bg-[#e8f4fc] px-5 py-4 ring-1 ring-[#00a6ff]/15 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-6 ${
+                    HAS_TRAILERS ? 'mt-4' : 'mt-10'
+                  }`}
+                >
+                  <div className="min-w-0">
                     <p className="text-[12px] font-semibold uppercase tracking-wide text-[#00a6ff]">
                       Tickets
                     </p>
-                    <h3 className="mt-2 text-[22px] font-bold tracking-[-0.02em] text-[#1d1d1f]">
-                      Pre-purchase
-                    </h3>
-                    <p className="mt-3 flex-1 text-[15px] leading-relaxed text-[#4a6578]">
+                    <p className="mt-1 text-[15px] font-medium leading-[1.45] text-[#4a6578]">
                       Opening weekend holds. Followers get first access when
                       inventory opens.
                     </p>
-                    <button
-                      type="button"
-                      className="mt-8 inline-flex h-12 items-center justify-center rounded-full bg-[#00a6ff] text-[14px] font-semibold text-white hover:bg-[#0095e6]"
-                    >
-                      Pre-purchase tickets
-                    </button>
                   </div>
-                ) : null}
-              </div>
+                  <button
+                    type="button"
+                    className="inline-flex h-11 shrink-0 items-center justify-center rounded-full bg-[#00a6ff] px-6 text-[14px] font-semibold text-white hover:bg-[#0095e6]"
+                  >
+                    Pre-purchase tickets
+                  </button>
+                </div>
+              ) : null}
             </div>
           </section>
         ) : null}
@@ -396,18 +409,21 @@ export default function StoryIncApplePage() {
                 Directed by John Rice from a screenplay by Thurop Van Orman.
                 Produced by Rovio and SEGA. A Paramount Pictures release.
               </p>
-              <h3 className="mt-6 text-[12px] font-semibold uppercase tracking-[0.12em] text-[#86868b]">
+              <h3 className="mt-7 text-[12px] font-semibold uppercase tracking-[0.12em] text-[#86868b]">
                 Team
               </h3>
-              <ul className="mt-3 flex flex-wrap gap-x-6 gap-y-3">
+              <ul className="mt-4 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
                 {TEAM.map((member) => (
-                  <li key={member.name} className="flex items-center gap-3">
+                  <li
+                    key={member.name}
+                    className="grid grid-cols-[auto_1fr] items-center gap-3.5"
+                  >
                     <img
                       src={member.image}
                       alt={member.name}
-                      className="h-10 w-10 shrink-0 rounded-full object-cover object-top ring-1 ring-black/5"
+                      className="h-14 w-14 rounded-full object-cover object-top ring-1 ring-black/5 sm:h-16 sm:w-16"
                     />
-                    <span className="text-[13px] font-semibold text-[#1d1d1f]">
+                    <span className="min-w-0 text-[15px] font-semibold text-[#1d1d1f] sm:text-[16px]">
                       {member.name}
                     </span>
                   </li>
