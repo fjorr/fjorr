@@ -7,6 +7,8 @@ export type ProjectReward = {
   caption: string;
   status: string;
   color: string;
+  /** Optional photo — falls back to color placeholder. */
+  image?: string;
   /** e.g. "750 SC" or "Free entry" */
   price?: string;
   /** e.g. "Redeem" / "Drawing" */

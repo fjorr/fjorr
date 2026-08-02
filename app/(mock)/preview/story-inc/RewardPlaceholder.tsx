@@ -1,13 +1,38 @@
-/** Color-fill media placeholder with caption — no photo. */
+/** Color-fill media placeholder — or photo when `image` is set. */
 export default function RewardPlaceholder({
   color,
   caption,
+  image,
   className = '',
 }: {
   color: string;
   caption: string;
+  image?: string;
   className?: string;
 }) {
+  if (image) {
+    return (
+      <div
+        className={`relative overflow-hidden bg-[#f5f5f7] ${className}`}
+        role="img"
+        aria-label={caption}
+      >
+        <img
+          src={image}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover object-top"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent"
+        />
+        <p className="absolute bottom-0 left-0 right-0 z-[1] p-4 text-[13px] font-semibold tracking-tight text-white sm:p-5 sm:text-[14px]">
+          {caption}
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div
       className={`relative flex items-end overflow-hidden ${className}`}

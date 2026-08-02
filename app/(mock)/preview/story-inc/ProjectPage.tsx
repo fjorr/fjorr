@@ -148,6 +148,7 @@ export default function ProjectPage({ data }: { data: ProjectPageData }) {
                       <RewardPlaceholder
                         color={r.color}
                         caption={r.caption}
+                        image={r.image}
                         className="aspect-[16/10] w-full shrink-0"
                       />
                       <div className="flex flex-1 flex-col gap-2 p-4">
