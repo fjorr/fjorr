@@ -147,6 +147,7 @@ export const HELLO_DARKNESS: ProjectPageData = {
           body: 'Awarded. Closed.',
           color: '#000000',
           image: img.setVisit,
+          imagePosition: 'center',
           price: 'Awarded',
           priceHint: 'Closed',
         },

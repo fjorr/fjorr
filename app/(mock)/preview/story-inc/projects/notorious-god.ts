@@ -116,7 +116,7 @@ export const NOTORIOUS_GOD: ProjectPageData = {
           title: 'An hour with Rainn Wilson',
           body: 'A live hour with Rainn Wilson.',
           color: '#000000',
-          image: img.rainnGesture,
+          image: img.rainn,
           imagePosition: 'center',
           price: 'Free entry',
           priceHint: 'Drawing',

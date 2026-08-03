@@ -14,6 +14,7 @@ const img = {
   carti: `${A}/market-carti.png`,
   /** Face-cropped for wide market media (source is a tall portrait). */
   cartiFace: `${A}/market-carti-face.jpg`,
+  skiMaskFace: `${A}/market-ski-mask-face.jpg`,
   boxOffice: `${A}/market-box-office.png`,
   rife: `${A}/market-rife.png`,
   rifeLive: `${A}/shout-matt-rife.png`,
@@ -218,7 +219,7 @@ export const ROLLING_LOUD: ProjectPageData = {
       closes: '10.2.26',
     },
     {
-      image: img.cartiFace,
+      image: img.skiMaskFace,
       imagePosition: 'center',
       question: 'Which artists cameo in the film?',
       outcomes: [
@@ -391,15 +392,6 @@ export const ROLLING_LOUD: ProjectPageData = {
       initials: 'TS',
       avatarColor: '#1a86f0',
       body: 'they shot this during an actual set. if the crowd footage is real crowd footage this is already better than every festival movie ever made',
-    },
-    {
-      handle: '@lowmids',
-      place: 'Los Angeles',
-      time: '5h ago',
-      initials: 'LM',
-      avatarColor: '#0c63c4',
-      badge: 'Holding YES @ 63¢',
-      body: "the wife finds out. it's the trailer beat, it's the poster, it's the whole third act. easiest yes on the board",
     },
     {
       handle: '@rowdybus',

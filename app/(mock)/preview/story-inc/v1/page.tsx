@@ -93,11 +93,6 @@ export default function StoryIncApplePage() {
             id="hero-cta"
             className="mx-auto flex max-w-[980px] flex-col items-center gap-5 px-5 pb-16 pt-2"
           >
-            <p className="max-w-md text-center text-[14px] font-medium leading-[1.5] text-[#6e6e73]">
-              Follow this page for VIP access, early notifications, and reward
-              drops from the filmmakers.
-            </p>
-
             <div className="grid w-full max-w-[720px] grid-cols-2 gap-3 sm:grid-cols-4">
               {[
                 {
@@ -135,6 +130,11 @@ export default function StoryIncApplePage() {
                 </a>
               ))}
             </div>
+
+            <p className="max-w-md text-center text-[14px] font-semibold leading-[1.5] text-[#00a6ff]">
+              Follow this page for VIP access, early notifications, and reward
+              drops from the filmmakers.
+            </p>
           </div>
         </section>
 
