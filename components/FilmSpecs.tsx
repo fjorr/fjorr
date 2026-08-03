@@ -150,6 +150,7 @@ export default function FilmSpecs({
             filmId={String(film.id)}
             filmName={String(film.name || '')}
             filmSlug={String(film.slug)}
+            filmPoster={film.blok_tall || film.hero_tall || null}
             plusMember={plusMember}
           />
         ) : null}

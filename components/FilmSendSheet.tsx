@@ -197,30 +197,49 @@ export default function FilmSendSheet({
         className="relative w-full sm:max-w-[400px] rounded-t-[16px] sm:rounded-[16px] border border-white/10 bg-[#1F1F1F] shadow-[0_24px_80px_rgba(0,0,0,0.55)] p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] animate-in fade-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200"
       >
         <div className="flex items-start gap-3 mb-5">
-          <div className="relative w-14 h-[84px] rounded-[6px] overflow-hidden bg-white/5 shrink-0 border border-white/10">
-            {poster ? (
-              <Image src={poster} alt="" fill sizes="56px" className="object-cover" />
-            ) : null}
-          </div>
-          <div className="min-w-0 flex-1 pt-0.5">
-            <p className="font-sans font-bold text-[16px] text-white leading-tight truncate">
-              {film.name}
-            </p>
-            <p className="font-sans text-[12px] text-white/45 mt-1">
-              {[
-                timeLabel ? t('sendMomentMeta', { time: timeLabel }) : null,
-                runtimeLabel,
-                'Fjorr',
-              ]
-                .filter(Boolean)
-                .join(' · ')}
-            </p>
-            {film.teaser && (
-              <p className="font-sans text-[13px] text-white/55 mt-2 line-clamp-2 leading-snug">
-                {film.teaser}
-              </p>
-            )}
-          </div>
+          {stamp ? (
+            <VoyageurBadgeMark
+              filmName={film.name || ''}
+              filmPoster={poster}
+              voyageurNumber={stamp.voyageurNumber}
+              recordedAt={stamp.recordedAt}
+              tone="onDark"
+              className="min-w-0 flex-1"
+            />
+          ) : (
+            <>
+              <div className="relative w-14 h-[84px] rounded-[6px] overflow-hidden bg-white/5 shrink-0 border border-white/10">
+                {poster ? (
+                  <Image
+                    src={poster}
+                    alt=""
+                    fill
+                    sizes="56px"
+                    className="object-cover"
+                  />
+                ) : null}
+              </div>
+              <div className="min-w-0 flex-1 pt-0.5">
+                <p className="font-sans font-bold text-[16px] text-white leading-tight truncate">
+                  {film.name}
+                </p>
+                <p className="font-sans text-[12px] text-white/45 mt-1">
+                  {[
+                    timeLabel ? t('sendMomentMeta', { time: timeLabel }) : null,
+                    runtimeLabel,
+                    'Fjorr',
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </p>
+                {film.teaser && (
+                  <p className="font-sans text-[13px] text-white/55 mt-2 line-clamp-2 leading-snug">
+                    {film.teaser}
+                  </p>
+                )}
+              </div>
+            </>
+          )}
           <button
             type="button"
             onClick={onClose}
@@ -242,17 +261,6 @@ export default function FilmSendSheet({
             </svg>
           </button>
         </div>
-
-        {stamp ? (
-          <VoyageurBadgeMark
-            voyageurNumber={stamp.voyageurNumber}
-            filmVersion={stamp.filmVersion}
-            memberNumber={stamp.memberNumber}
-            recordedAt={stamp.recordedAt}
-            tone="onDark"
-            className="mb-5"
-          />
-        ) : null}
 
         <div className="flex flex-col gap-2">
           {momentPayload && timeLabel ? (

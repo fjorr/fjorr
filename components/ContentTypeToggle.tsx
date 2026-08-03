@@ -16,7 +16,7 @@ function TypeLabel({
     <span className="inline-flex items-center gap-1.5">
       <span>{label}</span>
       {count != null ? (
-        <span className="font-mono font-medium tabular-nums tracking-tight">
+        <span className="font-sans font-medium tabular-nums tracking-tight">
           {count}
         </span>
       ) : null}

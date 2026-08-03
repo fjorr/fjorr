@@ -301,6 +301,105 @@ export async function createBureauxSetupSecret(): Promise<
   }
 }
 
+export type BureauxCardOnFile = {
+  brand: string;
+  last4: string;
+};
+
+function formatCardBrand(brand: string): string {
+  const key = brand.trim().toLowerCase();
+  const labels: Record<string, string> = {
+    visa: 'Visa',
+    mastercard: 'Mastercard',
+    amex: 'Amex',
+    american_express: 'Amex',
+    discover: 'Discover',
+    diners: 'Diners',
+    jcb: 'JCB',
+    unionpay: 'UnionPay',
+  };
+  if (labels[key]) return labels[key];
+  if (!key) return 'Card';
+  return key.charAt(0).toUpperCase() + key.slice(1);
+}
+
+/** Default card on file for the member’s Bureaux subscription (display only). */
+export async function getOwnBureauxCardOnFile(
+  membership: Awaited<ReturnType<typeof getOwnBureauxMembership>>
+): Promise<BureauxCardOnFile | null> {
+  if (
+    !membership?.stripe_customer_id ||
+    membership.comp_lifetime ||
+    !isBureauxMembershipActive(membership)
+  ) {
+    return null;
+  }
+
+  try {
+    const stripe = getStripe();
+    let pmId: string | null = null;
+
+    if (membership.stripe_subscription_id) {
+      const sub = await stripe.subscriptions.retrieve(
+        membership.stripe_subscription_id
+      );
+      const dpm = sub.default_payment_method;
+      pmId = typeof dpm === 'string' ? dpm : dpm?.id || null;
+    }
+
+    if (!pmId) {
+      const customer = await stripe.customers.retrieve(
+        membership.stripe_customer_id
+      );
+      if (!customer.deleted) {
+        const dpm = customer.invoice_settings?.default_payment_method;
+        pmId = typeof dpm === 'string' ? dpm : dpm?.id || null;
+      }
+    }
+
+    if (!pmId) {
+      const list = await stripe.paymentMethods.list({
+        customer: membership.stripe_customer_id,
+        type: 'card',
+        limit: 1,
+      });
+      pmId = list.data[0]?.id || null;
+    }
+
+    if (!pmId) return null;
+
+    const pm = await stripe.paymentMethods.retrieve(pmId);
+    if (pm.type !== 'card' || !pm.card?.last4) return null;
+
+    return {
+      brand: formatCardBrand(pm.card.brand || 'card'),
+      last4: pm.card.last4,
+    };
+  } catch (err) {
+    console.error('getOwnBureauxCardOnFile failed:', err);
+    return null;
+  }
+}
+
+/** Keep Stripe receipts aligned after a confirmed email change. */
+export async function syncStripeCustomerEmail(
+  userId: string,
+  email: string
+): Promise<void> {
+  const next = email.trim().toLowerCase();
+  if (!next) return;
+  const membership = await getOwnBureauxMembership(userId);
+  if (!membership?.stripe_customer_id) return;
+  try {
+    const stripe = getStripe();
+    await stripe.customers.update(membership.stripe_customer_id, {
+      email: next,
+    });
+  } catch (err) {
+    console.error('syncStripeCustomerEmail failed:', err);
+  }
+}
+
 /** After SetupIntent succeeds, attach card as subscription default. */
 export async function setBureauxDefaultPaymentMethod(
   paymentMethodId: string

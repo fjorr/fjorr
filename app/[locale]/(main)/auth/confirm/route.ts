@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr';
 import { isOwnBureauxActive } from '@/lib/bureaux';
+import { syncStripeCustomerEmail } from '@/lib/bureaux-actions';
 import { safeInternalPath } from '@/lib/site-gate';
 import { type EmailOtpType } from '@supabase/supabase-js';
 import { NextResponse, type NextRequest } from 'next/server';
@@ -69,10 +70,13 @@ export async function GET(request: NextRequest) {
     }
   );
 
-  const finish = async () => {
+  const finish = async (syncStripeEmail = false) => {
     const {
       data: { user },
     } = await supabase.auth.getUser();
+    if (syncStripeEmail && user?.id && user.email) {
+      await syncStripeCustomerEmail(user.id, user.email);
+    }
     const bureauxActive = user ? await isOwnBureauxActive(user.id) : false;
     const next = resolvePostAuthPath(requestedNext, bureauxActive);
     const response = NextResponse.redirect(
@@ -88,7 +92,9 @@ export async function GET(request: NextRequest) {
   if (code) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
-      return finish();
+      // PKCE email-change often arrives as code; next points at Bureaux.
+      const syncStripe = requestedNext.includes('/account/bureaux');
+      return finish(syncStripe);
     }
     return errorRedirect(request, error.message);
   }
@@ -99,7 +105,7 @@ export async function GET(request: NextRequest) {
       token_hash,
     });
     if (!error) {
-      return finish();
+      return finish(type === 'email_change');
     }
     return errorRedirect(request, error.message);
   }

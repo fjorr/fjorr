@@ -29,22 +29,6 @@ export default function NominateSuccessView({ onReset }: SuccessProps) {
             className="relative z-10 flex flex-col items-center justify-center opacity-0 animate-slide-up"
             style={{ animationDelay: '150ms' }}
           >
-            <div className="mb-4 text-page">
-              <svg
-                className="w-10 h-10 stroke-current"
-                fill="none"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"
-                />
-              </svg>
-            </div>
-
             <h2 className="text-5xl sm:text-6xl font-extrabold uppercase tracking-tighter text-page leading-[46px] sm:leading-[54px] font-futura mb-4 select-none">
               {t('successTitle')}
             </h2>

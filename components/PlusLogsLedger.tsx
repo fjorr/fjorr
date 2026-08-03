@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import AccountViewportSwitch from '@/components/AccountViewportSwitch';
 import { filmNoteFrameUrl } from '@/lib/film-note-frame';
@@ -23,15 +23,19 @@ function noteFrameSrc(entry: FilmNoteRow, size: 'sm' | 'lg' = 'sm') {
   );
 }
 
-function formatNoteDate(iso: string, style: 'short' | 'monthDay' = 'short') {
+function formatNoteDate(
+  iso: string,
+  locale: string,
+  style: 'short' | 'monthDay' = 'short'
+) {
   try {
     if (style === 'monthDay') {
-      return new Intl.DateTimeFormat('en', {
+      return new Intl.DateTimeFormat(locale, {
         month: 'short',
         day: 'numeric',
       }).format(new Date(iso));
     }
-    return new Intl.DateTimeFormat('en', {
+    return new Intl.DateTimeFormat(locale, {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -61,7 +65,7 @@ function FrameThumb({
   const shell =
     size === 'lg'
       ? 'w-full max-w-[320px] aspect-video rounded-[8px]'
-      : 'w-[72px] h-[40px] rounded-[4px]';
+      : 'w-[80px] aspect-video rounded-[4px]';
   const ring =
     'bg-black ring-1 ring-inset ring-[color-mix(in_srgb,var(--page-fg)_18%,transparent)]';
 
@@ -74,8 +78,8 @@ function FrameThumb({
     <img
       src={src}
       alt=""
-      width={size === 'lg' ? 320 : 72}
-      height={size === 'lg' ? 180 : 40}
+      width={size === 'lg' ? 320 : 80}
+      height={size === 'lg' ? 180 : 45}
       loading="lazy"
       decoding="async"
       referrerPolicy="no-referrer"
@@ -109,47 +113,58 @@ function statusKey(status: FilmNoteStatus) {
 
 function StatusStamp({ label }: { label: string }) {
   return (
-    <span className="inline-flex items-center rounded-[5px] bg-page-chip px-2 py-[3px] font-mono text-[11px] font-medium tracking-[0.04em] text-page">
+    <span className="inline-flex items-center rounded-[5px] bg-page-chip px-2.5 py-1 font-sans text-[13px] font-medium tracking-normal text-page">
       {label}
     </span>
   );
 }
 
-function AccordionChevron({ open }: { open: boolean }) {
+function RowPlus() {
   return (
     <svg
-      className={`w-3.5 h-3.5 shrink-0 text-page-faint transition-transform duration-200 ${
-        open ? 'rotate-180' : 'rotate-0'
-      }`}
+      className="w-3.5 h-3.5 shrink-0 text-page-faint"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
       strokeWidth="2.25"
       strokeLinecap="round"
-      strokeLinejoin="round"
       aria-hidden
     >
-      <path d="M6 9l6 6 6-6" />
+      <path d="M12 5v14M5 12h14" />
     </svg>
   );
 }
 
-function DetailField({
+function CloseButton({
+  onClick,
   label,
-  children,
 }: {
+  onClick: () => void;
   label: string;
-  children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-1.5 text-left">
-      <span className="font-sans text-[11px] font-semibold uppercase tracking-[0.08em] text-page-faint leading-none">
-        {label}
-      </span>
-      <div className="font-sans text-[14px] text-page-muted leading-relaxed whitespace-pre-wrap">
-        {children}
-      </div>
-    </div>
+    <button
+      type="button"
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onClick();
+      }}
+      aria-label={label}
+      className="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-full text-page-muted hover:text-page hover:bg-[color-mix(in_srgb,var(--page-fg)_8%,transparent)] transition-colors"
+    >
+      <svg
+        className="w-4 h-4"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.25"
+        strokeLinecap="round"
+        aria-hidden
+      >
+        <path d="M18 6L6 18M6 6l12 12" />
+      </svg>
+    </button>
   );
 }
 
@@ -201,8 +216,6 @@ function NoteExpanded({ entry }: { entry: FilmNoteRow }) {
   const t = useTranslations('Plus');
   const [copied, setCopied] = useState(false);
   const ticket = noteTicket(entry.id);
-  const tc = formatTc(entry.at_seconds);
-  const cut = formatFilmVersionLabel(entry.film_version);
   const momentHref =
     entry.film_slug && entry.at_seconds != null
       ? `/film/${entry.film_slug}?t=${Math.floor(entry.at_seconds)}`
@@ -225,68 +238,84 @@ function NoteExpanded({ entry }: { entry: FilmNoteRow }) {
   };
 
   return (
-    <div className="w-full max-w-[550px] pt-1 pb-5 flex flex-col gap-5">
+    <div className="w-full max-w-[550px] flex flex-col gap-4">
+      {noteFrameSrc(entry, 'lg') ? (
+        momentHref ? (
+          <Link
+            href={momentHref}
+            onClick={(e) => e.stopPropagation()}
+            className="block w-fit hover:opacity-90 transition-opacity"
+          >
+            <FrameThumb src={noteFrameSrc(entry, 'lg')} size="lg" />
+          </Link>
+        ) : (
+          <FrameThumb src={noteFrameSrc(entry, 'lg')} size="lg" />
+        )
+      ) : null}
+
+      <p className="m-0 font-sans text-[15px] font-medium text-page leading-relaxed whitespace-pre-wrap">
+        {entry.body}
+      </p>
+
       <button
         type="button"
-        onClick={() => void copyTicket()}
-        className="self-start font-mono text-[12px] font-medium tracking-[0.06em] text-page-muted hover:text-page-muted transition-colors tabular-nums"
+        onClick={(e) => {
+          e.stopPropagation();
+          void copyTicket();
+        }}
+        className="self-start font-sans text-[13px] font-medium text-page-muted hover:text-page transition-colors tabular-nums"
       >
         {copied ? t('ticketCopied') : ticket}
       </button>
+    </div>
+  );
+}
 
-      <div className="flex flex-col gap-5">
-        {noteFrameSrc(entry, 'lg') ? (
-          <DetailField label={t('logsColFrame')}>
-            {momentHref ? (
-              <Link
-                href={momentHref}
-                onClick={(e) => e.stopPropagation()}
-                className="block w-fit hover:opacity-90 transition-opacity"
-              >
-                <FrameThumb src={noteFrameSrc(entry, 'lg')} size="lg" />
-              </Link>
-            ) : (
-              <FrameThumb src={noteFrameSrc(entry, 'lg')} size="lg" />
-            )}
-          </DetailField>
-        ) : null}
-        <DetailField label={t('logsColLogged')}>
-          {formatNoteDate(entry.created_at)}
-        </DetailField>
-        <DetailField label={t('logsColCut')}>
-          <span className="font-mono">{cut}</span>
-        </DetailField>
-        <DetailField label={t('logsColTc')}>
-          {momentHref && entry.at_seconds != null ? (
-            <Link
-              href={momentHref}
-              className="font-mono text-[14px] text-page-muted underline underline-offset-2 hover:text-page"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {tc}
-            </Link>
-          ) : (
-            <span className="font-mono">{tc}</span>
-          )}
-        </DetailField>
-        <DetailField label={t('logsColFilm')}>
-          {momentHref ? (
-            <Link
-              href={momentHref}
-              className="text-page-muted underline underline-offset-2 hover:text-page"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {entry.film_name || t('unknownFilm')}
-            </Link>
-          ) : (
-            entry.film_name || t('unknownFilm')
-          )}
-        </DetailField>
-        <DetailField label={t('logsColStatus')}>
-          {t(statusKey(entry.status))}
-        </DetailField>
-        <DetailField label={t('logsColNote')}>{entry.body}</DetailField>
+function NoteOpenCard({
+  entry,
+  onClose,
+  closeLabel,
+}: {
+  entry: FilmNoteRow;
+  onClose: () => void;
+  closeLabel: string;
+}) {
+  const t = useTranslations('Plus');
+  const locale = useLocale();
+  const date = formatNoteDate(entry.created_at, locale);
+  const tc = formatTc(entry.at_seconds);
+  const cut = formatFilmVersionLabel(entry.film_version);
+
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={onClose}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClose();
+        }
+      }}
+      className="relative rounded-[12px] bg-page-chip p-10 flex flex-col gap-4 cursor-pointer text-left"
+    >
+      <div className="absolute top-4 right-4">
+        <CloseButton onClick={onClose} label={closeLabel} />
       </div>
+      <div className="min-w-0 flex flex-wrap items-center gap-x-3 gap-y-2 pr-8">
+        <StatusStamp label={t(statusKey(entry.status))} />
+        <span className="font-sans text-[13px] text-page-muted truncate">
+          {entry.film_name || t('unknownFilm')}
+        </span>
+        <span className="font-sans text-[13px] text-page-muted tabular-nums">
+          {tc}
+        </span>
+        <span className="font-sans text-[13px] text-page-muted tabular-nums">
+          {cut}
+        </span>
+        <span className="font-sans text-[13px] text-page-muted">{date}</span>
+      </div>
+      <NoteExpanded entry={entry} />
     </div>
   );
 }
@@ -297,6 +326,7 @@ export default function PlusLogsLedger({
   notes: FilmNoteRow[];
 }) {
   const t = useTranslations('Plus');
+  const locale = useLocale();
   const [openId, setOpenId] = useState<string | null>(null);
   const [filmFilter, setFilmFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
@@ -312,11 +342,6 @@ export default function PlusLogsLedger({
       .map(([id, name]) => ({ id, name }))
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [notes, t]);
-
-  const queuedCount = useMemo(
-    () => notes.filter((n) => n.status === 'new').length,
-    [notes]
-  );
 
   const filtered = useMemo(() => {
     return notes.filter((n) => {
@@ -344,39 +369,40 @@ export default function PlusLogsLedger({
     setOpenId((prev) => (prev === id ? null : id));
   };
 
-  // Empty copy + CTAs live in the page header (AccountShell).
-  if (notes.length === 0) return null;
+  // CTAs live in the page header (AccountShell).
+  if (notes.length === 0) {
+    return (
+      <p className="font-sans text-[14px] text-page-faint leading-relaxed">
+        {t('logsEmpty')}
+      </p>
+    );
+  }
 
   return (
     <section className="w-full flex flex-col gap-5 text-left">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="font-mono text-[12px] text-page-faint tabular-nums tracking-[0.02em]">
-          {t('logsCount', { count: notes.length, unread: queuedCount })}
-        </p>
-        <div className="flex flex-wrap items-center gap-2">
-          <FilterSelect
-            label={t('logsFilterFilm')}
-            value={filmFilter}
-            onChange={setFilmFilter}
-          >
-            <option value="all">{t('logsFilterAllFilms')}</option>
-            {filmOptions.map((film) => (
-              <option key={film.id} value={film.id}>
-                {film.name}
-              </option>
-            ))}
-          </FilterSelect>
-          <FilterSelect
-            label={t('logsFilterStatus')}
-            value={statusFilter}
-            onChange={(v) => setStatusFilter(v as StatusFilter)}
-          >
-            <option value="all">{t('logsFilterAllStatuses')}</option>
-            <option value="new">{t('statusQueued')}</option>
-            <option value="read">{t('statusRead')}</option>
-            <option value="archived">{t('statusPatched')}</option>
-          </FilterSelect>
-        </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <FilterSelect
+          label={t('logsFilterFilm')}
+          value={filmFilter}
+          onChange={setFilmFilter}
+        >
+          <option value="all">{t('logsFilterAllFilms')}</option>
+          {filmOptions.map((film) => (
+            <option key={film.id} value={film.id}>
+              {film.name}
+            </option>
+          ))}
+        </FilterSelect>
+        <FilterSelect
+          label={t('logsFilterStatus')}
+          value={statusFilter}
+          onChange={(v) => setStatusFilter(v as StatusFilter)}
+        >
+          <option value="all">{t('logsFilterAllStatuses')}</option>
+          <option value="new">{t('statusQueued')}</option>
+          <option value="read">{t('statusRead')}</option>
+          <option value="archived">{t('statusPatched')}</option>
+        </FilterSelect>
       </div>
 
       {filtered.length === 0 ? (
@@ -386,57 +412,72 @@ export default function PlusLogsLedger({
       ) : (
         <AccountViewportSwitch
           mobile={
-          <ul className="flex flex-col divide-y divide-page-faint border-y border-page-faint list-none m-0 p-0">
-            {filtered.map((entry) => {
-              const date = formatNoteDate(entry.created_at, 'monthDay');
+          <ul className="flex flex-col border-y border-page-faint list-none m-0 p-0">
+            {filtered.map((entry, i) => {
+              const date = formatNoteDate(entry.created_at, locale);
               const open = openId === entry.id;
+              const nextOpen =
+                i < filtered.length - 1 && filtered[i + 1].id === openId;
               const tc = formatTc(entry.at_seconds);
               const cut = formatFilmVersionLabel(entry.film_version);
               return (
-                <li key={entry.id}>
-                  <div
-                    role="button"
-                    tabIndex={0}
-                    aria-expanded={open}
-                    onClick={() => toggle(entry.id)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        toggle(entry.id);
-                      }
-                    }}
-                    className="w-full py-3.5 flex flex-col gap-2 text-left cursor-pointer"
-                  >
-                    <div className="flex items-start gap-3">
-                      <FrameThumb src={noteFrameSrc(entry)} />
-                      <div className="min-w-0 flex-1 flex flex-col gap-2">
-                        <div className="flex items-baseline justify-between gap-3">
-                          <p className="font-sans text-[13px] font-semibold text-page leading-snug min-w-0 truncate">
-                            {entry.film_name || t('unknownFilm')}
-                            <span className="ml-2 font-mono text-[11px] font-medium text-page-faint">
-                              {cut}
+                <li
+                  key={entry.id}
+                  className={`py-1.5${
+                    !open && !nextOpen && i < filtered.length - 1
+                      ? ' border-b border-page-faint'
+                      : ''
+                  }`}
+                >
+                  {open ? (
+                    <NoteOpenCard
+                      entry={entry}
+                      onClose={() => setOpenId(null)}
+                      closeLabel={t('logsClose')}
+                    />
+                  ) : (
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      aria-expanded={false}
+                      onClick={() => toggle(entry.id)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          toggle(entry.id);
+                        }
+                      }}
+                      className="w-full py-3.5 flex flex-col gap-2 text-left cursor-pointer"
+                    >
+                      <div className="flex items-start gap-3">
+                        <FrameThumb src={noteFrameSrc(entry)} />
+                        <div className="min-w-0 flex-1 flex flex-col gap-2">
+                          <div className="flex items-baseline justify-between gap-3">
+                            <p className="font-sans text-[13px] font-medium text-page leading-snug min-w-0 truncate">
+                              {notePreview(entry.body, 72)}
+                            </p>
+                            <span className="shrink-0 font-sans text-[13px] text-page-muted tabular-nums">
+                              {noteTicket(entry.id)}
                             </span>
-                          </p>
-                          <span className="shrink-0 font-mono text-[11px] text-page-faint tabular-nums">
-                            {noteTicket(entry.id)}
-                          </span>
-                        </div>
-                        <p className="font-sans text-[13px] text-page-muted leading-snug">
-                          {notePreview(entry.body, 72)}
-                        </p>
-                        <div className="flex items-center gap-3">
-                          <StatusStamp label={t(statusKey(entry.status))} />
-                          <span className="min-w-0 flex-1 font-mono text-[11px] text-page-faint tabular-nums truncate">
-                            {tc}
+                          </div>
+                          <p className="font-sans text-[13px] text-page-muted leading-snug truncate">
+                            {entry.film_name || t('unknownFilm')}
                             {' · '}
-                            {date}
-                          </span>
-                          <AccordionChevron open={open} />
+                            {cut}
+                          </p>
+                          <div className="flex items-center gap-3">
+                            <StatusStamp label={t(statusKey(entry.status))} />
+                            <span className="min-w-0 flex-1 font-sans text-[13px] text-page-muted tabular-nums truncate">
+                              {tc}
+                              {' · '}
+                              {date}
+                            </span>
+                            <RowPlus />
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                  {open ? <NoteExpanded entry={entry} /> : null}
+                  )}
                 </li>
               );
             })}
@@ -446,15 +487,24 @@ export default function PlusLogsLedger({
           <div className="w-full">
             <table className="w-full border-collapse text-left">
               <thead>
-                <tr className="border-b border-page-faint">
-                  <th className="w-[1%] whitespace-nowrap pb-2.5 pr-4 xl:pr-6 font-sans text-[11px] font-medium text-page-faint">
-                    {t('logsColLogged')}
-                  </th>
-                  <th className="w-[1%] whitespace-nowrap pb-2.5 pr-4 xl:pr-6 font-sans text-[11px] font-medium text-page-faint">
-                    {t('logsColTicket')}
-                  </th>
+                <tr
+                  className={
+                    filtered[0] && openId === filtered[0].id
+                      ? undefined
+                      : 'border-b border-page-faint'
+                  }
+                >
                   <th className="w-[1%] whitespace-nowrap pb-2.5 pr-4 xl:pr-6 font-sans text-[11px] font-medium text-page-faint">
                     {t('logsColFrame')}
+                  </th>
+                  <th className="pb-2.5 pr-4 xl:pr-6 font-sans text-[11px] font-medium text-page-faint">
+                    {t('logsColNote')}
+                  </th>
+                  <th className="w-[1%] whitespace-nowrap pb-2.5 pr-4 xl:pr-6 font-sans text-[11px] font-medium text-page-faint">
+                    {t('logsColStatus')}
+                  </th>
+                  <th className="pb-2.5 pr-4 xl:pr-6 font-sans text-[11px] font-medium text-page-faint">
+                    {t('logsColFilm')}
                   </th>
                   <th className="w-[1%] whitespace-nowrap pb-2.5 pr-4 xl:pr-6 font-sans text-[11px] font-medium text-page-faint">
                     {t('logsColTc')}
@@ -462,14 +512,11 @@ export default function PlusLogsLedger({
                   <th className="w-[1%] whitespace-nowrap pb-2.5 pr-4 xl:pr-6 font-sans text-[11px] font-medium text-page-faint">
                     {t('logsColCut')}
                   </th>
-                  <th className="pb-2.5 pr-4 xl:pr-6 font-sans text-[11px] font-medium text-page-faint">
-                    {t('logsColFilm')}
-                  </th>
-                  <th className="pb-2.5 pr-4 xl:pr-6 font-sans text-[11px] font-medium text-page-faint">
-                    {t('logsColNote')}
+                  <th className="w-[1%] whitespace-nowrap pb-2.5 pr-4 xl:pr-6 font-sans text-[11px] font-medium text-page-faint">
+                    {t('logsColLogged')}
                   </th>
                   <th className="w-[1%] whitespace-nowrap pb-2.5 pr-3 font-sans text-[11px] font-medium text-page-faint">
-                    {t('logsColStatus')}
+                    {t('logsColTicket')}
                   </th>
                   <th
                     className="w-[1%] whitespace-nowrap pb-2.5 pl-1"
@@ -478,9 +525,11 @@ export default function PlusLogsLedger({
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((entry) => {
-                  const date = formatNoteDate(entry.created_at, 'monthDay');
+                {filtered.map((entry, i) => {
+                  const date = formatNoteDate(entry.created_at, locale);
                   const open = openId === entry.id;
+                  const nextOpen =
+                    i < filtered.length - 1 && filtered[i + 1].id === openId;
                   const tc = formatTc(entry.at_seconds);
                   const cut = formatFilmVersionLabel(entry.film_version);
                   const momentHref =
@@ -490,81 +539,85 @@ export default function PlusLogsLedger({
                         ? `/film/${entry.film_slug}`
                         : null;
 
-                  return (
-                    <React.Fragment key={entry.id}>
-                      <tr
-                        className="border-b border-page-faint hover:bg-page-chip transition-colors cursor-pointer"
-                        onClick={() => toggle(entry.id)}
-                        aria-expanded={open}
-                      >
-                        <td className="w-[1%] whitespace-nowrap py-3.5 pr-4 xl:pr-6 align-middle">
-                          <span className="font-sans text-[13px] text-page-muted">
-                            {date}
-                          </span>
-                        </td>
-                        <td className="w-[1%] whitespace-nowrap py-3.5 pr-4 xl:pr-6 align-middle">
-                          <span className="font-mono text-[12px] text-page-faint tabular-nums tracking-[0.04em]">
-                            {noteTicket(entry.id)}
-                          </span>
-                        </td>
-                        <td className="w-[1%] whitespace-nowrap py-3.5 pr-4 xl:pr-6 align-middle">
-                          {momentHref && noteFrameSrc(entry) ? (
-                            <Link
-                              href={momentHref}
-                              onClick={(e) => e.stopPropagation()}
-                              className="block w-fit"
-                            >
-                              <FrameThumb src={noteFrameSrc(entry)} />
-                            </Link>
-                          ) : (
+                  return open ? (
+                    <tr key={entry.id}>
+                      <td colSpan={9} className="py-2">
+                        <NoteOpenCard
+                          entry={entry}
+                          onClose={() => setOpenId(null)}
+                          closeLabel={t('logsClose')}
+                        />
+                      </td>
+                    </tr>
+                  ) : (
+                    <tr
+                      key={entry.id}
+                      className={`${
+                        nextOpen ? '' : 'border-b border-page-faint '
+                      }hover:bg-page-chip transition-colors cursor-pointer`}
+                      onClick={() => toggle(entry.id)}
+                      aria-expanded={false}
+                    >
+                      <td className="w-[1%] whitespace-nowrap py-3.5 pr-4 xl:pr-6 align-middle">
+                        {momentHref && noteFrameSrc(entry) ? (
+                          <Link
+                            href={momentHref}
+                            onClick={(e) => e.stopPropagation()}
+                            className="block w-fit"
+                          >
                             <FrameThumb src={noteFrameSrc(entry)} />
-                          )}
-                        </td>
-                        <td className="w-[1%] whitespace-nowrap py-3.5 pr-4 xl:pr-6 align-middle">
-                          {momentHref && entry.at_seconds != null ? (
-                            <Link
-                              href={momentHref}
-                              onClick={(e) => e.stopPropagation()}
-                              className="font-mono text-[13px] text-page-muted hover:text-page-muted tabular-nums tracking-[0.02em] transition-colors"
-                            >
-                              {tc}
-                            </Link>
-                          ) : (
-                            <span className="font-mono text-[13px] text-page-faint tabular-nums tracking-[0.02em]">
-                              {tc}
-                            </span>
-                          )}
-                        </td>
-                        <td className="w-[1%] whitespace-nowrap py-3.5 pr-4 xl:pr-6 align-middle">
-                          <span className="font-mono text-[12px] text-page-muted tabular-nums">
-                            {cut}
+                          </Link>
+                        ) : (
+                          <FrameThumb src={noteFrameSrc(entry)} />
+                        )}
+                      </td>
+                      <td className="py-3.5 pr-4 xl:pr-6 align-middle min-w-0">
+                        <span className="font-sans text-[13px] font-medium text-page truncate block max-w-md">
+                          {notePreview(entry.body)}
+                        </span>
+                      </td>
+                      <td className="w-[1%] whitespace-nowrap py-3.5 pr-4 xl:pr-6 align-middle text-left">
+                        <StatusStamp label={t(statusKey(entry.status))} />
+                      </td>
+                      <td className="py-3.5 pr-4 xl:pr-6 align-middle min-w-0">
+                        <span className="font-sans text-[13px] text-page-muted truncate block max-w-[12rem]">
+                          {entry.film_name || t('unknownFilm')}
+                        </span>
+                      </td>
+                      <td className="w-[1%] whitespace-nowrap py-3.5 pr-4 xl:pr-6 align-middle">
+                        {momentHref && entry.at_seconds != null ? (
+                          <Link
+                            href={momentHref}
+                            onClick={(e) => e.stopPropagation()}
+                            className="font-sans text-[13px] text-page-muted hover:text-page tabular-nums transition-colors"
+                          >
+                            {tc}
+                          </Link>
+                        ) : (
+                          <span className="font-sans text-[13px] text-page-muted tabular-nums">
+                            {tc}
                           </span>
-                        </td>
-                        <td className="py-3.5 pr-4 xl:pr-6 align-middle min-w-0">
-                          <span className="font-sans text-[13px] font-medium text-page truncate block max-w-[12rem]">
-                            {entry.film_name || t('unknownFilm')}
-                          </span>
-                        </td>
-                        <td className="py-3.5 pr-4 xl:pr-6 align-middle min-w-0">
-                          <span className="font-sans text-[13px] text-page-muted truncate block max-w-md">
-                            {notePreview(entry.body)}
-                          </span>
-                        </td>
-                        <td className="w-[1%] whitespace-nowrap py-3.5 pr-3 align-middle text-left">
-                          <StatusStamp label={t(statusKey(entry.status))} />
-                        </td>
-                        <td className="w-[1%] whitespace-nowrap py-3.5 pl-1 align-middle">
-                          <AccordionChevron open={open} />
-                        </td>
-                      </tr>
-                      {open ? (
-                        <tr className="border-b border-page-faint">
-                          <td colSpan={9} className="px-0 pt-2 pb-0">
-                            <NoteExpanded entry={entry} />
-                          </td>
-                        </tr>
-                      ) : null}
-                    </React.Fragment>
+                        )}
+                      </td>
+                      <td className="w-[1%] whitespace-nowrap py-3.5 pr-4 xl:pr-6 align-middle">
+                        <span className="font-sans text-[13px] text-page-muted tabular-nums">
+                          {cut}
+                        </span>
+                      </td>
+                      <td className="w-[1%] whitespace-nowrap py-3.5 pr-4 xl:pr-6 align-middle">
+                        <span className="font-sans text-[13px] text-page-muted">
+                          {date}
+                        </span>
+                      </td>
+                      <td className="w-[1%] whitespace-nowrap py-3.5 pr-3 align-middle">
+                        <span className="font-sans text-[13px] text-page-muted tabular-nums">
+                          {noteTicket(entry.id)}
+                        </span>
+                      </td>
+                      <td className="w-[1%] whitespace-nowrap py-3.5 pl-1 align-middle">
+                        <RowPlus />
+                      </td>
+                    </tr>
                   );
                 })}
               </tbody>

@@ -21,7 +21,6 @@ const DISCIPLINES = new Set([
 
 const MIN_NOTE = 40;
 const MAX_NOTE = 800;
-const RATE_DAYS = 30;
 const OWN_CABINET_LIMIT = 100;
 
 export type CabinetScoutKind = 'offer' | 'suggest';
@@ -57,24 +56,46 @@ export type CabinetOfferResult =
         | 'submitError';
     };
 
+type CabinetMemberListRow = {
+  id: string;
+  created_at: string;
+  name: string | null;
+  discipline: string | null;
+  source: string | null;
+  status: string | null;
+};
+
+function mapCabinetOfferRows(rows: CabinetMemberListRow[]): CabinetOfferRow[] {
+  return rows.map((row) => ({
+    id: String(row.id),
+    created_at: String(row.created_at),
+    name: String(row.name || ''),
+    discipline: String(row.discipline || ''),
+    kind: row.source === 'referral' ? ('suggest' as const) : ('offer' as const),
+    status: (['prospect', 'member', 'paused'].includes(String(row.status))
+      ? row.status
+      : 'prospect') as CabinetOfferStatus,
+  }));
+}
+
 /** Names this member put forward — service read after auth (desk table). */
 export async function getOwnCabinetOffers(
   userId?: string
 ): Promise<CabinetOfferRow[]> {
   const supabase = await createClient();
-  let uid = userId;
-  if (!uid) {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return [];
-    uid = user.id;
-  }
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const uid = userId || user?.id;
+  if (!uid) return [];
 
   const db = createServiceClient();
+  const select =
+    'id, created_at, name, discipline, source, status' as const;
+
   const { data, error } = await db
     .from('cabinet_members')
-    .select('id, created_at, name, discipline, source, status')
+    .select(select)
     .eq('submitted_by_user_id', uid)
     .in('source', ['offer', 'referral'])
     .order('created_at', { ascending: false })
@@ -85,23 +106,54 @@ export async function getOwnCabinetOffers(
     return [];
   }
 
-  return (data || []).map((row: {
-    id: string;
-    created_at: string;
-    name: string | null;
-    discipline: string | null;
-    source: string | null;
-    status: string | null;
-  }) => ({
-    id: String(row.id),
-    created_at: String(row.created_at),
-    name: String(row.name || ''),
-    discipline: String(row.discipline || ''),
-    kind: row.source === 'referral' ? ('suggest' as const) : ('offer' as const),
-    status: (['prospect', 'member', 'paused'].includes(String(row.status))
-      ? row.status
-      : 'prospect') as CabinetOfferStatus,
-  }));
+  const byId = new Map<string, CabinetMemberListRow>();
+  for (const row of (data || []) as CabinetMemberListRow[]) {
+    byId.set(String(row.id), row);
+  }
+
+  // Pre-attribution filings only left "from {email}" in notes.
+  let email = user?.email?.trim().toLowerCase() || null;
+  if (!email) {
+    const { data: authUser, error: authError } =
+      await db.auth.admin.getUserById(uid);
+    if (authError) {
+      console.error(
+        'getOwnCabinetOffers auth lookup failed:',
+        authError.message
+      );
+    } else {
+      email = authUser.user?.email?.trim().toLowerCase() || null;
+    }
+  }
+
+  if (email && byId.size < OWN_CABINET_LIMIT) {
+    const { data: legacy, error: legacyError } = await db
+      .from('cabinet_members')
+      .select(select)
+      .is('submitted_by_user_id', null)
+      .in('source', ['offer', 'referral'])
+      .ilike('notes', `%from ${email}%`)
+      .order('created_at', { ascending: false })
+      .limit(OWN_CABINET_LIMIT);
+
+    if (legacyError) {
+      console.error(
+        'getOwnCabinetOffers legacy lookup failed:',
+        legacyError.message
+      );
+    } else {
+      for (const row of (legacy || []) as CabinetMemberListRow[]) {
+        byId.set(String(row.id), row);
+      }
+    }
+  }
+
+  const merged = Array.from(byId.values()).sort(
+    (a, b) =>
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
+
+  return mapCabinetOfferRows(merged.slice(0, OWN_CABINET_LIMIT));
 }
 
 /** Public Cabinet intake — self-offer or suggest someone. */
@@ -160,17 +212,13 @@ export async function submitCabinetOffer(input: {
   }
 
   const db = createServiceClient();
-  const since = new Date(
-    Date.now() - RATE_DAYS * 24 * 60 * 60 * 1000
-  ).toISOString();
 
-  // Don't re-file the same person (by email) too often, any intake source.
+  // One filing per email, forever — any intake source.
   const { count, error: countError } = await db
     .from('cabinet_members')
     .select('id', { count: 'exact', head: true })
     .eq('email', email)
-    .in('source', ['offer', 'referral', 'scout'])
-    .gte('created_at', since);
+    .in('source', ['offer', 'referral', 'scout']);
 
   if (countError) {
     console.error('submitCabinetOffer rate check failed:', countError.message);

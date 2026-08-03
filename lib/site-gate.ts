@@ -1,5 +1,15 @@
 const GATE_PAYLOAD = 'fjorr-site-gate-v1';
 
+/** Link-preview crawlers must reach film pages for correct Open Graph tags. */
+const SOCIAL_CRAWLER_RE =
+  /facebookexternalhit|Facebot|Twitterbot|LinkedInBot|Slackbot|Discordbot|WhatsApp|TelegramBot|SkypeUriPreview|Applebot|iMessageBot|Googlebot|bingbot|Baiduspider|DuckDuckBot|Embedly|Quora Link Preview|Showyoubot|outbrain|pinterest|redditbot|vkShare|W3C_Validator/i;
+
+/** True when the request is a social / messaging link preview crawler. */
+export function isSocialCrawler(userAgent: string | null | undefined): boolean {
+  if (!userAgent) return false;
+  return SOCIAL_CRAWLER_RE.test(userAgent);
+}
+
 async function hmacHex(secret: string, message: string): Promise<string> {
   const enc = new TextEncoder();
   const key = await crypto.subtle.importKey(

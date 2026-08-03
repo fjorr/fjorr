@@ -1,24 +1,16 @@
 'use client';
 
 import React from 'react';
-import { useTranslations } from 'next-intl';
-import { Link } from '@/i18n/navigation';
+import { useLocale, useTranslations } from 'next-intl';
 import AccountViewportSwitch from '@/components/AccountViewportSwitch';
 import type {
   CabinetOfferRow,
   CabinetOfferStatus,
-  CabinetScoutKind,
 } from '@/lib/cabinet-offer-actions';
 
-function formatOfferDate(iso: string, style: 'short' | 'monthDay' = 'short') {
+function formatOfferDate(iso: string, locale: string) {
   try {
-    if (style === 'monthDay') {
-      return new Intl.DateTimeFormat('en', {
-        month: 'short',
-        day: 'numeric',
-      }).format(new Date(iso));
-    }
-    return new Intl.DateTimeFormat('en', {
+    return new Intl.DateTimeFormat(locale, {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -38,10 +30,6 @@ function statusKey(status: CabinetOfferStatus) {
     default:
       return 'cabinetStatusReceived' as const;
   }
-}
-
-function kindKey(kind: CabinetScoutKind) {
-  return kind === 'suggest' ? 'cabinetKindSuggest' : 'cabinetKindOffer';
 }
 
 const DISCIPLINE_KEYS = [
@@ -72,7 +60,7 @@ function disciplineLabel(
 
 function StatusStamp({ label }: { label: string }) {
   return (
-    <span className="inline-flex items-center rounded-[5px] bg-page-chip px-2 py-[3px] font-mono text-[11px] font-medium tracking-[0.04em] text-page">
+    <span className="inline-flex items-center rounded-[5px] bg-page-chip px-2.5 py-1 font-sans text-[13px] font-medium tracking-normal text-page">
       {label}
     </span>
   );
@@ -88,6 +76,7 @@ export default function CabinetOffersLedger({
 }) {
   const t = useTranslations('Account');
   const tCab = useTranslations('Cabinet');
+  const locale = useLocale();
 
   return (
     <section className="w-full flex flex-col gap-6 text-left">
@@ -104,33 +93,25 @@ export default function CabinetOffersLedger({
 
       {offers.length === 0 ? (
         <p className="font-sans text-[14px] text-page-faint leading-relaxed">
-          {t('cabinetEmpty')}{' '}
-          <Link
-            href="/cabinet"
-            className="text-page-muted underline underline-offset-2 hover:text-page transition-colors"
-          >
-            {t('cabinetEmptyCta')}
-          </Link>
+          {t('cabinetEmpty')}
         </p>
       ) : (
         <AccountViewportSwitch
           mobile={
             <ul className="flex flex-col divide-y divide-page-faint border-y border-page-faint list-none m-0 p-0">
               {offers.map((entry) => {
-                const date = formatOfferDate(entry.created_at, 'monthDay');
+                const date = formatOfferDate(entry.created_at, locale);
                 return (
                   <li key={entry.id} className="py-3.5 flex flex-col gap-2">
-                    <p className="font-sans text-[14px] font-semibold text-page leading-snug">
+                    <p className="font-sans text-[13px] font-medium text-page leading-snug min-w-0">
                       {entry.name}
                     </p>
-                    <div className="flex items-center gap-3 flex-wrap">
+                    <div className="flex items-center gap-3">
                       <StatusStamp label={t(statusKey(entry.status))} />
-                      <span className="font-sans text-[11px] text-page-faint">
+                      <span className="min-w-0 flex-1 font-sans text-[13px] text-page-muted truncate">
                         {date}
                         {' · '}
                         {disciplineLabel(entry.discipline, tCab)}
-                        {' · '}
-                        {t(kindKey(entry.kind))}
                       </span>
                     </div>
                   </li>
@@ -143,48 +124,43 @@ export default function CabinetOffersLedger({
               <table className="w-full border-collapse text-left">
                 <thead>
                   <tr className="border-b border-page-faint">
-                    <th className="pb-2.5 pr-4 font-sans text-[11px] font-semibold uppercase tracking-[0.08em] text-page-faint">
-                      {t('cabinetColDate')}
-                    </th>
-                    <th className="pb-2.5 pr-4 font-sans text-[11px] font-semibold uppercase tracking-[0.08em] text-page-faint">
+                    <th className="pb-2.5 pr-4 xl:pr-6 font-sans text-[11px] font-medium text-page-faint">
                       {t('cabinetColName')}
                     </th>
-                    <th className="pb-2.5 pr-4 font-sans text-[11px] font-semibold uppercase tracking-[0.08em] text-page-faint">
-                      {t('cabinetColDiscipline')}
-                    </th>
-                    <th className="pb-2.5 pr-4 font-sans text-[11px] font-semibold uppercase tracking-[0.08em] text-page-faint">
-                      {t('cabinetColKind')}
-                    </th>
-                    <th className="pb-2.5 font-sans text-[11px] font-semibold uppercase tracking-[0.08em] text-page-faint">
+                    <th className="w-[1%] whitespace-nowrap pb-2.5 pr-4 xl:pr-6 font-sans text-[11px] font-medium text-page-faint">
                       {t('cabinetColStatus')}
+                    </th>
+                    <th className="w-[1%] whitespace-nowrap pb-2.5 pr-4 xl:pr-6 font-sans text-[11px] font-medium text-page-faint">
+                      {t('cabinetColDate')}
+                    </th>
+                    <th className="pb-2.5 font-sans text-[11px] font-medium text-page-faint">
+                      {t('cabinetColDiscipline')}
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-page-faint">
+                <tbody>
                   {offers.map((entry) => (
-                    <tr key={entry.id}>
-                      <td className="py-3.5 pr-4 align-middle whitespace-nowrap">
-                        <span className="font-sans text-[13px] text-page-muted tabular-nums">
-                          {formatOfferDate(entry.created_at)}
-                        </span>
-                      </td>
-                      <td className="py-3.5 pr-4 align-middle">
-                        <span className="font-sans text-[14px] font-semibold text-page">
+                    <tr
+                      key={entry.id}
+                      className="border-b border-page-faint"
+                    >
+                      <td className="py-3.5 pr-4 xl:pr-6 align-middle min-w-0">
+                        <span className="font-sans text-[13px] font-medium text-page truncate block max-w-md">
                           {entry.name}
                         </span>
                       </td>
-                      <td className="py-3.5 pr-4 align-middle">
+                      <td className="w-[1%] whitespace-nowrap py-3.5 pr-4 xl:pr-6 align-middle text-left">
+                        <StatusStamp label={t(statusKey(entry.status))} />
+                      </td>
+                      <td className="w-[1%] whitespace-nowrap py-3.5 pr-4 xl:pr-6 align-middle">
                         <span className="font-sans text-[13px] text-page-muted">
+                          {formatOfferDate(entry.created_at, locale)}
+                        </span>
+                      </td>
+                      <td className="py-3.5 align-middle min-w-0">
+                        <span className="font-sans text-[13px] text-page-muted truncate block">
                           {disciplineLabel(entry.discipline, tCab)}
                         </span>
-                      </td>
-                      <td className="py-3.5 pr-4 align-middle">
-                        <span className="font-sans text-[13px] text-page-muted">
-                          {t(kindKey(entry.kind))}
-                        </span>
-                      </td>
-                      <td className="py-3.5 align-middle">
-                        <StatusStamp label={t(statusKey(entry.status))} />
                       </td>
                     </tr>
                   ))}

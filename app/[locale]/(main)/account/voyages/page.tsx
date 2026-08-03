@@ -18,7 +18,6 @@ export default async function AccountVoyagesPage() {
   const logs = await getOwnFilmLogs(user.id);
   const t = await getTranslations('Account');
   const hasVoyages = logs.length > 0;
-  const lineageOn = profile.voyage_lineage_enabled !== false;
 
   return (
     <AccountShell
@@ -28,19 +27,19 @@ export default async function AccountVoyagesPage() {
       descriptionNote={t('filmLogsNote')}
       headerLinks={
         hasVoyages
-          ? [{ href: '/manual/voyages', label: 'Manual · Voyages' }]
+          ? [{ href: '/manual/voyages', label: t('viewManual') }]
           : [
               { href: '/', label: t('filmLogsEmptyCta') },
-              { href: '/manual/voyages', label: 'Manual · Voyages' },
+              { href: '/manual/voyages', label: t('viewManual') },
             ]
       }
       wide
+      introNarrow
     >
       <FilmLogsLedger
         logs={logs}
         omitHeader
-        memberNumber={lineageOn ? profile.member_number : null}
-        showTrailHint={lineageOn && hasVoyages}
+        memberNumber={profile.member_number}
       />
     </AccountShell>
   );

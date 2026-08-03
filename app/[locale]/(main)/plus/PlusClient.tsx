@@ -94,7 +94,7 @@ export default function PlusClient() {
                     color: 'color-mix(in srgb, var(--page-fg) 78%, transparent)',
                   }}
                 >
-                  <span className="font-mono text-[12px] text-page-faint mr-2">
+                  <span className="font-sans text-[12px] text-page-faint mr-2 tabular-nums">
                     {i + 1}
                   </span>
                   {t(key)}

@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { ArrowLeft } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import type { BountyRow, BountyStatus } from '@/lib/nomination-actions';
@@ -70,18 +71,6 @@ export default function BountyBriefClient({
     .filter(Boolean)
     .join(' · ');
 
-  const legal = (
-    <p className="font-sans text-[12px] leading-snug text-page-muted tracking-normal text-pretty max-w-sm">
-      {t('legalLine')}{' '}
-      <Link
-        href="/terms"
-        className="whitespace-nowrap underline underline-offset-2 hover:text-page transition-colors"
-      >
-        {t('legalTerms')}
-      </Link>
-    </p>
-  );
-
   return (
     <main className="w-full min-h-[calc(100dvh-72px)] bg-[var(--page-bg)] text-page flex items-center justify-center px-5 sm:px-8 py-10 sm:py-14">
       <div className="w-full max-w-[980px] flex flex-col lg:flex-row lg:items-center gap-8 sm:gap-10 lg:gap-12">
@@ -109,14 +98,16 @@ export default function BountyBriefClient({
         <aside className="w-full lg:flex-1 min-w-0 flex flex-col justify-center order-1 lg:order-2">
           <Link
             href="/bounties"
-            className="font-sans text-[13px] font-semibold text-page-faint hover:text-page-muted transition-colors w-fit mb-6"
+            className="inline-flex items-center gap-1.5 font-sans text-[13px] font-semibold text-page-faint hover:text-page-muted transition-colors w-fit mb-6"
           >
-            ← {t('backToGrid')}
+            <ArrowLeft
+              size={14}
+              strokeWidth={1.75}
+              className="shrink-0 translate-y-px"
+              aria-hidden
+            />
+            {t('backToGrid')}
           </Link>
-
-          <span className="font-sans text-[10px] font-medium uppercase tracking-[0.08em] text-page-muted mb-3">
-            {t('creativeBrief')}
-          </span>
 
           <h1 className="font-futura text-[clamp(2rem,5vw,2.75rem)] font-extrabold uppercase tracking-tighter text-page !leading-[0.92] select-none mb-5">
             {bounty.title}
@@ -156,46 +147,41 @@ export default function BountyBriefClient({
           ) : null}
 
           {isOpen ? (
-            <div className="flex flex-col gap-3">
-              {bureauxActive ? (
-                <Link
-                  href={nominateHref}
-                  className="inline-flex h-12 px-8 rounded-full bg-[var(--page-fg)] text-[var(--page-bg)] font-sans text-[14px] font-bold items-center justify-center w-fit hover:opacity-90 active:scale-[0.98] transition-all"
-                >
-                  {t('pitchThis')}
-                </Link>
-              ) : (
+            bureauxActive ? (
+              <Link
+                href={nominateHref}
+                className="inline-flex h-12 px-8 rounded-full bg-[var(--page-fg)] text-[var(--page-bg)] font-sans text-[14px] font-bold items-center justify-center w-fit hover:opacity-90 active:scale-[0.98] transition-all"
+              >
+                {t('pitchThis')}
+              </Link>
+            ) : (
+              <div className="flex flex-col items-start gap-5">
+                <p className="font-sans font-medium text-[14px] leading-relaxed text-page-muted tracking-tight max-w-sm">
+                  {t('membersNote')}
+                </p>
                 <Link
                   href="/bureaux"
-                  className="inline-flex h-12 px-8 rounded-full bg-[var(--page-fg)] text-[var(--page-bg)] font-sans text-[14px] font-bold items-center justify-center w-fit hover:opacity-90 active:scale-[0.98] transition-all"
+                  className="px-10 h-14 inline-flex items-center justify-center bg-[var(--page-fg)] text-[var(--page-bg)] font-sans font-bold text-[15px] tracking-tight rounded-full shadow-2xl hover:opacity-90 active:scale-95 transition-all duration-150"
                 >
                   {t('joinToPitch')}
                 </Link>
-              )}
-              {!bureauxActive && (
-                <p className="font-sans text-[13px] text-page-faint leading-snug max-w-sm">
-                  {t('membersNote')}
-                </p>
-              )}
-            </div>
+              </div>
+            )
           ) : (
             <p className="font-sans text-[14px] text-page-muted leading-snug max-w-sm">
               {t('archiveBriefNote')}
             </p>
           )}
 
-          <Link
-            href="/principles"
-            className="mt-5 font-sans text-[13px] sm:text-[14px] font-semibold text-page-muted hover:text-page transition-colors underline underline-offset-2 w-fit"
-          >
-            {t('principlesLink')}
-          </Link>
-
-          <div className="mt-10 hidden lg:block">{legal}</div>
+          {bureauxActive ? (
+            <Link
+              href="/principles"
+              className="mt-5 font-sans text-[13px] sm:text-[14px] font-semibold text-page-muted hover:text-page transition-colors underline underline-offset-2 w-fit"
+            >
+              {t('principlesLink')}
+            </Link>
+          ) : null}
         </aside>
-
-        {/* Legal — under poster on mobile */}
-        <div className="order-3 lg:hidden">{legal}</div>
       </div>
     </main>
   );

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState, useTransition } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Elements,
   PaymentElement,
@@ -10,13 +10,11 @@ import {
 import { loadStripe } from '@stripe/stripe-js';
 import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
-import { Link, useRouter } from '@/i18n/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { useColorScheme } from '@/components/ColorSchemeProvider';
 import { fjorrStripeAppearance } from '@/lib/stripe-appearance';
 import {
-  cancelBureauxAtPeriodEnd,
   createBureauxSetupSecret,
-  resumeBureauxSubscription,
   setBureauxDefaultPaymentMethod,
 } from '@/lib/bureaux-actions';
 import { routing } from '@/i18n/routing';
@@ -104,7 +102,7 @@ function UpdateCardForm({
         onReady={() => setReady(true)}
       />
       {message ? (
-        <p className="font-sans text-[13px] text-[#C45B4A] leading-snug">
+        <p className="font-sans text-[13px] text-red-400/90 leading-snug">
           {message}
         </p>
       ) : null}
@@ -130,17 +128,18 @@ function UpdateCardForm({
 }
 
 export default function BureauxManage({
-  cancelAtPeriodEnd,
   returnPath = '/account/bureaux',
+  onOpen,
+  onClose,
 }: {
-  cancelAtPeriodEnd: boolean;
   /** Stripe SetupIntent return path (locale prefix added by the browser origin). */
   returnPath?: string;
+  onOpen?: () => void;
+  onClose?: () => void;
 }) {
   const t = useTranslations('Account');
   const router = useRouter();
   const { isLight } = useColorScheme();
-  const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
   const [updatingCard, setUpdatingCard] = useState(false);
   const [setupSecret, setSetupSecret] = useState<string | null>(null);
@@ -154,39 +153,21 @@ export default function BureauxManage({
 
   const refresh = () => router.refresh();
 
-  const onCancel = () => {
-    setMessage(null);
-    startTransition(async () => {
-      const result = await cancelBureauxAtPeriodEnd();
-      if (!result.ok) {
-        setMessage(result.error);
-        return;
-      }
-      setMessage(t('bureauxCancelDone'));
-      refresh();
-    });
-  };
-
-  const onResume = () => {
-    setMessage(null);
-    startTransition(async () => {
-      const result = await resumeBureauxSubscription();
-      if (!result.ok) {
-        setMessage(result.error);
-        return;
-      }
-      setMessage(t('bureauxResumeDone'));
-      refresh();
-    });
+  const closeCard = () => {
+    setUpdatingCard(false);
+    setSetupSecret(null);
+    onClose?.();
   };
 
   const startCardUpdate = async () => {
     setMessage(null);
     setCardLoading(true);
+    onOpen?.();
     const result = await createBureauxSetupSecret();
     setCardLoading(false);
     if (!result.ok) {
       setMessage(result.error);
+      onClose?.();
       return;
     }
     setEmail(result.email);
@@ -195,11 +176,11 @@ export default function BureauxManage({
   };
 
   return (
-    <div className="w-full max-w-md flex flex-col gap-4 items-start">
-      <h2 className="font-sans text-[11px] font-semibold uppercase tracking-[0.08em] text-page-faint">
-        {t('bureauxManage')}
-      </h2>
-
+    <div
+      className={`flex flex-col gap-4 items-start${
+        updatingCard ? ' basis-full w-full max-w-md' : ''
+      }`}
+    >
       {updatingCard && setupSecret && stripePromise ? (
         <div className="w-full flex flex-col gap-3">
           <p className="font-sans text-[13px] text-page-muted leading-snug">
@@ -217,49 +198,23 @@ export default function BureauxManage({
               email={email}
               returnPath={returnPath}
               onDone={() => {
-                setUpdatingCard(false);
-                setSetupSecret(null);
+                closeCard();
                 setMessage(t('bureauxCardDone'));
                 refresh();
               }}
-              onCancel={() => {
-                setUpdatingCard(false);
-                setSetupSecret(null);
-              }}
+              onCancel={closeCard}
             />
           </Elements>
         </div>
       ) : (
-        <div className="flex flex-col gap-2.5 items-start">
-          <button
-            type="button"
-            disabled={cardLoading || pending}
-            onClick={() => void startCardUpdate()}
-            className="self-start h-11 px-5 rounded-full border border-page-faint bg-transparent font-sans text-[13px] font-semibold text-page-muted hover:text-page hover:border-page-muted disabled:opacity-40 transition-colors"
-          >
-            {cardLoading ? t('bureauxPending') : t('bureauxUpdateCard')}
-          </button>
-
-          {cancelAtPeriodEnd ? (
-            <button
-              type="button"
-              disabled={pending}
-              onClick={onResume}
-              className="self-start h-11 px-5 rounded-full border border-page-faint bg-transparent font-sans text-[13px] font-semibold text-page-muted hover:text-page hover:border-page-muted disabled:opacity-40 transition-colors"
-            >
-              {pending ? t('bureauxPending') : t('bureauxResume')}
-            </button>
-          ) : (
-            <button
-              type="button"
-              disabled={pending}
-              onClick={onCancel}
-              className="self-start h-11 px-5 rounded-full border border-page-faint bg-transparent font-sans text-[13px] font-semibold text-page-muted hover:text-page hover:border-page-muted disabled:opacity-40 transition-colors"
-            >
-              {pending ? t('bureauxPending') : t('bureauxCancel')}
-            </button>
-          )}
-        </div>
+        <button
+          type="button"
+          disabled={cardLoading}
+          onClick={() => void startCardUpdate()}
+          className="self-start h-11 px-5 rounded-full bg-white text-black font-sans text-[13px] font-semibold hover:bg-white/90 disabled:opacity-40 transition-colors"
+        >
+          {cardLoading ? t('bureauxPending') : t('bureauxUpdateCard')}
+        </button>
       )}
 
       {message ? (
@@ -267,27 +222,6 @@ export default function BureauxManage({
           {message}
         </p>
       ) : null}
-
-      {cancelAtPeriodEnd ? (
-        <p className="font-sans text-[12px] text-page-faint leading-relaxed">
-          {t('bureauxCancelHint')}{' '}
-          <Link
-            href="/manual/cancel"
-            className="font-semibold text-page-muted underline underline-offset-2 hover:text-page transition-colors"
-          >
-            Manual · Cancel
-          </Link>
-        </p>
-      ) : (
-        <p className="font-sans text-[12px] text-page-faint leading-relaxed">
-          <Link
-            href="/manual/cancel"
-            className="font-semibold text-page-muted underline underline-offset-2 hover:text-page transition-colors"
-          >
-            Manual · Cancel
-          </Link>
-        </p>
-      )}
     </div>
   );
 }

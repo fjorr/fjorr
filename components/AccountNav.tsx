@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useId, useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link, usePathname, useRouter } from '@/i18n/navigation';
 import { createClient } from '@/lib/supabase/client';
@@ -11,17 +11,13 @@ type NavItem = {
     | '/account/nominations'
     | '/account/plus'
     | '/account/bureaux'
-    | '/account/cabinet'
-    | '/account/profile'
-    | '/account/privacy';
+    | '/account/cabinet';
   labelKey:
     | 'navLogs'
     | 'navNominations'
     | 'navPlus'
     | 'navBureaux'
-    | 'navCabinet'
-    | 'navProfile'
-    | 'navPrivacy';
+    | 'navCabinet';
 };
 
 function isActive(pathname: string, item: NavItem) {
@@ -31,29 +27,32 @@ function isActive(pathname: string, item: NavItem) {
 function buildItems(): NavItem[] {
   return [
     { href: '/account/voyages', labelKey: 'navLogs' },
-    { href: '/account/bureaux', labelKey: 'navBureaux' },
     { href: '/account/nominations', labelKey: 'navNominations' },
     { href: '/account/plus', labelKey: 'navPlus' },
     { href: '/account/cabinet', labelKey: 'navCabinet' },
-    { href: '/account/profile', labelKey: 'navProfile' },
-    { href: '/account/privacy', labelKey: 'navPrivacy' },
+    { href: '/account/bureaux', labelKey: 'navBureaux' },
   ];
 }
 
-function splitDisplayName(name: string) {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return null;
-  if (parts.length === 1) return { first: parts[0], rest: null as string | null };
-  return { first: parts[0], rest: parts.slice(1).join(' ') };
-}
-
-function AccountDisplayName({ name }: { name: string }) {
-  const parts = splitDisplayName(name);
-  if (!parts) return null;
+function AccountDisplayName({
+  name,
+  size = 'sidebar',
+}: {
+  name: string;
+  size?: 'sidebar' | 'bar';
+}) {
+  const trimmed = name.trim();
+  if (!trimmed) return null;
+  if (size === 'bar') {
+    return (
+      <p className="font-interTight font-extrabold text-[15px] tracking-normal text-page leading-none truncate select-none">
+        {trimmed}
+      </p>
+    );
+  }
   return (
-    <p className="font-futura text-[22px] tracking-tighter text-page leading-[1.05] select-none">
-      <span className="block">{parts.first}</span>
-      {parts.rest ? <span className="block">{parts.rest}</span> : null}
+    <p className="font-interTight font-extrabold text-[18px] tracking-normal text-page leading-none truncate select-none">
+      {trimmed}
     </p>
   );
 }
@@ -76,8 +75,8 @@ function AccountIdentity({
   broughtInCount: number;
 }) {
   return (
-    <div className="flex flex-col gap-1.5">
-      {name ? <AccountDisplayName name={name} /> : null}
+    <div className="flex flex-col gap-1.5 min-w-0">
+      {name ? <AccountDisplayName name={name} size="sidebar" /> : null}
       <div className="flex flex-col gap-0.5">
         {bureauxNumber != null ? (
           <p className="font-sans text-[15px] font-semibold tracking-tight text-page tabular-nums">
@@ -99,7 +98,7 @@ function AccountIdentity({
   );
 }
 
-/** Mercury-style account sidebar — Apple-like menu overlay on mobile. */
+/** Account sidebar (desktop) + navbar-style dropdown (mobile). */
 export default function AccountNav({
   displayName,
   bureauxNumber = null,
@@ -118,6 +117,7 @@ export default function AccountNav({
   const items = buildItems();
   const [open, setOpen] = useState(false);
   const panelId = useId();
+  const rootRef = useRef<HTMLDivElement>(null);
 
   const close = () => setOpen(false);
 
@@ -129,23 +129,25 @@ export default function AccountNav({
     router.refresh();
   };
 
-  // Close on route change
   useEffect(() => {
     setOpen(false);
   }, [pathname]);
 
-  // Escape + body scroll lock
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') close();
     };
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    const onPointerDown = (e: MouseEvent) => {
+      if (rootRef.current && !rootRef.current.contains(e.target as Node)) {
+        close();
+      }
+    };
     document.addEventListener('keydown', onKey);
+    document.addEventListener('mousedown', onPointerDown);
     return () => {
-      document.body.style.overflow = prev;
       document.removeEventListener('keydown', onKey);
+      document.removeEventListener('mousedown', onPointerDown);
     };
   }, [open]);
 
@@ -208,134 +210,125 @@ export default function AccountNav({
 
   return (
     <>
-      {/* Mobile: Account menu trigger bar */}
-      <div className="md:hidden w-full border-b border-page-faint px-4 py-3 flex items-center justify-between gap-3">
-        <div className="min-w-0 flex flex-col gap-1">
-          {name ? <AccountDisplayName name={name} /> : null}
-          {bureauxNumber != null ? (
-            <p className="font-sans text-[13px] font-semibold tracking-tight text-page-muted tabular-nums">
-              {t('bureauxNo')} {bureauxNumber}
-            </p>
-          ) : null}
-        </div>
-        <button
-          type="button"
-          aria-label={open ? t('closeAccountMenu') : t('openAccountMenu')}
-          aria-expanded={open}
-          aria-controls={panelId}
-          onClick={() => setOpen((v) => !v)}
-          className="shrink-0 inline-flex items-center gap-2 h-9 px-3 rounded-[8px] bg-page-chip hover:bg-page-chip-hover transition-colors"
-        >
-          <span className="font-sans text-[13px] font-semibold text-page">
-            {t('accountMenu')}
-          </span>
-          <span className="relative w-[14px] h-[14px]" aria-hidden>
-            <span
-              className={`absolute left-1/2 top-1/2 block w-[12px] h-[1.5px] rounded-full bg-[var(--page-fg)] transition-transform duration-300 ease-out origin-center ${
-                open
-                  ? '-translate-x-1/2 -translate-y-1/2 rotate-45'
-                  : '-translate-x-1/2 -translate-y-[3px]'
-              }`}
-            />
-            <span
-              className={`absolute left-1/2 top-1/2 block w-[12px] h-[1.5px] rounded-full bg-[var(--page-fg)] transition-transform duration-300 ease-out origin-center ${
-                open
-                  ? '-translate-x-1/2 -translate-y-1/2 -rotate-45'
-                  : '-translate-x-1/2 translate-y-[3px]'
-              }`}
-            />
-          </span>
-        </button>
-      </div>
-
-      {/* Mobile: Apple-style full overlay menu */}
-      <div
-        id={panelId}
-        className={`md:hidden fixed inset-0 z-[100040] transition-[visibility] duration-300 ${
-          open ? 'visible' : 'invisible pointer-events-none'
-        }`}
-      >
-        <button
-          type="button"
-          aria-label={t('closeAccountMenu')}
-          onClick={close}
-          className={`absolute inset-0 bg-black/55 backdrop-blur-[2px] transition-opacity duration-300 ${
-            open ? 'opacity-100' : 'opacity-0'
-          }`}
-        />
+      {/*
+        Mobile — same horizontal rhythm as Navbar:
+        header px-4 + bar pl-3 / pr-4 → name under logo, Account under language.
+      */}
+      <div className="md:hidden w-full px-4 pt-3 pb-4">
         <div
-          role="dialog"
-          aria-modal="true"
-          aria-label={t('accountMenu')}
-          className={`absolute inset-x-0 top-0 max-h-[min(100dvh,100%)] overflow-y-auto border-b border-page-faint bg-[color-mix(in_srgb,var(--page-bg)_92%,transparent)] backdrop-blur-[28px] shadow-[0_24px_80px_rgba(0,0,0,0.55)] transition-transform duration-300 ease-out ${
-            open ? 'translate-y-0' : '-translate-y-3 opacity-0'
-          } ${open ? 'opacity-100' : ''}`}
-          style={{
-            WebkitBackdropFilter: 'blur(28px) saturate(1.4)',
-          }}
+          ref={rootRef}
+          className="relative z-20 w-full max-w-[calc(100vw-2rem)]"
         >
-          <div className="px-5 pt-4 pb-10 flex flex-col gap-8">
-            <div className="flex items-start justify-between gap-3">
-              {identity}
+          <div
+            className={`rounded-[10px] bg-page-chip pl-3 pr-4 transition-shadow duration-300 ${
+              open ? 'menu-surface shadow-[0_12px_40px_rgba(0,0,0,0.35)]' : ''
+            }`}
+          >
+            <div className="flex items-center justify-between gap-4 py-2.5">
+              <div className="min-w-0">
+                {name ? <AccountDisplayName name={name} size="bar" /> : null}
+              </div>
               <button
                 type="button"
-                aria-label={t('closeAccountMenu')}
-                onClick={close}
-                className="relative mt-1 w-9 h-9 shrink-0 rounded-[8px] bg-page-chip hover:bg-page-chip-hover transition-colors"
+                aria-label={open ? t('closeAccountMenu') : t('openAccountMenu')}
+                aria-expanded={open}
+                aria-controls={panelId}
+                onClick={() => setOpen((v) => !v)}
+                className="shrink-0 inline-flex items-center gap-1.5 font-sans text-[13px] font-semibold tracking-tight text-page-muted hover:text-page transition-colors"
               >
-                <span
+                <span>{t('accountMenu')}</span>
+                <svg
                   aria-hidden
-                  className="absolute left-1/2 top-1/2 block w-[14px] h-[1.5px] rounded-full bg-[var(--page-fg)] -translate-x-1/2 -translate-y-1/2 rotate-45"
-                />
-                <span
-                  aria-hidden
-                  className="absolute left-1/2 top-1/2 block w-[14px] h-[1.5px] rounded-full bg-[var(--page-fg)] -translate-x-1/2 -translate-y-1/2 -rotate-45"
-                />
+                  viewBox="0 0 12 12"
+                  className={`w-2.5 h-2.5 transition-transform duration-300 ${
+                    open ? 'rotate-180' : ''
+                  }`}
+                  fill="none"
+                >
+                  <path
+                    d="M2.5 4.25 6 7.75l3.5-3.5"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
               </button>
             </div>
 
-            <nav aria-label={t('accountTitle')}>
-              <ul className="flex flex-col list-none m-0 p-0">
-                {items.map((item) => {
-                  const active = isActive(pathname, item);
-                  return (
-                    <li key={item.href}>
-                      {active ? (
-                        <span
-                          aria-current="page"
-                          className="block py-2.5 font-sans text-[28px] font-semibold tracking-tight leading-none text-page-faint cursor-default select-none"
-                        >
-                          {t(item.labelKey)}
-                        </span>
-                      ) : (
+            <div
+              id={panelId}
+              className={`grid transition-[grid-template-rows] duration-300 ease-out ${
+                open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+              }`}
+            >
+              <div className="overflow-hidden min-h-0">
+                <div
+                  role="dialog"
+                  aria-label={t('accountMenu')}
+                  className="flex flex-col gap-5 pb-5 pt-1"
+                >
+                  <nav
+                    aria-label={t('accountTitle')}
+                    className="flex flex-col gap-1.5"
+                  >
+                    {items.map((item) => {
+                      const active = isActive(pathname, item);
+                      const label = t(item.labelKey);
+                      if (active) {
+                        return (
+                          <span
+                            key={item.href}
+                            aria-current="page"
+                            className="font-sans text-[15px] font-semibold tracking-tight text-page-faint cursor-default select-none"
+                          >
+                            {label}
+                          </span>
+                        );
+                      }
+                      return (
                         <Link
+                          key={item.href}
                           href={item.href}
                           onClick={close}
-                          className="block py-2.5 font-sans text-[28px] font-semibold tracking-tight leading-none text-page hover:opacity-70 transition-opacity"
+                          className="font-sans text-[15px] font-semibold tracking-tight text-page hover:opacity-70 transition-opacity"
                         >
-                          {t(item.labelKey)}
+                          {label}
                         </Link>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
-            </nav>
+                      );
+                    })}
+                  </nav>
 
-            <button
-              type="button"
-              onClick={() => void handleSignOut()}
-              className="self-start pt-2 font-sans text-[15px] font-semibold text-page-faint hover:text-page-muted transition-colors"
-            >
-              {t('signOut')}
-            </button>
+                  <div className="pt-4 border-t border-page-faint">
+                    <button
+                      type="button"
+                      onClick={() => void handleSignOut()}
+                      className="font-sans text-[15px] font-semibold tracking-tight text-page-faint hover:text-page-muted transition-colors"
+                    >
+                      {t('signOut')}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex w-[15.5rem] shrink-0 border-r border-page-faint px-4 py-8 md:min-h-[calc(100vh-4rem)] flex-col gap-6">
-        {desktopNav}
+      <aside
+        className="hidden md:flex w-[15.5rem] shrink-0 border-r border-page-faint px-4 py-8 md:min-h-[calc(100vh-4rem)] flex-col gap-6 relative overflow-hidden"
+        style={{
+          backgroundImage: `radial-gradient(
+            color-mix(in srgb, var(--page-fg) 14%, transparent) 0.7px,
+            transparent 0.7px
+          )`,
+          backgroundSize: '7px 7px',
+        }}
+      >
+        <div className="relative flex flex-col gap-6 flex-1 min-h-0">
+          {desktopNav}
+        </div>
       </aside>
     </>
   );

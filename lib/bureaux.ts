@@ -1,5 +1,6 @@
 import 'server-only';
 
+import { cache } from 'react';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import {
@@ -75,33 +76,34 @@ export function getBureauxAnnualAmountCents(): number {
   return Number.isFinite(n) && n > 0 ? Math.floor(n) : 4800;
 }
 
-export async function getOwnBureauxMembership(
-  userId?: string
-): Promise<BureauxMembership | null> {
-  const supabase = await createClient();
-  let uid = userId;
-  if (!uid) {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return null;
-    uid = user.id;
+/** Deduped per request — shell + pages often ask for the same row. */
+export const getOwnBureauxMembership = cache(
+  async (userId?: string): Promise<BureauxMembership | null> => {
+    const supabase = await createClient();
+    let uid = userId;
+    if (!uid) {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return null;
+      uid = user.id;
+    }
+
+    const { data, error } = await supabase
+      .from('bureaux_memberships')
+      .select(MEMBERSHIP_SELECT)
+      .eq('user_id', uid)
+      .maybeSingle();
+
+    if (error) {
+      console.error('getOwnBureauxMembership failed:', error.message);
+      return null;
+    }
+    if (!data) return null;
+
+    return mapMembershipRow(data as Record<string, unknown>);
   }
-
-  const { data, error } = await supabase
-    .from('bureaux_memberships')
-    .select(MEMBERSHIP_SELECT)
-    .eq('user_id', uid)
-    .maybeSingle();
-
-  if (error) {
-    console.error('getOwnBureauxMembership failed:', error.message);
-    return null;
-  }
-  if (!data) return null;
-
-  return mapMembershipRow(data as Record<string, unknown>);
-}
+);
 
 /** Service-role read (admin / gift redeem). */
 export async function getBureauxMembershipByUserId(
@@ -380,31 +382,31 @@ export type BureauxLineage = {
   broughtInCount: number;
 };
 
-/** Lineage for the signed-in member’s mark. */
-export async function getOwnBureauxLineage(
-  userId: string
-): Promise<BureauxLineage> {
-  const db = createServiceClient();
-  const own = await getBureauxMembershipByUserId(userId);
+/** Lineage for the signed-in member’s mark. Deduped per request. */
+export const getOwnBureauxLineage = cache(
+  async (userId: string): Promise<BureauxLineage> => {
+    const db = createServiceClient();
+    const own = await getOwnBureauxMembership(userId);
 
-  let sponsoredByNumber: number | null = null;
-  if (own?.sponsored_by_user_id) {
-    const { data: sponsor } = await db
+    let sponsoredByNumber: number | null = null;
+    if (own?.sponsored_by_user_id) {
+      const { data: sponsor } = await db
+        .from('bureaux_memberships')
+        .select('bureaux_number')
+        .eq('user_id', own.sponsored_by_user_id)
+        .maybeSingle();
+      const n = Number(sponsor?.bureaux_number);
+      if (Number.isFinite(n) && n >= 1) sponsoredByNumber = n;
+    }
+
+    const { count } = await db
       .from('bureaux_memberships')
-      .select('bureaux_number')
-      .eq('user_id', own.sponsored_by_user_id)
-      .maybeSingle();
-    const n = Number(sponsor?.bureaux_number);
-    if (Number.isFinite(n) && n >= 1) sponsoredByNumber = n;
+      .select('user_id', { count: 'exact', head: true })
+      .eq('sponsored_by_user_id', userId);
+
+    return {
+      sponsoredByNumber,
+      broughtInCount: count || 0,
+    };
   }
-
-  const { count } = await db
-    .from('bureaux_memberships')
-    .select('user_id', { count: 'exact', head: true })
-    .eq('sponsored_by_user_id', userId);
-
-  return {
-    sponsoredByNumber,
-    broughtInCount: count || 0,
-  };
-}
+);

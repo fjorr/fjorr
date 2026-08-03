@@ -23,8 +23,12 @@ export default async function AccountCabinetPage() {
       profile={profile}
       title={t('cabinetTitle')}
       description={t('cabinetBody')}
-      headerLinks={[{ href: '/cabinet', label: t('cabinetLinkPublic') }]}
+      headerLinks={[
+        { href: '/cabinet', label: t('cabinetLinkPublic') },
+        { href: '/manual/account', label: t('viewManual') },
+      ]}
       wide
+      introNarrow
     >
       <CabinetOffersLedger offers={offers} omitHeader />
     </AccountShell>

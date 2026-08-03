@@ -1,5 +1,5 @@
 import { updateSession } from "@/lib/supabase/proxy";
-import { isValidGateToken } from "@/lib/site-gate";
+import { isSocialCrawler, isValidGateToken } from "@/lib/site-gate";
 import createMiddleware from "next-intl/middleware";
 import { NextResponse, type NextRequest } from "next/server";
 import { routing } from "@/i18n/routing";
@@ -51,6 +51,12 @@ export async function middleware(request: NextRequest) {
       pathname.endsWith("/auth/confirm") ||
       pathname === "/auth/error" ||
       pathname.endsWith("/auth/error");
+
+    // Link-preview bots need real film HTML + Supabase blok_ogrf, not the gate page.
+    if (isSocialCrawler(request.headers.get("user-agent"))) {
+      const response = handleI18nRouting(request);
+      return await updateSession(request, response);
+    }
 
     if (pathname === "/password" || isAuthCallback) {
       return await updateSession(request);

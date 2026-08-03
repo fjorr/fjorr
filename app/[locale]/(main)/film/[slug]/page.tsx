@@ -116,7 +116,7 @@ async function DeferredPageContent({ urlSlug }: { urlSlug: string }) {
             '@type': 'Movie',
             name: filmData.name,
             description: filmData.teaser,
-            image: filmData.blok_ogrf || 'https://www.fjorr.com/opengraph-image.png',
+            image: await resolveSocialOgImage(filmData.blok_ogrf),
             datePublished: filmData.release_date,
             productionCompany: { '@type': 'Organization', name: 'Fjorr' },
           }),

@@ -18,10 +18,12 @@ export default function VoyageurBadge({
   stamp,
   filmName,
   filmSlug,
+  filmPoster = null,
 }: {
   stamp: VoyageurStamp;
   filmName: string;
   filmSlug: string;
+  filmPoster?: string | null;
 }) {
   const t = useTranslations('Film');
   const [open, setOpen] = useState(false);
@@ -35,9 +37,9 @@ export default function VoyageurBadge({
         aria-label={`${t('voyageurBadgeTitle', { number: stamp.voyageurNumber })}. ${t('stampShareTitle')}`}
       >
         <VoyageurBadgeMark
+          filmName={filmName}
+          filmPoster={filmPoster}
           voyageurNumber={stamp.voyageurNumber}
-          filmVersion={stamp.filmVersion}
-          memberNumber={stamp.memberNumber}
           recordedAt={stamp.recordedAt}
           tone="page"
         />
@@ -48,6 +50,7 @@ export default function VoyageurBadge({
           onClose={() => setOpen(false)}
           filmName={filmName}
           filmSlug={filmSlug}
+          filmPoster={filmPoster}
           viewerNumber={stamp.voyageurNumber}
           filmVersion={stamp.filmVersion}
           memberNumber={stamp.memberNumber}

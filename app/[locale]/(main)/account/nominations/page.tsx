@@ -26,8 +26,10 @@ export default async function AccountNominationsPage() {
       headerLinks={[
         { href: '/nominate', label: t('nominationsLinkNominate') },
         { href: '/bounties', label: t('nominationsLinkBounties') },
+        { href: '/manual/nominate', label: t('viewManual') },
       ]}
       wide
+      introNarrow
     >
       <NominationsLedger nominations={nominations} omitHeader />
     </AccountShell>

@@ -1,8 +1,11 @@
 import type { Metadata } from 'next';
+import type { ReactNode } from 'react';
 import { getLocale, getTranslations } from 'next-intl/server';
+import AccountDeleteAccount from '@/components/AccountDeleteAccount';
 import AccountShell from '@/components/AccountShell';
+import BureauxAccountActions from '@/components/BureauxAccountActions';
+import BureauxCancelMembership from '@/components/BureauxCancelMembership';
 import BureauxGiftSeat from '@/components/BureauxGiftSeat';
-import BureauxManage from '@/components/BureauxManage';
 import { requireOwnAccount } from '@/lib/account-session';
 import {
   ensureBureauxNumber,
@@ -10,12 +13,12 @@ import {
   getOwnBureauxMembership,
   isBureauxMembershipActive,
 } from '@/lib/bureaux';
+import { getOwnBureauxCardOnFile } from '@/lib/bureaux-actions';
 import {
   getOwnGiftSeatState,
   syncBureauxGiftFromCheckoutSession,
 } from '@/lib/bureaux-gift';
 import { appUrl } from '@/lib/site';
-import { Link } from '@/i18n/navigation';
 
 function formatDate(iso: string | null, locale: string) {
   if (!iso) return null;
@@ -28,6 +31,15 @@ function formatDate(iso: string | null, locale: string) {
   } catch {
     return null;
   }
+}
+
+function SpecRow({ label, value }: { label: string; value: ReactNode }) {
+  return (
+    <div className="grid grid-cols-[7.5rem_1fr] sm:grid-cols-[8.5rem_1fr] gap-x-3 items-baseline text-sm">
+      <span className="text-page-faint font-medium">{label}</span>
+      <span className="text-page font-medium">{value}</span>
+    </div>
+  );
 }
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -47,7 +59,6 @@ export default async function AccountBureauxPage({
   const { gift, session_id: giftSessionId, joined } = await searchParams;
   const locale = await getLocale();
   const t = await getTranslations('Account');
-  const tb = await getTranslations('Bureaux');
   const justJoined = joined === '1';
 
   if (gift === '1' && giftSessionId) {
@@ -65,8 +76,14 @@ export default async function AccountBureauxPage({
     if (n) membership = { ...membership, bureaux_number: n };
   }
 
-  const lineage = active ? await getOwnBureauxLineage(user.id) : null;
-  const giftSeat = active ? await getOwnGiftSeatState(user.id) : null;
+  const [lineage, giftSeat, card] = await Promise.all([
+    active ? getOwnBureauxLineage(user.id) : Promise.resolve(null),
+    active ? getOwnGiftSeatState(user.id) : Promise.resolve(null),
+    active && !membership?.comp_lifetime
+      ? getOwnBureauxCardOnFile(membership)
+      : Promise.resolve(null),
+  ]);
+
   const openGiftUrl =
     giftSeat?.openGift?.status === 'open'
       ? appUrl(`/bureaux/gift/${giftSeat.openGift.token}`)
@@ -78,8 +95,9 @@ export default async function AccountBureauxPage({
       profile={profile}
       title={t('bureauxTitle')}
       description={t('bureauxBody')}
-      headerLinks={[{ href: '/manual/join', label: 'Manual · Join' }]}
+      headerLinks={[{ href: '/manual/join', label: t('viewManual') }]}
       narrow
+      introNarrow
     >
       <div className="flex flex-col gap-10">
         {justJoined ? (
@@ -88,74 +106,90 @@ export default async function AccountBureauxPage({
           </p>
         ) : null}
 
-        <section className="flex flex-col divide-y divide-page-faint border-y border-page-faint">
-          <div className="py-4 flex items-baseline justify-between gap-4">
-            <span className="font-sans text-[14px] text-page-muted">
-              {t('bureauxStatus')}
-            </span>
-            <span className="font-sans text-[15px] font-semibold text-page">
-              {t('bureauxStatusActive')}
-            </span>
-          </div>
+        <section className="flex flex-col gap-2.5">
+          <SpecRow
+            label={t('displayName')}
+            value={
+              <span className="truncate">
+                {profile.display_name?.trim() || '—'}
+              </span>
+            }
+          />
+          <SpecRow
+            label={t('email')}
+            value={
+              <span className="truncate">{user.email || '—'}</span>
+            }
+          />
+          <SpecRow label={t('bureauxStatus')} value={t('bureauxStatusActive')} />
           {membership?.bureaux_number != null ? (
-            <div className="py-4 flex items-baseline justify-between gap-4">
-              <span className="font-sans text-[14px] text-page-muted">
-                {t('bureauxNo')}
-              </span>
-              <span className="font-mono text-[15px] text-page tabular-nums">
-                {membership.bureaux_number}
-              </span>
-            </div>
+            <SpecRow
+              label={t('bureauxNo')}
+              value={
+                <span className="font-sans tabular-nums">
+                  {membership.bureaux_number}
+                </span>
+              }
+            />
           ) : null}
           {membership?.comp_lifetime ? (
-            <div className="py-4 flex items-baseline justify-between gap-4">
-              <span className="font-sans text-[14px] text-page-muted">
-                {t('bureauxLifetime')}
-              </span>
-              <span className="font-sans text-[15px] font-semibold text-page">
-                {t('bureauxLifetimeYes')}
-              </span>
-            </div>
+            <SpecRow
+              label={t('bureauxLifetime')}
+              value={t('bureauxLifetimeYes')}
+            />
           ) : renews ? (
-            <div className="py-4 flex items-baseline justify-between gap-4">
-              <span className="font-sans text-[14px] text-page-muted">
-                {membership?.cancel_at_period_end
+            <SpecRow
+              label={
+                membership?.cancel_at_period_end
                   ? t('bureauxEnds')
-                  : t('bureauxRenews')}
-              </span>
-              <span className="font-mono text-[15px] text-page tabular-nums">
-                {renews}
-              </span>
-            </div>
+                  : t('bureauxRenews')
+              }
+              value={
+                <span className="font-sans tabular-nums">{renews}</span>
+              }
+            />
+          ) : null}
+          {card ? (
+            <SpecRow
+              label={t('bureauxCard')}
+              value={
+                <span className="font-sans tabular-nums">
+                  {t('bureauxCardValue', {
+                    brand: card.brand,
+                    last4: card.last4,
+                  })}
+                </span>
+              }
+            />
           ) : null}
           {lineage?.sponsoredByNumber != null ? (
-            <div className="py-4 flex items-baseline justify-between gap-4">
-              <span className="font-sans text-[14px] text-page-muted">
-                {t('bureauxBroughtBy')}
-              </span>
-              <span className="font-mono text-[15px] text-page tabular-nums">
-                № {lineage.sponsoredByNumber}
-              </span>
-            </div>
+            <SpecRow
+              label={t('bureauxBroughtBy')}
+              value={
+                <span className="font-sans tabular-nums">
+                  № {lineage.sponsoredByNumber}
+                </span>
+              }
+            />
           ) : null}
           {lineage && lineage.broughtInCount > 0 ? (
-            <div className="py-4 flex items-baseline justify-between gap-4">
-              <span className="font-sans text-[14px] text-page-muted">
-                {t('bureauxBroughtIn')}
-              </span>
-              <span className="font-mono text-[15px] text-page tabular-nums">
-                {lineage.broughtInCount}
-              </span>
-            </div>
+            <SpecRow
+              label={t('bureauxBroughtIn')}
+              value={
+                <span className="font-sans tabular-nums">
+                  {lineage.broughtInCount}
+                </span>
+              }
+            />
           ) : null}
         </section>
 
-        {!membership?.comp_lifetime ? (
-          <BureauxManage
-            cancelAtPeriodEnd={Boolean(membership?.cancel_at_period_end)}
-            returnPath="/account/bureaux"
-          />
-        ) : null}
+        <BureauxAccountActions
+          currentName={profile.display_name?.trim() || ''}
+          currentEmail={user.email || ''}
+          showCardUpdate={!membership?.comp_lifetime}
+          returnPath="/account/bureaux"
+        />
 
         {giftSeat ? (
           <BureauxGiftSeat
@@ -166,23 +200,14 @@ export default async function AccountBureauxPage({
           />
         ) : null}
 
-        <p className="font-sans text-[13px] text-page-faint leading-relaxed max-w-sm">
-          {tb('footnote')}{' '}
-          <Link
-            href="/manual/join"
-            className="font-semibold text-page-muted underline underline-offset-2 hover:text-page transition-colors"
-          >
-            Manual · Join
-          </Link>
-          {' · '}
-          <Link
-            href="/manual/cancel"
-            className="font-semibold text-page-muted underline underline-offset-2 hover:text-page transition-colors"
-          >
-            Cancel
-          </Link>
-          .
-        </p>
+        <div className="flex flex-col gap-6">
+          {!membership?.comp_lifetime ? (
+            <BureauxCancelMembership
+              cancelAtPeriodEnd={Boolean(membership?.cancel_at_period_end)}
+            />
+          ) : null}
+          <AccountDeleteAccount />
+        </div>
       </div>
     </AccountShell>
   );

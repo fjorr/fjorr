@@ -155,7 +155,7 @@ export function ArtifactSidebar({
                     </span>
                   )}
                   {displayRuntime ? (
-                    <span className={`text-[12px] font-mono font-medium tabular-nums ${mutedTextClass}`}>
+                    <span className={`text-[12px] font-sans font-medium tabular-nums ${mutedTextClass}`}>
                       {displayRuntime}
                     </span>
                   ) : (
@@ -174,7 +174,7 @@ export function ArtifactSidebar({
             href={formatExternalUrl(link)}
             target="_blank"
             rel="noopener noreferrer"
-            className={`inline-flex items-center gap-1.5 font-mono text-[13px] font-medium tracking-[0.05em] uppercase hover:opacity-70 transition-opacity group w-max cursor-pointer ${textClass}`}
+            className={`inline-flex items-center gap-1.5 font-sans text-[13px] font-medium tracking-[0.05em] uppercase hover:opacity-70 transition-opacity group w-max cursor-pointer ${textClass}`}
           >
             <span>{linkCta}</span>
             <svg

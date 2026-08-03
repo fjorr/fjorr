@@ -171,8 +171,8 @@ export default function SignInForm({
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <label className="flex flex-col gap-2 text-left">
           <span
-            className={`font-sans text-[12px] font-semibold uppercase tracking-wide ${
-              isMenu ? labelColor : 'text-white/35'
+            className={`font-sans text-[13px] font-semibold normal-case tracking-normal ${
+              isMenu ? labelColor : 'text-white/50'
             }`}
           >
             {t('email')}

@@ -48,6 +48,7 @@ export type AdminBounty = {
   claimed_by: string | null;
   claimed_at: string | null;
   winning_nomination_id: string | null;
+  bounty_number: number;
   created_at: string;
   updated_at: string;
 };
@@ -126,6 +127,7 @@ function mapBounty(row: any): AdminBounty {
     deadline: row.deadline ? String(row.deadline) : null,
     claimed_by: row.claimed_by ? String(row.claimed_by) : null,
     claimed_at: row.claimed_at ? String(row.claimed_at) : null,
+    bounty_number: Number(row.bounty_number) || 0,
     winning_nomination_id: row.winning_nomination_id
       ? String(row.winning_nomination_id)
       : null,
@@ -410,7 +412,7 @@ export async function listAdminBounties(): Promise<AdminBounty[]> {
     .select(
       `id, slug, title, brief, reward_amount, currency, kind, status,
        poster_image_url, featured, sort_order, deadline,
-       claimed_by, claimed_at, winning_nomination_id,
+       claimed_by, claimed_at, winning_nomination_id, bounty_number,
        created_at, updated_at`
     )
     .order('featured', { ascending: false })

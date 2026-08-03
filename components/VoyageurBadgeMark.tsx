@@ -1,11 +1,12 @@
 'use client';
 
 import React from 'react';
-import { useTranslations } from 'next-intl';
+import Image from 'next/image';
+import { useLocale, useTranslations } from 'next-intl';
 
-function formatStampDate(iso: string) {
+function formatStampDate(iso: string, locale: string) {
   try {
-    return new Intl.DateTimeFormat('en', {
+    return new Intl.DateTimeFormat(locale, {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -19,66 +20,101 @@ type Tone = 'page' | 'onDark';
 
 const TONE: Record<
   Tone,
-  { shell: string; title: string; version: string; meta: string }
+  {
+    shell: string;
+    film: string;
+    honor: string;
+    date: string;
+    poster: string;
+  }
 > = {
   page: {
-    shell:
-      'bg-[color-mix(in_srgb,var(--page-fg)_6%,transparent)] ring-1 ring-[color-mix(in_srgb,var(--page-fg)_10%,transparent)]',
-    title: 'text-page',
-    version: 'text-page-muted',
-    meta: 'text-page-faint',
+    shell: 'bg-[color-mix(in_srgb,var(--page-fg)_6%,transparent)]',
+    film: 'text-page',
+    honor: 'text-page',
+    date: 'text-page-faint',
+    poster: 'bg-[color-mix(in_srgb,var(--page-fg)_8%,transparent)]',
   },
   onDark: {
-    shell: 'bg-white/[0.06] ring-1 ring-white/10',
-    title: 'text-white',
-    version: 'text-white/45',
-    meta: 'text-white/35',
+    shell: 'bg-white/[0.06]',
+    film: 'text-white',
+    honor: 'text-white',
+    date: 'text-white/35',
+    poster: 'bg-white/5',
   },
 };
 
 /**
- * Shared Voyageur mark — same chip everywhere (film page, share modal, send sheet).
+ * Shared Voyageur mark — poster + three text lines:
+ * 1 film title · 2 Voyageur No. (hero) · 3 date
  */
 export default function VoyageurBadgeMark({
+  filmName,
+  filmPoster = null,
   voyageurNumber,
-  filmVersion,
-  memberNumber,
   recordedAt,
   tone = 'page',
+  compact = false,
   className = '',
 }: {
+  filmName: string;
+  filmPoster?: string | null;
   voyageurNumber: number;
-  filmVersion: number;
-  memberNumber?: number | null;
   recordedAt?: string | null;
   tone?: Tone;
+  compact?: boolean;
   className?: string;
 }) {
   const t = useTranslations('Film');
-  const date = recordedAt ? formatStampDate(recordedAt) : '';
-  if (!date) return null;
+  const locale = useLocale();
+  const date = recordedAt ? formatStampDate(recordedAt, locale) : '';
+  if (!date || !filmName.trim()) return null;
 
   const c = TONE[tone];
-
-  // Shared line box so baseline rhythm stays even across different type sizes.
-  const line =
-    'm-0 font-sans tabular-nums leading-[18px]';
+  const line = 'm-0 font-sans tabular-nums leading-none';
+  // 2:3 poster ≈ three text lines (13 + 15 + 11 + gaps)
+  const posterBox = compact
+    ? 'relative w-8 h-12 rounded-[2px] overflow-hidden shrink-0'
+    : 'relative w-[34px] h-[51px] rounded-[2px] overflow-hidden shrink-0';
 
   return (
     <div
-      className={`inline-flex max-w-full select-none flex-col rounded-[8px] pl-3.5 pr-5 py-3 text-left ${c.shell} ${className}`}
+      className={`inline-flex max-w-full select-none items-start gap-3 rounded-[6px] text-left ${
+        compact ? 'p-3 pr-7' : 'p-4 pr-8'
+      } ${c.shell} ${className}`}
     >
-      <p className={`${line} text-[14px] font-bold tracking-tight ${c.title}`}>
-        {t('voyageurBadgeTitle', { number: voyageurNumber })}
-      </p>
-      <p className={`${line} text-[12px] font-medium ${c.version}`}>
-        {t('voyageurBadgeVersion', { version: filmVersion, date })}
-      </p>
-      {memberNumber ? (
-        <p className={`${line} text-[11px] ${c.meta}`}>
-          {t('voyageurBadgeMeta', { member: memberNumber })}
+      <div className={`${posterBox} ${c.poster}`}>
+        {filmPoster ? (
+          <Image
+            src={filmPoster}
+            alt=""
+            fill
+            sizes={compact ? '32px' : '34px'}
+            className="object-cover"
+          />
+        ) : (
+          <span
+            aria-hidden
+            className={`absolute inset-0 flex items-center justify-center font-sans text-[11px] font-semibold ${c.date}`}
+          >
+            {(filmName.trim().charAt(0) || 'F').toUpperCase()}
+          </span>
+        )}
+      </div>
+
+      <div className="min-w-0 flex flex-col justify-between self-stretch py-px">
+        <p
+          className={`${line} text-[13px] font-semibold tracking-tight ${c.film} ${
+            compact ? 'line-clamp-2' : 'truncate'
+          }`}
+        >
+          {filmName}
         </p>
-      ) : null}
+        <p className={`${line} text-[15px] font-bold tracking-tight ${c.honor}`}>
+          {t('voyageurBadgeTitle', { number: voyageurNumber })}
+        </p>
+        <p className={`${line} text-[11px] font-medium ${c.date}`}>{date}</p>
+      </div>
     </div>
   );
 }

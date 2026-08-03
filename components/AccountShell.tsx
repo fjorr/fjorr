@@ -24,6 +24,7 @@ export default async function AccountShell({
   headerLinks,
   wide = false,
   narrow = false,
+  introNarrow = false,
 }: {
   children: React.ReactNode;
   profile: ScoutProfile;
@@ -37,9 +38,16 @@ export default async function AccountShell({
   wide?: boolean;
   /** Form pages — ~560px reading/editing column. */
   narrow?: boolean;
+  /** Tighter intro column — keeps short copy from widowing. */
+  introNarrow?: boolean;
 }) {
   const name = profile.display_name?.trim() || null;
   const paneWidth = wide ? '' : narrow ? 'max-w-[560px]' : 'max-w-5xl';
+  const introWidth = introNarrow
+    ? 'max-w-[22rem]'
+    : wide
+      ? 'max-w-[560px]'
+      : '';
   let membership = await getOwnBureauxMembership(profile.id);
   const bureauxActive = isBureauxMembershipActive(membership);
   // Lazy-assign for members activated before bureaux_number existed.
@@ -63,11 +71,7 @@ export default async function AccountShell({
 
       <main className="flex-1 min-w-0 px-5 sm:px-8 md:px-10 py-8 md:py-10">
         <div className={`w-full flex flex-col gap-8 ${paneWidth}`}>
-          <header
-            className={`flex flex-col gap-2 text-left ${
-              wide ? 'max-w-[560px]' : ''
-            }`}
-          >
+          <header className={`flex flex-col gap-2 text-left ${introWidth}`}>
             <h1 className="font-interTight font-bold text-3xl sm:text-4xl tracking-tight text-page select-none">
               {title}
             </h1>

@@ -48,53 +48,6 @@ interface ValidationErrors {
 
 const KINDS: NominationKind[] = ['true', 'fiction'];
 
-/** Show fewer posters on small screens — no horizontal scroll. */
-const NOMINATE_POSTERS: Array<
-  | { kind: 'image'; src: string; alt: string; id: string; show: string; n: number }
-  | { kind: 'solid'; color: string; id: string; show: string; n: number }
-> = [
-  {
-    kind: 'image',
-    src: 'https://media.fjorr.com/assets/fjorr-nominate-poster-breakdancing.avif',
-    alt: 'Breakdancing narrative frame',
-    id: 'breakdancing',
-    show: 'block',
-    n: 143,
-  },
-  {
-    kind: 'image',
-    src: 'https://media.fjorr.com/assets/fjorr-nominate-poster-naismith.avif',
-    alt: 'Naismith basketball narrative frame',
-    id: 'naismith',
-    show: 'block',
-    n: 144,
-  },
-  {
-    kind: 'image',
-    src: 'https://media.fjorr.com/assets/fjorr-nominate-poster-ww2.avif',
-    alt: 'WWII historical narrative frame',
-    id: 'ww2',
-    show: 'block',
-    n: 145,
-  },
-  {
-    kind: 'image',
-    src: 'https://media.fjorr.com/assets/fjorr-nominate-poster-yeti.avif',
-    alt: 'Yeti legend narrative frame',
-    id: 'yeti',
-    show: 'hidden sm:block',
-    n: 146,
-  },
-  { kind: 'solid', color: '#3A3530', id: 'solid-1', show: 'hidden md:block', n: 147 },
-  { kind: 'solid', color: '#2A3340', id: 'solid-2', show: 'hidden md:block', n: 148 },
-  { kind: 'solid', color: '#3F2E2A', id: 'solid-3', show: 'hidden lg:block', n: 149 },
-  { kind: 'solid', color: '#24352C', id: 'solid-4', show: 'hidden lg:block', n: 150 },
-];
-
-function formatPosterN(n: number) {
-  return `N${String(n).padStart(3, '0')}`;
-}
-
 function formatBountyAmount(cents: number, currency: string) {
   try {
     return new Intl.NumberFormat('en', {
@@ -228,36 +181,7 @@ export default function NominateClient({
         }}
       />
 
-      <div className="w-full px-5 sm:px-8 flex gap-[20px] mb-8 sm:mb-10 select-none">
-        {NOMINATE_POSTERS.map((poster, index) => (
-          <div
-            key={poster.id}
-            className={`${poster.show} flex-1 min-w-0 opacity-0 animate-sweep-right`}
-            style={{ animationDelay: `${100 + index * 60}ms` }}
-          >
-            <div className="relative w-full aspect-video overflow-hidden rounded-[5px] bg-page-chip">
-              {poster.kind === 'image' ? (
-                <img
-                  src={poster.src}
-                  alt={poster.alt}
-                  className="absolute inset-0 w-full h-full object-cover opacity-85 hover:opacity-100 hover:scale-[1.02] transition-all duration-700"
-                />
-              ) : (
-                <div
-                  className="absolute inset-0"
-                  style={{ backgroundColor: poster.color }}
-                  aria-hidden
-                />
-              )}
-            </div>
-            <p className="mt-3 font-mono text-[10px] sm:text-[11px] font-medium tracking-[0.08em] text-page-faint tabular-nums">
-              {formatPosterN(poster.n)}
-            </p>
-          </div>
-        ))}
-      </div>
-
-      <div className="w-full max-w-4xl px-[10%] flex flex-col items-center text-center mt-2">
+      <div className="w-full max-w-4xl px-[10%] flex flex-col items-center text-center mt-8 sm:mt-12">
         {submittedSuccess ? (
           <NominateSuccessView onReset={handleResetForm} />
         ) : (
@@ -274,24 +198,9 @@ export default function NominateClient({
               </p>
             </div>
 
-            <div className="mt-4 mb-10 flex flex-col items-center gap-3 opacity-0 animate-slide-up style-delay-body">
-              <Link
-                href="/bounties"
-                className="font-sans text-[13px] sm:text-[14px] font-semibold text-page-muted hover:text-page transition-colors underline underline-offset-2"
-              >
-                {t('viewOpenBounties')}
-              </Link>
-              <Link
-                href="/principles"
-                className="font-sans text-[13px] sm:text-[14px] font-semibold text-page-muted hover:text-page transition-colors underline underline-offset-2"
-              >
-                {t('principlesLink')}
-              </Link>
-            </div>
-
             {!bureauxActive ? (
-              <div className="w-full max-w-sm flex flex-col items-center gap-5 opacity-0 animate-slide-up style-delay-form">
-                <p className="font-sans font-medium text-[14px] leading-relaxed text-page-muted tracking-tight">
+              <div className="mt-8 w-full max-w-sm flex flex-col items-center gap-5 opacity-0 animate-slide-up style-delay-form">
+                <p className="font-sans font-medium text-[14px] leading-relaxed text-page-muted tracking-tight text-center">
                   {t('membersOnlyBody')}
                 </p>
                 <Link
@@ -300,8 +209,23 @@ export default function NominateClient({
                 >
                   {t('joinToNominate')}
                 </Link>
+                <Link
+                  href="/bounties"
+                  className="font-sans text-[13px] sm:text-[14px] font-semibold text-page-muted hover:text-page transition-colors underline underline-offset-2"
+                >
+                  {t('viewOpenBounties')}
+                </Link>
               </div>
             ) : (
+              <>
+              <div className="mt-4 mb-10 flex flex-col items-center gap-3 opacity-0 animate-slide-up style-delay-body">
+                <Link
+                  href="/bounties"
+                  className="font-sans text-[13px] sm:text-[14px] font-semibold text-page-muted hover:text-page transition-colors underline underline-offset-2"
+                >
+                  {t('viewOpenBounties')}
+                </Link>
+              </div>
               <form
                 onSubmit={handleSubmit}
                 noValidate
@@ -523,6 +447,7 @@ export default function NominateClient({
                   </button>
                 </div>
               </form>
+              </>
             )}
           </div>
         )}

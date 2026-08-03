@@ -106,39 +106,38 @@ export default function BountiesClient({
             </p>
           </div>
 
-          <div className="mt-4 flex flex-col items-start gap-2">
-            <Link
-              href="/principles"
-              className="font-sans text-[13px] sm:text-[14px] font-semibold text-page-muted hover:text-page transition-colors underline underline-offset-2"
-            >
-              {t('principlesLink')}
-            </Link>
-            <Link
-              href="/manual/bounties"
-              className="font-sans text-[13px] sm:text-[14px] font-semibold text-page-muted hover:text-page transition-colors underline underline-offset-2"
-            >
-              Manual · Bounties
-            </Link>
-          </div>
-          <p className="mt-3 font-sans text-[13px] sm:text-[14px] leading-snug text-page-muted max-w-sm tracking-normal">
-            {t('generalBlurb')}{' '}
-            <Link
-              href="/nominate"
-              className="font-semibold underline underline-offset-2 hover:text-page transition-colors"
-            >
-              {t('generalPitch')}
-            </Link>
-          </p>
-          {!bureauxActive && (
-            <p className="mt-3 font-sans text-[13px] sm:text-[14px] text-page-muted leading-snug max-w-sm">
-              {t('membersNote')}{' '}
+          {bureauxActive ? (
+            <>
+              <div className="mt-4 flex flex-col items-start gap-2">
+                <Link
+                  href="/principles"
+                  className="font-sans text-[13px] sm:text-[14px] font-semibold text-page-muted hover:text-page transition-colors underline underline-offset-2"
+                >
+                  {t('principlesLink')}
+                </Link>
+              </div>
+              <p className="mt-3 font-sans text-[13px] sm:text-[14px] leading-snug text-page-muted max-w-sm tracking-normal">
+                {t('generalBlurb')}{' '}
+                <Link
+                  href="/nominate"
+                  className="font-semibold underline underline-offset-2 hover:text-page transition-colors"
+                >
+                  {t('generalPitch')}
+                </Link>
+              </p>
+            </>
+          ) : (
+            <div className="mt-8 w-full max-w-sm flex flex-col items-center gap-5">
+              <p className="font-sans font-medium text-[14px] leading-relaxed text-page-muted tracking-tight text-center">
+                {t('membersNote')}
+              </p>
               <Link
                 href="/bureaux"
-                className="font-semibold underline underline-offset-2 hover:text-page transition-colors"
+                className="px-10 h-14 inline-flex items-center justify-center bg-[var(--page-fg)] text-[var(--page-bg)] font-sans font-bold text-[15px] tracking-tight rounded-full shadow-2xl hover:opacity-90 active:scale-95 transition-all duration-150"
               >
                 {t('joinToPitch')}
               </Link>
-            </p>
+            </div>
           )}
         </div>
       </div>

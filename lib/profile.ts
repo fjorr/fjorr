@@ -1,6 +1,6 @@
 /**
  * Member profile helpers — identity substrate.
- * Public path: /account/{member_number}/{slug}
+ * Public path: /{bureaux_number}/{slug}
  */
 
 export type ScoutProfile = {
@@ -10,7 +10,7 @@ export type ScoutProfile = {
   slug: string;
   bio: string | null;
   is_public: boolean;
-  /** When false, omit voyage trail (no via share / no Passed by attribution). */
+  /** Legacy column — via is always on for members; kept for existing rows. */
   voyage_lineage_enabled: boolean;
   created_at: string;
   updated_at: string;
@@ -83,11 +83,11 @@ export function isReservedSlug(slug: string): boolean {
 }
 
 /** Canonical public profile path. */
-export function profilePath(memberNumber: number, slug: string): string {
-  return `/account/${memberNumber}/${slug}`;
+export function profilePath(bureauxNumber: number, slug: string): string {
+  return `/${bureauxNumber}/${slug}`;
 }
 
-/** Visible prefix before the editable slug (includes member number). */
-export function profileUrlPrefix(memberNumber: number): string {
-  return `fjorr.com/account/${memberNumber}/`;
+/** Visible prefix before the editable slug (includes Bureaux number). */
+export function profileUrlPrefix(bureauxNumber: number): string {
+  return `fjorr.com/${bureauxNumber}/`;
 }

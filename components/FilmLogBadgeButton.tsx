@@ -3,15 +3,17 @@
 import React, { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
+import VoyageurBadgeMark from '@/components/VoyageurBadgeMark';
 
 const ViewerStampShare = dynamic(() => import('@/components/ViewerStampShare'), {
   ssr: false,
 });
 
-/** Tiny share control for a Voyage row — opens stamp popup with Voyageur badge. */
-export default function FilmLogShareButton({
+/** Own Voyages — tap the mark to share (via). */
+export default function FilmLogBadgeButton({
   filmName,
   filmSlug,
+  filmPoster = null,
   viewerNumber,
   filmVersion = 1,
   memberNumber,
@@ -19,9 +21,10 @@ export default function FilmLogShareButton({
 }: {
   filmName: string;
   filmSlug: string;
+  filmPoster?: string | null;
   viewerNumber: number;
   filmVersion?: number;
-  memberNumber?: number | null;
+  memberNumber: number;
   recordedAt?: string | null;
 }) {
   const t = useTranslations('Film');
@@ -31,15 +34,16 @@ export default function FilmLogShareButton({
     <>
       <button
         type="button"
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          setOpen(true);
-        }}
-        className="shrink-0 font-sans text-[11px] font-semibold uppercase tracking-[0.06em] text-page-faint hover:text-page-muted transition-colors"
-        aria-label={t('stampShareShort')}
+        onClick={() => setOpen(true)}
+        className="min-w-0 cursor-pointer border-0 bg-transparent p-0 text-left outline-none transition-opacity hover:opacity-90 focus-visible:rounded-[8px] focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--page-fg)_28%,transparent)]"
+        aria-label={`${t('voyageurBadgeTitle', { number: viewerNumber })}. ${t('stampShareTitle')}`}
       >
-        {t('stampShareShort')}
+        <VoyageurBadgeMark
+          filmName={filmName}
+          filmPoster={filmPoster}
+          voyageurNumber={viewerNumber}
+          recordedAt={recordedAt}
+        />
       </button>
       {open ? (
         <ViewerStampShare
@@ -47,6 +51,7 @@ export default function FilmLogShareButton({
           onClose={() => setOpen(false)}
           filmName={filmName}
           filmSlug={filmSlug}
+          filmPoster={filmPoster}
           viewerNumber={viewerNumber}
           filmVersion={filmVersion}
           memberNumber={memberNumber}

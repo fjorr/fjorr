@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 import VoyageurBadgeMark from '@/components/VoyageurBadgeMark';
 import { absoluteUrl } from '@/lib/site';
 import { filmSharePath } from '@/lib/voyage-via';
@@ -11,38 +12,24 @@ type Props = {
   onClose: () => void;
   filmName: string;
   filmSlug: string;
+  filmPoster?: string | null;
   viewerNumber: number;
   filmVersion?: number;
   memberNumber?: number | null;
   recordedAt?: string | null;
 };
 
-function formatOrdinal(n: number) {
-  const abs = Math.abs(Math.trunc(n));
-  const mod100 = abs % 100;
-  if (mod100 >= 11 && mod100 <= 13) return `${abs}th`;
-  switch (abs % 10) {
-    case 1:
-      return `${abs}st`;
-    case 2:
-      return `${abs}nd`;
-    case 3:
-      return `${abs}rd`;
-    default:
-      return `${abs}th`;
-  }
-}
-
 async function copyText(text: string) {
   await navigator.clipboard.writeText(text);
 }
 
-/** Post-stamp ritual — Voyageur No. as something you can send. */
+/** Post-stamp ritual — full Voyageur mark as something you can send. */
 export default function ViewerStampShare({
   open,
   onClose,
   filmName,
   filmSlug,
+  filmPoster = null,
   viewerNumber,
   filmVersion = 1,
   memberNumber,
@@ -58,7 +45,6 @@ export default function ViewerStampShare({
   const shareText = t('stampShareText', {
     number: viewerNumber,
     title: filmName,
-    version: filmVersion,
   });
   const sharePayload = `${shareText}\n${filmUrl}`;
 
@@ -123,23 +109,17 @@ export default function ViewerStampShare({
         role="dialog"
         aria-modal="true"
         aria-label={t('stampShareTitle')}
-        className="relative w-full sm:max-w-[380px] rounded-t-[16px] sm:rounded-[16px] border border-white/10 bg-[#1F1F1F] shadow-[0_24px_80px_rgba(0,0,0,0.55)] p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]"
+        className="relative w-full sm:max-w-[380px] rounded-t-[16px] sm:rounded-[16px] border border-white/10 bg-[#1F1F1F] shadow-[0_24px_80px_rgba(0,0,0,0.55)] p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] flex flex-col gap-5"
         onClick={(e) => e.stopPropagation()}
       >
         <VoyageurBadgeMark
+          filmName={filmName}
+          filmPoster={filmPoster}
           voyageurNumber={viewerNumber}
-          filmVersion={filmVersion}
-          memberNumber={memberNumber}
           recordedAt={recordedAt}
           tone="onDark"
-          className="mb-5"
+          className="w-full"
         />
-        <p className="font-sans text-[14px] text-white/50 leading-relaxed mb-6">
-          {t('stampShareBody', {
-            title: filmName,
-            ordinal: formatOrdinal(viewerNumber),
-          })}
-        </p>
 
         <div className="flex flex-col gap-2">
           {canNativeShare ? (
@@ -157,13 +137,22 @@ export default function ViewerStampShare({
             </button>
           )}
 
-          <button
-            type="button"
-            onClick={onClose}
-            className="w-full h-11 rounded-[10px] bg-transparent text-white/45 font-sans font-semibold text-sm hover:text-white/70 transition-colors"
-          >
-            {t('stampShareDismiss')}
-          </button>
+          <div className="flex items-center justify-center gap-6 pt-1">
+            <button
+              type="button"
+              onClick={onClose}
+              className="h-11 px-1 bg-transparent text-white/45 font-sans font-semibold text-sm hover:text-white/70 transition-colors"
+            >
+              {t('stampShareDismiss')}
+            </button>
+            <Link
+              href={`/film/${filmSlug}`}
+              onClick={onClose}
+              className="h-11 inline-flex items-center px-1 text-white/45 font-sans font-semibold text-sm hover:text-white/70 transition-colors"
+            >
+              {t('stampShareViewFilm')}
+            </Link>
+          </div>
         </div>
       </div>
     </div>

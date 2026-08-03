@@ -14,11 +14,13 @@ export default function VoyageurBadgeLoader({
   filmId,
   filmName,
   filmSlug,
+  filmPoster = null,
   plusMember = false,
 }: {
   filmId: string;
   filmName: string;
   filmSlug: string;
+  filmPoster?: string | null;
   /** Active Bureaux — invite tease only for non-members without a stamp. */
   plusMember?: boolean;
 }) {
@@ -44,7 +46,12 @@ export default function VoyageurBadgeLoader({
 
   if (stamp) {
     return (
-      <VoyageurBadge stamp={stamp} filmName={filmName} filmSlug={filmSlug} />
+      <VoyageurBadge
+        stamp={stamp}
+        filmName={filmName}
+        filmSlug={filmSlug}
+        filmPoster={filmPoster}
+      />
     );
   }
 

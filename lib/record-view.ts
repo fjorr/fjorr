@@ -6,9 +6,8 @@
 import { createClient } from '@/lib/supabase/client';
 import { clearViaCookie, readViaCookie } from '@/lib/voyage-via';
 
-/** Seconds of playback before a view counts toward Viewer #. */
-export const VIEW_COUNT_SECONDS = 8;
-const COMPLETE_RATIO = 0.9;
+/** Fraction of runtime before a view counts toward Voyageur No. */
+export const VIEW_COUNT_RATIO = 0.5;
 const LOCAL_KEY = 'fjorr:view-counted';
 export const FILM_RECORDED_EVENT = 'fjorr-film-recorded';
 
@@ -16,11 +15,13 @@ const doneIds = new Set<string>();
 const loggedIds = new Set<string>();
 const pendingIds = new Set<string>();
 
+/** Playhead seconds required — half the runtime when duration is known. */
 export function viewCountThreshold(duration?: number | null) {
-  if (duration && duration > 0 && duration < 40) {
-    return Math.max(5, Math.floor(duration * 0.4));
+  if (duration && duration > 0) {
+    return duration * VIEW_COUNT_RATIO;
   }
-  return VIEW_COUNT_SECONDS;
+  // No duration yet — wait for metadata (or force on ended).
+  return Number.POSITIVE_INFINITY;
 }
 
 function shouldCount(
@@ -30,11 +31,7 @@ function shouldCount(
 ): boolean {
   if (force) return true;
   if (!Number.isFinite(seconds) || seconds < 0) return false;
-  if (seconds >= viewCountThreshold(duration)) return true;
-  if (duration && duration > 0 && seconds / duration >= COMPLETE_RATIO) {
-    return true;
-  }
-  return false;
+  return seconds >= viewCountThreshold(duration);
 }
 
 function readLocalCounted(): Record<string, number> {

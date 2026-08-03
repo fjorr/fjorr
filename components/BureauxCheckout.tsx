@@ -175,7 +175,7 @@ function CheckoutForm({
   return (
     <form onSubmit={handleSubmit} className="w-full flex flex-col gap-5">
       <div className="flex flex-col gap-2.5">
-        <p className="font-sans text-[11px] font-semibold uppercase tracking-[0.08em] text-page-faint">
+        <p className="font-sans text-[13px] font-semibold normal-case tracking-normal text-page-muted">
           {t('checkoutPayment')}
         </p>
         <PaymentElement
@@ -346,7 +346,7 @@ export default function BureauxCheckout({
     return (
       <div className="w-full max-w-md flex flex-col gap-5">
         <div className="flex flex-col gap-1">
-          <p className="font-sans text-[11px] font-semibold uppercase tracking-[0.08em] text-page-faint">
+          <p className="font-sans text-[13px] font-semibold normal-case tracking-normal text-page-muted">
             {t('joinEmailLabel')}
           </p>
           <p className="font-sans text-[14px] text-page">{checkoutEmail}</p>
@@ -383,7 +383,7 @@ export default function BureauxCheckout({
       className="w-full max-w-md flex flex-col gap-4"
     >
       <label className="flex flex-col gap-2 text-left">
-        <span className="font-sans text-[11px] font-semibold uppercase tracking-[0.08em] text-page-faint">
+        <span className="font-sans text-[13px] font-semibold normal-case tracking-normal text-page-muted">
           {t('joinEmailLabel')}
         </span>
         <input

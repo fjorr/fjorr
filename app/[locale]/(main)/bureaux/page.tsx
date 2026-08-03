@@ -145,7 +145,7 @@ export default async function BureauxPage({
             <span className="font-sans text-[14px] text-page-muted">
               {t('priceLabel')}
             </span>
-            <span className="font-mono text-[15px] text-page tabular-nums">
+            <span className="font-sans text-[15px] text-page tabular-nums">
               {t('priceValue', { price })}
             </span>
           </div>

@@ -4,6 +4,10 @@ import React, { useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { startBureauxGiftCheckout } from '@/lib/bureaux-gift-actions';
 
+const FIELD_LABEL =
+  'font-sans text-[13px] font-semibold normal-case tracking-normal text-page-muted';
+
+/** Gift a seat — quiet section, same chrome as other Bureaux forms. */
 export default function BureauxGiftSeat({
   canGift,
   reason,
@@ -21,13 +25,15 @@ export default function BureauxGiftSeat({
   const [pending, startTransition] = useTransition();
 
   return (
-    <section className="flex flex-col gap-3 border-t border-page-faint pt-8">
-      <h2 className="font-sans text-[11px] font-semibold uppercase tracking-[0.08em] text-page-faint">
-        {t('giftTitle')}
-      </h2>
-      <p className="font-sans text-[14px] text-page-muted leading-relaxed max-w-md">
-        {t('giftLead')}
-      </p>
+    <section className="flex flex-col gap-3">
+      <div className="flex flex-col gap-1">
+        <h2 className="font-sans text-[15px] font-semibold tracking-tight text-page">
+          {t('giftTitle')}
+        </h2>
+        <p className="font-sans text-[14px] text-page-muted leading-relaxed max-w-md">
+          {t('giftLead')}
+        </p>
+      </div>
 
       {reason === 'hasOpen' && openGiftUrl ? (
         <div className="flex flex-col gap-2 max-w-md">
@@ -71,10 +77,8 @@ export default function BureauxGiftSeat({
             });
           }}
         >
-          <label className="flex flex-col gap-1.5">
-            <span className="font-sans text-[11px] font-semibold uppercase tracking-[0.08em] text-page-faint">
-              {t('giftEmailLabel')}
-            </span>
+          <label className="flex flex-col gap-2">
+            <span className={FIELD_LABEL}>{t('giftEmailLabel')}</span>
             <input
               type="email"
               required
@@ -82,16 +86,16 @@ export default function BureauxGiftSeat({
               onChange={(e) => setEmail(e.target.value)}
               placeholder={t('giftEmailPlaceholder')}
               disabled={pending}
-              className="h-11 rounded-[10px] bg-page-chip px-4 font-sans text-[15px] text-page placeholder:text-page-faint focus:outline-none"
+              className="h-11 rounded-[10px] bg-page-chip px-4 font-sans text-[15px] text-page placeholder:text-page-faint focus:outline-none disabled:opacity-50"
             />
           </label>
           {error ? (
-            <p className="font-sans text-[13px] text-[#C45B4A]">{error}</p>
+            <p className="font-sans text-[13px] text-red-400/90">{error}</p>
           ) : null}
           <button
             type="submit"
             disabled={pending || !email.trim()}
-            className="self-start inline-flex items-center h-11 px-6 rounded-full bg-[var(--page-fg)] text-[var(--page-bg)] font-sans text-[14px] font-bold hover:opacity-90 disabled:opacity-40 transition-opacity"
+            className="self-start h-11 px-5 rounded-full bg-[var(--page-fg)] text-[var(--page-bg)] font-sans text-[13px] font-bold hover:opacity-90 disabled:opacity-40 transition-opacity"
           >
             {pending ? t('ctaPending') : t('giftCta')}
           </button>

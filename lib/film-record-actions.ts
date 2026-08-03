@@ -75,6 +75,22 @@ function mapFilmLogRow(
   };
 }
 
+/** Account Voyages UI — badge fields only. */
+const ACCOUNT_FILM_LOG_SELECT = `
+  film_id,
+  viewer_number,
+  recorded_at,
+  film_version,
+  film_version_id,
+  referred_by_member_number,
+  film:film_id (
+    name,
+    slug,
+    blok_tall
+  )
+`;
+
+/** Fuller select for public profiles / trail surfaces. */
 const FILM_LOG_SELECT = `
   film_id,
   viewer_number,
@@ -137,61 +153,6 @@ export async function recordFilmView(
       ? String(row.referred_by_user_id)
       : null,
   };
-}
-
-async function loadOwnPassCounts(
-  supabase: Awaited<ReturnType<typeof createClient>>
-): Promise<Record<string, number>> {
-  const { data, error } = await supabase.rpc('own_voyage_pass_counts');
-  if (error) {
-    console.error('own_voyage_pass_counts failed:', error.message);
-    return {};
-  }
-  const map: Record<string, number> = {};
-  for (const row of data || []) {
-    const id = String(row.film_id || '');
-    const n = Number(row.direct_referrals);
-    if (id && Number.isFinite(n) && n > 0) map[id] = n;
-  }
-  return map;
-}
-
-/** Redact Passed by when the passer has opted out of the trail. */
-async function redactOptedOutPassers(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  entries: FilmLogEntry[]
-): Promise<FilmLogEntry[]> {
-  const members = [
-    ...new Set(
-      entries
-        .map((e) => e.referred_by_member_number)
-        .filter((n): n is number => n != null && n >= 1)
-    ),
-  ];
-  if (members.length === 0) return entries;
-
-  const { data, error } = await supabase.rpc(
-    'lineage_opted_out_member_numbers',
-    { p_member_numbers: members }
-  );
-  if (error) {
-    console.error('lineage_opted_out_member_numbers failed:', error.message);
-    return entries;
-  }
-
-  const optedOut = new Set(
-    (data || [])
-      .map((row: { member_number?: number }) => Number(row.member_number))
-      .filter((n: number) => Number.isFinite(n) && n >= 1)
-  );
-  if (optedOut.size === 0) return entries;
-
-  return entries.map((entry) =>
-    entry.referred_by_member_number != null &&
-    optedOut.has(entry.referred_by_member_number)
-      ? { ...entry, referred_by_member_number: null }
-      : entry
-  );
 }
 
 /** Viewer # for the signed-in member on this film, if logged. */
@@ -261,7 +222,10 @@ export async function getOwnVoyageurStampForFilm(
 const OWN_VOYAGE_LIMIT = 100;
 const PUBLIC_VOYAGE_LIMIT = 100;
 
-/** Own Voyages, newest first. Pass userId to skip a second auth.getUser(). */
+/**
+ * Own Voyages, newest first. Pass userId to skip a second auth.getUser().
+ * Account UI uses a slim select (no trail/theme/pass counts).
+ */
 export async function getOwnFilmLogs(
   userId?: string
 ): Promise<FilmLogEntry[]> {
@@ -275,23 +239,19 @@ export async function getOwnFilmLogs(
     uid = user.id;
   }
 
-  const [{ data, error }, passCounts] = await Promise.all([
-    supabase
-      .from('film_view_record')
-      .select(FILM_LOG_SELECT)
-      .eq('user_id', uid)
-      .order('recorded_at', { ascending: false })
-      .limit(OWN_VOYAGE_LIMIT),
-    loadOwnPassCounts(supabase),
-  ]);
+  const { data, error } = await supabase
+    .from('film_view_record')
+    .select(ACCOUNT_FILM_LOG_SELECT)
+    .eq('user_id', uid)
+    .order('recorded_at', { ascending: false })
+    .limit(OWN_VOYAGE_LIMIT);
 
   if (error) {
     console.error('getOwnFilmLogs failed:', error.message);
     return [];
   }
 
-  const entries = (data || []).map((row) => mapFilmLogRow(row, passCounts));
-  return redactOptedOutPassers(supabase, entries);
+  return (data || []).map((row) => mapFilmLogRow(row));
 }
 
 /** Public Voyages for a member (RLS requires profile.is_public). */
@@ -313,6 +273,5 @@ export async function getPublicFilmLogs(
     return [];
   }
 
-  const entries = (data || []).map((row) => mapFilmLogRow(row));
-  return redactOptedOutPassers(supabase, entries);
+  return (data || []).map((row) => mapFilmLogRow(row));
 }

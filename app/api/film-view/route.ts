@@ -28,7 +28,6 @@ type MembershipClient = {
             status?: string;
             current_period_end?: string | null;
             member_number?: number;
-            voyage_lineage_enabled?: boolean | null;
           } | null;
         }>;
       };
@@ -55,17 +54,16 @@ async function isBureauxActiveForUser(
   );
 }
 
-/** Member # for share/via — null when opted out of the voyage trail. */
+/** Member # for share/via — null when no profile number. */
 async function shareViaMemberNumberForUser(
   supabase: MembershipClient,
   userId: string
 ): Promise<number | null> {
   const { data } = await supabase
     .from('profiles')
-    .select('member_number, voyage_lineage_enabled')
+    .select('member_number')
     .eq('id', userId)
     .maybeSingle();
-  if (data?.voyage_lineage_enabled === false) return null;
   const n = Number(data?.member_number);
   return Number.isFinite(n) && n >= 1 ? n : null;
 }

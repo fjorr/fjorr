@@ -41,28 +41,9 @@ export default function AccountNavLink({
       if (!mounted) return;
       setBureauxActive(nav.active);
       setBureauxNumber(nav.bureauxNumber);
-
-      const { data: rpc, error } = await supabase.rpc('ensure_own_profile');
-      if (!mounted) return;
-      if (!error && rpc) {
-        setProfile({
-          display_name: String(rpc.display_name || '').trim(),
-        });
-        return;
-      }
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!mounted || !user) return;
-      const { data: row } = await supabase
-        .from('profiles')
-        .select('display_name')
-        .eq('id', user.id)
-        .maybeSingle();
-      if (!mounted || !row) return;
-      setProfile({
-        display_name: String(row.display_name || '').trim(),
-      });
+      setProfile(
+        nav.displayName ? { display_name: nav.displayName } : null
+      );
     };
 
     supabase.auth.getSession().then(({ data }: { data: { session: Session | null } }) => {
@@ -134,11 +115,11 @@ export default function AccountNavLink({
               'font-sans text-[13px] font-medium leading-snug text-page-faint'
             }
           >
-            {bureauxNumber != null && name
-              ? t('memberLine', { number: bureauxNumber, name })
+            {name
+              ? name
               : bureauxNumber != null
                 ? t('bureauxMark', { number: bureauxNumber })
-                : name}
+                : null}
           </p>
         )}
         <Link href="/account/voyages" onClick={onNavigate} className={className}>

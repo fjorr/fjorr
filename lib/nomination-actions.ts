@@ -40,6 +40,7 @@ export type BountyRow = {
   sort_order: number | null;
   deadline: string | null;
   claimed_at: string | null;
+  bounty_number: number;
 };
 
 export type NominationRow = {
@@ -72,7 +73,7 @@ export type NominateResult =
   | { ok: false; error: string };
 
 const BOUNTY_SELECT =
-  'id, slug, title, brief, reward_amount, currency, kind, status, poster_image_url, featured, sort_order, deadline, claimed_at';
+  'id, slug, title, brief, reward_amount, currency, kind, status, poster_image_url, featured, sort_order, deadline, claimed_at, bounty_number';
 
 function mapBounty(row: any): BountyRow {
   return {
@@ -92,6 +93,7 @@ function mapBounty(row: any): BountyRow {
         : Number(row.sort_order),
     deadline: row.deadline ? String(row.deadline) : null,
     claimed_at: row.claimed_at ? String(row.claimed_at) : null,
+    bounty_number: Number(row.bounty_number) || 0,
   };
 }
 

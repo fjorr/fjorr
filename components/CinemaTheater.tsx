@@ -1214,6 +1214,7 @@ function CinemaTheater({
           onClose={() => setStampShare(null)}
           filmName={String(film.name || 'Fjorr')}
           filmSlug={String(film.slug)}
+          filmPoster={(film.blok_tall || film.hero_tall || null) as string | null}
           viewerNumber={stampShare.viewerNumber}
           filmVersion={stampShare.filmVersion}
           memberNumber={stampShare.memberNumber}

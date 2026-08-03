@@ -4,7 +4,7 @@
  */
 
 /** Bump when Manual copy or structure ships. Shown in footer. */
-export const MANUAL_UPDATED = '2 Aug 2026';
+export const MANUAL_UPDATED = '3 Aug 2026';
 
 export type ManualAudience = 'guest' | 'member';
 
@@ -14,7 +14,7 @@ export type ManualAction = {
 };
 
 export type ManualEntry = {
-  /** 00 … 12 */
+  /** 00 … 11 */
   number: string;
   slug: string;
   title: string;
@@ -89,19 +89,20 @@ export const MANUAL_ENTRIES: ManualEntry[] = [
     number: '05',
     slug: 'plus',
     title: 'Plus Machine',
-    what: 'Mark a moment in a film. Send a craft note to Fjorr — for members, while watching, from inside the film.',
+    what: 'Mark a moment in a film. Send a craft note to Fjorr — for members, while watching, from inside the film. No film is version final.',
     happens:
-      'Notes reach Fjorr alone, not a public thread. Films ship as v1, then sharpen.',
+      'Notes reach Fjorr alone, not a public thread. Films ship as v1. If a note lands, the maker can patch it — v2 goes live, v1 stays archived.',
     actions: {
       guest: [{ href: '/bureaux', label: 'Join the Bureaux' }],
-      member: [{ href: '/plus', label: 'Open Plus Machine' }],
+      member: [{ href: '/plus', label: 'Read Plus Machine' }],
     },
+    plate: '/manual/plus.svg',
   },
   {
     number: '06',
     slug: 'account',
     title: 'Account',
-    what: 'Where members manage Voyages, nominations, and privacy.',
+    what: 'Where members manage Voyages, nominations, and Bureaux.',
     happens:
       'Sign in by magic link or Google. Cancel membership from the Bureaux page. Privacy Notice covers the rest.',
     actions: {
@@ -126,7 +127,7 @@ export const MANUAL_ENTRIES: ManualEntry[] = [
     title: 'Voyages',
     what: "Your Voyageur No. — where you land in a film's watch order, first through thousandth.",
     happens:
-      "Watch a film, get a number. It's permanent, and it traces your trail — who found it before you, who found it because of you.",
+      "Watch at least half a film, get a number. It's permanent, and it traces your trail — who found it before you, who found it because of you.",
     actions: {
       guest: [{ href: '/signin?next=/account/voyages', label: 'Open Voyages' }],
       member: [{ href: '/account/voyages', label: 'Open Voyages' }],
@@ -143,15 +144,6 @@ export const MANUAL_ENTRIES: ManualEntry[] = [
   },
   {
     number: '10',
-    slug: 'living-films',
-    title: 'Living films',
-    what: "No film on Fjorr is version final. Every one can be sharpened — that's what Plus Machine is for.",
-    happens:
-      'A film ships as v1. If a note lands, the maker can patch it. v2 goes live, v1 stays archived.',
-    actions: both([{ href: '/plus', label: 'Read Plus Machine' }]),
-  },
-  {
-    number: '11',
     slug: 'cancel',
     title: 'Cancel',
     what: 'What happens when you stop paying for the Bureaux.',
@@ -163,7 +155,7 @@ export const MANUAL_ENTRIES: ManualEntry[] = [
     },
   },
   {
-    number: '12',
+    number: '11',
     slug: 'terms-privacy',
     title: 'Terms & privacy',
     what: 'The rules, and what happens to your data.',
@@ -186,6 +178,7 @@ export const MANUAL_LEGACY_REDIRECTS: Record<string, string> = {
   'member-perks': 'join',
   'nominating-stories': 'nominate',
   'plus-machine': 'plus',
+  'living-films': 'plus',
   'the-cabinet': 'contact',
   desk: 'contact',
   'sign-in': 'account',

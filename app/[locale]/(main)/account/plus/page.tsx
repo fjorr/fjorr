@@ -17,6 +17,7 @@ export default async function AccountPlusPage() {
   const { user, profile } = await requireOwnAccount('/account/plus');
   const notes = await getOwnFilmNotes(user.id);
   const t = await getTranslations('Plus');
+  const tAccount = await getTranslations('Account');
   const hasRecords = notes.length > 0;
 
   return (
@@ -28,15 +29,16 @@ export default async function AccountPlusPage() {
         hasRecords
           ? [
               { href: '/plus#how', label: t('logsLinkHow') },
-              { href: '/manual/plus', label: 'Manual · Plus Machine' },
+              { href: '/manual/plus', label: tAccount('viewManual') },
             ]
           : [
               { href: '/plus#how', label: t('logsLinkHow') },
               { href: '/', label: t('logsLinkExplore') },
-              { href: '/manual/plus', label: 'Manual · Plus Machine' },
+              { href: '/manual/plus', label: tAccount('viewManual') },
             ]
       }
       wide
+      introNarrow
     >
       <PlusLogsLedger notes={notes} />
     </AccountShell>
