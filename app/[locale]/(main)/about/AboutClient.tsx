@@ -13,7 +13,6 @@ export type AboutCopy = {
   nameLabel: string;
   nameTitle: string;
   nameBody: React.ReactNode;
-  howWeMakeThem: string;
   exploreFjorr: string;
 };
 
@@ -277,15 +276,7 @@ export default function AboutClient({ copy }: { copy: AboutCopy }) {
             <p key={paragraph.slice(0, 24)}>{paragraph}</p>
           ))}
         </div>
-        <div className="mt-6 md:mt-8 mx-auto max-w-[34rem] w-full flex justify-start">
-          <Link
-            href="/principles"
-            className="font-sans text-[14px] font-semibold text-white/45 hover:text-white/80 transition-colors underline underline-offset-4 decoration-white/20"
-          >
-            {copy.howWeMakeThem}
-          </Link>
-        </div>
-        <div className="mt-10 md:mt-12 mx-auto max-w-[34rem] w-full flex justify-start">
+        <div className="mt-8 md:mt-10 mx-auto max-w-[34rem] w-full flex justify-start">
           <Link
             href="/"
             className="font-sans text-[14px] font-semibold text-white/45 hover:text-white/80 transition-colors underline underline-offset-4 decoration-white/20"

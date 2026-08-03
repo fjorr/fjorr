@@ -65,7 +65,7 @@ export function bureauxNominationLimits() {
 
 /** Notes per film per day for Bureaux members. */
 export function bureauxPlusNoteLimit() {
-  return 3;
+  return 4;
 }
 
 /** Display price for UI (cents). Default $48/year until env overrides. */

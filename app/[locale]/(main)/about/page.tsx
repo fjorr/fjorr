@@ -53,7 +53,6 @@ export default async function AboutPage() {
     nameBody: t.rich('nameBody', {
       i: (chunks) => <em className="italic">{chunks}</em>,
     }),
-    howWeMakeThem: t('howWeMakeThem'),
     exploreFjorr: t('exploreFjorr'),
   };
 

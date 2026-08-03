@@ -87,7 +87,7 @@ function FrameThumb({
 /** Short desk ticket from note id. */
 function noteTicket(id: string): string {
   const hex = id.replace(/-/g, '').slice(0, 8).toUpperCase();
-  return `P-${hex}`;
+  return `+M-${hex}`;
 }
 
 function notePreview(body: string, max = 56) {

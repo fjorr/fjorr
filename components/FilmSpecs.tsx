@@ -183,29 +183,6 @@ export default function FilmSpecs({
             />
           </div>
         )}
-
-        {onOpenPlus ? (
-          <p className="mt-6 text-[13px] text-page-faint leading-snug max-w-2xl">
-            {plusMember ? t('plusInviteMember') : t('plusInvite')}{' '}
-            {plusMember ? (
-              <span className="whitespace-nowrap">
-                <button type="button" onClick={onOpenPlus} className={inviteLinkClass}>
-                  {t('plusInviteCta')}
-                </button>
-                <span className="text-page-faint/80" aria-hidden>
-                  {' · '}
-                </span>
-                <Link href="/plus" className={inviteLinkClass}>
-                  {t('plusInviteInfo')}
-                </Link>
-              </span>
-            ) : (
-              <Link href="/plus" className={inviteLinkClass}>
-                {t('plusInviteInfo')}
-              </Link>
-            )}
-          </p>
-        ) : null}
       </div>
 
       {/* Credits + Details — name-first credits; facts stay label → value */}
@@ -225,6 +202,33 @@ export default function FilmSpecs({
               ))}
             </div>
           </div>
+        ) : null}
+
+        {onOpenPlus ? (
+          <p
+            className={`${
+              creators.length > 0 ? 'mt-5' : 'mb-6'
+            } text-[13px] text-page-faint leading-snug max-w-2xl`}
+          >
+            {plusMember ? t('plusInviteMember') : t('plusInvite')}{' '}
+            {plusMember ? (
+              <span className="whitespace-nowrap">
+                <button type="button" onClick={onOpenPlus} className={inviteLinkClass}>
+                  {t('plusInviteCta')}
+                </button>
+                <span className="text-page-faint/80" aria-hidden>
+                  {' · '}
+                </span>
+                <Link href="/plus" className={inviteLinkClass}>
+                  {t('plusInviteInfo')}
+                </Link>
+              </span>
+            ) : (
+              <Link href="/plus" className={inviteLinkClass}>
+                {t('plusInviteInfo')}
+              </Link>
+            )}
+          </p>
         ) : null}
 
         <div

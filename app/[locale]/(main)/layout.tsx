@@ -15,9 +15,10 @@ export default function LayoutClientWrapper({ children }: { children: React.Reac
   const { isLight } = useColorScheme();
 
   // Navbar: white text on dark surfaces, black text on light.
-  // Locked pages (about/partner) stay dark → white nav text.
-  const navVariant = isLight && !isLocked ? 'dark' : 'light';
-  const footerVariant = isLight && !isLocked ? 'dark' : 'light';
+  // Locked pages (about/partner) always use the dark-surface nav (white type),
+  // even when the user’s global preference is light.
+  const navVariant = isLocked || !isLight ? 'light' : 'dark';
+  const footerVariant = isLocked || !isLight ? 'light' : 'dark';
 
   useEffect(() => {
     if (isArtifactPage) {

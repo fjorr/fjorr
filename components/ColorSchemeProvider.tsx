@@ -34,19 +34,19 @@ const ColorSchemeContext = createContext<ColorSchemeContextValue | null>(null);
 
 function applyDomScheme(scheme: ColorScheme, locked: boolean) {
   const root = document.documentElement;
+  // Locked routes (about, partner, …) always paint dark — even if preference is light.
   const effective: ColorScheme = locked ? 'dark' : scheme;
   root.classList.toggle('dark', effective === 'dark');
   root.classList.toggle('light', effective === 'light');
   root.dataset.colorScheme = effective;
   root.style.colorScheme = effective;
 
-  if (!locked) {
-    const bg = effective === 'light' ? LIGHT_PAGE_BG : DARK_PAGE_BG;
-    const fg = effective === 'light' ? LIGHT_PAGE_FG : DARK_PAGE_FG;
-    root.style.setProperty('--page-bg', bg);
-    root.style.setProperty('--page-fg', fg);
-    root.style.setProperty('--page-bg-color', bg);
-  }
+  const bg = effective === 'light' ? LIGHT_PAGE_BG : DARK_PAGE_BG;
+  const fg = effective === 'light' ? LIGHT_PAGE_FG : DARK_PAGE_FG;
+  // Always set (don’t leave prior light inline vars stuck on locked pages).
+  root.style.setProperty('--page-bg', bg);
+  root.style.setProperty('--page-fg', fg);
+  root.style.setProperty('--page-bg-color', bg);
 }
 
 export function ColorSchemeProvider({

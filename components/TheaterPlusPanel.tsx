@@ -7,17 +7,28 @@ import { fetchOwnBureauxActive } from '@/lib/bureaux-client';
 import { submitFilmNote } from '@/lib/film-note-actions';
 import { formatTimestamp } from '@/lib/film-note-time';
 
-/** Compact Plus note strip — lives under Rams scrubber in Plus mode. */
+/** Short desk ticket from note id — matches Plus Logs. */
+function noteTicket(id: string): string {
+  const hex = id.replace(/-/g, '').slice(0, 8).toUpperCase();
+  return `+M-${hex}`;
+}
+
+/**
+ * Plus Machine craft desk under the Rams scrubber.
+ * Title → note field → timecode + actions.
+ */
 export default function TheaterPlusPanel({
   filmId,
   atSeconds,
   isLight = false,
+  onExit,
 }: {
   filmId: string;
   filmSlug?: string;
-  /** Live playhead — stamp is locked to this. */
+  /** Live playhead — stamp follows the scrubber pin. */
   atSeconds: number;
   isLight?: boolean;
+  onExit?: () => void;
 }) {
   const t = useTranslations('Plus');
   const [bureauxActive, setBureauxActive] = useState<boolean | null>(null);
@@ -26,11 +37,21 @@ export default function TheaterPlusPanel({
     'idle'
   );
   const [errorKey, setErrorKey] = useState<string | null>(null);
+  const [sentTicket, setSentTicket] = useState<string | null>(null);
 
-  const muted = isLight ? 'text-[#0B0B0C]/55' : 'text-[#F5F5F7]/55';
   const ink = isLight ? 'text-[#0B0B0C]' : 'text-[#F5F5F7]';
-  const fieldBg = isLight ? 'bg-[#0B0B0C]/06' : 'bg-[#F5F5F7]/08';
-  const fieldBorder = isLight ? 'border-[#0B0B0C]/12' : 'border-[#F5F5F7]/12';
+  const muted = isLight ? 'text-[#0B0B0C]/50' : 'text-[#F5F5F7]/50';
+  const plusAccent = isLight ? 'text-[#1B6FBF]' : 'text-[#8FE0F2]';
+  const fieldBg = isLight ? 'bg-[#E8E8EA]' : 'bg-[#2A2A2C]';
+  const placeholder = isLight
+    ? 'placeholder:text-[#0B0B0C]/40'
+    : 'placeholder:text-[#F5F5F7]/40';
+  const controlType =
+    'font-interTight text-[15px] font-bold tracking-normal leading-none whitespace-nowrap';
+  const sendBtn = isLight
+    ? 'bg-[#0B0B0C] text-[#F5F5F7] hover:opacity-90'
+    : 'bg-[#F5F5F7] text-[#0B0B0C] hover:opacity-90';
+  const textBtn = `bg-transparent border-0 outline-none p-0 cursor-pointer ${controlType} ${ink} opacity-90 hover:opacity-100 transition-opacity`;
 
   useEffect(() => {
     let mounted = true;
@@ -61,99 +82,148 @@ export default function TheaterPlusPanel({
     }
 
     setBody('');
+    setSentTicket(noteTicket(result.id));
     setStatus('sent');
   };
 
   if (bureauxActive === null) {
     return (
-      <p className={`font-sans text-[12px] ${muted} w-full text-center`}>
-        {t('loading')}
-      </p>
+      <p className={`w-full font-sans text-[12px] ${muted}`}>{t('loading')}</p>
     );
   }
 
   if (!bureauxActive) {
     return (
-      <div className="w-full flex flex-col items-center gap-3 pt-1">
-        <p
-          className={`font-sans text-[13px] leading-snug text-center max-w-[20rem] ${muted}`}
-        >
+      <div className="w-full flex flex-col gap-3">
+        <span className={`font-interTight text-[16px] font-bold tracking-tight ${ink}`}>
+          {t('logsTitle')}
+        </span>
+        <p className={`font-sans text-[14px] leading-snug ${muted}`}>
           {t('modeInvite')}
         </p>
-        <Link
-          href="/bureaux"
-          className={`h-9 px-4 inline-flex items-center justify-center rounded-full font-sans text-[12px] font-bold ${
-            isLight
-              ? 'bg-[#0B0B0C] text-[#F5F5F7]'
-              : 'bg-[#F5F5F7] text-[#0B0B0C]'
-          }`}
-        >
-          {t('joinToNote')}
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link
+            href="/bureaux"
+            className={`h-9 px-4 inline-flex items-center justify-center rounded-[8px] ${controlType} ${sendBtn}`}
+          >
+            {t('joinToNote')}
+          </Link>
+          {onExit ? (
+            <button type="button" onClick={onExit} className={textBtn}>
+              {t('craftClose')}
+            </button>
+          ) : null}
+        </div>
       </div>
     );
   }
 
   if (status === 'sent') {
     return (
-      <div className="w-full flex flex-col items-center gap-2 pt-1">
-        <p className={`font-sans text-[13px] ${ink}`}>{t('sentQuiet')}</p>
-        <Link
-          href="/account/plus"
-          className={`font-sans text-[12px] underline underline-offset-2 ${muted} hover:opacity-100 opacity-90`}
+      <div className="w-full flex flex-col gap-3">
+        <span className={`font-interTight text-[16px] font-bold tracking-tight ${ink}`}>
+          {t('logsTitle')}
+        </span>
+        <div
+          className={`w-full rounded-[12px] px-4 py-3.5 flex flex-wrap items-center justify-between gap-3 ${fieldBg}`}
         >
-          {t('viewLogs')}
-        </Link>
-        <button
-          type="button"
-          onClick={() => setStatus('idle')}
-          className={`font-mono text-[11px] uppercase tracking-[0.05em] bg-transparent border-0 cursor-pointer p-0 ${muted}`}
-        >
-          {t('sendAnother')}
-        </button>
+          <div className="flex items-baseline gap-3 min-w-0">
+            <p className={`font-sans text-[15px] font-medium ${ink}`}>
+              {t('sentQuiet')}
+            </p>
+            {sentTicket ? (
+              <span
+                className={`font-mono text-[13px] tabular-nums tracking-wide ${plusAccent}`}
+              >
+                {sentTicket}
+              </span>
+            ) : null}
+          </div>
+          <div className="flex items-center gap-4 shrink-0">
+            <Link href="/account/plus" className={textBtn}>
+              {t('viewLogs')}
+            </Link>
+            <button
+              type="button"
+              onClick={() => {
+                setStatus('idle');
+                setSentTicket(null);
+              }}
+              className={textBtn}
+            >
+              {t('sendAnother')}
+            </button>
+            {onExit ? (
+              <button type="button" onClick={onExit} className={textBtn}>
+                {t('craftClose')}
+              </button>
+            ) : null}
+          </div>
+        </div>
       </div>
     );
   }
 
+  const stamp = formatTimestamp(atSeconds);
+
   return (
     <form
       onSubmit={handleSubmit}
-      className="w-full flex flex-col gap-2.5 pt-1"
+      className="w-full flex flex-col gap-3"
       data-ui-control="true"
     >
-      <div className="flex items-baseline justify-between gap-3">
-        <span className={`font-mono text-[12px] tabular-nums ${ink}`}>
-          {t('atTime', { time: formatTimestamp(atSeconds) })}
-        </span>
-        <span className={`font-sans text-[11px] ${muted}`}>{t('stampLocked')}</span>
-      </div>
+      <span className={`font-interTight text-[16px] font-bold tracking-tight ${ink}`}>
+        {t('logsTitle')}
+      </span>
 
       <textarea
         value={body}
         onChange={(e) => setBody(e.target.value)}
-        rows={3}
+        rows={4}
         maxLength={1000}
         placeholder={t('bodyPlaceholder')}
-        className={`w-full rounded-lg px-3 py-2.5 font-sans text-[13px] leading-snug resize-none border ${fieldBg} ${fieldBorder} ${ink} placeholder:opacity-40 focus:outline-none focus:border-opacity-40`}
+        aria-label={t('atTime', { time: stamp })}
+        className={`w-full min-h-[7.5rem] rounded-[12px] px-4 py-3.5 font-sans text-[16px] font-medium leading-relaxed resize-none border-0 ${fieldBg} ${ink} ${placeholder} focus:outline-none focus:ring-0`}
       />
 
       {status === 'error' && errorKey ? (
-        <p className="font-sans text-[12px] font-semibold text-red-500">
+        <p className="font-sans text-[12px] text-red-500/90">
           {t(errorKey as 'submitError')}
         </p>
       ) : null}
 
-      <button
-        type="submit"
-        disabled={status === 'sending'}
-        className={`self-center h-9 px-5 rounded-full font-sans text-[12px] font-bold disabled:opacity-40 ${
-          isLight
-            ? 'bg-[#0B0B0C] text-[#F5F5F7]'
-            : 'bg-[#F5F5F7] text-[#0B0B0C]'
-        }`}
-      >
-        {status === 'sending' ? t('sending') : t('submit')}
-      </button>
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2 min-w-0">
+          <span
+            className={`font-mono text-[15px] font-medium uppercase tracking-[0.06em] leading-none ${muted}`}
+          >
+            {t('craftTimecode')}
+          </span>
+          <span
+            className={`font-mono text-[15px] font-medium tabular-nums tracking-tight leading-none ${plusAccent}`}
+          >
+            {stamp}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-4 shrink-0">
+          <Link href="/plus" className={textBtn}>
+            {t('craftInfo')}
+          </Link>
+          {onExit ? (
+            <button type="button" onClick={onExit} className={textBtn}>
+              {t('craftClose')}
+            </button>
+          ) : null}
+          <button
+            type="submit"
+            disabled={status === 'sending'}
+            className={`h-9 px-4 inline-flex items-center justify-center rounded-[8px] ${controlType} disabled:opacity-40 transition-opacity ${sendBtn}`}
+          >
+            {status === 'sending' ? t('sending') : t('submit')}
+          </button>
+        </div>
+      </div>
     </form>
   );
 }

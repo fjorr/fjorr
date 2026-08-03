@@ -810,7 +810,7 @@ function CinemaTheater({
   );
 
   const toolBtn =
-    'font-mono text-[13px] font-medium tracking-[0.05em] uppercase bg-transparent border-0 outline-none cursor-pointer p-0 leading-none whitespace-nowrap transition-opacity hover:opacity-100';
+    'font-interTight text-[15px] font-bold tracking-normal bg-transparent border-0 outline-none cursor-pointer p-0 leading-none whitespace-nowrap transition-opacity hover:opacity-100';
 
   const ramsToolsSlot = (
     <>
@@ -818,10 +818,20 @@ function CinemaTheater({
         type="button"
         onClick={togglePlay}
         aria-label={isPlaying ? t('pause') : t('play')}
-        className={`${toolBtn} font-bold opacity-100`}
+        className={`${toolBtn} opacity-100`}
       >
         {isPlaying ? t('pause') : t('play')}
       </button>
+      {!isEmbed && !plusMode && plusMember ? (
+        <button
+          type="button"
+          onClick={enterPlus}
+          aria-label={tPlus('modePlus')}
+          className={`${toolBtn} opacity-90 hover:opacity-100`}
+        >
+          + {tPlus('modePlus')}
+        </button>
+      ) : null}
       {tracks.length > 0 ? (
         <button
           type="button"
@@ -865,65 +875,12 @@ function CinemaTheater({
           {isFullscreen ? t('exit') : t('full')}
         </button>
       ) : null}
-      {!isEmbed && !plusMode && plusMember ? (
-        <button
-          type="button"
-          onClick={enterPlus}
-          aria-label={tPlus('modePlus')}
-          className={`${toolBtn} font-bold opacity-90 hover:opacity-100`}
-        >
-          {tPlus('modePlus')}
-        </button>
-      ) : null}
-      {!isEmbed && plusMode ? (
-        <>
-          <button
-            type="button"
-            onClick={() => setPlusInfoOpen(true)}
-            aria-label={tPlus('infoTitle')}
-            title={tPlus('infoTitle')}
-            className="inline-flex items-center justify-center bg-transparent border-0 outline-none cursor-pointer p-0 opacity-70 hover:opacity-100 transition-opacity"
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 16 16"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              aria-hidden
-            >
-              <circle
-                cx="8"
-                cy="8"
-                r="6.25"
-                stroke="currentColor"
-                strokeWidth="1.25"
-              />
-              <path
-                d="M8 7.25V11"
-                stroke="currentColor"
-                strokeWidth="1.25"
-                strokeLinecap="round"
-              />
-              <circle cx="8" cy="5.15" r="0.85" fill="currentColor" />
-            </svg>
-          </button>
-          <button
-            type="button"
-            onClick={exitPlus}
-            aria-label={tPlus('modeExit')}
-            className={`${toolBtn} font-bold opacity-90 hover:opacity-100`}
-          >
-            {tPlus('modeExit')}
-          </button>
-        </>
-      ) : null}
       <button
         type="button"
         onClick={handleCloseNavigation}
         aria-label={t('closeTheater')}
         title={t('close')}
-        className="font-mono text-[18px] font-medium leading-none bg-transparent border-0 outline-none cursor-pointer p-0 whitespace-nowrap opacity-90 hover:opacity-100"
+        className="font-interTight text-[18px] font-bold leading-none bg-transparent border-0 outline-none cursor-pointer p-0 whitespace-nowrap opacity-90 hover:opacity-100"
       >
         ×
       </button>
@@ -960,6 +917,7 @@ function CinemaTheater({
       filmTitle={film?.name || undefined}
       filmMeta={ramsFilmMeta}
       toolsSlot={ramsToolsSlot}
+      plusMode={plusMode}
       belowToolsSlot={
         plusMode && film?.id ? (
           <TheaterPlusPanel
@@ -967,6 +925,7 @@ function CinemaTheater({
             filmSlug={film.slug ? String(film.slug) : undefined}
             atSeconds={plusStamp}
             isLight={isLight}
+            onExit={exitPlus}
           />
         ) : null
       }

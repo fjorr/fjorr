@@ -287,12 +287,6 @@ export default function NominateClient({
               >
                 {t('principlesLink')}
               </Link>
-              <Link
-                href="/manual/nominate"
-                className="font-sans text-[13px] sm:text-[14px] font-semibold text-page-muted hover:text-page transition-colors underline underline-offset-2"
-              >
-                Manual · Nominate
-              </Link>
             </div>
 
             {!bureauxActive ? (
@@ -463,21 +457,36 @@ export default function NominateClient({
                       {t('viewOpenBounties')}
                     </Link>
                   </span>
-                  <select
-                    value={bountyId}
-                    onChange={(e) => {
-                      setBountyId(e.target.value);
-                      clearError('bounty');
-                    }}
-                    className={`${fieldClass(!!errors.bounty)} appearance-none`}
-                  >
-                    <option value="">{t('bountyGeneral')}</option>
-                    {bounties.map((b) => (
-                      <option key={b.id} value={b.id}>
-                        {b.title} · {formatBountyAmount(b.reward_amount, b.currency)}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <select
+                      value={bountyId}
+                      onChange={(e) => {
+                        setBountyId(e.target.value);
+                        clearError('bounty');
+                      }}
+                      className={`${fieldClass(!!errors.bounty)} appearance-none pr-12 cursor-pointer`}
+                    >
+                      <option value="">{t('bountyGeneral')}</option>
+                      {bounties.map((b) => (
+                        <option key={b.id} value={b.id}>
+                          {b.title} ·{' '}
+                          {formatBountyAmount(b.reward_amount, b.currency)}
+                        </option>
+                      ))}
+                    </select>
+                    <svg
+                      className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-page-muted"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.25"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden
+                    >
+                      <path d="M6 9l6 6 6-6" />
+                    </svg>
+                  </div>
                   {bountyId ? (
                     <span className="font-sans text-[13px] text-page-muted leading-snug">
                       {bounties.find((b) => b.id === bountyId)?.brief}

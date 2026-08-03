@@ -17,7 +17,7 @@ export async function submitFilmNote(input: {
   filmId: string;
   body: string;
   atSeconds?: number | null;
-}): Promise<{ ok: true } | { ok: false; error: string }> {
+}): Promise<{ ok: true; id: string } | { ok: false; error: string }> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -75,23 +75,27 @@ export async function submitFilmNote(input: {
     ? String(film.current_version_id)
     : null;
 
-  const { error } = await supabase.from('film_notes').insert({
-    film_id: filmId,
-    user_id: user.id,
-    body,
-    at_seconds: atSeconds,
-    status: 'new',
-    film_version: filmVersion,
-    film_version_id: filmVersionId,
-  });
+  const { data, error } = await supabase
+    .from('film_notes')
+    .insert({
+      film_id: filmId,
+      user_id: user.id,
+      body,
+      at_seconds: atSeconds,
+      status: 'new',
+      film_version: filmVersion,
+      film_version_id: filmVersionId,
+    })
+    .select('id')
+    .single();
 
-  if (error) {
-    console.error('submitFilmNote failed:', error.message);
+  if (error || !data?.id) {
+    console.error('submitFilmNote failed:', error?.message);
     return { ok: false, error: 'submitError' };
   }
 
   revalidatePath('/account/plus');
   revalidatePath('/admin/plus');
   revalidatePath('/admin');
-  return { ok: true };
+  return { ok: true, id: String(data.id) };
 }

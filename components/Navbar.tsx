@@ -9,6 +9,8 @@ import { Link, usePathname, useRouter } from '@/i18n/navigation';
 import ColorSchemeToggle from '@/components/ColorSchemeToggle';
 import AccountNavLink from '@/components/AccountNavLink';
 import NavbarBureauxCue from '@/components/NavbarBureauxCue';
+import { useColorScheme } from '@/components/ColorSchemeProvider';
+import { isColorSchemeLockedPath } from '@/lib/color-scheme';
 
 const SignInForm = dynamic(() => import('@/components/SignInForm'), {
   ssr: false,
@@ -39,6 +41,8 @@ function Navbar({ variant = 'light' }: NavbarProps) {
   const locale = useLocale() as AppLocale;
   const router = useRouter();
   const pathname = usePathname() || '';
+  const { isLocked } = useColorScheme();
+  const showAppearance = !isColorSchemeLockedPath(pathname) && !isLocked;
   const [isTheaterOpen, setIsTheaterOpen] = useState(false);
   const [panel, setPanel] = useState<PanelMode>('closed');
   const [authNextPath, setAuthNextPath] = useState('/bureaux');
@@ -353,18 +357,20 @@ function Navbar({ variant = 'light' }: NavbarProps) {
                     />
                   </div>
 
-                  <div
-                    className={`pt-5 flex flex-col items-start gap-2 border-t ${
-                      variant === 'light' ? 'border-white/10' : 'border-black/8'
-                    }`}
-                  >
-                    <p
-                      className={`font-sans text-[13px] font-medium leading-snug ${mutedLabel}`}
+                  {showAppearance ? (
+                    <div
+                      className={`pt-5 flex flex-col items-start gap-2 border-t ${
+                        variant === 'light' ? 'border-white/10' : 'border-black/8'
+                      }`}
                     >
-                      {t('appearance')}
-                    </p>
-                    <ColorSchemeToggle />
-                  </div>
+                      <p
+                        className={`font-sans text-[13px] font-medium leading-snug ${mutedLabel}`}
+                      >
+                        {t('appearance')}
+                      </p>
+                      <ColorSchemeToggle />
+                    </div>
+                  ) : null}
                 </div>
               )}
             </div>

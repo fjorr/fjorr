@@ -93,6 +93,8 @@ type Props = {
   toolsSlot?: React.ReactNode;
   /** Extra content under tools (Plus note strip). */
   belowToolsSlot?: React.ReactNode;
+  /** Plus mode — playhead becomes a note-anchor pin on the scrubber. */
+  plusMode?: boolean;
   logoLabel?: string;
   onLogoClick?: () => void;
   onScrubStart: () => void;
@@ -154,6 +156,7 @@ export default function TheaterRamsChrome({
   filmCredit,
   toolsSlot,
   belowToolsSlot,
+  plusMode = false,
   logoLabel,
   onLogoClick,
   onScrubStart,
@@ -166,12 +169,14 @@ export default function TheaterRamsChrome({
   const hatch = isLight ? '#0B0B0C' : '#F5F5F7';
   const clockClass =
     'font-mono text-[12px] font-medium tabular-nums tracking-normal leading-none shrink-0 min-w-[3.25em] transition-colors duration-150';
-  const clockTone = isScrubbing ? ink : muted;
+  const clockTone = isScrubbing || plusMode ? ink : muted;
 
   return (
     <div
       data-ui-control="true"
-      className={`pointer-events-auto flex flex-col items-center gap-5 select-none ${ink} ${CHROME_WIDTH}`}
+      className={`pointer-events-auto flex flex-col items-center select-none ${ink} ${CHROME_WIDTH} ${
+        plusMode ? 'gap-3.5' : 'gap-5'
+      }`}
     >
       {!hideHeader ? (
         <TheaterRamsIdentity
@@ -212,11 +217,23 @@ export default function TheaterRamsChrome({
             className="pointer-events-none absolute z-20 top-1/2 -translate-x-1/2 -translate-y-1/2"
             aria-hidden
           >
-            <div
-              className={`rounded-full transition-[width,height] duration-100 ${
-                isLight ? 'bg-[#0B0B0C]' : 'bg-[#F5F5F7]'
-              } ${isScrubbing ? 'w-[13px] h-[13px]' : 'w-[12px] h-[12px]'}`}
-            />
+            {plusMode ? (
+              /* Bold plus at the note frame — thicker arms so it reads on the hatch. */
+              <svg
+                viewBox="0 0 16 16"
+                className={`w-4 h-4 ${isLight ? 'text-[#1B6FBF]' : 'text-[#8FE0F2]'}`}
+                fill="currentColor"
+                aria-hidden
+              >
+                <path d="M6.25 1.5a1.75 1.75 0 0 1 3.5 0v4.75H14.5a1.75 1.75 0 0 1 0 3.5H9.75V14.5a1.75 1.75 0 0 1-3.5 0V9.75H1.5a1.75 1.75 0 0 1 0-3.5h4.75V1.5Z" />
+              </svg>
+            ) : (
+              <div
+                className={`rounded-full transition-[width,height] duration-100 ${
+                  isLight ? 'bg-[#0B0B0C]' : 'bg-[#F5F5F7]'
+                } ${isScrubbing ? 'w-[13px] h-[13px]' : 'w-[12px] h-[12px]'}`}
+              />
+            )}
           </div>
           <input
             ref={scrubberRef}
