@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-/** Quiet on/off switch for account privacy settings. */
+/** Quiet on/off switch for account privacy settings — control left, copy right. */
 export default function AccountToggle({
   checked,
   onChange,
@@ -15,22 +15,14 @@ export default function AccountToggle({
   hint: string;
 }) {
   return (
-    <div className="flex items-start justify-between gap-4 text-left">
-      <div className="flex flex-col gap-0.5 min-w-0 pr-2">
-        <span className="font-sans text-[14px] font-semibold text-page">
-          {label}
-        </span>
-        <span className="font-sans text-[12px] text-page-faint leading-snug">
-          {hint}
-        </span>
-      </div>
+    <div className="grid grid-cols-[2.75rem_1fr] gap-x-4 items-start text-left">
       <button
         type="button"
         role="switch"
         aria-checked={checked}
         aria-label={label}
         onClick={() => onChange(!checked)}
-        className={`relative mt-0.5 h-7 w-12 shrink-0 rounded-full transition-colors ${
+        className={`relative mt-0.5 h-7 w-11 shrink-0 rounded-full transition-colors justify-self-start ${
           checked ? 'bg-[var(--page-fg)]' : 'bg-page-chip'
         }`}
       >
@@ -38,11 +30,19 @@ export default function AccountToggle({
           aria-hidden
           className={`absolute top-0.5 left-0.5 h-6 w-6 rounded-full shadow-sm transition-transform ${
             checked
-              ? 'translate-x-5 bg-[var(--page-bg)]'
+              ? 'translate-x-4 bg-[var(--page-bg)]'
               : 'translate-x-0 bg-[var(--page-fg)]'
           }`}
         />
       </button>
+      <div className="flex flex-col gap-1 min-w-0">
+        <span className="font-sans text-[15px] font-semibold text-page leading-snug">
+          {label}
+        </span>
+        <span className="font-sans text-[14px] text-page-muted leading-relaxed">
+          {hint}
+        </span>
+      </div>
     </div>
   );
 }

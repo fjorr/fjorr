@@ -5,12 +5,11 @@ import type { Session } from '@supabase/supabase-js';
 import { Link, useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { Icon } from '@/components/ui/Icons';
-import { fetchOwnBureauxActive } from '@/lib/bureaux-client';
+import { fetchOwnBureauxNav } from '@/lib/bureaux-client';
 import { createClient } from '@/lib/supabase/client';
 
 type MenuProfile = {
   display_name: string;
-  member_number: number;
 };
 
 /** Join / Sign in / Account / Log out for the hamburger explore list. */
@@ -29,6 +28,7 @@ export default function AccountNavLink({
   const router = useRouter();
   const [signedIn, setSignedIn] = useState<boolean | null>(null);
   const [bureauxActive, setBureauxActive] = useState(false);
+  const [bureauxNumber, setBureauxNumber] = useState<number | null>(null);
   const [profile, setProfile] = useState<MenuProfile | null>(null);
   const [signingOut, setSigningOut] = useState(false);
 
@@ -37,16 +37,16 @@ export default function AccountNavLink({
     let mounted = true;
 
     const loadProfile = async () => {
-      const active = await fetchOwnBureauxActive();
+      const nav = await fetchOwnBureauxNav();
       if (!mounted) return;
-      setBureauxActive(active);
+      setBureauxActive(nav.active);
+      setBureauxNumber(nav.bureauxNumber);
 
       const { data: rpc, error } = await supabase.rpc('ensure_own_profile');
       if (!mounted) return;
       if (!error && rpc) {
         setProfile({
           display_name: String(rpc.display_name || '').trim(),
-          member_number: Number(rpc.member_number),
         });
         return;
       }
@@ -56,13 +56,12 @@ export default function AccountNavLink({
       if (!mounted || !user) return;
       const { data: row } = await supabase
         .from('profiles')
-        .select('display_name, member_number')
+        .select('display_name')
         .eq('id', user.id)
         .maybeSingle();
       if (!mounted || !row) return;
       setProfile({
         display_name: String(row.display_name || '').trim(),
-        member_number: Number(row.member_number),
       });
     };
 
@@ -74,6 +73,7 @@ export default function AccountNavLink({
       else {
         setProfile(null);
         setBureauxActive(false);
+        setBureauxNumber(null);
       }
     });
 
@@ -87,6 +87,7 @@ export default function AccountNavLink({
       else {
         setProfile(null);
         setBureauxActive(false);
+        setBureauxNumber(null);
       }
     });
 
@@ -104,6 +105,7 @@ export default function AccountNavLink({
       await supabase.auth.signOut();
       setProfile(null);
       setBureauxActive(false);
+      setBureauxNumber(null);
       onNavigate?.();
       router.push('/');
       router.refresh();
@@ -122,24 +124,20 @@ export default function AccountNavLink({
 
   if (signedIn && bureauxActive) {
     const name = profile?.display_name || null;
-    const number =
-      profile?.member_number && Number.isFinite(profile.member_number)
-        ? profile.member_number
-        : null;
 
     return (
       <div className="flex flex-col gap-1.5">
-        {(name || number != null) && (
+        {(name || bureauxNumber != null) && (
           <p
             className={
               mutedClassName ||
               'font-sans text-[13px] font-medium leading-snug text-page-faint'
             }
           >
-            {number != null && name
-              ? t('memberLine', { number, name })
-              : number != null
-                ? t('memberNumberOnly', { number })
+            {bureauxNumber != null && name
+              ? t('memberLine', { number: bureauxNumber, name })
+              : bureauxNumber != null
+                ? t('bureauxMark', { number: bureauxNumber })
                 : name}
           </p>
         )}

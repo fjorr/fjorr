@@ -204,9 +204,9 @@ export async function startBureauxGiftCheckout(toEmail: string): Promise<
         },
       ],
       success_url: appUrl(
-        `/bureaux?gift=1&session_id={CHECKOUT_SESSION_ID}`
+        `/account/bureaux?gift=1&session_id={CHECKOUT_SESSION_ID}`
       ),
-      cancel_url: appUrl('/bureaux?gift=canceled'),
+      cancel_url: appUrl('/account/bureaux?gift=canceled'),
     });
 
     if (!session.url) {

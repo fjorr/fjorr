@@ -10,8 +10,8 @@ type NavItem = {
     | '/account/voyages'
     | '/account/nominations'
     | '/account/plus'
-    | '/bureaux'
-    | '/cabinet'
+    | '/account/bureaux'
+    | '/account/cabinet'
     | '/account/profile'
     | '/account/privacy';
   labelKey:
@@ -31,10 +31,10 @@ function isActive(pathname: string, item: NavItem) {
 function buildItems(): NavItem[] {
   return [
     { href: '/account/voyages', labelKey: 'navLogs' },
-    { href: '/bureaux', labelKey: 'navBureaux' },
+    { href: '/account/bureaux', labelKey: 'navBureaux' },
     { href: '/account/nominations', labelKey: 'navNominations' },
     { href: '/account/plus', labelKey: 'navPlus' },
-    { href: '/cabinet', labelKey: 'navCabinet' },
+    { href: '/account/cabinet', labelKey: 'navCabinet' },
     { href: '/account/profile', labelKey: 'navProfile' },
     { href: '/account/privacy', labelKey: 'navPrivacy' },
   ];
@@ -59,9 +59,7 @@ function AccountDisplayName({ name }: { name: string }) {
 }
 
 function AccountIdentity({
-  memberNumber,
   name,
-  memberNoLabel,
   bureauxNoLabel,
   bureauxNumber,
   broughtByLabel,
@@ -69,9 +67,7 @@ function AccountIdentity({
   broughtInLabel,
   broughtInCount,
 }: {
-  memberNumber: number;
   name: string | null;
-  memberNoLabel: string;
   bureauxNoLabel: string;
   bureauxNumber: number | null;
   broughtByLabel: string;
@@ -81,12 +77,10 @@ function AccountIdentity({
 }) {
   return (
     <div className="flex flex-col gap-1.5">
+      {name ? <AccountDisplayName name={name} /> : null}
       <div className="flex flex-col gap-0.5">
-        <p className="font-sans text-[15px] font-semibold tracking-tight text-page tabular-nums">
-          {memberNoLabel} {memberNumber}
-        </p>
         {bureauxNumber != null ? (
-          <p className="font-sans text-[13px] font-semibold tracking-tight text-page-muted tabular-nums">
+          <p className="font-sans text-[15px] font-semibold tracking-tight text-page tabular-nums">
             {bureauxNoLabel} {bureauxNumber}
           </p>
         ) : null}
@@ -101,20 +95,17 @@ function AccountIdentity({
           </p>
         ) : null}
       </div>
-      {name ? <AccountDisplayName name={name} /> : null}
     </div>
   );
 }
 
 /** Mercury-style account sidebar — Apple-like menu overlay on mobile. */
 export default function AccountNav({
-  memberNumber,
   displayName,
   bureauxNumber = null,
   broughtByNumber = null,
   broughtInCount = 0,
 }: {
-  memberNumber: number;
   displayName?: string | null;
   bureauxNumber?: number | null;
   broughtByNumber?: number | null;
@@ -165,24 +156,21 @@ export default function AccountNav({
         : 'text-page-muted hover:bg-page-chip hover:text-page'
     }`;
 
+  const identity = (
+    <AccountIdentity
+      name={name}
+      bureauxNoLabel={t('bureauxNo')}
+      bureauxNumber={bureauxNumber}
+      broughtByLabel={t('bureauxBroughtBy')}
+      broughtByNumber={broughtByNumber}
+      broughtInLabel={t('bureauxBroughtIn')}
+      broughtInCount={broughtInCount}
+    />
+  );
+
   const desktopNav = (
     <>
-      <div className="px-2 flex flex-col gap-2">
-        <AccountIdentity
-          memberNumber={memberNumber}
-          name={name}
-          memberNoLabel={t('memberNo')}
-          bureauxNoLabel={t('bureauxNo')}
-          bureauxNumber={bureauxNumber}
-          broughtByLabel={t('bureauxBroughtBy')}
-          broughtByNumber={broughtByNumber}
-          broughtInLabel={t('bureauxBroughtIn')}
-          broughtInCount={broughtInCount}
-        />
-        <p className="font-sans text-[12px] text-page-faint leading-snug">
-          {t('navMembershipHint')}
-        </p>
-      </div>
+      <div className="px-2 flex flex-col gap-2">{identity}</div>
 
       <nav
         aria-label={t('accountTitle')}
@@ -223,10 +211,12 @@ export default function AccountNav({
       {/* Mobile: Account menu trigger bar */}
       <div className="md:hidden w-full border-b border-page-faint px-4 py-3 flex items-center justify-between gap-3">
         <div className="min-w-0 flex flex-col gap-1">
-          <p className="font-sans text-[13px] font-semibold tracking-tight text-page-muted tabular-nums">
-            {t('memberNo')} {memberNumber}
-          </p>
           {name ? <AccountDisplayName name={name} /> : null}
+          {bureauxNumber != null ? (
+            <p className="font-sans text-[13px] font-semibold tracking-tight text-page-muted tabular-nums">
+              {t('bureauxNo')} {bureauxNumber}
+            </p>
+          ) : null}
         </div>
         <button
           type="button"
@@ -286,17 +276,7 @@ export default function AccountNav({
         >
           <div className="px-5 pt-4 pb-10 flex flex-col gap-8">
             <div className="flex items-start justify-between gap-3">
-              <AccountIdentity
-                memberNumber={memberNumber}
-                name={name}
-                memberNoLabel={t('memberNo')}
-                bureauxNoLabel={t('bureauxNo')}
-                bureauxNumber={bureauxNumber}
-                broughtByLabel={t('bureauxBroughtBy')}
-                broughtByNumber={broughtByNumber}
-                broughtInLabel={t('bureauxBroughtIn')}
-                broughtInCount={broughtInCount}
-              />
+              {identity}
               <button
                 type="button"
                 aria-label={t('closeAccountMenu')}

@@ -1,24 +1,16 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import { Link } from '@/i18n/navigation';
+import { Link, redirect } from '@/i18n/navigation';
 import { createClient } from '@/lib/supabase/server';
 import BureauxCheckout from '@/components/BureauxCheckout';
-import BureauxGiftSeat from '@/components/BureauxGiftSeat';
 import BureauxJoinClaim from '@/components/BureauxJoinClaim';
 import BureauxJoinedRefresh from '@/components/BureauxJoinedRefresh';
-import BureauxManage from '@/components/BureauxManage';
 import {
-  ensureBureauxNumber,
   getBureauxAnnualAmountCents,
-  getOwnBureauxLineage,
   getOwnBureauxMembership,
   isBureauxMembershipActive,
 } from '@/lib/bureaux';
-import {
-  getOwnGiftSeatState,
-  syncBureauxGiftFromCheckoutSession,
-} from '@/lib/bureaux-gift';
-import { appUrl } from '@/lib/site';
+import { syncBureauxGiftFromCheckoutSession } from '@/lib/bureaux-gift';
 
 function formatAnnualPrice(cents: number, locale: string) {
   try {
@@ -29,19 +21,6 @@ function formatAnnualPrice(cents: number, locale: string) {
     }).format(cents / 100);
   } catch {
     return `$${Math.round(cents / 100)}`;
-  }
-}
-
-function formatDate(iso: string | null, locale: string) {
-  if (!iso) return null;
-  try {
-    return new Intl.DateTimeFormat(locale, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    }).format(new Date(iso));
-  } catch {
-    return null;
   }
 }
 
@@ -104,24 +83,20 @@ export default async function BureauxPage({
     } catch (err) {
       console.error('gift session sync failed:', err);
     }
+    redirect({ href: '/account/bureaux?gift=1', locale });
   }
 
-  let membership = user ? await getOwnBureauxMembership(user.id) : null;
+  const membership = user ? await getOwnBureauxMembership(user.id) : null;
   const active = isBureauxMembershipActive(membership);
-  if (active && membership && !membership.bureaux_number && user) {
-    const n = await ensureBureauxNumber(user.id);
-    if (n) membership = { ...membership, bureaux_number: n };
-  }
-
-  const lineage = user && active ? await getOwnBureauxLineage(user.id) : null;
-  const giftSeat = user && active ? await getOwnGiftSeatState(user.id) : null;
-  const openGiftUrl =
-    giftSeat?.openGift?.status === 'open'
-      ? appUrl(`/bureaux/gift/${giftSeat.openGift.token}`)
-      : null;
-
-  const renews = formatDate(membership?.current_period_end || null, locale);
   const justJoined = joined === '1';
+
+  // Members manage billing / gift seat under Account → The Bureaux.
+  if (user && active) {
+    redirect({
+      href: justJoined ? '/account/bureaux?joined=1' : '/account/bureaux',
+      locale,
+    });
+  }
 
   const perks = [
     t('perkNumber'),
@@ -160,75 +135,12 @@ export default async function BureauxPage({
 
         {justJoined && user ? (
           <p className="font-sans text-[14px] text-page-muted leading-relaxed">
-            {active ? ta('bureauxJoined') : ta('bureauxJoining')}
+            {ta('bureauxJoining')}
           </p>
         ) : null}
         {justJoined && user && !active ? <BureauxJoinedRefresh /> : null}
 
         <section className="flex flex-col divide-y divide-page-faint border-y border-page-faint">
-          {active ? (
-            <>
-              <div className="py-4 flex items-baseline justify-between gap-4">
-                <span className="font-sans text-[14px] text-page-muted">
-                  {ta('bureauxStatus')}
-                </span>
-                <span className="font-sans text-[15px] font-semibold text-page">
-                  {ta('bureauxStatusActive')}
-                </span>
-              </div>
-              {membership?.bureaux_number != null ? (
-                <div className="py-4 flex items-baseline justify-between gap-4">
-                  <span className="font-sans text-[14px] text-page-muted">
-                    {ta('bureauxNo')}
-                  </span>
-                  <span className="font-mono text-[15px] text-page tabular-nums">
-                    {membership.bureaux_number}
-                  </span>
-                </div>
-              ) : null}
-              {membership?.comp_lifetime ? (
-                <div className="py-4 flex items-baseline justify-between gap-4">
-                  <span className="font-sans text-[14px] text-page-muted">
-                    {ta('bureauxLifetime')}
-                  </span>
-                  <span className="font-sans text-[15px] font-semibold text-page">
-                    {ta('bureauxLifetimeYes')}
-                  </span>
-                </div>
-              ) : renews ? (
-                <div className="py-4 flex items-baseline justify-between gap-4">
-                  <span className="font-sans text-[14px] text-page-muted">
-                    {membership?.cancel_at_period_end
-                      ? ta('bureauxEnds')
-                      : ta('bureauxRenews')}
-                  </span>
-                  <span className="font-mono text-[15px] text-page tabular-nums">
-                    {renews}
-                  </span>
-                </div>
-              ) : null}
-              {lineage?.sponsoredByNumber != null ? (
-                <div className="py-4 flex items-baseline justify-between gap-4">
-                  <span className="font-sans text-[14px] text-page-muted">
-                    {ta('bureauxBroughtBy')}
-                  </span>
-                  <span className="font-mono text-[15px] text-page tabular-nums">
-                    № {lineage.sponsoredByNumber}
-                  </span>
-                </div>
-              ) : null}
-              {lineage && lineage.broughtInCount > 0 ? (
-                <div className="py-4 flex items-baseline justify-between gap-4">
-                  <span className="font-sans text-[14px] text-page-muted">
-                    {ta('bureauxBroughtIn')}
-                  </span>
-                  <span className="font-mono text-[15px] text-page tabular-nums">
-                    {lineage.broughtInCount}
-                  </span>
-                </div>
-              ) : null}
-            </>
-          ) : null}
           <div className="py-4 flex items-baseline justify-between gap-4">
             <span className="font-sans text-[14px] text-page-muted">
               {t('priceLabel')}
@@ -264,23 +176,7 @@ export default async function BureauxPage({
         </section>
 
         <section className="flex flex-col gap-4">
-          {active ? (
-            <>
-              {!membership?.comp_lifetime ? (
-                <BureauxManage
-                  cancelAtPeriodEnd={Boolean(membership?.cancel_at_period_end)}
-                />
-              ) : null}
-              {giftSeat ? (
-                <BureauxGiftSeat
-                  canGift={giftSeat.canGift}
-                  reason={giftSeat.reason}
-                  openGiftUrl={openGiftUrl}
-                  openGiftEmail={giftSeat.openGift?.to_email || null}
-                />
-              ) : null}
-            </>
-          ) : justJoined && !user && joinedEmail ? (
+          {justJoined && !user && joinedEmail ? (
             <BureauxJoinClaim email={joinedEmail} />
           ) : (
             <BureauxCheckout

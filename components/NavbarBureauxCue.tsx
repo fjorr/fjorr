@@ -49,7 +49,7 @@ export default function NavbarBureauxCue({
 
   return (
     <Link
-      href="/account/voyages"
+      href="/account/bureaux"
       aria-label={t('bureauxMarkAria', { number })}
       className={`shrink-0 font-sans text-[12px] font-semibold tabular-nums tracking-tight transition-opacity hover:opacity-80 ${className || ''}`}
     >

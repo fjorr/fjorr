@@ -55,7 +55,6 @@ export default async function AccountShell({
   return (
     <div className="w-full min-h-[calc(100vh-4rem)] bg-page text-page flex flex-col md:flex-row">
       <AccountNav
-        memberNumber={profile.member_number}
         displayName={name}
         bureauxNumber={bureauxActive ? membership?.bureaux_number ?? null : null}
         broughtByNumber={lineage?.sponsoredByNumber ?? null}
@@ -69,7 +68,7 @@ export default async function AccountShell({
               wide ? 'max-w-[560px]' : ''
             }`}
           >
-            <h1 className="font-futura text-3xl sm:text-4xl tracking-tighter text-page select-none">
+            <h1 className="font-interTight font-bold text-3xl sm:text-4xl tracking-tight text-page select-none">
               {title}
             </h1>
             {description ? (

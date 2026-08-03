@@ -9,6 +9,7 @@ import {
 } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { useTranslations } from 'next-intl';
+import { useLocale } from 'next-intl';
 import { Link, useRouter } from '@/i18n/navigation';
 import { useColorScheme } from '@/components/ColorSchemeProvider';
 import { fjorrStripeAppearance } from '@/lib/stripe-appearance';
@@ -18,19 +19,29 @@ import {
   resumeBureauxSubscription,
   setBureauxDefaultPaymentMethod,
 } from '@/lib/bureaux-actions';
+import { routing } from '@/i18n/routing';
 
 const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '';
 
+function localizedReturnUrl(locale: string, path: string) {
+  const prefix = locale === routing.defaultLocale ? '' : `/${locale}`;
+  const normalized = path.startsWith('/') ? path : `/${path}`;
+  return `${window.location.origin}${prefix}${normalized}`;
+}
+
 function UpdateCardForm({
   email,
+  returnPath,
   onDone,
   onCancel,
 }: {
   email: string | null;
+  returnPath: string;
   onDone: () => void;
   onCancel: () => void;
 }) {
   const t = useTranslations('Account');
+  const locale = useLocale();
   const stripe = useStripe();
   const elements = useElements();
   const [pending, setPending] = useState(false);
@@ -47,7 +58,7 @@ function UpdateCardForm({
       elements,
       redirect: 'if_required',
       confirmParams: {
-        return_url: `${window.location.origin}/bureaux`,
+        return_url: localizedReturnUrl(locale, returnPath),
         ...(email
           ? {
               payment_method_data: {
@@ -120,8 +131,11 @@ function UpdateCardForm({
 
 export default function BureauxManage({
   cancelAtPeriodEnd,
+  returnPath = '/account/bureaux',
 }: {
   cancelAtPeriodEnd: boolean;
+  /** Stripe SetupIntent return path (locale prefix added by the browser origin). */
+  returnPath?: string;
 }) {
   const t = useTranslations('Account');
   const router = useRouter();
@@ -201,6 +215,7 @@ export default function BureauxManage({
           >
             <UpdateCardForm
               email={email}
+              returnPath={returnPath}
               onDone={() => {
                 setUpdatingCard(false);
                 setSetupSecret(null);

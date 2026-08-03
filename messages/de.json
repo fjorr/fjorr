@@ -365,7 +365,22 @@
     "bureauxLifetime": "Access",
     "bureauxLifetimeYes": "Lifetime",
     "bureauxBroughtBy": "Brought in by",
-    "bureauxBroughtIn": "Brought in"
+    "bureauxBroughtIn": "Brought in",
+    "cabinetTitle": "The Cabinet",
+    "cabinetBody": "Names you've put forward — your craft, or someone else's. Quiet record for the desk.",
+    "cabinetEmpty": "No names filed yet.",
+    "cabinetEmptyCta": "Send a name",
+    "cabinetLinkPublic": "The Cabinet",
+    "cabinetColDate": "Filed",
+    "cabinetColName": "Name",
+    "cabinetColDiscipline": "Discipline",
+    "cabinetColKind": "Who",
+    "cabinetColStatus": "Status",
+    "cabinetKindOffer": "You",
+    "cabinetKindSuggest": "Someone else",
+    "cabinetStatusReceived": "Received",
+    "cabinetStatusMember": "In the Cabinet",
+    "cabinetStatusPaused": "Paused"
   },
   "Auth": {
     "errorTitle": "Anmeldung hat nicht funktioniert",
@@ -580,7 +595,8 @@
     "bureauxDescription": "Infinite scroll. Nothing to remember. Myths raise people. Feeds don't. Optional annual subscription — films stay free forever.",
     "accountBureauxTitle": "Bureaux",
     "helpTitle": "The Manual",
-    "helpDescription": "Six short entries on watching, joining, nominating, Plus, account, and the desk."
+    "helpDescription": "Six short entries on watching, joining, nominating, Plus, account, and the desk.",
+    "accountCabinetTitle": "The Cabinet"
   },
   "Bounties": {
     "title": "Große Geschichten.\nJetzt mit Kopfgeld.",
@@ -730,7 +746,8 @@
     "ctaScoutSignIn": "Sign in to continue",
     "scoutBureauxRequired": "Join the Bureaux to send a name to the desk.",
     "ctaScoutBureaux": "Join the Bureaux",
-    "disciplinesParagraph": "Archivists, cinematographers, composers, curators, directors, editors, producers, researchers, sound designers, writers, and more. Chronicling the human story, one myth at a time."
+    "disciplinesParagraph": "Archivists, cinematographers, composers, curators, directors, editors, producers, researchers, sound designers, writers, and more. Chronicling the human story, one myth at a time.",
+    "scoutSuccessLedger": "See it in Account"
   },
   "Plus": {
     "loading": "…",

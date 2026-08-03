@@ -22,8 +22,21 @@ const DISCIPLINES = new Set([
 const MIN_NOTE = 40;
 const MAX_NOTE = 800;
 const RATE_DAYS = 30;
+const OWN_CABINET_LIMIT = 100;
 
 export type CabinetScoutKind = 'offer' | 'suggest';
+
+/** Soft member-facing status — desk uses prospect / member / paused. */
+export type CabinetOfferStatus = 'prospect' | 'member' | 'paused';
+
+export type CabinetOfferRow = {
+  id: string;
+  created_at: string;
+  name: string;
+  discipline: string;
+  kind: CabinetScoutKind;
+  status: CabinetOfferStatus;
+};
 
 export type CabinetOfferResult =
   | { ok: true }
@@ -43,6 +56,53 @@ export type CabinetOfferResult =
         | 'rateLimited'
         | 'submitError';
     };
+
+/** Names this member put forward — service read after auth (desk table). */
+export async function getOwnCabinetOffers(
+  userId?: string
+): Promise<CabinetOfferRow[]> {
+  const supabase = await createClient();
+  let uid = userId;
+  if (!uid) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return [];
+    uid = user.id;
+  }
+
+  const db = createServiceClient();
+  const { data, error } = await db
+    .from('cabinet_members')
+    .select('id, created_at, name, discipline, source, status')
+    .eq('submitted_by_user_id', uid)
+    .in('source', ['offer', 'referral'])
+    .order('created_at', { ascending: false })
+    .limit(OWN_CABINET_LIMIT);
+
+  if (error) {
+    console.error('getOwnCabinetOffers failed:', error.message);
+    return [];
+  }
+
+  return (data || []).map((row: {
+    id: string;
+    created_at: string;
+    name: string | null;
+    discipline: string | null;
+    source: string | null;
+    status: string | null;
+  }) => ({
+    id: String(row.id),
+    created_at: String(row.created_at),
+    name: String(row.name || ''),
+    discipline: String(row.discipline || ''),
+    kind: row.source === 'referral' ? ('suggest' as const) : ('offer' as const),
+    status: (['prospect', 'member', 'paused'].includes(String(row.status))
+      ? row.status
+      : 'prospect') as CabinetOfferStatus,
+  }));
+}
 
 /** Public Cabinet intake — self-offer or suggest someone. */
 export async function submitCabinetOffer(input: {
@@ -125,7 +185,6 @@ export async function submitCabinetOffer(input: {
     note,
     '',
     `— ${kindLine}`,
-    `signed in · ${user.id.slice(0, 8)}`,
     user.email ? `from ${user.email}` : null,
   ]
     .filter(Boolean)
@@ -139,6 +198,7 @@ export async function submitCabinetOffer(input: {
     notes,
     source,
     status: 'prospect',
+    submitted_by_user_id: user.id,
   });
 
   if (error) {
@@ -148,5 +208,6 @@ export async function submitCabinetOffer(input: {
 
   revalidatePath('/admin/cabinet');
   revalidatePath('/admin');
+  revalidatePath('/account/cabinet');
   return { ok: true };
 }

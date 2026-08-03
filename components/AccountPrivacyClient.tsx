@@ -49,7 +49,7 @@ export default function AccountPrivacyClient({
 
   return (
     <div className="w-full flex flex-col gap-8">
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-7">
         <AccountToggle
           checked={isPublic}
           onChange={(next) => {
@@ -78,11 +78,11 @@ export default function AccountPrivacyClient({
       </div>
 
       {error ? (
-        <p className="font-sans text-[13px] text-red-400/90 text-left">{error}</p>
+        <p className="font-sans text-[14px] text-red-400/90 text-left">{error}</p>
       ) : null}
 
       {status === 'saving' || status === 'saved' ? (
-        <p className="font-sans text-[12px] text-page-faint text-left">
+        <p className="font-sans text-[14px] text-page-faint text-left">
           {status === 'saving' ? t('saving') : t('saved')}
         </p>
       ) : null}

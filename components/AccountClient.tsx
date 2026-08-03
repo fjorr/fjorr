@@ -16,9 +16,11 @@ import {
 export default function AccountClient({
   email,
   profile,
+  bureauxNumber = null,
 }: {
   email: string;
   profile: ScoutProfile;
+  bureauxNumber?: number | null;
 }) {
   const t = useTranslations('Account');
   const router = useRouter();
@@ -93,14 +95,16 @@ export default function AccountClient({
           <p className="font-sans text-[15px] text-page-muted truncate">{email}</p>
         </div>
 
-        <div className="flex flex-col gap-2 text-left">
-          <span className="font-sans text-[12px] font-semibold uppercase tracking-wide text-page-faint">
-            {t('memberNumber')}
-          </span>
-          <p className="font-mono text-[15px] text-page-muted">
-            #{profile.member_number}
-          </p>
-        </div>
+        {bureauxNumber != null ? (
+          <div className="flex flex-col gap-2 text-left">
+            <span className="font-sans text-[12px] font-semibold uppercase tracking-wide text-page-faint">
+              {t('bureauxNo')}
+            </span>
+            <p className="font-mono text-[15px] text-page-muted tabular-nums">
+              {bureauxNumber}
+            </p>
+          </div>
+        ) : null}
 
         <form onSubmit={handleSave} className="flex flex-col gap-5">
           <label className="flex flex-col gap-2 text-left">
