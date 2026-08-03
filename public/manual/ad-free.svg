@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="1200" viewBox="0 0 960 1200" fill="none">
+  <rect width="960" height="1200" fill="#1a1a1a"/>
+  <rect x="48" y="48" width="864" height="1104" stroke="#3a3a3a" stroke-width="2"/>
+  <text x="80" y="140" fill="#5a5a5a" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="28" font-weight="600" letter-spacing="0.2em">02</text>
+  <text x="80" y="560" fill="#8a8a8a" font-family="ui-sans-serif, system-ui, sans-serif" font-size="56" font-weight="700">Ad-free</text>
+  <text x="80" y="640" fill="#5a5a5a" font-family="ui-sans-serif, system-ui, sans-serif" font-size="28" font-weight="500">No ads. Ever.</text>
+  <text x="80" y="1120" fill="#4a4a4a" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="22" letter-spacing="0.16em">PLATE · PLACEHOLDER</text>
+</svg>

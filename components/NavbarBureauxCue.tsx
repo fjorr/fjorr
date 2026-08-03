@@ -7,7 +7,7 @@ import { Link } from '@/i18n/navigation';
 import { fetchOwnBureauxNav } from '@/lib/bureaux-client';
 import { createClient } from '@/lib/supabase/client';
 
-/** Quiet signed-in mark in the main navbar — Bureaux № → account. */
+/** Quiet signed-in mark in the main navbar — Bureaux No. → account. */
 export default function NavbarBureauxCue({
   className,
 }: {
@@ -51,7 +51,7 @@ export default function NavbarBureauxCue({
     <Link
       href="/account/voyages"
       aria-label={t('bureauxMarkAria', { number })}
-      className={`font-mono text-[12px] font-semibold tabular-nums tracking-tight transition-opacity hover:opacity-80 ${className || ''}`}
+      className={`shrink-0 font-sans text-[12px] font-semibold tabular-nums tracking-tight transition-opacity hover:opacity-80 ${className || ''}`}
     >
       {t('bureauxMark', { number })}
     </Link>

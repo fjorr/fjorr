@@ -5,11 +5,7 @@ import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
 import VoyageurBadgeLoader from '@/components/VoyageurBadgeLoader';
-import { useColorScheme } from '@/components/ColorSchemeProvider';
-
-const TheaterPlusInfo = dynamic(() => import('@/components/TheaterPlusInfo'), {
-  ssr: false,
-});
+import { Link } from '@/i18n/navigation';
 
 const FilmTranscript = dynamic(() => import('./FilmTranscript'), {
   ssr: false,
@@ -89,14 +85,16 @@ export default function FilmSpecs({
   plusMember = false,
 }: FilmSpecsProps) {
   const t = useTranslations('Film');
-  const { isLight } = useColorScheme();
   const releaseYear = film.release_date ? new Date(film.release_date).getFullYear() : '2026';
+  const storyYear =
+    typeof film.story_date === 'object'
+      ? film.story_date?.name
+      : film.story_date || film.story_year || null;
   const displayRuntime = film.runtime
     ? t('runtimeMin', { n: Math.ceil(film.runtime / 60) })
     : t('runtimeMin', { n: 1 });
   const displayRating = film.rating?.name ? t('ages', { n: film.rating.name }) : t('agesFallback');
   const [transcripts, setTranscripts] = useState<TranscriptRow[]>([]);
-  const [plusInfoOpen, setPlusInfoOpen] = useState(false);
 
   const inviteLinkClass =
     'font-semibold text-page-muted underline underline-offset-4 decoration-[color-mix(in_srgb,var(--page-fg)_22%,transparent)] hover:text-page hover:decoration-[color-mix(in_srgb,var(--page-fg)_40%,transparent)] transition-colors';
@@ -147,7 +145,14 @@ export default function FilmSpecs({
           </p>
         )}
 
-        {film?.id ? <VoyageurBadgeLoader filmId={String(film.id)} /> : null}
+        {film?.id && film?.slug ? (
+          <VoyageurBadgeLoader
+            filmId={String(film.id)}
+            filmName={String(film.name || '')}
+            filmSlug={String(film.slug)}
+            plusMember={plusMember}
+          />
+        ) : null}
 
         {directorNote.length > 0 && (
           <div className="mt-6 max-w-2xl">
@@ -180,56 +185,65 @@ export default function FilmSpecs({
         )}
 
         {onOpenPlus ? (
-          <p className="mt-6 text-[13px] text-page-faint leading-snug max-w-md">
-            {t('plusInvite')}{' '}
-            <button type="button" onClick={onOpenPlus} className={inviteLinkClass}>
-              {plusMember ? t('plusInviteCta') : t('plusInviteJoin')}
-            </button>
-            <span className="text-page-faint/80" aria-hidden>
-              {' · '}
-            </span>
-            <button
-              type="button"
-              onClick={() => setPlusInfoOpen(true)}
-              className={inviteLinkClass}
-            >
-              {t('plusInviteInfo')}
-            </button>
+          <p className="mt-6 text-[13px] text-page-faint leading-snug max-w-2xl">
+            {plusMember ? t('plusInviteMember') : t('plusInvite')}{' '}
+            {plusMember ? (
+              <span className="whitespace-nowrap">
+                <button type="button" onClick={onOpenPlus} className={inviteLinkClass}>
+                  {t('plusInviteCta')}
+                </button>
+                <span className="text-page-faint/80" aria-hidden>
+                  {' · '}
+                </span>
+                <Link href="/plus" className={inviteLinkClass}>
+                  {t('plusInviteInfo')}
+                </Link>
+              </span>
+            ) : (
+              <Link href="/plus" className={inviteLinkClass}>
+                {t('plusInviteInfo')}
+              </Link>
+            )}
           </p>
         ) : null}
       </div>
 
-      <TheaterPlusInfo
-        open={plusInfoOpen}
-        onClose={() => setPlusInfoOpen(false)}
-        isLight={isLight}
-        variant="page"
-      />
-
-      {/* Specs — credits name-first; facts stay label → value */}
+      {/* Credits + Details — name-first credits; facts stay label → value */}
       <div className="pt-8 max-w-2xl">
         {creators.length > 0 ? (
-          <div className="flex flex-col gap-2.5">
-            {creators.map((item, idx) => (
-              <CreditRow
-                key={idx}
-                name={item.creator?.name || t('unknownCreator')}
-                role={item.role}
-              />
-            ))}
+          <div>
+            <h3 className="text-[13px] font-medium text-page-faint mb-3 tracking-tight">
+              {t('creditsLabel')}
+            </h3>
+            <div className="flex flex-col gap-2.5">
+              {creators.map((item, idx) => (
+                <CreditRow
+                  key={idx}
+                  name={item.creator?.name || t('unknownCreator')}
+                  role={item.role}
+                />
+              ))}
+            </div>
           </div>
         ) : null}
 
         <div
-          className={`flex flex-col gap-2 ${
+          className={`${
             creators.length > 0
               ? 'mt-6 pt-6 border-t border-[color-mix(in_srgb,var(--page-fg)_6%,transparent)]'
               : ''
           }`}
         >
+          <h3 className="text-[13px] font-medium text-page-faint mb-3 tracking-tight">
+            {t('detailsLabel')}
+          </h3>
+          <div className="flex flex-col gap-2">
           <SpecRow label={t('runtimeLabel')} value={displayRuntime} />
           <SpecRow label={t('ratingLabel')} value={displayRating} />
           <SpecRow label={t('releasedLabel')} value={releaseYear} />
+          {storyYear ? (
+            <SpecRow label={t('storyYearLabel')} value={String(storyYear)} />
+          ) : null}
           {audioLanguages.length > 0 ? (
             <SpecRow label={t('audioLabel')} value={audioLanguages.join(', ')} />
           ) : null}
@@ -247,6 +261,7 @@ export default function FilmSpecs({
                 .join(', ')}
             />
           ) : null}
+          </div>
         </div>
       </div>
     </div>

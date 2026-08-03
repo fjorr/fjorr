@@ -45,7 +45,14 @@ export async function middleware(request: NextRequest) {
     const gateCookie = request.cookies.get("site-auth")?.value;
     const isAuthenticated = await isValidGateToken(gateCookie, sitePassword);
 
-    if (pathname === "/password") {
+    // Auth callbacks must pass through — gate would strip ?code= / token_hash.
+    const isAuthCallback =
+      pathname === "/auth/confirm" ||
+      pathname.endsWith("/auth/confirm") ||
+      pathname === "/auth/error" ||
+      pathname.endsWith("/auth/error");
+
+    if (pathname === "/password" || isAuthCallback) {
       return await updateSession(request);
     }
 

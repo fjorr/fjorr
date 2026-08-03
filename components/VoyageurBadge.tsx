@@ -1,45 +1,59 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
+import VoyageurBadgeMark from '@/components/VoyageurBadgeMark';
 import type { VoyageurStamp } from '@/lib/film-record-actions';
 
-function formatStampDate(iso: string) {
-  try {
-    return new Intl.DateTimeFormat('en', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    }).format(new Date(iso));
-  } catch {
-    return '';
-  }
-}
+const ViewerStampShare = dynamic(() => import('@/components/ViewerStampShare'), {
+  ssr: false,
+});
 
 /**
  * Rams-quiet honor mark on the film page.
- * Voyageur No. + cut watched + Member # + date — never a live counter.
+ * Tap opens the stamp sheet — what the number is, and Share/copy.
  */
-export default function VoyageurBadge({ stamp }: { stamp: VoyageurStamp }) {
+export default function VoyageurBadge({
+  stamp,
+  filmName,
+  filmSlug,
+}: {
+  stamp: VoyageurStamp;
+  filmName: string;
+  filmSlug: string;
+}) {
   const t = useTranslations('Film');
-  const date = formatStampDate(stamp.recordedAt);
-  if (!date) return null;
+  const [open, setOpen] = useState(false);
 
   return (
-    <div className="mt-6 mb-2 select-none">
-      <p className="font-sans text-[13px] font-medium tracking-normal text-page">
-        {t('voyageurBadgeTitle', { number: stamp.voyageurNumber })}
-        <span className="text-page-muted">
-          {' — '}
-          {t('voyageurBadgeVersion', { version: stamp.filmVersion })}
-        </span>
-      </p>
-      <p className="mt-1 font-sans text-[11px] text-page-faint">
-        {t('voyageurBadgeMeta', {
-          member: stamp.memberNumber,
-          date,
-        })}
-      </p>
-    </div>
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="mt-6 mb-2 cursor-pointer border-0 bg-transparent p-0 text-left outline-none transition-opacity hover:opacity-90 focus-visible:rounded-[8px] focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--page-fg)_28%,transparent)]"
+        aria-label={`${t('voyageurBadgeTitle', { number: stamp.voyageurNumber })}. ${t('stampShareTitle')}`}
+      >
+        <VoyageurBadgeMark
+          voyageurNumber={stamp.voyageurNumber}
+          filmVersion={stamp.filmVersion}
+          memberNumber={stamp.memberNumber}
+          recordedAt={stamp.recordedAt}
+          tone="page"
+        />
+      </button>
+      {open ? (
+        <ViewerStampShare
+          open
+          onClose={() => setOpen(false)}
+          filmName={filmName}
+          filmSlug={filmSlug}
+          viewerNumber={stamp.voyageurNumber}
+          filmVersion={stamp.filmVersion}
+          memberNumber={stamp.memberNumber}
+          recordedAt={stamp.recordedAt}
+        />
+      ) : null}
+    </>
   );
 }

@@ -1,9 +1,15 @@
-import { createClient } from '@/lib/supabase/server';
+import { createServerClient } from '@supabase/ssr';
 import { isOwnBureauxActive } from '@/lib/bureaux';
 import { safeInternalPath } from '@/lib/site-gate';
 import { type EmailOtpType } from '@supabase/supabase-js';
 import { NextResponse, type NextRequest } from 'next/server';
-import { redirect } from 'next/navigation';
+
+function supabaseAnonKey() {
+  return (
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+}
 
 function resolvePostAuthPath(next: string, bureauxActive: boolean) {
   const path = next.split('?')[0] || '/';
@@ -17,9 +23,22 @@ function resolvePostAuthPath(next: string, bureauxActive: boolean) {
   return next;
 }
 
+function errorRedirect(request: NextRequest, message: string) {
+  const url = new URL('/auth/error', request.nextUrl.origin);
+  url.searchParams.set('error', message);
+  return NextResponse.redirect(url);
+}
+
+type CookieToSet = {
+  name: string;
+  value: string;
+  options?: Parameters<NextResponse['cookies']['set']>[2];
+};
+
 /**
  * Completes magic-link / OTP / OAuth sign-in.
  * Supports token_hash (email templates) and PKCE `code` exchange.
+ * Session cookies are written onto the redirect response (Next 15+/16).
  */
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -33,12 +52,22 @@ export async function GET(request: NextRequest) {
     '/bureaux'
   );
 
-  const supabase = await createClient();
+  const cookiesToSet: CookieToSet[] = [];
 
-  const clearNextCookie = (response: NextResponse) => {
-    response.cookies.set('fjorr_auth_next', '', { path: '/', maxAge: 0 });
-    return response;
-  };
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    supabaseAnonKey(),
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(next) {
+          cookiesToSet.push(...next);
+        },
+      },
+    }
+  );
 
   const finish = async () => {
     const {
@@ -46,8 +75,14 @@ export async function GET(request: NextRequest) {
     } = await supabase.auth.getUser();
     const bureauxActive = user ? await isOwnBureauxActive(user.id) : false;
     const next = resolvePostAuthPath(requestedNext, bureauxActive);
-    const res = NextResponse.redirect(new URL(next, request.nextUrl.origin));
-    return clearNextCookie(res);
+    const response = NextResponse.redirect(
+      new URL(next, request.nextUrl.origin)
+    );
+    cookiesToSet.forEach(({ name, value, options }) => {
+      response.cookies.set(name, value, options);
+    });
+    response.cookies.set('fjorr_auth_next', '', { path: '/', maxAge: 0 });
+    return response;
   };
 
   if (code) {
@@ -55,7 +90,7 @@ export async function GET(request: NextRequest) {
     if (!error) {
       return finish();
     }
-    redirect(`/auth/error?error=${encodeURIComponent(error.message)}`);
+    return errorRedirect(request, error.message);
   }
 
   if (token_hash && type) {
@@ -66,10 +101,8 @@ export async function GET(request: NextRequest) {
     if (!error) {
       return finish();
     }
-    redirect(`/auth/error?error=${encodeURIComponent(error.message)}`);
+    return errorRedirect(request, error.message);
   }
 
-  redirect(
-    `/auth/error?error=${encodeURIComponent('Missing auth code or token')}`
-  );
+  return errorRedirect(request, 'Missing auth code or token');
 }

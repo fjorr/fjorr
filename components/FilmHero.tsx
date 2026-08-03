@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 import HeroPicture from '@/components/HeroPicture';
+import { Icon } from '@/components/ui/Icons';
 import { resolveTitleArtColor, sanitizeTitleArtSvg } from '@/lib/sanitize-svg';
 import { formatResumeClock } from '@/lib/watch-progress';
 
@@ -138,7 +139,11 @@ export default function FilmHero({
                 const storyDateVal =
                   typeof film.story_date === 'object' ? film.story_date?.name : film.story_date;
                 if (!storyDateVal) return null;
-                return <span className="text-white/60 font-medium">{storyDateVal}</span>;
+                return (
+                  <span className="text-white/60 font-medium">
+                    {t('setIn', { date: storyDateVal })}
+                  </span>
+                );
               })()}
             </div>
 
@@ -172,8 +177,9 @@ export default function FilmHero({
               <button
                 type="button"
                 onClick={() => setSendOpen(true)}
-                className="h-10 inline-flex items-center justify-center bg-transparent text-white/75 hover:text-white font-sans font-semibold text-sm tracking-normal transition-colors duration-150 cursor-pointer border-0 outline-none px-0"
+                className="h-10 inline-flex items-center justify-center gap-1.5 bg-transparent text-white/75 hover:text-white font-sans font-semibold text-sm tracking-normal transition-colors duration-150 cursor-pointer border-0 outline-none px-0"
               >
+                <Icon name="bolt" className="h-4 w-4" aria-hidden />
                 {t('send')}
               </button>
             </div>

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import VoyageurBadgeMark from '@/components/VoyageurBadgeMark';
 import { absoluteUrl } from '@/lib/site';
 import { filmSharePath } from '@/lib/voyage-via';
 
@@ -16,15 +17,19 @@ type Props = {
   recordedAt?: string | null;
 };
 
-function formatStampDate(iso: string) {
-  try {
-    return new Intl.DateTimeFormat('en', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    }).format(new Date(iso));
-  } catch {
-    return '';
+function formatOrdinal(n: number) {
+  const abs = Math.abs(Math.trunc(n));
+  const mod100 = abs % 100;
+  if (mod100 >= 11 && mod100 <= 13) return `${abs}th`;
+  switch (abs % 10) {
+    case 1:
+      return `${abs}st`;
+    case 2:
+      return `${abs}nd`;
+    case 3:
+      return `${abs}rd`;
+    default:
+      return `${abs}th`;
   }
 }
 
@@ -47,8 +52,6 @@ export default function ViewerStampShare({
   const panelRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
   const [canNativeShare, setCanNativeShare] = useState(false);
-  const stampDate = recordedAt ? formatStampDate(recordedAt) : '';
-
   const filmUrl = absoluteUrl(
     filmSharePath({ slug: filmSlug, memberNumber })
   );
@@ -123,29 +126,19 @@ export default function ViewerStampShare({
         className="relative w-full sm:max-w-[380px] rounded-t-[16px] sm:rounded-[16px] border border-white/10 bg-[#1F1F1F] shadow-[0_24px_80px_rgba(0,0,0,0.55)] p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]"
         onClick={(e) => e.stopPropagation()}
       >
-        <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-white/35 mb-3">
-          {t('stampShareEyebrow')}
-        </p>
-        <h2 className="font-sans text-[22px] font-bold tracking-tight text-white leading-tight mb-2">
-          {t('stampShareHeadline', { number: viewerNumber })}
-        </h2>
-        <p className="font-sans text-[13px] text-white/45 mb-1">
-          {t('voyageurBadgeVersion', { version: filmVersion })}
-        </p>
-        {memberNumber && stampDate ? (
-          <p className="font-sans text-[12px] text-white/35 mb-3">
-            {t('voyageurBadgeMeta', {
-              member: memberNumber,
-              date: stampDate,
-            })}
-          </p>
-        ) : memberNumber ? (
-          <p className="font-sans text-[12px] text-white/35 mb-3">
-            {t('voyageurBadgeMember', { member: memberNumber })}
-          </p>
-        ) : null}
+        <VoyageurBadgeMark
+          voyageurNumber={viewerNumber}
+          filmVersion={filmVersion}
+          memberNumber={memberNumber}
+          recordedAt={recordedAt}
+          tone="onDark"
+          className="mb-5"
+        />
         <p className="font-sans text-[14px] text-white/50 leading-relaxed mb-6">
-          {t('stampShareBody', { title: filmName })}
+          {t('stampShareBody', {
+            title: filmName,
+            ordinal: formatOrdinal(viewerNumber),
+          })}
         </p>
 
         <div className="flex flex-col gap-2">

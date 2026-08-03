@@ -14,7 +14,7 @@ export type ManualAction = {
 };
 
 export type ManualEntry = {
-  /** 00 … 11 */
+  /** 00 … 12 */
   number: string;
   slug: string;
   title: string;
@@ -53,6 +53,16 @@ export const MANUAL_ENTRIES: ManualEntry[] = [
   },
   {
     number: '02',
+    slug: 'ad-free',
+    title: 'Ad-free',
+    what: 'There are no ads on Fjorr. Not before a film. Not after. Not in the middle.',
+    happens:
+      'No pre-rolls, no banners, no mid-rolls, no sponsored interruptions. Watching stays clean — the Bureaux funds the work, not advertisers.',
+    actions: both([{ href: '/', label: 'Watch a film' }]),
+    plate: '/manual/ad-free.svg',
+  },
+  {
+    number: '03',
     slug: 'join',
     title: 'Join',
     what: "The Bureaux — annual membership. It funds the mission and it's how you take part.",
@@ -64,7 +74,7 @@ export const MANUAL_ENTRIES: ManualEntry[] = [
     },
   },
   {
-    number: '03',
+    number: '04',
     slug: 'nominate',
     title: 'Nominate',
     what: 'Send a story Fjorr should make, or open a bounty on one.',
@@ -76,7 +86,7 @@ export const MANUAL_ENTRIES: ManualEntry[] = [
     },
   },
   {
-    number: '04',
+    number: '05',
     slug: 'plus',
     title: 'Plus Machine',
     what: 'Mark a moment in a film. Send a craft note to Fjorr — for members, while watching, from inside the film.',
@@ -88,7 +98,7 @@ export const MANUAL_ENTRIES: ManualEntry[] = [
     },
   },
   {
-    number: '05',
+    number: '06',
     slug: 'account',
     title: 'Account',
     what: 'Where members manage Voyages, nominations, and privacy.',
@@ -100,7 +110,7 @@ export const MANUAL_ENTRIES: ManualEntry[] = [
     },
   },
   {
-    number: '06',
+    number: '07',
     slug: 'contact',
     title: 'Contact',
     what: 'Partnership, press, or something worth making.',
@@ -111,7 +121,7 @@ export const MANUAL_ENTRIES: ManualEntry[] = [
     ]),
   },
   {
-    number: '07',
+    number: '08',
     slug: 'voyages',
     title: 'Voyages',
     what: "Your Voyageur No. — where you land in a film's watch order, first through thousandth.",
@@ -123,7 +133,7 @@ export const MANUAL_ENTRIES: ManualEntry[] = [
     },
   },
   {
-    number: '08',
+    number: '09',
     slug: 'bounties',
     title: 'Bounties',
     what: 'Open hunts for stories Fjorr wants made, with a reward attached.',
@@ -132,7 +142,7 @@ export const MANUAL_ENTRIES: ManualEntry[] = [
     actions: both([{ href: '/bounties', label: 'Browse Bounties' }]),
   },
   {
-    number: '09',
+    number: '10',
     slug: 'living-films',
     title: 'Living films',
     what: "No film on Fjorr is version final. Every one can be sharpened — that's what Plus Machine is for.",
@@ -141,7 +151,7 @@ export const MANUAL_ENTRIES: ManualEntry[] = [
     actions: both([{ href: '/plus', label: 'Read Plus Machine' }]),
   },
   {
-    number: '10',
+    number: '11',
     slug: 'cancel',
     title: 'Cancel',
     what: 'What happens when you stop paying for the Bureaux.',
@@ -153,7 +163,7 @@ export const MANUAL_ENTRIES: ManualEntry[] = [
     },
   },
   {
-    number: '11',
+    number: '12',
     slug: 'terms-privacy',
     title: 'Terms & privacy',
     what: 'The rules, and what happens to your data.',

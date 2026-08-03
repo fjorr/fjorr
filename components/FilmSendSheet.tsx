@@ -12,6 +12,7 @@ import {
   getOwnVoyageurStampForFilm,
   type VoyageurStamp,
 } from '@/lib/film-record-actions';
+import VoyageurBadgeMark from '@/components/VoyageurBadgeMark';
 import { formatCueClock } from '@/lib/vtt';
 import { filmSharePath } from '@/lib/voyage-via';
 
@@ -33,18 +34,6 @@ type FilmSendSheetProps = {
 
 async function copyText(text: string) {
   await navigator.clipboard.writeText(text);
-}
-
-function formatStampDate(iso: string) {
-  try {
-    return new Intl.DateTimeFormat('en', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    }).format(new Date(iso));
-  } catch {
-    return '';
-  }
 }
 
 export default function FilmSendSheet({
@@ -134,7 +123,6 @@ export default function FilmSendSheet({
     : null;
 
   const poster = film.blok_tall || film.hero_tall || null;
-  const stampDate = stamp ? formatStampDate(stamp.recordedAt) : '';
 
   const embedSnippet = `<iframe src="${embedUrl}" title="${(film.name || 'Fjorr').replace(/"/g, '&quot;')} — Fjorr" width="100%" height="100%" style="aspect-ratio:16/9;width:100%;border:0;border-radius:12px;overflow:hidden" allow="accelerometer; autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="lazy"></iframe>`;
 
@@ -255,22 +243,15 @@ export default function FilmSendSheet({
           </button>
         </div>
 
-        {stamp && stampDate ? (
-          <div className="mb-5 rounded-[10px] border border-white/10 bg-white/[0.04] px-3.5 py-3">
-            <p className="font-sans text-[13px] font-medium tracking-normal text-white">
-              {t('voyageurBadgeTitle', { number: stamp.voyageurNumber })}
-              <span className="text-white/45">
-                {' — '}
-                {t('voyageurBadgeVersion', { version: stamp.filmVersion })}
-              </span>
-            </p>
-            <p className="mt-1 font-sans text-[11px] text-white/35">
-              {t('voyageurBadgeMeta', {
-                member: stamp.memberNumber,
-                date: stampDate,
-              })}
-            </p>
-          </div>
+        {stamp ? (
+          <VoyageurBadgeMark
+            voyageurNumber={stamp.voyageurNumber}
+            filmVersion={stamp.filmVersion}
+            memberNumber={stamp.memberNumber}
+            recordedAt={stamp.recordedAt}
+            tone="onDark"
+            className="mb-5"
+          />
         ) : null}
 
         <div className="flex flex-col gap-2">

@@ -158,9 +158,9 @@ function Navbar({ variant = 'light' }: NavbarProps) {
 
   if (isTheaterOpen) return null;
 
-  /** Scales down on narrow viewports; truncate is the last-resort fit for long locales. */
+  /** Scales down on narrow viewports — never ellipsize; the bar grows to fit. */
   const taglineClass =
-    'font-sans font-medium tracking-normal whitespace-nowrap text-[clamp(9px,0.2rem+1.7vw,12px)]';
+    'font-sans font-medium tracking-normal whitespace-nowrap text-[clamp(10px,0.2rem+1.8vw,13px)]';
 
   return (
     <header className="sticky top-0 z-50 w-full h-[56px] pt-[12px] px-4 flex justify-center pointer-events-none overflow-visible">
@@ -174,11 +174,11 @@ function Navbar({ variant = 'light' }: NavbarProps) {
         >
           <div className="w-[50px] shrink-0" />
           {showTagline ? (
-            <span className={`${taglineClass} min-w-0 flex-1 truncate sm:flex-initial`}>
+            <span className={`${taglineClass} shrink-0`}>
               {t('tagline')}
             </span>
           ) : null}
-          <div className="w-[8.5rem] shrink-0" />
+          <div className="w-[10.5rem] shrink-0" />
         </div>
 
         <div
@@ -207,9 +207,9 @@ function Navbar({ variant = 'light' }: NavbarProps) {
             </Link>
 
             <div
-              className={`min-w-0 flex-1 overflow-hidden transition-[opacity,max-width] duration-300 ease-out ${
+              className={`shrink-0 overflow-hidden transition-[opacity,max-width] duration-300 ease-out ${
                 showTagline
-                  ? 'opacity-100 max-w-[22rem]'
+                  ? 'opacity-100 max-w-[40rem]'
                   : 'opacity-0 max-w-0 pointer-events-none'
               }`}
             >
@@ -218,9 +218,9 @@ function Navbar({ variant = 'light' }: NavbarProps) {
                 onClick={closePanel}
                 tabIndex={showTagline ? undefined : -1}
                 aria-hidden={!showTagline}
-                className="flex items-center min-w-0 overflow-hidden cursor-pointer transition-opacity hover:opacity-80"
+                className="flex items-center cursor-pointer transition-opacity hover:opacity-80"
               >
-                <span className={`${taglineClass} truncate select-none ${subTextColor}`}>
+                <span className={`${taglineClass} select-none ${subTextColor}`}>
                   {t('tagline')}
                 </span>
               </Link>
