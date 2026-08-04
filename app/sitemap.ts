@@ -52,12 +52,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/bounties',
     '/cabinet',
     '/bureaux',
-    '/plus',
     '/nominate',
+    '/manual/plus',
     '/partner',
-    '/privacy',
-    '/terms',
     '/manual',
+    '/manual/terms',
+    '/manual/privacy',
   ];
   const staticRoutes: MetadataRoute.Sitemap = staticPaths.map((path) =>
     entry(

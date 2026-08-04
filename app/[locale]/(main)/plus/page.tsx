@@ -1,15 +1,8 @@
-import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
-import PlusClient from './PlusClient';
+import { redirect } from '@/i18n/navigation';
+import { getLocale } from 'next-intl/server';
 
-export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations('Meta');
-  return {
-    title: t('plusTitle'),
-    description: t('plusDescription'),
-  };
-}
-
-export default function PlusPage() {
-  return <PlusClient />;
+/** Plus Machine doctrine lives in The Manual. */
+export default async function PlusPage() {
+  const locale = await getLocale();
+  redirect({ href: '/manual/plus', locale });
 }

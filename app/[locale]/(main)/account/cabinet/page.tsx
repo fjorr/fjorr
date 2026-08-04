@@ -23,10 +23,8 @@ export default async function AccountCabinetPage() {
       profile={profile}
       title={t('cabinetTitle')}
       description={t('cabinetBody')}
-      headerLinks={[
-        { href: '/cabinet', label: t('cabinetLinkPublic') },
-        { href: '/manual/account', label: t('viewManual') },
-      ]}
+      headerLinks={[{ href: '/cabinet', label: t('cabinetLinkPublic') }]}
+      manualSlug="cabinet"
       wide
       introNarrow
     >

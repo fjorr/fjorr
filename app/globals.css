@@ -143,6 +143,43 @@ body {
   transition: height 0.38s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* Principles — ease height between myth cards. */
+.principles-card-height {
+  transition: height 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Principles — soft settle on first slide load. */
+@keyframes principlesHeroIn {
+  0% {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.principles-hero-in {
+  animation: principlesHeroIn 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Principles — soft settle between slides */
+@keyframes principlesSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.principles-slide-in {
+  animation: principlesSlideIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
 /* Manual card — scroll without a scrollbar; edge fades hint at more. */
 .manual-scroll {
   scrollbar-width: none;
@@ -157,11 +194,14 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .manual-folio-in,
-  .manual-card-in {
+  .manual-card-in,
+  .principles-hero-in,
+  .principles-slide-in {
     animation: none;
   }
 
-  .manual-body-height {
+  .manual-body-height,
+  .principles-card-height {
     transition: none;
   }
 }

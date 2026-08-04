@@ -95,7 +95,7 @@ export default async function AccountBureauxPage({
       profile={profile}
       title={t('bureauxTitle')}
       description={t('bureauxBody')}
-      headerLinks={[{ href: '/manual/join', label: t('viewManual') }]}
+      manualSlug="join"
       narrow
       introNarrow
     >

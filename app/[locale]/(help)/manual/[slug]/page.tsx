@@ -6,6 +6,7 @@ import {
   MANUAL_LEGACY_REDIRECTS,
   getManualEntry,
   listManualEntries,
+  manualEntryDescription,
   manualEntryHref,
 } from '@/lib/help/content';
 
@@ -28,7 +29,7 @@ export async function generateMetadata({
   if (!entry) return { title: 'The Manual' };
   return {
     title: `${entry.number} ${entry.title}`,
-    description: entry.what,
+    description: manualEntryDescription(entry),
     alternates: { canonical: manualEntryHref(entry.slug) },
   };
 }

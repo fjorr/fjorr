@@ -3,6 +3,7 @@
 import React from 'react';
 import { useTranslations } from 'next-intl';
 import CabinetOfferForm from '@/components/CabinetOfferForm';
+import ManualHelpButton from '@/components/help/ManualHelpButton';
 
 export default function CabinetClient({
   bureauxActive = false,
@@ -47,6 +48,10 @@ export default function CabinetClient({
             <CabinetOfferForm
               bureauxActive={bureauxActive}
               defaultEmail={defaultEmail}
+            />
+            <ManualHelpButton
+              slug="cabinet"
+              audience={bureauxActive ? 'member' : 'guest'}
             />
           </footer>
         </div>

@@ -174,10 +174,7 @@ export default function AccountNav({
     <>
       <div className="px-2 flex flex-col gap-2">{identity}</div>
 
-      <nav
-        aria-label={t('accountTitle')}
-        className="flex flex-col px-1 flex-1 min-h-0"
-      >
+      <nav aria-label={t('accountTitle')} className="flex flex-col px-1">
         <ul className="flex flex-col gap-0.5 list-none m-0 p-0">
           {items.map((item) => {
             const active = isActive(pathname, item);
@@ -196,15 +193,14 @@ export default function AccountNav({
             );
           })}
         </ul>
+        <button
+          type="button"
+          onClick={() => void handleSignOut()}
+          className="mt-2 self-start mx-1.5 font-sans text-[13px] font-semibold text-page-faint hover:text-page-muted transition-colors"
+        >
+          {t('signOut')}
+        </button>
       </nav>
-
-      <button
-        type="button"
-        onClick={() => void handleSignOut()}
-        className="mt-auto self-start mx-2 font-sans text-[13px] font-semibold text-page-faint hover:text-page-muted transition-colors"
-      >
-        {t('signOut')}
-      </button>
     </>
   );
 
@@ -297,17 +293,14 @@ export default function AccountNav({
                         </Link>
                       );
                     })}
-                  </nav>
-
-                  <div className="pt-4 border-t border-page-faint">
                     <button
                       type="button"
                       onClick={() => void handleSignOut()}
-                      className="font-sans text-[15px] font-semibold tracking-tight text-page-faint hover:text-page-muted transition-colors"
+                      className="mt-1 self-start font-sans text-[15px] font-semibold tracking-tight text-page-faint hover:text-page-muted transition-colors"
                     >
                       {t('signOut')}
                     </button>
-                  </div>
+                  </nav>
                 </div>
               </div>
             </div>

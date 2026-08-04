@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import NominateSuccessView from '@/components/NominateSuccessView';
+import ManualHelpButton from '@/components/help/ManualHelpButton';
 import {
   submitNomination,
   type BountyRow,
@@ -209,22 +210,26 @@ export default function NominateClient({
                 >
                   {t('joinToNominate')}
                 </Link>
-                <Link
-                  href="/bounties"
-                  className="font-sans text-[13px] sm:text-[14px] font-semibold text-page-muted hover:text-page transition-colors underline underline-offset-2"
-                >
-                  {t('viewOpenBounties')}
-                </Link>
+                <div className="flex flex-col items-center gap-2.5">
+                  <Link
+                    href="/principles"
+                    className="font-sans text-[13px] sm:text-[14px] font-semibold text-page-muted hover:text-page transition-colors underline underline-offset-2"
+                  >
+                    {t('principlesLink')}
+                  </Link>
+                  <ManualHelpButton slug="nominate" audience="guest" />
+                </div>
               </div>
             ) : (
               <>
-              <div className="mt-4 mb-10 flex flex-col items-center gap-3 opacity-0 animate-slide-up style-delay-body">
+              <div className="mt-4 mb-10 flex flex-col items-center gap-2.5 opacity-0 animate-slide-up style-delay-body">
                 <Link
-                  href="/bounties"
+                  href="/principles"
                   className="font-sans text-[13px] sm:text-[14px] font-semibold text-page-muted hover:text-page transition-colors underline underline-offset-2"
                 >
-                  {t('viewOpenBounties')}
+                  {t('principlesLink')}
                 </Link>
+                <ManualHelpButton slug="nominate" audience="member" />
               </div>
               <form
                 onSubmit={handleSubmit}

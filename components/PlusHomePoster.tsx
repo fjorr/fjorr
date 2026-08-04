@@ -8,7 +8,7 @@ export default async function PlusHomePoster() {
 
   return (
     <HomePromoTile
-      href="/plus"
+      href="/manual/plus"
       headline={t('homePosterHeadline')}
       subhead={t('homePosterSubhead')}
       cta={t('homePosterCta')}

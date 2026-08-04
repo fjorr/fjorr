@@ -3,6 +3,7 @@
 import React from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
+import ManualHelpButton from '@/components/help/ManualHelpButton';
 import type { BountyRow } from '@/lib/nomination-actions';
 
 function formatMoney(cents: number, currency: string) {
@@ -107,25 +108,15 @@ export default function BountiesClient({
           </div>
 
           {bureauxActive ? (
-            <>
-              <div className="mt-4 flex flex-col items-start gap-2">
-                <Link
-                  href="/principles"
-                  className="font-sans text-[13px] sm:text-[14px] font-semibold text-page-muted hover:text-page transition-colors underline underline-offset-2"
-                >
-                  {t('principlesLink')}
-                </Link>
-              </div>
-              <p className="mt-3 font-sans text-[13px] sm:text-[14px] leading-snug text-page-muted max-w-sm tracking-normal">
-                {t('generalBlurb')}{' '}
-                <Link
-                  href="/nominate"
-                  className="font-semibold underline underline-offset-2 hover:text-page transition-colors"
-                >
-                  {t('generalPitch')}
-                </Link>
-              </p>
-            </>
+            <div className="mt-4 flex flex-col items-center gap-2.5">
+              <Link
+                href="/principles"
+                className="font-sans text-[13px] sm:text-[14px] font-semibold text-page-muted hover:text-page transition-colors underline underline-offset-2"
+              >
+                {t('principlesLink')}
+              </Link>
+              <ManualHelpButton slug="bounties" audience="member" />
+            </div>
           ) : (
             <div className="mt-8 w-full max-w-sm flex flex-col items-center gap-5">
               <p className="font-sans font-medium text-[14px] leading-relaxed text-page-muted tracking-tight text-center">

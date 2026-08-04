@@ -10,6 +10,9 @@ import { isColorSchemeLockedPath } from '@/lib/color-scheme';
 export default function LayoutClientWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() || '';
   const isWatchPage = pathname.startsWith('/watch');
+  const isPrinciplesPage =
+    pathname === '/principles' || pathname.startsWith('/principles/');
+  const hideChrome = isWatchPage || isPrinciplesPage;
   const isArtifactPage = pathname.startsWith('/artifact/');
   const isLocked = isColorSchemeLockedPath(pathname);
   const { isLight } = useColorScheme();
@@ -52,11 +55,11 @@ export default function LayoutClientWrapper({ children }: { children: React.Reac
       }
       className="relative flex flex-col min-h-screen justify-between bg-[var(--page-bg)] text-[var(--page-fg)]"
     >
-      {!isWatchPage && <Navbar variant={navVariant} />}
+      {!hideChrome && <Navbar variant={navVariant} />}
 
       <main className="flex-grow w-full relative">{children}</main>
 
-      {!isWatchPage && <Footer variant={footerVariant} />}
+      {!hideChrome && <Footer variant={footerVariant} />}
     </div>
   );
 }

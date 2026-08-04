@@ -17,7 +17,6 @@ export default async function AccountPlusPage() {
   const { user, profile } = await requireOwnAccount('/account/plus');
   const notes = await getOwnFilmNotes(user.id);
   const t = await getTranslations('Plus');
-  const tAccount = await getTranslations('Account');
   const hasRecords = notes.length > 0;
 
   return (
@@ -26,17 +25,9 @@ export default async function AccountPlusPage() {
       title={t('logsTitle')}
       description={hasRecords ? t('logsBody') : t('logsBodyEmpty')}
       headerLinks={
-        hasRecords
-          ? [
-              { href: '/plus#how', label: t('logsLinkHow') },
-              { href: '/manual/plus', label: tAccount('viewManual') },
-            ]
-          : [
-              { href: '/plus#how', label: t('logsLinkHow') },
-              { href: '/', label: t('logsLinkExplore') },
-              { href: '/manual/plus', label: tAccount('viewManual') },
-            ]
+        hasRecords ? undefined : [{ href: '/', label: t('logsLinkExplore') }]
       }
+      manualSlug="plus"
       wide
       introNarrow
     >

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from '@/i18n/navigation';
 import AccountNav from '@/components/AccountNav';
+import ManualHelpButton from '@/components/help/ManualHelpButton';
 import type { ScoutProfile } from '@/lib/profile';
 import {
   ensureBureauxNumber,
@@ -22,6 +23,7 @@ export default async function AccountShell({
   description,
   descriptionNote,
   headerLinks,
+  manualSlug,
   wide = false,
   narrow = false,
   introNarrow = false,
@@ -34,6 +36,8 @@ export default async function AccountShell({
   descriptionNote?: string;
   /** Quiet text links under the intro (e.g. Nominate · Bounties). */
   headerLinks?: AccountHeaderLink[];
+  /** Opens Manual card modal for this entry (BookOpen + Manual). */
+  manualSlug?: string;
   /** Stretch main pane content to full available width (e.g. Voyages table). */
   wide?: boolean;
   /** Form pages — ~560px reading/editing column. */
@@ -85,9 +89,9 @@ export default async function AccountShell({
                 {descriptionNote}
               </p>
             ) : null}
-            {headerLinks && headerLinks.length > 0 ? (
-              <p className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-0.5">
-                {headerLinks.map((link) => (
+            {(headerLinks && headerLinks.length > 0) || manualSlug ? (
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 pt-0.5">
+                {headerLinks?.map((link) => (
                   <Link
                     key={`${link.href}-${link.label}`}
                     href={link.href}
@@ -96,7 +100,10 @@ export default async function AccountShell({
                     {link.label}
                   </Link>
                 ))}
-              </p>
+                {manualSlug ? (
+                  <ManualHelpButton slug={manualSlug} audience="member" />
+                ) : null}
+              </div>
             ) : null}
           </header>
           {children}

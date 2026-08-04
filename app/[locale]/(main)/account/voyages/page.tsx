@@ -26,13 +26,9 @@ export default async function AccountVoyagesPage() {
       description={t('filmLogsBody')}
       descriptionNote={t('filmLogsNote')}
       headerLinks={
-        hasVoyages
-          ? [{ href: '/manual/voyages', label: t('viewManual') }]
-          : [
-              { href: '/', label: t('filmLogsEmptyCta') },
-              { href: '/manual/voyages', label: t('viewManual') },
-            ]
+        hasVoyages ? undefined : [{ href: '/', label: t('filmLogsEmptyCta') }]
       }
+      manualSlug="voyages"
       wide
       introNarrow
     >
