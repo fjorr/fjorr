@@ -28,14 +28,23 @@ type Mode = 'page' | 'modal';
 
 /** Cap body height to match card max (header is h-14 / 3.5rem). */
 const MANUAL_HEADER_PX = 56;
+/** Mobile inset so the page bag shows as a border (p-3 × 2). */
+const MANUAL_MOBILE_INSET_PX = 24;
+
+function isManualDesktop() {
+  return (
+    typeof window !== 'undefined' &&
+    window.matchMedia('(min-width: 640px)').matches
+  );
+}
 
 function getManualBodyMaxPx() {
   if (typeof window === 'undefined') return 36 * 16 - MANUAL_HEADER_PX;
   const dvh = window.innerHeight;
-  const isSm = window.matchMedia('(min-width: 640px)').matches;
-  const cardMax = isSm
-    ? Math.min(dvh * 0.76, 38 * 16)
-    : Math.min(dvh * 0.72, 36 * 16);
+  if (!isManualDesktop()) {
+    return Math.max(200, dvh - MANUAL_MOBILE_INSET_PX - MANUAL_HEADER_PX);
+  }
+  const cardMax = Math.min(dvh * 0.76, 38 * 16);
   return cardMax - MANUAL_HEADER_PX;
 }
 
@@ -86,7 +95,11 @@ export default function ManualMiniSite({
   const syncBodyHeight = useCallback(() => {
     const content = contentRef.current;
     if (!content) return;
-    const next = Math.min(content.scrollHeight, getManualBodyMaxPx());
+    const max = getManualBodyMaxPx();
+    // Mobile: fill the tall card. Desktop: hug content up to the cap.
+    const next = isManualDesktop()
+      ? Math.min(content.scrollHeight, max)
+      : max;
     setBodyHeight(next);
   }, []);
 
@@ -202,7 +215,7 @@ export default function ManualMiniSite({
   };
 
   return (
-    <div className="relative w-full max-w-[28rem] max-h-[min(72dvh,36rem)] sm:max-h-[min(76dvh,38rem)] flex flex-col rounded-[16px] bg-page-elevated text-page overflow-visible">
+    <div className="relative w-full max-w-[28rem] h-[calc(100dvh-1.5rem)] max-h-[calc(100dvh-1.5rem)] sm:h-auto sm:max-h-[min(76dvh,38rem)] flex flex-col rounded-[16px] bg-page-elevated text-page overflow-visible">
       {/* Card chrome */}
       <header className="shrink-0 flex items-center justify-between gap-3 px-10 sm:px-11 h-14 border-b border-[color-mix(in_srgb,var(--page-fg)_8%,transparent)] bg-page-elevated rounded-t-[16px]">
         <button

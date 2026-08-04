@@ -16,7 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function ManualIndexPage() {
   const viewer = await getManualViewer();
   return (
-    <div className="w-full min-h-[min(72dvh,36rem)] flex items-center justify-center">
+    <div className="w-full min-h-[calc(100dvh-1.5rem)] sm:min-h-[min(72dvh,36rem)] flex items-center justify-center">
       <ManualMiniSite
         mode="page"
         slug={null}

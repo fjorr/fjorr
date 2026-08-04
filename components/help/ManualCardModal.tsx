@@ -48,7 +48,7 @@ export default function ManualCardModal({
   if (!open || !mounted) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[100060] flex items-center justify-center p-4 sm:p-8 text-left">
+    <div className="fixed inset-0 z-[100060] flex items-center justify-center p-3 sm:p-8 text-left">
       <button
         type="button"
         aria-label={t('close')}
