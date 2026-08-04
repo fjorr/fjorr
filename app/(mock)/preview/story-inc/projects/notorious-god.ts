@@ -8,10 +8,14 @@ import type { ProjectPageData } from '../project-types';
 const A = '/preview/story-inc/notorious-god';
 const img = {
   heroTitle: `${A}/hero-title.jpg`,
+  /** Landscape — face-centered crop of studio portrait. */
   rainn: `${A}/rainn-portrait.jpg`,
+  /** Square — face-centered for team avatar. */
+  rainnFace: `${A}/rainn-face.jpg`,
   rainnGesture: `${A}/rainn-gesture.jpg`,
   rainnDoorway: `${A}/rainn-doorway.jpg`,
-  soulBoom: `${A}/soul-boom.png`,
+  /** Full cover letterboxed in landscape for reward cards. */
+  soulBoom: `${A}/soul-boom-cover.jpg`,
   screening: `${A}/screening.jpg`,
   pope: `${A}/pope.jpg`,
   tippett: `${A}/krista-tippett.jpg`,
@@ -372,7 +376,7 @@ export const NOTORIOUS_GOD: ProjectPageData = {
   filmmakerBody:
     'Hosted by Rainn Wilson — actor, writer, founder of SoulPancake, and author of the New York Times bestseller Soul Boom. Directed by Penny Lane, whose documentaries include Our Nixon, Hail Satan?, and Confessions of a Good Samaritan. Fully funded by The John Templeton Foundation.',
   team: [
-    { name: 'Rainn Wilson', image: img.rainn },
+    { name: 'Rainn Wilson', image: img.rainnFace },
     { name: 'Penny Lane' },
   ],
   notifyBody:
