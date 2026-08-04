@@ -6,6 +6,10 @@ const img = {
   marketBeast: `${A}/market-mrbeast.png`,
   marketVillain: `${A}/market-villain.png`,
   marketBox: `${A}/market-box-office.png`,
+  rewardBts: `${A}/reward-bts.png`,
+  rewardPremiere: `${A}/reward-premiere.png`,
+  rewardMerch: `${A}/reward-merch.png`,
+  rewardShoutout: `${A}/reward-shoutout.png`,
 } as const;
 
 /** Angry Birds 3 — Story Inc client comp on the shared Rolling Loud template. */
@@ -50,6 +54,8 @@ export const ANGRY_BIRDS: ProjectPageData = {
           title: 'Behind-the-scenes digital access',
           body: 'Exclusive looks at how each story comes to life.',
           color: '#12324a',
+          image: img.rewardBts,
+          imagePosition: 'center',
         },
         {
           id: 'premiere',
@@ -58,6 +64,8 @@ export const ANGRY_BIRDS: ProjectPageData = {
           title: 'Movie premiere',
           body: 'Two tickets to the opening night movie premiere.',
           color: '#0f1a2e',
+          image: img.rewardPremiere,
+          imagePosition: 'center',
         },
         {
           id: 'merch',
@@ -66,6 +74,18 @@ export const ANGRY_BIRDS: ProjectPageData = {
           title: 'Merchandise',
           body: 'Limited-edition gear for true fans.',
           color: '#c43c2c',
+          image: img.rewardMerch,
+          imagePosition: 'center',
+        },
+        {
+          id: 'shoutout',
+          caption: '',
+          status: 'Open now',
+          title: 'Virtual shout out from Marcello Hernandez',
+          body: 'A personal video shout out from Marcello Hernandez.',
+          color: '#3d2a5c',
+          image: img.rewardShoutout,
+          imagePosition: 'center',
         },
       ],
     },
