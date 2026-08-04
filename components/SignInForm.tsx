@@ -135,7 +135,7 @@ export default function SignInForm({
     : 'font-sans text-2xl font-bold tracking-tight text-white text-center';
   const bodyClass = isMenu
     ? `font-sans text-[13px] leading-snug text-left ${bodyColor}`
-    : 'font-sans text-[15px] text-white/55 leading-relaxed text-center';
+    : 'font-sans text-[16px] text-white/55 leading-relaxed text-center';
 
   if (status === 'sent') {
     return (

@@ -52,7 +52,7 @@ export default function NotFound() {
           
 
             {/* THE EDITORIAL DECK BLURB */}
-            <p className="text-[15px] md:text-[16px] font-medium font-inter text-zinc-400 max-w-xs tracking-relaxed leading-relaxed mb-4">
+            <p className="text-[16px] font-medium font-inter text-zinc-400 max-w-xs tracking-relaxed leading-relaxed mb-4">
               {t('body')}
             </p>
 

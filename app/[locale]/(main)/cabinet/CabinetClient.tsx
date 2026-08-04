@@ -38,7 +38,7 @@ export default function CabinetClient({
             <h1 className="mt-2 sm:mt-2.5 mb-5 sm:mb-6 font-futura tracking-tighter text-page select-none text-5xl sm:text-6xl md:text-7xl !leading-[0.9] max-w-[12ch]">
               {t('headline')}
             </h1>
-            <div className="font-sans font-medium text-[15px] sm:text-[16px] leading-[1.55] tracking-normal text-page max-w-md text-center flex flex-col gap-4">
+            <div className="font-sans font-medium text-[16px] leading-[1.55] tracking-normal text-page max-w-md text-center flex flex-col gap-4">
               <p className="m-0">{t('disciplinesParagraph')}</p>
               <p className="m-0">{t('scoutLead')}</p>
             </div>

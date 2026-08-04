@@ -45,7 +45,7 @@ export default async function AdminOverviewPage() {
         <h1 className="font-futura text-3xl sm:text-4xl tracking-tighter text-page select-none">
           Overview
         </h1>
-        <p className="font-sans text-[15px] text-page-muted leading-relaxed max-w-md">
+        <p className="font-sans text-[16px] text-page-muted leading-relaxed max-w-md">
           Intelligence intake and bounties. Less, but better.
         </p>
       </header>

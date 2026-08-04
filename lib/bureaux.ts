@@ -69,11 +69,11 @@ export function bureauxPlusNoteLimit() {
   return 4;
 }
 
-/** Display price for UI (cents). Default $48/year until env overrides. */
+/** Display price for UI (cents). Default $100/year until env overrides. */
 export function getBureauxAnnualAmountCents(): number {
   const raw = process.env.NEXT_PUBLIC_BUREAUX_ANNUAL_CENTS;
-  const n = raw ? Number(raw) : 4800;
-  return Number.isFinite(n) && n > 0 ? Math.floor(n) : 4800;
+  const n = raw ? Number(raw) : 10000;
+  return Number.isFinite(n) && n > 0 ? Math.floor(n) : 10000;
 }
 
 /** Deduped per request — shell + pages often ask for the same row. */

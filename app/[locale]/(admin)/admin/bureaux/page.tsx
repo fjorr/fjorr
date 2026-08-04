@@ -23,7 +23,7 @@ export default async function AdminBureauxPage() {
           <h1 className="font-futura text-3xl sm:text-4xl tracking-tighter text-page select-none">
             Bureaux
           </h1>
-          <p className="font-sans text-[15px] text-page-muted leading-relaxed max-w-md">
+          <p className="font-sans text-[16px] text-page-muted leading-relaxed max-w-md">
             Grant lifetime complimentary seats. No Stripe. Member gift seats are
             paid separately by members.
           </p>

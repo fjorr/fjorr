@@ -168,7 +168,7 @@ export default function PrinciplesClient() {
                         </span>
                       ))}
                   </h1>
-                  <p className="mt-5 sm:mt-6 m-0 font-sans font-medium text-[15px] sm:text-[16px] leading-[1.55] text-page-muted">
+                  <p className="mt-5 sm:mt-6 m-0 font-sans font-medium text-[16px] leading-[1.55] text-page-muted">
                     {t('intro')
                       .split('\n')
                       .filter(Boolean)
@@ -199,7 +199,7 @@ export default function PrinciplesClient() {
                   <h2 className="mt-3 sm:mt-4 m-0 font-interTight font-bold tracking-tight text-[clamp(1.5rem,4.5vw,1.85rem)] leading-[1.12] text-page text-balance">
                     {t(principle.title)}
                   </h2>
-                  <p className="mt-3 sm:mt-3.5 m-0 font-sans font-medium text-[15px] sm:text-[16px] leading-[1.55] text-page-muted">
+                  <p className="mt-3 sm:mt-3.5 m-0 font-sans font-medium text-[16px] leading-[1.55] text-page-muted">
                     {t(principle.body)}
                   </p>
                 </button>

@@ -91,7 +91,7 @@ export default async function BureauxGiftRedeemPage({
           <h1 className="font-futura text-3xl sm:text-4xl tracking-tighter leading-[0.95]">
             {t('giftRedeemTitle')}
           </h1>
-          <p className="font-sans text-[15px] text-page-muted leading-relaxed">
+          <p className="font-sans text-[16px] text-page-muted leading-relaxed">
             {t('giftRedeemLead', { email: gift.to_email })}
           </p>
         </header>

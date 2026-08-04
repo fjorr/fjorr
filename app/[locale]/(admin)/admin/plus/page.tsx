@@ -27,7 +27,7 @@ export default async function AdminPlusPage() {
         <h1 className="font-futura text-3xl sm:text-4xl tracking-tighter text-page select-none">
           Plus Machine
         </h1>
-        <p className="font-sans text-[15px] text-page-muted leading-relaxed max-w-lg">
+        <p className="font-sans text-[16px] text-page-muted leading-relaxed max-w-lg">
           Member craft notes on films. Private — desk only. Forward useful ones
           to directors yourself.
         </p>

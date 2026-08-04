@@ -80,7 +80,7 @@ export default async function AccountShell({
               {title}
             </h1>
             {description ? (
-              <p className="font-sans text-[15px] text-page-muted leading-relaxed">
+              <p className="font-sans text-[16px] text-page-muted leading-relaxed">
                 {description}
               </p>
             ) : null}

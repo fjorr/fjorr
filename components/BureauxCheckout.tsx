@@ -206,7 +206,7 @@ function CheckoutForm({
       <button
         type="submit"
         disabled={!stripe || !elements || !ready || submitting}
-        className="self-start inline-flex items-center h-12 px-7 rounded-full bg-[var(--page-fg)] text-[var(--page-bg)] font-sans text-[14px] font-bold hover:opacity-90 disabled:opacity-40 transition-opacity"
+        className={ctaClass}
       >
         {submitting ? t('ctaPending') : t('ctaSubscribe')}
       </button>
@@ -214,16 +214,23 @@ function CheckoutForm({
   );
 }
 
+const ctaClass =
+  'w-full max-w-sm px-10 h-14 inline-flex items-center justify-center bg-[var(--page-fg)] text-[var(--page-bg)] font-sans font-bold text-[15px] tracking-tight rounded-full shadow-2xl hover:opacity-90 active:scale-95 transition-all duration-150 disabled:opacity-50 disabled:pointer-events-none';
+
 export default function BureauxCheckout({
   signedIn = false,
   accountEmail = null,
+  price,
 }: {
   /** Session present (unpaid member finishing join). */
   signedIn?: boolean;
   accountEmail?: string | null;
+  /** Formatted annual price, e.g. "$100". */
+  price: string;
 }) {
   const t = useTranslations('Bureaux');
   const { isLight } = useColorScheme();
+  const [started, setStarted] = useState(false);
   const [email, setEmail] = useState(accountEmail || '');
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [checkoutEmail, setCheckoutEmail] = useState<string | null>(null);
@@ -320,16 +327,16 @@ export default function BureauxCheckout({
 
   if (paidEmail) {
     return (
-      <div className="w-full max-w-md flex flex-col gap-3">
-        <h2 className="font-sans text-[18px] font-semibold tracking-tight text-page">
+      <div className="w-full max-w-sm flex flex-col items-center gap-3 text-center">
+        <h2 className="m-0 font-sans text-[18px] font-semibold tracking-tight text-page">
           {t('joinCheckEmailTitle')}
         </h2>
-        <p className="font-sans text-[14px] text-page-muted leading-relaxed">
+        <p className="m-0 font-sans text-[16px] text-page-muted leading-relaxed">
           {t('joinCheckEmailBody', { email: paidEmail })}
         </p>
         <Link
           href={`/signin?next=${encodeURIComponent('/bureaux')}`}
-          className="self-start font-sans text-[13px] font-semibold text-page underline underline-offset-2"
+          className="font-sans text-[13px] font-semibold text-page-muted underline underline-offset-2 hover:text-page transition-colors"
         >
           {t('joinCheckEmailSignIn')}
         </Link>
@@ -344,12 +351,14 @@ export default function BureauxCheckout({
     };
 
     return (
-      <div className="w-full max-w-md flex flex-col gap-5">
-        <div className="flex flex-col gap-1">
-          <p className="font-sans text-[13px] font-semibold normal-case tracking-normal text-page-muted">
+      <div className="w-full max-w-sm flex flex-col gap-5 text-left">
+        <div className="flex flex-col gap-1 items-center text-center">
+          <p className="m-0 font-sans text-[13px] font-semibold normal-case tracking-normal text-page-muted">
             {t('joinEmailLabel')}
           </p>
-          <p className="font-sans text-[14px] text-page">{checkoutEmail}</p>
+          <p className="m-0 font-sans text-[15px] font-semibold text-page">
+            {checkoutEmail}
+          </p>
           <button
             type="button"
             onClick={() => {
@@ -357,7 +366,7 @@ export default function BureauxCheckout({
               setCheckoutEmail(null);
               setError(null);
             }}
-            className="self-start font-sans text-[12px] font-semibold text-page-faint hover:text-page underline underline-offset-2"
+            className="font-sans text-[12px] font-semibold text-page-faint hover:text-page underline underline-offset-2 bg-transparent border-0 p-0 cursor-pointer"
           >
             {t('joinChangeEmail')}
           </button>
@@ -377,12 +386,40 @@ export default function BureauxCheckout({
     );
   }
 
+  if (!started) {
+    return (
+      <div className="w-full max-w-sm flex flex-col items-center gap-4">
+        <button
+          type="button"
+          onClick={() => setStarted(true)}
+          className={ctaClass}
+        >
+          {t('ctaJoinPrice', { price })}
+        </button>
+        <p className="m-0 font-sans text-[13px] font-medium text-page-muted tracking-tight">
+          {t('accessValue')}
+        </p>
+        {!signedIn ? (
+          <p className="m-0 font-sans text-[13px] text-page-faint leading-relaxed text-center">
+            {t('joinReturning')}{' '}
+            <Link
+              href={`/signin?next=${encodeURIComponent('/bureaux')}`}
+              className="font-semibold text-page-muted underline underline-offset-2 hover:text-page transition-colors"
+            >
+              {t('ctaSignIn')}
+            </Link>
+          </p>
+        ) : null}
+      </div>
+    );
+  }
+
   return (
     <form
       onSubmit={(e) => void startCheckout(e)}
-      className="w-full max-w-md flex flex-col gap-4"
+      className="w-full max-w-sm flex flex-col gap-4 text-left"
     >
-      <label className="flex flex-col gap-2 text-left">
+      <label className="flex flex-col gap-2">
         <span className="font-sans text-[13px] font-semibold normal-case tracking-normal text-page-muted">
           {t('joinEmailLabel')}
         </span>
@@ -394,7 +431,7 @@ export default function BureauxCheckout({
           onChange={(e) => setEmail(e.target.value)}
           placeholder={t('joinEmailPlaceholder')}
           disabled={loading || (signedIn && Boolean(accountEmail))}
-          className="h-12 rounded-[10px] bg-page-chip px-4 font-sans text-[15px] text-page placeholder:text-page-faint focus:outline-none focus:ring-1 focus:ring-page-faint disabled:opacity-50"
+          className="w-full rounded-xl px-5 py-4 bg-page-chip font-sans font-semibold text-[15px] text-page placeholder-page-muted border border-page-faint focus:outline-none focus:border-[color-mix(in_srgb,var(--page-fg)_35%,transparent)] disabled:opacity-50 transition-colors"
         />
       </label>
 
@@ -417,19 +454,19 @@ export default function BureauxCheckout({
       <button
         type="submit"
         disabled={loading || !email.trim()}
-        className="self-start inline-flex items-center h-12 px-7 rounded-full bg-[var(--page-fg)] text-[var(--page-bg)] font-sans text-[14px] font-bold hover:opacity-90 disabled:opacity-40 transition-opacity"
+        className={ctaClass}
       >
         {loading ? t('ctaPending') : t('joinContinue')}
       </button>
 
       {!signedIn ? (
-        <p className="font-sans text-[13px] text-page-faint leading-relaxed">
+        <p className="m-0 font-sans text-[13px] text-page-faint leading-relaxed text-center">
           {t('joinReturning')}{' '}
           <Link
             href={`/signin?next=${encodeURIComponent('/bureaux')}`}
-            className="font-semibold text-page underline underline-offset-2"
+            className="font-semibold text-page-muted underline underline-offset-2 hover:text-page transition-colors"
           >
-            {t('joinCheckEmailSignIn')}
+            {t('ctaSignIn')}
           </Link>
         </p>
       ) : null}

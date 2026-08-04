@@ -123,7 +123,7 @@ function DetailField({
       <span className="font-sans text-[13px] font-semibold normal-case tracking-normal text-page-muted leading-none">
         {label}
       </span>
-      <div className="font-sans text-[15px] font-medium text-page leading-relaxed whitespace-pre-wrap">
+      <div className="font-sans text-[16px] font-medium text-page leading-relaxed whitespace-pre-wrap">
         {children}
       </div>
     </div>

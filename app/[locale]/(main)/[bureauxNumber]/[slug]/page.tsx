@@ -77,7 +77,7 @@ export default async function PublicProfilePage({ params }: Props) {
           {name}
         </h1>
         {profile.bio?.trim() ? (
-          <p className="font-sans text-[15px] text-page-muted leading-relaxed">
+          <p className="font-sans text-[16px] text-page-muted leading-relaxed">
             {profile.bio.trim()}
           </p>
         ) : null}

@@ -304,7 +304,7 @@ export default function ManualMiniSite({
                 <h1 className="m-0 font-interTight font-extrabold tracking-tight text-[clamp(1.75rem,4.5vw,2.25rem)] text-page leading-[1.08] text-balance">
                   {t('homeHeadline')}
                 </h1>
-                <p className="m-0 font-sans text-[15px] text-page-muted leading-relaxed whitespace-pre-line">
+                <p className="m-0 font-sans text-[16px] text-page-muted leading-relaxed whitespace-pre-line">
                   {t('homeLead')}
                 </p>
                 {MANUAL_ENTRIES[0] ? (

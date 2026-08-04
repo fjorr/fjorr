@@ -128,7 +128,7 @@ export default function TheaterPlusPanel({
           className={`w-full rounded-[12px] px-4 py-3.5 flex flex-wrap items-center justify-between gap-3 ${fieldBg}`}
         >
           <div className="flex items-baseline gap-3 min-w-0">
-            <p className={`font-sans text-[15px] font-medium ${ink}`}>
+            <p className={`font-sans text-[16px] font-medium ${ink}`}>
               {t('sentQuiet')}
             </p>
             {sentTicket ? (

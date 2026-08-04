@@ -25,7 +25,7 @@ export default async function AdminBountiesPage() {
           <h1 className="font-futura text-3xl sm:text-4xl tracking-tighter text-page select-none">
             Bounties
           </h1>
-          <p className="font-sans text-[15px] text-page-muted leading-relaxed max-w-md">
+          <p className="font-sans text-[16px] text-page-muted leading-relaxed max-w-md">
             Specific hunts. Public briefs on /bounties. Open until Claimed, In
             production, or Closed.
           </p>

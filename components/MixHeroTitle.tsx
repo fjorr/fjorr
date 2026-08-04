@@ -44,7 +44,7 @@ export default function MixHeroTitle({
       </h2>
       {description ? (
         <p
-          className={`mt-1.5 font-sans text-sm sm:text-[15px] font-medium text-page-muted text-balance max-w-xl ${
+          className={`mt-1.5 font-sans text-[16px] font-medium text-page-muted text-balance max-w-xl ${
             isTimeline ? 'mx-auto' : ''
           }`}
         >

@@ -420,7 +420,7 @@ export default function FilmTranscript({
                       >
                         {cue.displayTime}
                       </span>
-                      <span className={`${ink.soft} font-medium text-[15px] leading-snug`}>
+                      <span className={`${ink.soft} font-medium text-[16px] leading-snug`}>
                         {highlightMatch(cue.dialogue, query, ink.primary, accentMark)}
                       </span>
                     </button>

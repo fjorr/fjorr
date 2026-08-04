@@ -194,7 +194,7 @@ export default function NominateClient({
               <h1 className="mt-2 sm:mt-2.5 mb-5 sm:mb-6 font-futura tracking-tighter text-page text-5xl sm:text-6xl md:text-7xl !leading-[0.9] max-w-[12ch] opacity-0 animate-slide-up style-delay-headline select-none">
                 {t('title')}
               </h1>
-              <p className="font-sans font-medium text-[15px] sm:text-[16px] leading-[1.55] text-page max-w-md tracking-normal text-center opacity-0 animate-slide-up style-delay-body">
+              <p className="font-sans font-medium text-[16px] leading-[1.55] text-page max-w-md tracking-normal text-center opacity-0 animate-slide-up style-delay-body">
                 {t('description')}
               </p>
             </div>

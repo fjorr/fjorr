@@ -130,7 +130,7 @@ export default function CabinetOfferForm({
   if (done) {
     return (
       <div className="w-full max-w-md rounded-[12px] bg-page-chip px-5 py-4 text-center flex flex-col gap-2">
-        <p className="m-0 font-sans text-[15px] font-semibold text-page leading-snug">
+        <p className="m-0 font-sans text-[16px] font-semibold text-page leading-snug">
           {t('scoutSuccess')}
         </p>
         <Link

@@ -43,7 +43,7 @@ export default async function LocaleLayout({
       <head>
         <link rel="stylesheet" href={TYPEKIT_HREF} />
       </head>
-      <body className="font-sans antialiased min-h-screen bg-[var(--page-bg)] text-[var(--page-fg)]">
+      <body className="font-sans antialiased text-base min-h-screen bg-[var(--page-bg)] text-[var(--page-fg)]">
         <TypekitLoader />
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ColorSchemeProvider initialScheme={initialScheme}>

@@ -25,7 +25,7 @@ export default async function AdminCabinetPage() {
           <h1 className="font-futura text-3xl sm:text-4xl tracking-tighter text-page select-none">
             The Cabinet
           </h1>
-          <p className="font-sans text-[15px] text-page-muted leading-relaxed max-w-md">
+          <p className="font-sans text-[16px] text-page-muted leading-relaxed max-w-md">
             Desk roster of craftspeople. Private — not on the public site yet.
           </p>
           <p className="font-mono text-[12px] text-page-faint">

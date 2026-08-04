@@ -122,7 +122,7 @@ export default function BountyBriefClient({
           </p>
 
           {bounty.brief ? (
-            <p className="font-sans text-[15px] sm:text-[16px] font-medium leading-[1.55] tracking-normal text-page whitespace-pre-wrap max-w-md mb-8">
+            <p className="font-sans text-[16px] font-medium leading-[1.55] tracking-normal text-page whitespace-pre-wrap max-w-md mb-8">
               {bounty.brief}
             </p>
           ) : null}

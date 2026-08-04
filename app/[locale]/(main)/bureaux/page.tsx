@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import { Link, redirect } from '@/i18n/navigation';
+import { redirect } from '@/i18n/navigation';
 import { createClient } from '@/lib/supabase/server';
 import BureauxCheckout from '@/components/BureauxCheckout';
 import BureauxJoinClaim from '@/components/BureauxJoinClaim';
 import BureauxJoinedRefresh from '@/components/BureauxJoinedRefresh';
+import ManualHelpButton from '@/components/help/ManualHelpButton';
 import {
   getBureauxAnnualAmountCents,
   getOwnBureauxMembership,
@@ -100,108 +101,73 @@ export default async function BureauxPage({
 
   const perks = [
     t('perkNumber'),
-    t('perkGift'),
     t('perkNominate'),
+    t('perkBounties'),
     t('perkPlus'),
-    t('perkEarlyFilms'),
-    t('perkEarlyBounties'),
-    t('perkCredits'),
+    t('perkEarly'),
     t('perkBehind'),
-    t('perkLetter'),
   ];
 
   return (
-    <div className="w-full min-h-screen bg-page text-page pb-24">
-      <div className="w-full max-w-xl mx-auto px-5 sm:px-8 pt-14 sm:pt-20 flex flex-col gap-10 text-left">
-        <header className="flex flex-col gap-4">
-          <p className="font-sans text-[13px] font-semibold uppercase tracking-[0.08em] text-page-faint">
-            {t('eyebrow')}
-          </p>
-          <h1 className="font-futura text-4xl sm:text-5xl md:text-6xl tracking-tighter text-page select-none !leading-[0.95]">
-            {t('headline')}
-          </h1>
-          <p className="font-sans text-[16px] sm:text-[17px] font-medium text-page leading-relaxed">
-            {t('dek')}
-          </p>
-          <div className="flex flex-col gap-4">
-            <p className="font-sans text-[16px] text-page-muted leading-relaxed">
+    <div className="w-full min-h-screen bg-[var(--page-bg)] text-page pb-24">
+      <div className="w-full max-w-4xl mx-auto px-[10%] pt-14 sm:pt-20 flex flex-col items-center text-center">
+        <div className="w-full max-w-xl flex flex-col items-center">
+          <header className="flex flex-col items-center w-full">
+            <p className="font-sans text-lg sm:text-xl font-semibold normal-case tracking-normal text-page select-none">
+              {t('eyebrow')}
+            </p>
+            <h1 className="mt-2 sm:mt-2.5 mb-5 sm:mb-6 font-futura tracking-tighter text-page select-none text-5xl sm:text-6xl md:text-7xl !leading-[0.95] w-full whitespace-pre-line text-center">
+              {t('headline')}
+            </h1>
+            <p className="m-0 font-sans font-medium text-[16px] leading-[1.55] tracking-normal text-page max-w-xl text-center">
               {t('lead')}
             </p>
-            <p className="font-sans text-[16px] text-page-muted leading-relaxed">
-              {t('lead2')}
+          </header>
+
+          <section className="mt-8 w-full flex justify-center">
+            <div className="w-full flex flex-col gap-3 text-left">
+              <h2 className="m-0 font-sans text-[13px] font-semibold text-page-muted select-none">
+                {t('perksTitle')}
+              </h2>
+              <ul className="m-0 p-0 list-none flex flex-col border-y border-[color-mix(in_srgb,var(--page-fg)_12%,transparent)] divide-y divide-[color-mix(in_srgb,var(--page-fg)_12%,transparent)]">
+                {perks.map((line) => (
+                  <li
+                    key={line}
+                    className="py-3 font-sans text-[16px] text-page leading-snug"
+                  >
+                    {line}
+                  </li>
+                ))}
+              </ul>
+              <p className="m-0 pt-1 font-sans text-[16px] font-semibold text-page leading-snug">
+                {t('perkClosing')}
+              </p>
+            </div>
+          </section>
+
+          {justJoined && user ? (
+            <p className="mt-8 font-sans text-[14px] text-page-muted leading-relaxed">
+              {ta('bureauxJoining')}
             </p>
-          </div>
-        </header>
+          ) : null}
+          {justJoined && user && !active ? <BureauxJoinedRefresh /> : null}
 
-        {justJoined && user ? (
-          <p className="font-sans text-[14px] text-page-muted leading-relaxed">
-            {ta('bureauxJoining')}
-          </p>
-        ) : null}
-        {justJoined && user && !active ? <BureauxJoinedRefresh /> : null}
-
-        <section className="flex flex-col divide-y divide-page-faint border-y border-page-faint">
-          <div className="py-4 flex items-baseline justify-between gap-4">
-            <span className="font-sans text-[14px] text-page-muted">
-              {t('priceLabel')}
-            </span>
-            <span className="font-sans text-[15px] text-page tabular-nums">
-              {t('priceValue', { price })}
-            </span>
-          </div>
-          <div className="py-4 flex items-baseline justify-between gap-4">
-            <span className="font-sans text-[14px] text-page-muted">
-              {t('accessLabel')}
-            </span>
-            <span className="font-sans text-[15px] text-page">
-              {t('accessValue')}
-            </span>
-          </div>
-        </section>
-
-        <section className="flex flex-col gap-3">
-          <h2 className="font-sans text-[11px] font-semibold uppercase tracking-[0.08em] text-page-faint">
-            {t('perksTitle')}
-          </h2>
-          <ul className="m-0 p-0 list-none flex flex-col divide-y divide-page-faint border-y border-page-faint">
-            {perks.map((line) => (
-              <li
-                key={line}
-                className="py-3.5 font-sans text-[14px] text-page leading-snug"
-              >
-                {line}
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <section className="flex flex-col gap-4">
-          {justJoined && !user && joinedEmail ? (
-            <BureauxJoinClaim email={joinedEmail} />
-          ) : (
-            <BureauxCheckout
-              signedIn={Boolean(user)}
-              accountEmail={user?.email || null}
-            />
-          )}
-          <p className="font-sans text-[13px] text-page-faint leading-relaxed max-w-sm">
-            {t('footnote')}{' '}
-            <Link
-              href="/manual/join"
-              className="font-semibold text-page-muted underline underline-offset-2 hover:text-page transition-colors"
-            >
-              Manual · Join
-            </Link>
-            {' · '}
-            <Link
-              href="/manual/cancel"
-              className="font-semibold text-page-muted underline underline-offset-2 hover:text-page transition-colors"
-            >
-              Cancel
-            </Link>
-            .
-          </p>
-        </section>
+          <footer className="mt-8 flex flex-col items-center gap-5 w-full text-center">
+            {justJoined && !user && joinedEmail ? (
+              <BureauxJoinClaim email={joinedEmail} />
+            ) : (
+              <BureauxCheckout
+                signedIn={Boolean(user)}
+                accountEmail={user?.email || null}
+                price={price}
+              />
+            )}
+            <p className="m-0 font-sans text-[13px] text-page-faint leading-relaxed max-w-sm">
+              {t('footnote')}
+            </p>
+            <ManualHelpButton slug="join" audience="guest" />
+          </footer>
+        </div>
       </div>
     </div>
   );

@@ -30,7 +30,7 @@ export default async function AdminNominationsPage() {
         <h1 className="font-futura text-3xl sm:text-4xl tracking-tighter text-page select-none">
           Nominations
         </h1>
-        <p className="font-sans text-[15px] text-page-muted leading-relaxed max-w-md">
+        <p className="font-sans text-[16px] text-page-muted leading-relaxed max-w-md">
           Review briefs. Set status. Attach a bounty to a General pitch when it
           earns one.
         </p>
@@ -53,7 +53,7 @@ export default async function AdminNominationsPage() {
                   <span className="truncate">{n.contributor_email}</span>
                 </div>
 
-                <p className="font-sans text-[15px] font-semibold text-page leading-relaxed whitespace-pre-wrap">
+                <p className="font-sans text-[16px] font-semibold text-page leading-relaxed whitespace-pre-wrap">
                   {n.story_details}
                 </p>
 

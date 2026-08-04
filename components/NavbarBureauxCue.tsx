@@ -2,41 +2,35 @@
 
 import React, { useEffect, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import { useTranslations } from 'next-intl';
-import { Link } from '@/i18n/navigation';
-import { fetchOwnBureauxNav } from '@/lib/bureaux-client';
+import { Zap } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
-/** Quiet signed-in mark in the main navbar — Bureaux No. → account. */
-export default function NavbarBureauxCue({
-  className,
-}: {
-  className?: string;
-}) {
-  const t = useTranslations('Nav');
-  const [number, setNumber] = useState<number | null>(null);
+/**
+ * Tiny cyan bolt on the hamburger — signed-in signal (no member number).
+ * Positioned by the parent button (`relative`).
+ */
+export default function NavbarBureauxCue() {
+  const [signedIn, setSignedIn] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
     let mounted = true;
 
-    const load = async () => {
-      const nav = await fetchOwnBureauxNav();
+    const sync = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!mounted) return;
-      setNumber(nav.active ? nav.bureauxNumber : null);
+      setSignedIn(!!session);
     };
 
-    void load();
+    void sync();
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event: string, session: Session | null) => {
       if (!mounted) return;
-      if (!session) {
-        setNumber(null);
-        return;
-      }
-      void load();
+      setSignedIn(!!session);
     });
 
     return () => {
@@ -45,15 +39,14 @@ export default function NavbarBureauxCue({
     };
   }, []);
 
-  if (number == null) return null;
+  if (!signedIn) return null;
 
   return (
-    <Link
-      href="/account/voyages"
-      aria-label={t('bureauxMarkAria', { number })}
-      className={`shrink-0 font-sans text-[12px] font-semibold tabular-nums tracking-tight transition-opacity hover:opacity-80 ${className || ''}`}
+    <span
+      aria-hidden
+      className="pointer-events-none absolute -top-1.5 -right-1.5 z-10 flex size-[11px] items-center justify-center text-[#22D3EE]"
     >
-      {t('bureauxMark', { number })}
-    </Link>
+      <Zap size={11} strokeWidth={2.5} fill="currentColor" className="drop-shadow-[0_0_1px_rgba(0,0,0,0.35)]" />
+    </span>
   );
 }

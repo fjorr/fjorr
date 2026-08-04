@@ -64,7 +64,7 @@ function BountyPosterCard({
             {awardedLabel}
           </span>
         ) : (
-          <span className="font-sans text-[15px] sm:text-[16px] font-semibold tracking-normal text-page-muted tabular-nums">
+          <span className="font-sans text-[16px] font-semibold tracking-normal text-page-muted tabular-nums">
             {formatMoney(bounty.reward_amount, bounty.currency)}
           </span>
         )}
@@ -102,7 +102,7 @@ export default function BountiesClient({
                   </span>
                 ))}
             </h1>
-            <p className="font-sans font-medium text-[15px] sm:text-[16px] leading-[1.55] tracking-normal text-page max-w-md">
+            <p className="font-sans font-medium text-[16px] leading-[1.55] tracking-normal text-page max-w-md">
               {t('description')}
             </p>
           </div>
@@ -135,11 +135,11 @@ export default function BountiesClient({
 
       {bounties.length === 0 ? (
         <div className="w-full max-w-5xl mx-auto px-5 sm:px-8 mt-10 text-center">
-          <p className="font-sans text-[15px] text-page-muted">{t('empty')}</p>
+          <p className="font-sans text-[16px] text-page-muted">{t('empty')}</p>
         </div>
       ) : (
         <div className="w-full max-w-5xl mx-auto px-5 sm:px-8 mt-10">
-          <h2 className="mb-5 sm:mb-6 font-sans text-[15px] sm:text-[16px] font-semibold normal-case tracking-normal text-page text-left">
+          <h2 className="mb-5 sm:mb-6 font-sans text-[16px] font-semibold normal-case tracking-normal text-page text-left">
             {t('openHeading')}
           </h2>
           <ul className="grid grid-cols-2 md:grid-cols-4 gap-5">
@@ -157,7 +157,7 @@ export default function BountiesClient({
 
       {archivedBounties.length > 0 ? (
         <div className="w-full max-w-5xl mx-auto px-5 sm:px-8 mt-16 sm:mt-20">
-          <h2 className="mb-5 sm:mb-6 font-sans text-[15px] sm:text-[16px] font-semibold normal-case tracking-normal text-page text-left">
+          <h2 className="mb-5 sm:mb-6 font-sans text-[16px] font-semibold normal-case tracking-normal text-page text-left">
             {t('archiveHeading')}
           </h2>
           <ul className="grid grid-cols-2 md:grid-cols-4 gap-5">

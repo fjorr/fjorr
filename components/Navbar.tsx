@@ -231,7 +231,6 @@ function Navbar({ variant = 'light' }: NavbarProps) {
             </div>
 
             <div className="flex items-center gap-3.5 sm:gap-4 shrink-0 ml-auto">
-              <NavbarBureauxCue className={iconColor} />
               <button
                 type="button"
                 aria-label={showCloseIcon ? t('closeMenu') : t('openMenu')}
@@ -239,6 +238,7 @@ function Navbar({ variant = 'light' }: NavbarProps) {
                 onClick={toggleNav}
                 className={`relative w-[18px] h-[18px] cursor-pointer shrink-0 transition-opacity hover:opacity-80 ${iconColor}`}
               >
+                <NavbarBureauxCue />
                 <span
                   className={`absolute left-1/2 top-1/2 block w-[14px] h-[1.5px] rounded-full bg-current transition-transform duration-300 ease-out origin-center
                     ${showCloseIcon ? '-translate-x-1/2 -translate-y-1/2 rotate-45' : '-translate-x-1/2 -translate-y-[3.5px]'}`}

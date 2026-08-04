@@ -253,7 +253,7 @@ function NoteExpanded({ entry }: { entry: FilmNoteRow }) {
         )
       ) : null}
 
-      <p className="m-0 font-sans text-[15px] font-medium text-page leading-relaxed whitespace-pre-wrap">
+      <p className="m-0 font-sans text-[16px] font-medium text-page leading-relaxed whitespace-pre-wrap">
         {entry.body}
       </p>
 

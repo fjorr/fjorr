@@ -115,7 +115,7 @@ export function ArtifactSidebar({
 
       {description ? (
         <p
-          className={`font-sans text-[15px] font-normal leading-relaxed tracking-normal max-w-lg ${
+          className={`font-sans text-[16px] font-normal leading-relaxed tracking-normal max-w-lg ${
             quote ? mutedTextClass : subTextClass
           }`}
         >

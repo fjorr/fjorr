@@ -160,7 +160,7 @@ export default function FilmSpecs({
             <h3 className="text-[13px] font-medium text-page-faint mb-2 tracking-tight">
               {t('directorNote')}
             </h3>
-            <p className="text-[15px] md:text-base leading-relaxed text-page-muted font-medium whitespace-pre-line">
+            <p className="text-base leading-relaxed text-page-muted font-medium whitespace-pre-line">
               {directorNote}
             </p>
             {directorNames.length > 0 ? (

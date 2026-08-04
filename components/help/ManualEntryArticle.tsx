@@ -91,10 +91,10 @@ function SpecField({
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <dt className="m-0 font-sans text-[15px] sm:text-[16px] font-bold tracking-tight text-page select-none">
+      <dt className="m-0 font-sans text-[16px] font-bold tracking-tight text-page select-none">
         {label}
       </dt>
-      <dd className="m-0 font-sans text-[15px] sm:text-[16px] text-page leading-[1.42] tracking-[-0.01em]">
+      <dd className="m-0 font-sans text-[16px] text-page leading-[1.42] tracking-[-0.01em]">
         {children}
       </dd>
     </div>
@@ -152,7 +152,7 @@ function Sections({ sections }: { sections: ManualSection[] }) {
               {section.paragraphs.map((p) => (
                 <p
                   key={p.slice(0, 48)}
-                  className="m-0 font-sans text-[15px] sm:text-[16px] text-page leading-[1.45] tracking-[-0.01em]"
+                  className="m-0 font-sans text-[16px] text-page leading-[1.45] tracking-[-0.01em]"
                 >
                   {p}
                 </p>
@@ -164,7 +164,7 @@ function Sections({ sections }: { sections: ManualSection[] }) {
               {section.bullets.map((item) => (
                 <li
                   key={item}
-                  className="font-sans text-[15px] sm:text-[16px] text-page leading-[1.45] tracking-[-0.01em] pl-0.5"
+                  className="font-sans text-[16px] text-page leading-[1.45] tracking-[-0.01em] pl-0.5"
                 >
                   {item}
                 </li>
@@ -187,7 +187,7 @@ function Steps({ steps }: { steps: { title: string; items: string[] } }) {
         {steps.items.map((item, i) => (
           <li
             key={item}
-            className="font-sans text-[15px] sm:text-[16px] text-page leading-[1.45] tracking-[-0.01em]"
+            className="font-sans text-[16px] text-page leading-[1.45] tracking-[-0.01em]"
           >
             <span className="font-sans text-[12px] text-page-faint mr-2 tabular-nums">
               {i + 1}
@@ -293,7 +293,7 @@ function ArticleBody({
           {entry.lead.map((p) => (
             <p
               key={p.slice(0, 48)}
-              className="m-0 font-sans text-[15px] sm:text-[16px] text-page leading-[1.45] tracking-[-0.01em]"
+              className="m-0 font-sans text-[16px] text-page leading-[1.45] tracking-[-0.01em]"
             >
               {p}
             </p>
