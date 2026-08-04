@@ -163,7 +163,7 @@ export const TEAM = [
 export const NAV = ['Markets', 'How it works', 'Mission', 'Rewards'] as const;
 
 export const SUMMARY =
-  "Red has saved Bird Island more than once — but this holiday season he faces his greatest challenge yet: fatherhood. Now raising a family of three, the world's angriest bird has to survive diaper duty, sugar-fueled chaos, and the particular humiliation of unimpressed kids… all while the world still needs saving. With Chuck, Bomb, and Silver back in the flock — and proving to be questionable babysitters — Red's biggest adventure is the one happening at home. In theaters December 23.";
+  "Red has saved Bird Island more than once — but this holiday season he faces his greatest challenge yet: fatherhood. Now raising a family of three, the world's angriest bird has to survive diaper duty, sugar-fueled chaos, and the particular humiliation of unimpressed kids… all while the world still needs saving. With Chuck, Bomb, and Silver back in the flock — and proving to be questionable babysitters — Red's biggest adventure is the one happening at home. In theaters December 20.";
 
 export const FAN_COUNT = 84200;
 
@@ -190,7 +190,7 @@ export const PROJECTS_PAGE_LEAD =
 /** Mock grid — layout matches app.storyincmedia.com/projects. */
 export const PROJECTS_INDEX = [
   {
-    href: '/preview/story-inc/v1',
+    href: '/preview/story-inc/angry-birds',
     title: 'Angry Birds 3',
     image: '/preview/story-inc/hero.jpg',
   },
