@@ -327,7 +327,7 @@ export default function BureauxCheckout({
 
   if (paidEmail) {
     return (
-      <div className="w-full max-w-sm flex flex-col items-center gap-3 text-center">
+      <div className="w-full max-w-sm flex flex-col items-stretch sm:items-center gap-3 text-left sm:text-center">
         <h2 className="m-0 font-sans text-[18px] font-semibold tracking-tight text-page">
           {t('joinCheckEmailTitle')}
         </h2>
@@ -336,7 +336,7 @@ export default function BureauxCheckout({
         </p>
         <Link
           href={`/signin?next=${encodeURIComponent('/bureaux')}`}
-          className="font-sans text-[13px] font-semibold text-page-muted underline underline-offset-2 hover:text-page transition-colors"
+          className="font-sans text-[13px] font-semibold text-page-muted underline underline-offset-2 hover:text-page transition-colors self-start sm:self-center"
         >
           {t('joinCheckEmailSignIn')}
         </Link>
@@ -388,7 +388,7 @@ export default function BureauxCheckout({
 
   if (!started) {
     return (
-      <div className="w-full max-w-sm flex flex-col items-center gap-4">
+      <div className="w-full max-w-sm flex flex-col items-stretch sm:items-center gap-4 text-left sm:text-center">
         <button
           type="button"
           onClick={() => setStarted(true)}
@@ -400,7 +400,7 @@ export default function BureauxCheckout({
           {t('accessValue')}
         </p>
         {!signedIn ? (
-          <p className="m-0 font-sans text-[13px] text-page-faint leading-relaxed text-center">
+          <p className="m-0 font-sans text-[13px] text-page-faint leading-relaxed text-left sm:text-center">
             {t('joinReturning')}{' '}
             <Link
               href={`/signin?next=${encodeURIComponent('/bureaux')}`}
@@ -460,7 +460,7 @@ export default function BureauxCheckout({
       </button>
 
       {!signedIn ? (
-        <p className="m-0 font-sans text-[13px] text-page-faint leading-relaxed text-center">
+        <p className="m-0 font-sans text-[13px] text-page-faint leading-relaxed text-left sm:text-center">
           {t('joinReturning')}{' '}
           <Link
             href={`/signin?next=${encodeURIComponent('/bureaux')}`}

@@ -110,36 +110,36 @@ export default async function BureauxPage({
 
   return (
     <div className="w-full min-h-screen bg-[var(--page-bg)] text-page pb-24">
-      <div className="w-full max-w-4xl mx-auto px-[10%] pt-14 sm:pt-20 flex flex-col items-center text-center">
-        <div className="w-full max-w-xl flex flex-col items-center">
-          <header className="flex flex-col items-center w-full">
+      <div className="w-full max-w-4xl mx-auto px-[10%] pt-14 sm:pt-20 flex flex-col items-stretch sm:items-center text-left sm:text-center">
+        <div className="w-full max-w-xl flex flex-col items-stretch sm:items-center">
+          <header className="flex flex-col items-stretch sm:items-center w-full">
             <p className="font-sans text-lg sm:text-xl font-semibold normal-case tracking-normal text-page select-none">
               {t('eyebrow')}
             </p>
-            <h1 className="mt-2 sm:mt-2.5 mb-5 sm:mb-6 font-futura tracking-tighter text-page select-none text-5xl sm:text-6xl md:text-7xl !leading-[0.95] w-full whitespace-pre-line text-center">
+            <h1 className="mt-2 sm:mt-2.5 mb-5 sm:mb-6 font-futura tracking-tighter text-page select-none text-5xl sm:text-6xl md:text-7xl !leading-[0.95] w-full max-w-[14rem] sm:max-w-[18rem] md:max-w-[22rem] text-balance text-left sm:text-center">
               {t('headline')}
             </h1>
-            <p className="m-0 font-sans font-medium text-[16px] leading-[1.55] tracking-normal text-page max-w-xl text-center">
+            <p className="m-0 font-sans font-medium text-[16px] leading-[1.55] tracking-normal text-page max-w-xl text-left sm:text-center">
               {t('lead')}
             </p>
           </header>
 
-          <section className="mt-7 w-full flex justify-center">
-            <div className="w-full flex flex-col gap-2 text-left">
-              <h2 className="m-0 font-sans text-[12px] font-semibold text-page-muted select-none">
+          <section className="mt-7 w-full flex justify-start sm:justify-center">
+            <div className="w-full max-w-sm flex flex-col gap-1.5 text-left sm:text-center">
+              <h2 className="m-0 mb-0.5 font-sans text-[12px] font-semibold text-page-muted select-none">
                 {t('perksTitle')}
               </h2>
-              <ul className="m-0 p-0 list-none flex flex-col border-y border-[color-mix(in_srgb,var(--page-fg)_12%,transparent)] divide-y divide-[color-mix(in_srgb,var(--page-fg)_12%,transparent)]">
+              <ul className="m-0 p-0 list-none flex flex-col gap-1">
                 {perks.map((line) => (
                   <li
                     key={line}
-                    className="py-2 font-sans text-[14px] text-page leading-snug"
+                    className="font-sans text-[14px] text-page leading-snug"
                   >
                     {line}
                   </li>
                 ))}
               </ul>
-              <p className="m-0 pt-0.5 font-sans text-[14px] font-semibold text-page leading-snug">
+              <p className="m-0 mt-1 font-sans text-[14px] font-semibold text-page leading-snug">
                 {t('perkClosing')}
               </p>
             </div>
@@ -152,7 +152,7 @@ export default async function BureauxPage({
           ) : null}
           {justJoined && user && !active ? <BureauxJoinedRefresh /> : null}
 
-          <footer className="mt-8 flex flex-col items-center gap-5 w-full text-center">
+          <footer className="mt-8 flex flex-col items-stretch sm:items-center gap-5 w-full text-left sm:text-center">
             {justJoined && !user && joinedEmail ? (
               <BureauxJoinClaim email={joinedEmail} />
             ) : (

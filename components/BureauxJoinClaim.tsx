@@ -44,7 +44,7 @@ export default function BureauxJoinClaim({ email }: { email: string }) {
   }, [email]);
 
   return (
-    <div className="w-full max-w-sm flex flex-col items-center gap-3 text-center">
+    <div className="w-full max-w-sm flex flex-col items-stretch sm:items-center gap-3 text-left sm:text-center">
       <h2 className="m-0 font-sans text-[18px] font-semibold tracking-tight text-page">
         {t('joinCheckEmailTitle')}
       </h2>
@@ -57,7 +57,7 @@ export default function BureauxJoinClaim({ email }: { email: string }) {
       </p>
       <Link
         href={`/signin?next=${encodeURIComponent('/bureaux')}`}
-        className="font-sans text-[13px] font-semibold text-page-muted underline underline-offset-2 hover:text-page transition-colors"
+        className="font-sans text-[13px] font-semibold text-page-muted underline underline-offset-2 hover:text-page transition-colors self-start sm:self-center"
       >
         {t('joinCheckEmailSignIn')}
       </Link>
