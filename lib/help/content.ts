@@ -4,7 +4,7 @@
  */
 
 /** Bump when Manual copy or structure ships. Shown in footer. */
-export const MANUAL_UPDATED = '3 Aug 2026';
+export const MANUAL_UPDATED = '4 Aug 2026';
 
 export type ManualAudience = 'guest' | 'member';
 
@@ -23,8 +23,8 @@ export type ManualEntry = {
   /** CTAs — usually one; Terms uses two */
   actions: Record<ManualAudience, ManualAction[]>;
   /**
-   * Optional inline reference image under public/
-   * e.g. `/manual/watch.jpg`. Omit for empty crosshatched frame.
+   * Optional reference image under public/ — opens full-bleed in the card.
+   * e.g. `/manual/watch.svg`
    */
   plate?: string;
 };
@@ -38,9 +38,9 @@ export const MANUAL_ENTRIES: ManualEntry[] = [
     number: '00',
     slug: 'why',
     title: 'Why',
-    what: "The reason Fjorr exists. The algorithm doesn't care who you become. Fjorr does.",
+    what: "The algorithm doesn't care who you become. Fjorr does — short films made on purpose, not for the feed.",
     happens:
-      'Short films, made on purpose, for people who still want to become something.',
+      "Fjorr is a home for the world's greatest stories, told as short films people can actually finish. The Bureaux funds the work so watching stays free and clean. Membership is how you take part — nominate, mark craft, leave a trail — not a paywall on the films.",
     actions: both([{ href: '/about', label: 'Read the full story' }]),
   },
   {
@@ -48,8 +48,10 @@ export const MANUAL_ENTRIES: ManualEntry[] = [
     slug: 'watch',
     title: 'Watch',
     what: "Short films of the world's greatest stories. Free. No expiry. Anyone can watch — membership isn't required.",
-    happens: 'Open a film. Watch. A Voyage record is optional.',
+    happens:
+      'Open a film and press play. Nothing to subscribe to, nothing locked behind a trial. Sign in if you want a Voyageur number; skip it if you just came to watch.',
     actions: both([{ href: '/', label: 'Watch a film' }]),
+    plate: '/manual/watch.svg',
   },
   {
     number: '02',
@@ -65,25 +67,27 @@ export const MANUAL_ENTRIES: ManualEntry[] = [
     number: '03',
     slug: 'join',
     title: 'Join',
-    what: "The Bureaux — annual membership. It funds the mission and it's how you take part.",
+    what: 'The Bureaux — annual membership. It funds the mission and unlocks the tools that make Fjorr a practice, not just a playlist.',
     happens:
-      'Pay once. Get a permanent Bureaux number, full member tools, and a seat you can pass on later.',
+      'Pay once for the year. You get a permanent Bureaux number, Voyages, Nominate, Plus Machine, and a seat you can pass on later. Watching stays free for everyone either way — joining is how you help make the next film possible.',
     actions: {
       guest: [{ href: '/bureaux', label: 'Join the Bureaux' }],
       member: [{ href: '/bureaux', label: 'Your Bureaux' }],
     },
+    plate: '/manual/join.svg',
   },
   {
     number: '04',
     slug: 'nominate',
     title: 'Nominate',
-    what: 'Send a story Fjorr should make, or open a bounty on one.',
+    what: 'Members send stories Fjorr should make — or answer an open bounty with a brief and a stake.',
     happens:
-      "Write the brief. Fjorr reviews. Some become films, most don't. Selected ones earn credit, and a bounty if one's attached.",
+      "Write what the story is, why it matters, and why now. Fjorr reviews every brief. Most don't become films; the ones that do credit the nominator, and pay the bounty if one was attached. Guests can browse — nominating is for the Bureaux.",
     actions: {
       guest: [{ href: '/bureaux', label: 'Join the Bureaux' }],
       member: [{ href: '/nominate', label: 'Nominate a story' }],
     },
+    plate: '/manual/nominate.svg',
   },
   {
     number: '05',
@@ -102,13 +106,14 @@ export const MANUAL_ENTRIES: ManualEntry[] = [
     number: '06',
     slug: 'account',
     title: 'Account',
-    what: 'Where members manage Voyages, nominations, and Bureaux.',
+    what: 'Your desk on Fjorr — Voyages, nominations, profile, and Bureaux, in one place.',
     happens:
-      'Sign in by magic link or Google. Cancel membership from the Bureaux page. Privacy Notice covers the rest.',
+      "Sign in with a magic link or Google. From account you can review films you've logged, manage nominations, edit your profile, and open Bureaux to handle membership. Guests can still create an account; member tools unlock with the Bureaux.",
     actions: {
       guest: [{ href: '/signin', label: 'Open account' }],
       member: [{ href: '/account/voyages', label: 'Open account' }],
     },
+    plate: '/manual/account.svg',
   },
   {
     number: '07',
@@ -120,6 +125,7 @@ export const MANUAL_ENTRIES: ManualEntry[] = [
     actions: both([
       { href: 'clipboard:control@fjorr.com', label: 'Write in' },
     ]),
+    plate: '/manual/contact.svg',
   },
   {
     number: '08',
@@ -127,32 +133,35 @@ export const MANUAL_ENTRIES: ManualEntry[] = [
     title: 'Voyages',
     what: "Your Voyageur No. — where you land in a film's watch order, first through thousandth.",
     happens:
-      "Watch at least half a film, get a number. It's permanent, and it traces your trail — who found it before you, who found it because of you.",
+      "Watch at least half a film while signed in and a number lands — permanent for that film. Your account keeps the trail: what you've watched, in what order, and the chain of who found it before you.",
     actions: {
       guest: [{ href: '/signin?next=/account/voyages', label: 'Open Voyages' }],
       member: [{ href: '/account/voyages', label: 'Open Voyages' }],
     },
+    plate: '/manual/voyages.svg',
   },
   {
     number: '09',
     slug: 'bounties',
     title: 'Bounties',
-    what: 'Open hunts for stories Fjorr wants made, with a reward attached.',
+    what: 'Open hunts for stories Fjorr wants made — with a brief, a deadline spirit, and a reward attached.',
     happens:
-      "Open a poster, read the brief, nominate. If yours is selected and the film gets made, the reward is paid and you're credited.",
+      "Browse posters on the Bounties wall. Read the brief, then nominate your take. If yours is selected and the film gets made, the reward is paid and you're credited. Anyone can look; answering a bounty is a member move.",
     actions: both([{ href: '/bounties', label: 'Browse Bounties' }]),
+    plate: '/manual/bounties.svg',
   },
   {
     number: '10',
     slug: 'cancel',
     title: 'Cancel',
-    what: 'What happens when you stop paying for the Bureaux.',
+    what: 'Leave the Bureaux without losing the films — membership ends; watching does not.',
     happens:
-      'Cancel anytime from the Bureaux page. Watching stays free either way — cancelling only removes member tools.',
+      "Cancel anytime from the Bureaux page. Access runs through the period you've paid for, then member tools (Nominate, Plus, and the rest) stop. Your Bureaux number and past Voyages stay on record. The library stays free either way.",
     actions: {
       guest: [{ href: '/signin?next=/bureaux', label: 'Manage membership' }],
       member: [{ href: '/bureaux', label: 'Manage membership' }],
     },
+    plate: '/manual/cancel.svg',
   },
   {
     number: '11',
@@ -160,11 +169,12 @@ export const MANUAL_ENTRIES: ManualEntry[] = [
     title: 'Terms & privacy',
     what: 'The rules, and what happens to your data.',
     happens:
-      'Terms Sheet covers the rules of using Fjorr. Privacy Notice covers what we collect and why.',
+      'Terms Sheet covers the rules of using Fjorr. Privacy Notice covers what we collect and why. Both are short on purpose — read them when you join or when something feels unclear.',
     actions: both([
       { href: '/terms', label: 'Read Terms Sheet' },
       { href: '/privacy', label: 'Read Privacy Notice' },
     ]),
+    plate: '/manual/terms-privacy.svg',
   },
 ];
 

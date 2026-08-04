@@ -1,9 +1,9 @@
-/** Compact Fjorr wordmark for The Manual sidebar. */
-export default function FjorrMark({ className = 'w-[44px]' }: { className?: string }) {
+/** Compact Fjorr wordmark for The Manual. */
+export default function FjorrMark({ className = 'w-[44px] h-auto' }: { className?: string }) {
   return (
     <svg
       viewBox="0 0 143 81"
-      className={`h-auto ${className}`}
+      className={className}
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden

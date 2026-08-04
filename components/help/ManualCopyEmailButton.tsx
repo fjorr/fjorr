@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ArrowRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 const CONTACT_EMAIL = 'control@fjorr.com';
@@ -31,15 +30,7 @@ export default function ManualCopyEmailButton({
       }}
       className={className}
     >
-      <span>{copied ? t('emailCopied') : label}</span>
-      {!copied ? (
-        <ArrowRight
-          size={14}
-          strokeWidth={1.75}
-          className="shrink-0 text-page-faint translate-y-px"
-          aria-hidden
-        />
-      ) : null}
+      {copied ? t('emailCopied') : label}
     </button>
   );
 }

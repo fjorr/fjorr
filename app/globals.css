@@ -122,9 +122,47 @@ body {
   animation: manualFolioIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* Manual card — soft settle when flipping */
+@keyframes manualCardIn {
+  0% {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.manual-card-in {
+  animation: manualCardIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Manual card — ease height between entries (no hard jump). */
+.manual-body-height {
+  transition: height 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Manual card — scroll without a scrollbar; edge fades hint at more. */
+.manual-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.manual-scroll::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .manual-folio-in {
+  .manual-folio-in,
+  .manual-card-in {
     animation: none;
+  }
+
+  .manual-body-height {
+    transition: none;
   }
 }
 

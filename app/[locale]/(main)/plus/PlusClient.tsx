@@ -3,6 +3,7 @@
 import React from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
+import ManualHelpButton from '@/components/help/ManualHelpButton';
 
 const SECTIONS = [
   { title: 'sectionWhat', paras: ['whatP1', 'whatP2'] as const },
@@ -32,9 +33,12 @@ export default function PlusClient() {
 
       <div className="w-full max-w-4xl mx-auto px-[10%] pt-14 sm:pt-20 flex flex-col items-center text-center">
         <header className="w-full max-w-lg mb-12 sm:mb-16 flex flex-col items-center">
-          <p className="font-sans text-lg sm:text-xl font-semibold normal-case tracking-normal text-page select-none">
-            {t('pageEyebrow')}
-          </p>
+          <div className="flex items-center gap-2">
+            <p className="font-sans text-lg sm:text-xl font-semibold normal-case tracking-normal text-page select-none">
+              {t('pageEyebrow')}
+            </p>
+            <ManualHelpButton slug="plus" />
+          </div>
           <h1 className="mt-2 sm:mt-2.5 mb-5 sm:mb-6 font-futura tracking-tighter text-page select-none text-5xl sm:text-6xl md:text-7xl !leading-[0.9] text-center">
             {t('pageHeadline')
               .split('\n')
