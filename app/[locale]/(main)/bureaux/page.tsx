@@ -100,12 +100,12 @@ export default async function BureauxPage({
   }
 
   const perks = [
-    t('perkNumber'),
     t('perkNominate'),
     t('perkBounties'),
     t('perkPlus'),
     t('perkEarly'),
     t('perkBehind'),
+    t('perkNumber'),
   ];
 
   return (
@@ -124,22 +124,22 @@ export default async function BureauxPage({
             </p>
           </header>
 
-          <section className="mt-8 w-full flex justify-center">
-            <div className="w-full flex flex-col gap-3 text-left">
-              <h2 className="m-0 font-sans text-[13px] font-semibold text-page-muted select-none">
+          <section className="mt-7 w-full flex justify-center">
+            <div className="w-full flex flex-col gap-2 text-left">
+              <h2 className="m-0 font-sans text-[12px] font-semibold text-page-muted select-none">
                 {t('perksTitle')}
               </h2>
               <ul className="m-0 p-0 list-none flex flex-col border-y border-[color-mix(in_srgb,var(--page-fg)_12%,transparent)] divide-y divide-[color-mix(in_srgb,var(--page-fg)_12%,transparent)]">
                 {perks.map((line) => (
                   <li
                     key={line}
-                    className="py-3 font-sans text-[16px] text-page leading-snug"
+                    className="py-2 font-sans text-[14px] text-page leading-snug"
                   >
                     {line}
                   </li>
                 ))}
               </ul>
-              <p className="m-0 pt-1 font-sans text-[16px] font-semibold text-page leading-snug">
+              <p className="m-0 pt-0.5 font-sans text-[14px] font-semibold text-page leading-snug">
                 {t('perkClosing')}
               </p>
             </div>
