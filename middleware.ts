@@ -58,8 +58,17 @@ export async function middleware(request: NextRequest) {
       return await updateSession(request, response);
     }
 
-    if (pathname === "/password" || isAuthCallback) {
+    // Password page lives outside [locale] — skip i18n.
+    if (pathname === "/password") {
       return await updateSession(request);
+    }
+
+    // Auth callbacks must bypass the gate but still run locale rewrite.
+    // Skipping i18n made /auth/confirm match /[locale]/[bureauxNumber] → 404
+    // (breaks magic links, especially when opened from mobile mail clients).
+    if (isAuthCallback) {
+      const response = handleI18nRouting(request);
+      return await updateSession(request, response);
     }
 
     if (!isAuthenticated) {

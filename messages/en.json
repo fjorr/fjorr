@@ -630,7 +630,6 @@
     "tagline": "Everything, plainly.",
     "navLabel": "The Manual",
     "index": "Index",
-    "eyebrow": "Vade-mecum",
     "homeHeadline": "Confusion is a curse word here.",
     "homeLead": "Most help centers are a maze. This one's a straight line.",
     "homeLeadMember": "You’re in — Bureaux № {number}. Same entries; the actions change.",
@@ -645,7 +644,7 @@
     "backToSite": "Fjorr",
     "exit": "Exit",
     "exitAria": "Exit to Fjorr",
-    "colophonMark": "VADE-MECUM · V1",
+    "colophonMark": "THE MANUAL · V1",
     "colophonNote": "Fjorr, updated as we are.",
     "runningHead": "The Manual",
     "actionRequired": "Action required.",
@@ -806,6 +805,8 @@
     "ctaScoutSignIn": "Sign in to continue",
     "scoutBureauxRequired": "Join the Bureaux to send a name to the desk.",
     "ctaScoutBureaux": "Join the Bureaux",
+    "membersOnlyBody": "The Cabinet is for Bureaux members.",
+    "joinToSend": "Join to send a name",
     "disciplinesParagraph": "Archivists, cinematographers, composers, curators, directors, editors, producers, researchers, sound designers, writers, and more. Chronicling the human story, one myth at a time."
   },
   "Plus": {

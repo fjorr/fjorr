@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useId, useState } from 'react';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Link, usePathname } from '@/i18n/navigation';
 import ColorSchemeToggle from '@/components/ColorSchemeToggle';
@@ -9,12 +8,11 @@ import FjorrMark from '@/components/help/FjorrMark';
 import {
   MANUAL_ENTRIES,
   MANUAL_UPDATED,
-  getManualEntryNeighbors,
   manualEntryHref,
 } from '@/lib/help/content';
 
 /**
- * The Manual chrome — Unimark frame (~60px inset), spine, four-column footer.
+ * The Manual chrome — filled master card on a lighter inset field, spine, sidebar colophon.
  */
 export default function HelpShell({ children }: { children: React.ReactNode }) {
   const t = useTranslations('Help');
@@ -90,35 +88,24 @@ export default function HelpShell({ children }: { children: React.ReactNode }) {
     </nav>
   );
 
-  const footerPage = activeEntry
-    ? `Page ${activeEntry.number}`
-    : 'Page —';
-  const neighbors = activeEntry
-    ? getManualEntryNeighbors(activeEntry.slug)
-    : null;
-  const prevHref = neighbors?.prev
-    ? manualEntryHref(neighbors.prev.slug)
-    : null;
-  const nextHref = neighbors?.next
-    ? manualEntryHref(neighbors.next.slug)
-    : null;
-
   return (
-    <div className="w-full min-h-screen bg-page text-page p-5 sm:p-10 lg:p-[60px]">
-      <div className="min-h-[calc(100dvh-2.5rem)] sm:min-h-[calc(100dvh-5rem)] lg:min-h-[calc(100dvh-120px)] border border-[color-mix(in_srgb,var(--page-fg)_45%,transparent)] flex flex-col">
+    <div className="w-full min-h-screen bg-page-elevated text-page p-5 sm:p-10 lg:p-[60px]">
+      {/* Shadow lives on the wrapper — overflow-hidden on the card would clip it. */}
+      <div className="rounded-[20px] shadow-[0_8px_30px_rgba(0,0,0,0.12)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.55)]">
+      <div className="min-h-[calc(100dvh-2.5rem)] sm:min-h-[calc(100dvh-5rem)] lg:min-h-[calc(100dvh-120px)] bg-page flex flex-col rounded-[20px] overflow-hidden">
         {/* Mobile top bar */}
-        <div className="md:hidden w-full border-b border-[color-mix(in_srgb,var(--page-fg)_45%,transparent)] px-4 py-3.5 flex items-center justify-between gap-3">
+        <div className="md:hidden w-full px-4 py-3.5 flex items-center justify-between gap-3">
           <Link href="/manual" className="flex items-center gap-3 min-w-0">
             <FjorrMark className="w-[34px] shrink-0 text-page opacity-70" />
             <p className="font-futura text-[1.35rem] tracking-tighter text-page truncate select-none">
               {t('title')}
             </p>
           </Link>
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-4 shrink-0">
             <Link
               href="/"
               aria-label={t('exitAria')}
-              className="inline-flex items-center h-9 px-3 font-sans text-[13px] font-semibold text-page-faint hover:text-page border border-[color-mix(in_srgb,var(--page-fg)_45%,transparent)] transition-colors"
+              className="font-sans text-[12px] font-medium text-page-faint hover:text-page transition-colors"
             >
               {t('exit')}
             </Link>
@@ -128,7 +115,7 @@ export default function HelpShell({ children }: { children: React.ReactNode }) {
               aria-expanded={open}
               aria-controls={panelId}
               onClick={() => setOpen((v) => !v)}
-              className="inline-flex items-center h-9 px-3 font-sans text-[13px] font-semibold text-page border border-[color-mix(in_srgb,var(--page-fg)_45%,transparent)]"
+              className="font-sans text-[12px] font-medium text-page-faint hover:text-page transition-colors bg-transparent border-0 p-0 cursor-pointer"
             >
               {t('menu')}
             </button>
@@ -154,7 +141,7 @@ export default function HelpShell({ children }: { children: React.ReactNode }) {
             role="dialog"
             aria-modal="true"
             aria-label={t('navLabel')}
-            className={`absolute inset-x-5 top-5 max-h-[min(88vh,40rem)] overflow-y-auto border border-[color-mix(in_srgb,var(--page-fg)_45%,transparent)] bg-page transition-transform duration-300 ease-out ${
+            className={`absolute inset-x-5 top-5 max-h-[min(88vh,40rem)] overflow-y-auto bg-page-elevated shadow-lg transition-transform duration-300 ease-out ${
               open ? 'translate-y-0' : '-translate-y-3 opacity-0'
             }`}
           >
@@ -172,46 +159,40 @@ export default function HelpShell({ children }: { children: React.ReactNode }) {
                   type="button"
                   aria-label={t('closeMenu')}
                   onClick={close}
-                  className="h-9 px-3 border border-[color-mix(in_srgb,var(--page-fg)_45%,transparent)] font-sans text-[13px] font-semibold text-page shrink-0"
+                  className="font-sans text-[12px] font-medium text-page-faint hover:text-page shrink-0 transition-colors bg-transparent border-0 p-0 cursor-pointer"
                 >
                   {t('close')}
                 </button>
               </div>
-              <div
-                className="h-px w-full bg-[color-mix(in_srgb,var(--page-fg)_45%,transparent)]"
-                aria-hidden
-              />
               {spine}
               <Link
                 href="/"
                 onClick={close}
                 aria-label={t('exitAria')}
-                className="font-sans text-[13px] font-semibold text-page-faint hover:text-page transition-colors"
+                className="font-sans text-[12px] font-medium text-page-faint hover:text-page transition-colors"
               >
                 {t('exit')}
-                <span className="text-page-faint/50 font-medium">
+                <span className="text-page-faint/50">
                   {' · '}
                   {t('backToSite')}
                 </span>
               </Link>
               <ColorSchemeToggle className="self-start" />
+              <p className="m-0 font-sans text-[11px] leading-snug text-page-faint text-pretty pt-2">
+                <span>{t('colophonMark')}</span>
+                <span>
+                  {' · '}
+                  {t('footerUpdated', { date: MANUAL_UPDATED })}
+                </span>
+              </p>
             </div>
           </div>
         </div>
 
         {/* Frame body: sidebar + square */}
         <div className="flex flex-1 min-h-0 flex-col md:flex-row">
-          <aside
-            className="hidden md:flex w-[14.5rem] shrink-0 border-r border-[color-mix(in_srgb,var(--page-fg)_45%,transparent)] px-5 py-8 flex-col gap-8 relative overflow-hidden"
-            style={{
-              backgroundImage: `radial-gradient(
-                color-mix(in srgb, var(--page-fg) 14%, transparent) 0.7px,
-                transparent 0.7px
-              )`,
-              backgroundSize: '7px 7px',
-            }}
-          >
-            <Link href="/manual" className="flex flex-col gap-4 group relative">
+          <aside className="hidden md:flex w-[14.5rem] shrink-0 px-5 py-8 flex-col gap-8 relative border-r border-[color-mix(in_srgb,var(--page-fg)_12%,transparent)]">
+            <Link href="/manual" className="flex flex-col gap-4 group">
               <FjorrMark className="w-[44px] text-page opacity-70" />
               <div className="flex flex-col gap-3">
                 <p className="font-futura text-[1.85rem] tracking-tighter leading-[0.95] text-page select-none group-hover:opacity-80 transition-opacity">
@@ -222,24 +203,27 @@ export default function HelpShell({ children }: { children: React.ReactNode }) {
                 </p>
               </div>
             </Link>
-            <div
-              className="h-px w-full bg-[color-mix(in_srgb,var(--page-fg)_45%,transparent)] relative"
-              aria-hidden
-            />
-            <div className="relative flex-1 min-h-0">{spine}</div>
-            <div className="relative mt-auto pt-4 flex flex-col gap-3">
+            <div className="flex-1 min-h-0">{spine}</div>
+            <div className="mt-auto pt-6 flex flex-col gap-4">
               <Link
                 href="/"
                 aria-label={t('exitAria')}
-                className="font-sans text-[13px] font-semibold text-page-faint hover:text-page transition-colors"
+                className="font-sans text-[12px] font-medium text-page-faint hover:text-page transition-colors"
               >
                 {t('exit')}
-                <span className="text-page-faint/50 font-medium">
+                <span className="text-page-faint/50">
                   {' · '}
                   {t('backToSite')}
                 </span>
               </Link>
               <ColorSchemeToggle className="w-full justify-stretch [&>button]:flex-1" />
+              <p className="m-0 font-sans text-[11px] leading-snug text-page-faint text-pretty">
+                <span>{t('colophonMark')}</span>
+                <span>
+                  {' · '}
+                  {t('footerUpdated', { date: MANUAL_UPDATED })}
+                </span>
+              </p>
             </div>
           </aside>
 
@@ -251,66 +235,7 @@ export default function HelpShell({ children }: { children: React.ReactNode }) {
             {children}
           </main>
         </div>
-
-        {/* Two-column footer — version / updated · page */}
-        <footer className="border-t border-[color-mix(in_srgb,var(--page-fg)_45%,transparent)] shrink-0">
-          <div className="flex items-start justify-between gap-6 px-5 sm:px-6 py-3.5 font-sans text-[11px] sm:text-[12px] leading-snug text-page">
-            <div className="min-w-0 truncate flex items-center gap-2.5">
-              <Link
-                href="/"
-                aria-label={t('exitAria')}
-                className="shrink-0 font-semibold text-page-faint hover:text-page transition-colors"
-              >
-                {t('exit')}
-              </Link>
-              <span className="text-page-faint/40" aria-hidden>
-                ·
-              </span>
-              <span className="min-w-0 truncate">
-                <span>{t('colophonMark')}</span>
-                <span className="text-page-faint">
-                  {' · '}
-                  {t('footerUpdated', { date: MANUAL_UPDATED })}
-                </span>
-              </span>
-            </div>
-            <div className="shrink-0 flex items-center gap-2.5">
-              {activeEntry ? (
-                <div className="flex items-center gap-1">
-                  {prevHref ? (
-                    <Link
-                      href={prevHref}
-                      aria-label={t('pagerPrev')}
-                      className="inline-flex h-6 w-6 items-center justify-center text-page-faint hover:text-page transition-colors"
-                    >
-                      <ArrowLeft size={13} strokeWidth={1.75} aria-hidden />
-                    </Link>
-                  ) : (
-                    <span className="inline-flex h-6 w-6 items-center justify-center text-page-faint/35" aria-hidden>
-                      <ArrowLeft size={13} strokeWidth={1.75} />
-                    </span>
-                  )}
-                  {nextHref ? (
-                    <Link
-                      href={nextHref}
-                      aria-label={t('pagerNext')}
-                      className="inline-flex h-6 w-6 items-center justify-center text-page-faint hover:text-page transition-colors"
-                    >
-                      <ArrowRight size={13} strokeWidth={1.75} aria-hidden />
-                    </Link>
-                  ) : (
-                    <span className="inline-flex h-6 w-6 items-center justify-center text-page-faint/35" aria-hidden>
-                      <ArrowRight size={13} strokeWidth={1.75} />
-                    </span>
-                  )}
-                </div>
-              ) : null}
-              <span className="font-mono tabular-nums tracking-[0.06em]">
-                {footerPage}
-              </span>
-            </div>
-          </div>
-        </footer>
+      </div>
       </div>
     </div>
   );

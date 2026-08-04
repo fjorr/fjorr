@@ -5,7 +5,7 @@ import { useRouter } from '@/i18n/navigation';
 
 /**
  * ← / → keys and horizontal swipe between Manual entries.
- * Visible controls live in the Manual footer.
+ * Keyboard ← / → and swipe only — no visible controls.
  */
 export default function ManualPager({
   prevHref,

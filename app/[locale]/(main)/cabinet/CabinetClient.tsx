@@ -43,7 +43,7 @@ export default function CabinetClient({
             </div>
           </div>
 
-          <footer className="mt-10 flex flex-col items-center gap-4 w-full text-center">
+          <footer className="mt-8 flex flex-col items-center gap-5 w-full text-center">
             <CabinetOfferForm
               bureauxActive={bureauxActive}
               defaultEmail={defaultEmail}

@@ -20,10 +20,7 @@ export default async function ManualIndexPage() {
   return (
     <div className="h-full min-h-[min(28rem,60dvh)] flex flex-col justify-center">
       <header className="flex flex-col gap-5 max-w-[22rem] sm:max-w-[36rem]">
-        <p className="m-0 font-mono text-[11px] font-semibold uppercase tracking-[0.22em] text-page-faint">
-          {t('eyebrow')}
-        </p>
-        <h1 className="font-interTight font-bold tracking-tight text-[clamp(3rem,9vw,5.5rem)] text-page leading-[0.98] select-none text-balance">
+        <h1 className="font-sans font-semibold tracking-tight text-[clamp(1.75rem,4.5vw,2.25rem)] text-page leading-[1.15] select-none text-balance">
           {t('homeHeadline')}
         </h1>
         <p className="font-sans text-[15px] sm:text-[16px] text-page-muted leading-relaxed max-w-[22rem]">
@@ -32,7 +29,7 @@ export default async function ManualIndexPage() {
         {first ? (
           <Link
             href={manualEntryHref(first.slug)}
-            className="self-start inline-flex h-9 items-center gap-1.5 px-3.5 rounded-[8px] bg-[color-mix(in_srgb,var(--page-fg)_8%,var(--page-bg))] text-page font-sans text-[13px] font-semibold tracking-tight hover:bg-[color-mix(in_srgb,var(--page-fg)_12%,var(--page-bg))] transition-colors mt-2"
+            className="self-start inline-flex h-9 items-center gap-1.5 px-3.5 rounded-[8px] bg-[var(--page-fg)] text-[var(--page-bg)] font-sans text-[13px] font-semibold tracking-tight hover:opacity-90 transition-opacity mt-1"
           >
             <span>
               {t('beginCta', { number: first.number, title: first.title })}
@@ -40,7 +37,7 @@ export default async function ManualIndexPage() {
             <ArrowRight
               size={14}
               strokeWidth={1.75}
-              className="shrink-0 text-page-faint translate-y-px"
+              className="shrink-0 translate-y-px"
               aria-hidden
             />
           </Link>

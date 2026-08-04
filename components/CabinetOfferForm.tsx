@@ -145,12 +145,15 @@ export default function CabinetOfferForm({
 
   if (!bureauxActive) {
     return (
-      <div className="flex flex-col items-center gap-3">
-        <p className="font-sans text-[14px] leading-relaxed text-page-muted tracking-tight max-w-xs">
-          {t('scoutBureauxRequired')}
+      <div className="w-full max-w-sm flex flex-col items-center gap-5">
+        <p className="font-sans font-medium text-[14px] leading-relaxed text-page-muted tracking-tight text-center">
+          {t('membersOnlyBody')}
         </p>
-        <Link href="/bureaux" className={ctaBtn}>
-          {t('ctaScoutBureaux')}
+        <Link
+          href="/bureaux"
+          className="px-10 h-14 inline-flex items-center justify-center bg-[var(--page-fg)] text-[var(--page-bg)] font-sans font-bold text-[15px] tracking-tight rounded-full shadow-2xl hover:opacity-90 active:scale-95 transition-all duration-150"
+        >
+          {t('joinToSend')}
         </Link>
       </div>
     );
