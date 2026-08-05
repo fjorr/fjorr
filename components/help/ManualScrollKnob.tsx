@@ -2,12 +2,11 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
-const KNOB = 12;
-const EDGE_PAD = 8;
+const THUMB_MIN = 48;
 
 /**
- * Red circle on the card’s right edge — drag (or click the rail) to scroll
- * when the Manual body overflows.
+ * Chrome divider that becomes a horizontal scrub when the Manual body overflows.
+ * Quiet 1px rule when content fits; ink thumb on the same line when it doesn’t.
  */
 export default function ManualScrollKnob({
   scrollRef,
@@ -18,23 +17,32 @@ export default function ManualScrollKnob({
 }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);
-  const [visible, setVisible] = useState(false);
+  const [overflowing, setOverflowing] = useState(false);
   const [ratio, setRatio] = useState(0);
-  const [knobTop, setKnobTop] = useState(EDGE_PAD);
+  const [thumbLeft, setThumbLeft] = useState(0);
+  const [thumbWidth, setThumbWidth] = useState(THUMB_MIN);
 
   const sync = useCallback(() => {
     const el = scrollRef.current;
     const track = trackRef.current;
-    if (!el) return;
+    if (!el || !track) return;
     const max = el.scrollHeight - el.clientHeight;
     const overflow = max > 2;
-    const nextRatio = overflow ? Math.min(1, Math.max(0, el.scrollTop / max)) : 0;
-    setVisible(overflow);
-    setRatio(nextRatio);
-    if (track) {
-      const travel = Math.max(0, track.clientHeight - KNOB - EDGE_PAD * 2);
-      setKnobTop(EDGE_PAD + nextRatio * travel);
+    setOverflowing(overflow);
+    if (!overflow) {
+      setRatio(0);
+      return;
     }
+    const trackW = track.clientWidth;
+    const nextThumb = Math.min(
+      trackW,
+      Math.max(THUMB_MIN, (el.clientHeight / el.scrollHeight) * trackW)
+    );
+    const travel = Math.max(0, trackW - nextThumb);
+    const nextRatio = Math.min(1, Math.max(0, el.scrollTop / max));
+    setRatio(nextRatio);
+    setThumbWidth(nextThumb);
+    setThumbLeft(nextRatio * travel);
   }, [scrollRef]);
 
   useEffect(() => {
@@ -59,39 +67,36 @@ export default function ManualScrollKnob({
       if (!el) return;
       const max = el.scrollHeight - el.clientHeight;
       if (max <= 0) return;
-      const clamped = Math.min(1, Math.max(0, next));
-      el.scrollTop = clamped * max;
-      setRatio(clamped);
-      const track = trackRef.current;
-      if (track) {
-        const travel = Math.max(0, track.clientHeight - KNOB - EDGE_PAD * 2);
-        setKnobTop(EDGE_PAD + clamped * travel);
-      }
+      el.scrollTop = Math.min(1, Math.max(0, next)) * max;
     },
     [scrollRef]
   );
 
-  const ratioFromClientY = useCallback((clientY: number) => {
-    const track = trackRef.current;
-    if (!track) return 0;
-    const rect = track.getBoundingClientRect();
-    const travel = Math.max(1, rect.height - KNOB - EDGE_PAD * 2);
-    const y = clientY - rect.top - EDGE_PAD - KNOB / 2;
-    return Math.min(1, Math.max(0, y / travel));
-  }, []);
+  const ratioFromClientX = useCallback(
+    (clientX: number) => {
+      const track = trackRef.current;
+      if (!track) return 0;
+      const rect = track.getBoundingClientRect();
+      const usable = Math.max(1, rect.width - thumbWidth);
+      const x = clientX - rect.left - thumbWidth / 2;
+      return Math.min(1, Math.max(0, x / usable));
+    },
+    [thumbWidth]
+  );
 
   const onPointerDown = (e: React.PointerEvent) => {
+    if (!overflowing) return;
     e.preventDefault();
     e.stopPropagation();
     dragging.current = true;
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    scrollToRatio(ratioFromClientY(e.clientY));
+    scrollToRatio(ratioFromClientX(e.clientX));
   };
 
   const onPointerMove = (e: React.PointerEvent) => {
     if (!dragging.current) return;
     e.preventDefault();
-    scrollToRatio(ratioFromClientY(e.clientY));
+    scrollToRatio(ratioFromClientX(e.clientX));
   };
 
   const onPointerUp = (e: React.PointerEvent) => {
@@ -106,41 +111,52 @@ export default function ManualScrollKnob({
   return (
     <div
       ref={trackRef}
-      className={`absolute top-0 bottom-0 right-0 z-20 w-5 touch-none select-none ${
-        visible ? 'pointer-events-auto' : 'pointer-events-none opacity-0'
+      role={overflowing ? 'slider' : undefined}
+      aria-label={overflowing ? label : undefined}
+      aria-orientation={overflowing ? 'horizontal' : undefined}
+      aria-valuemin={overflowing ? 0 : undefined}
+      aria-valuemax={overflowing ? 100 : undefined}
+      aria-valuenow={overflowing ? Math.round(ratio * 100) : undefined}
+      tabIndex={overflowing ? 0 : undefined}
+      className={`manual-doc-rule absolute left-10 right-10 sm:left-11 sm:right-11 bottom-0 h-3 -mb-1 flex items-center touch-none select-none ${
+        overflowing ? 'cursor-grab active:cursor-grabbing' : 'pointer-events-none'
       }`}
-      onPointerDown={visible ? onPointerDown : undefined}
-      onPointerMove={visible ? onPointerMove : undefined}
-      onPointerUp={visible ? onPointerUp : undefined}
-      onPointerCancel={visible ? onPointerUp : undefined}
-    >
-      {visible ? (
-        <button
-          type="button"
-          aria-label={label}
-          aria-orientation="vertical"
-          role="slider"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={Math.round(ratio * 100)}
-          className="absolute right-0 size-3 rounded-full bg-[#E11D2E] border-0 p-0 cursor-grab active:cursor-grabbing shadow-[0_1px_2px_rgba(0,0,0,0.25)] translate-x-1/2 hover:scale-110 active:scale-105 transition-transform duration-75"
-          style={{ top: knobTop, width: KNOB, height: KNOB }}
-          onKeyDown={(e) => {
-            const step = e.shiftKey ? 0.2 : 0.08;
-            if (e.key === 'ArrowDown' || e.key === 'PageDown') {
-              e.preventDefault();
-              scrollToRatio(ratio + step);
-            } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
-              e.preventDefault();
-              scrollToRatio(ratio - step);
-            } else if (e.key === 'Home') {
-              e.preventDefault();
-              scrollToRatio(0);
-            } else if (e.key === 'End') {
-              e.preventDefault();
-              scrollToRatio(1);
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerCancel={onPointerUp}
+      onKeyDown={
+        overflowing
+          ? (e) => {
+              const step = e.shiftKey ? 0.2 : 0.08;
+              if (e.key === 'ArrowRight' || e.key === 'PageDown') {
+                e.preventDefault();
+                scrollToRatio(ratio + step);
+              } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+                e.preventDefault();
+                scrollToRatio(ratio - step);
+              } else if (e.key === 'Home') {
+                e.preventDefault();
+                scrollToRatio(0);
+              } else if (e.key === 'End') {
+                e.preventDefault();
+                scrollToRatio(1);
+              }
             }
-          }}
+          : undefined
+      }
+    >
+      {/* Base divider — always present */}
+      <div
+        aria-hidden
+        className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-[color-mix(in_srgb,var(--page-fg)_12%,transparent)]"
+      />
+      {/* Thumb — only when scrolling is needed */}
+      {overflowing ? (
+        <div
+          aria-hidden
+          className="absolute top-1/2 h-[2px] -translate-y-1/2 rounded-full bg-[color-mix(in_srgb,var(--page-fg)_55%,transparent)]"
+          style={{ left: thumbLeft, width: thumbWidth }}
         />
       ) : null}
     </div>

@@ -53,6 +53,26 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
+        source: "/manual/principles",
+        destination: "/principles",
+        permanent: true,
+      },
+      {
+        source: `${localePrefix}/manual/principles`,
+        destination: "/:locale/principles",
+        permanent: true,
+      },
+      {
+        source: "/help/principles",
+        destination: "/principles",
+        permanent: true,
+      },
+      {
+        source: `${localePrefix}/help/principles`,
+        destination: "/:locale/principles",
+        permanent: true,
+      },
+      {
         source: "/help",
         destination: "/manual",
         permanent: true,

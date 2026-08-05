@@ -349,12 +349,15 @@ function Navbar({ variant = 'light' }: NavbarProps) {
       <style
         dangerouslySetInnerHTML={{
           __html: `
+        /* Glass is always on — iOS Safari supports scroll() timelines but does
+           not interpolate backdrop-filter, which left the bar flat/unblurred. */
         .animate-nav-glass {
           background-color: color-mix(in srgb, var(--page-bg-color, #1F1F1F) 72%, transparent);
           border-color: rgba(255, 255, 255, 0.1);
           -webkit-backdrop-filter: blur(24px) saturate(1.4);
           backdrop-filter: blur(24px) saturate(1.4);
           transform: translateZ(0);
+          -webkit-transform: translateZ(0);
         }
 
         .animate-nav-glass-light {
@@ -363,57 +366,45 @@ function Navbar({ variant = 'light' }: NavbarProps) {
           -webkit-backdrop-filter: blur(24px) saturate(1.4);
           backdrop-filter: blur(24px) saturate(1.4);
           transform: translateZ(0);
+          -webkit-transform: translateZ(0);
         }
 
-        @keyframes revealGlass {
+        @keyframes revealGlassTint {
           from {
-            background-color: transparent;
-            border-color: transparent;
-            backdrop-filter: blur(0px);
-            -webkit-backdrop-filter: blur(0px);
+            background-color: color-mix(in srgb, var(--page-bg-color, #1F1F1F) 28%, transparent);
+            border-color: rgba(255, 255, 255, 0.04);
           }
           to {
             background-color: color-mix(in srgb, var(--page-bg-color, #1F1F1F) 72%, transparent);
             border-color: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(24px) saturate(1.4);
-            -webkit-backdrop-filter: blur(24px) saturate(1.4);
           }
         }
 
-        @keyframes revealGlassLight {
+        @keyframes revealGlassTintLight {
           from {
-            background-color: transparent;
-            border-color: transparent;
-            backdrop-filter: blur(0px);
-            -webkit-backdrop-filter: blur(0px);
+            background-color: color-mix(in srgb, var(--page-bg-color, #EDE8DF) 32%, transparent);
+            border-color: rgba(0, 0, 0, 0.03);
           }
           to {
             background-color: color-mix(in srgb, var(--page-bg-color, #EDE8DF) 78%, transparent);
             border-color: rgba(0, 0, 0, 0.06);
-            backdrop-filter: blur(24px) saturate(1.4);
-            -webkit-backdrop-filter: blur(24px) saturate(1.4);
           }
         }
 
+        /* Desktop only: ease tint in on scroll. Keep blur static (never keyframed). */
         @supports (animation-timeline: scroll()) {
-          .animate-nav-glass {
-            background-color: transparent;
-            border-color: transparent;
-            backdrop-filter: blur(0px);
-            -webkit-backdrop-filter: blur(0px);
-            animation: revealGlass linear both;
-            animation-timeline: scroll(root);
-            animation-range: 40px 90px;
-          }
+          @media (hover: hover) and (pointer: fine) {
+            .animate-nav-glass {
+              animation: revealGlassTint linear both;
+              animation-timeline: scroll(root);
+              animation-range: 40px 90px;
+            }
 
-          .animate-nav-glass-light {
-            background-color: transparent;
-            border-color: transparent;
-            backdrop-filter: blur(0px);
-            -webkit-backdrop-filter: blur(0px);
-            animation: revealGlassLight linear both;
-            animation-timeline: scroll(root);
-            animation-range: 40px 90px;
+            .animate-nav-glass-light {
+              animation: revealGlassTintLight linear both;
+              animation-timeline: scroll(root);
+              animation-range: 40px 90px;
+            }
           }
         }
       `,

@@ -283,11 +283,6 @@ body {
   animation: manualCardIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-/* Manual card — ease height between entries (no hard jump). */
-.manual-body-height {
-  transition: height 0.38s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
 /* Principles — ease height between myth cards. */
 .principles-card-height {
   transition: height 0.38s cubic-bezier(0.22, 1, 0.36, 1);
@@ -325,7 +320,7 @@ body {
   animation: principlesSlideIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-/* Manual card — scroll without a scrollbar; edge fades hint at more. */
+/* Manual card — hide native scrollbar; chrome divider becomes a scrub when needed. */
 .manual-scroll {
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -358,7 +353,6 @@ body {
     filter: none;
   }
 
-  .manual-body-height,
   .principles-card-height {
     transition: none;
   }

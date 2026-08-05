@@ -21,6 +21,7 @@ export default async function ManualIndexPage() {
         mode="page"
         slug={null}
         audience={viewer.audience}
+        bureauxNumber={viewer.bureauxNumber}
       />
     </div>
   );

@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 
 /** Quiet field for The Manual — the mini-site card owns the chrome. */
