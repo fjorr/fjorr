@@ -101,10 +101,6 @@ export default async function Home() {
         <Suspense fallback={<CineGridFallback />}>
           <CineHomeLoader />
         </Suspense>
-
-        <Suspense fallback={null}>
-          <HomePromoGrid />
-        </Suspense>
       </>
     ) : null;
 
@@ -142,6 +138,9 @@ export default async function Home() {
           minimal={minimal}
           timeline={timeline}
         />
+        <Suspense fallback={null}>
+          <HomePromoGrid />
+        </Suspense>
       </HomeWithSearch>
     </>
   );

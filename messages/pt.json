@@ -32,7 +32,8 @@
     "manual": "The Manual",
     "accountMarkAria": "{name}, open account",
     "plus": "Plus",
-    "cabinetShort": "Cabinet"
+    "cabinetShort": "Cabinet",
+    "signedInCueAria": "Signed in"
   },
   "DisplayMode": {
     "cinematic": "Cine",
@@ -45,7 +46,9 @@
     "film": "Filmes",
     "artifact": "Artefatos",
     "toggleMode": "Alternar modo de exibição",
-    "toggleType": "Alternar tipo de conteúdo"
+    "toggleType": "Alternar tipo de conteúdo",
+    "viewLabel": "View",
+    "viewMenuAria": "Browse view: {mode}"
   },
   "Timeline": {
     "undated": "Sem data",
@@ -58,7 +61,10 @@
     "heroLine3": "E a histórias.",
     "learnMore": "Saiba mais",
     "noTitles": "Nenhum título disponível.",
-    "srTitle": "Fjorr — Curtas-metragens das maiores histórias do mundo."
+    "srTitle": "Fjorr — Curtas-metragens das maiores histórias do mundo.",
+    "more": "More",
+    "emptyFeatured": "New films are on the way. Browse below, or join the Bureaux.",
+    "joinCue": "Join the Bureaux"
   },
   "NotFound": {
     "title": "PERDIDO?",
@@ -632,7 +638,7 @@
     "description": "Pick a hunt. Pitch the story. If we make it, you get paid — and your name on the film.",
     "membersNote": "Bounties are for Bureaux members.",
     "signIn": "Sign in",
-    "empty": "No active bounties right now. A General pitch is always open.",
+    "empty": "No active bounties right now. A general nomination is always open.",
     "pitchThis": "Nominate",
     "signInToPitch": "Sign in to nominate",
     "active": "Active",
@@ -664,7 +670,7 @@
     "fieldBrief": "Brief",
     "deadlineOpen": "Aberta",
     "kindBoth": "Verdadeiro ou ficção",
-    "joinToPitch": "Join to pitch"
+    "joinToPitch": "Join to nominate"
   },
   "Principles": {
     "draftLabel": "Draft",
@@ -780,7 +786,8 @@
     "disciplinesParagraph": "Archivists, cinematographers, composers, curators, directors, editors, producers, researchers, sound designers, writers, and more. Chronicling the human story, one myth at a time.",
     "scoutSuccessLedger": "See it in Account",
     "membersOnlyBody": "The Cabinet is for Bureaux members.",
-    "joinToSend": "Join to send a name"
+    "joinToSend": "Join to send a name",
+    "signInToNote": "Sign in"
   },
   "Plus": {
     "loading": "…",
@@ -893,7 +900,7 @@
     "perkPlus": "Full access to <manual>Plus Machine</manual>.",
     "ctaSubscribe": "Join the Bureaux",
     "ctaPending": "Preparing…",
-    "ctaSignIn": "Join the Bureaux",
+    "ctaSignIn": "Sign in",
     "alreadyIn": "You're in the Bureaux.",
     "manageLink": "Manage subscription",
     "footnote": "Cancel anytime. Watching never requires a subscription.",
@@ -918,7 +925,7 @@
     "joinCheckEmailTitle": "You're in. Check your email.",
     "joinCheckEmailBody": "We sent a sign-in link to {email}. Open it to enter the Bureaux.",
     "joinCheckEmailSignIn": "Sign in",
-    "joinCheckEmailError": "Payment went through, but we couldn't send the sign-in link. Use Sign in with this email.",
+    "joinCheckEmailError": "Payment went through, but we couldn't send the sign-in link. Resend the link, sign in, or write us.",
     "perkGift": "One seat to pass on — gift someone’s first year",
     "giftTitle": "Pass one on.",
     "giftLead": "Once a year, gift a first year to someone. You pay. They claim it.",
@@ -958,7 +965,12 @@
     "ctaJoinPrice": "Join for {price}/year",
     "perkBounties": "Participate in <manual>bounties</manual>.",
     "perkEarly": "Early access to new films and <manual>bounties</manual>.",
-    "perkClosing": "Be part of something different."
+    "perkClosing": "Be part of something different.",
+    "joinPaidTitle": "You're in. Finish your account.",
+    "joinPaidBody": "Payment succeeded. We sent a sign-in link to {email}. Open it, continue with Google, or resend the link.",
+    "joinResend": "Resend link",
+    "joinContinueGoogle": "Continue with Google",
+    "joinSupport": "Still stuck? Write control@fjorr.com"
   },
   "Help": {
     "title": "The Manual",

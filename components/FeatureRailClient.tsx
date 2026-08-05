@@ -2,6 +2,8 @@
 
 import React, { useCallback, useState } from 'react';
 import dynamic from 'next/dynamic';
+import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 import FeatureRail from './FeatureRail';
 import TheaterOpenShell from '@/components/TheaterOpenShell';
 import { useDisplayMode } from '@/components/DisplayModeProvider';
@@ -18,6 +20,7 @@ const CinemaTheater = dynamic(() => import('@/components/CinemaTheater'), {
 });
 
 export default function FeatureRailClient({ films }: { films: any[] }) {
+  const t = useTranslations('Home');
   const { mode } = useDisplayMode();
   const searchActive = useMinimalFilterOptional()?.searchActive ?? false;
   const [activeIndex, setActiveIndex] = useState(0);
@@ -66,7 +69,21 @@ export default function FeatureRailClient({ films }: { films: any[] }) {
     if (selectedFilm?.id) finishWatchProgress(selectedFilm.id);
   }, [selectedFilm?.id]);
 
-  if (!films?.length) return null;
+  if (!films?.length) {
+    return (
+      <section className="w-full flex flex-col items-center justify-center gap-4 bg-[var(--page-bg)] px-8 py-16">
+        <p className="m-0 font-sans text-[15px] text-page-muted text-center max-w-sm">
+          {t('emptyFeatured')}
+        </p>
+        <Link
+          href="/bureaux"
+          className="font-sans text-[13px] font-semibold text-page underline underline-offset-2"
+        >
+          {t('joinCue')}
+        </Link>
+      </section>
+    );
+  }
 
   return (
     <div className="w-full relative bg-[var(--page-bg)]">

@@ -1,12 +1,12 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import type { Session } from '@supabase/supabase-js';
 import { Link, useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { Icon } from '@/components/ui/Icons';
 import { fetchOwnBureauxNav } from '@/lib/bureaux-client';
 import { createClient } from '@/lib/supabase/client';
+import { useAuthPresence } from '@/components/AuthPresenceProvider';
 
 type MenuProfile = {
   display_name: string;
@@ -24,15 +24,23 @@ export default function AccountNavLink({
 }) {
   const t = useTranslations('Nav');
   const router = useRouter();
-  const [signedIn, setSignedIn] = useState<boolean | null>(null);
+  const { signedIn } = useAuthPresence();
   const [bureauxActive, setBureauxActive] = useState(false);
   const [bureauxNumber, setBureauxNumber] = useState<number | null>(null);
   const [profile, setProfile] = useState<MenuProfile | null>(null);
   const [signingOut, setSigningOut] = useState(false);
 
   useEffect(() => {
-    const supabase = createClient();
     let mounted = true;
+
+    if (!signedIn) {
+      setProfile(null);
+      setBureauxActive(false);
+      setBureauxNumber(null);
+      return () => {
+        mounted = false;
+      };
+    }
 
     const loadProfile = async () => {
       const nav = await fetchOwnBureauxNav();
@@ -44,37 +52,11 @@ export default function AccountNavLink({
       );
     };
 
-    supabase.auth.getSession().then(({ data }: { data: { session: Session | null } }) => {
-      if (!mounted) return;
-      const next = !!data.session;
-      setSignedIn(next);
-      if (next) void loadProfile();
-      else {
-        setProfile(null);
-        setBureauxActive(false);
-        setBureauxNumber(null);
-      }
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event: string, session: Session | null) => {
-      if (!mounted) return;
-      const next = !!session;
-      setSignedIn(next);
-      if (next) void loadProfile();
-      else {
-        setProfile(null);
-        setBureauxActive(false);
-        setBureauxNumber(null);
-      }
-    });
-
+    void loadProfile();
     return () => {
       mounted = false;
-      subscription.unsubscribe();
     };
-  }, []);
+  }, [signedIn]);
 
   const handleSignOut = async () => {
     if (signingOut) return;

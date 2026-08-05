@@ -15,30 +15,19 @@ export const getFeaturedFilms = unstable_cache(
   async (locale: AppLocale = defaultLocale) => {
     const supabase = createPublicClient();
 
-    const { data: collectionRow, error: collectionError } = await supabase
-      .from('collection')
-      .select('id')
-      .eq('slug', 'featured')
-      .maybeSingle();
-
-    if (collectionError || !collectionRow) {
-      console.error('Could not locate the featured collection UUID reference.');
-      return [];
-    }
-
+    // Single join: featured collection → mapped films (no UUID waterfall).
     const { data: mappedCollectionRows, error } = await supabase
       .from('collection_map')
       .select(`
       sort_order,
+      collection!inner ( slug ),
       film (
         id,
         name,
         slug,
         mux_playback_id,
-        last_line,
         teaser,
         story_date,
-        location,
         hero_wide,
         hero_clsx,
         hero_tall,
@@ -51,7 +40,7 @@ export const getFeaturedFilms = unstable_cache(
         creator:sponsor_id ( name )
       )
     `)
-      .eq('collection_id', collectionRow.id)
+      .eq('collection.slug', 'featured')
       .order('sort_order', { ascending: true });
 
     if (error) {
@@ -78,7 +67,7 @@ export const getFeaturedFilms = unstable_cache(
 
     return localizeFilmsWithThemes(supabase, films, locale);
   },
-  ['home-featured-i18n'],
+  ['home-featured-i18n-v2'],
   { revalidate: HOME_FILM_REVALIDATE_SECONDS, tags: ['film', 'home'] }
 );
 
@@ -94,7 +83,7 @@ export const getCineHomeArtifacts = unstable_cache(
       `
       )
       .order('created_at', { ascending: false })
-      .limit(80);
+      .limit(36);
 
     if (error || !data) {
       console.error('Cine home artifacts failed:', error?.message);
@@ -198,13 +187,13 @@ export const getCineHomeFilms = unstable_cache(
         .select(select)
         .lte('release_date', currentIsoString)
         .order('release_date', { ascending: false })
-        .limit(80),
+        .limit(36),
       supabase
         .from('film')
         .select(select)
         .gt('release_date', currentIsoString)
         .order('release_date', { ascending: true })
-        .limit(40),
+        .limit(12),
     ]);
 
     if (released.error) console.error('Cine home released films failed:', released.error);
@@ -213,7 +202,7 @@ export const getCineHomeFilms = unstable_cache(
     const rows = [...(released.data || []), ...(comingSoon.data || [])];
     return localizeFilmsWithThemes(supabase, rows as { id: string }[], locale);
   },
-  ['home-cine-films-i18n'],
+  ['home-cine-films-i18n-v2'],
   { revalidate: HOME_FILM_REVALIDATE_SECONDS, tags: ['film', 'home'] }
 );
 

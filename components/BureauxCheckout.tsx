@@ -17,10 +17,18 @@ import {
   LIGHT_PAGE_BG,
   LIGHT_PAGE_FG,
 } from '@/lib/color-scheme';
-import { createClient } from '@/lib/supabase/client';
 import { routing } from '@/i18n/routing';
+import BureauxJoinClaim from '@/components/BureauxJoinClaim';
 
 const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '';
+const DEFAULT_NEXT = '/account/bureaux';
+
+function safeNextPath(raw?: string | null) {
+  if (typeof raw === 'string' && raw.startsWith('/') && !raw.startsWith('//')) {
+    return raw;
+  }
+  return DEFAULT_NEXT;
+}
 
 function fjorrAppearance(isLight: boolean): Appearance {
   const bg = isLight ? LIGHT_PAGE_BG : DARK_PAGE_BG;
@@ -70,42 +78,28 @@ function fjorrAppearance(isLight: boolean): Appearance {
   };
 }
 
-function accountReturnUrl(locale: string, email?: string | null) {
+function accountReturnUrl(
+  locale: string,
+  email?: string | null,
+  nextPath?: string
+) {
   const prefix = locale === routing.defaultLocale ? '' : `/${locale}`;
   const params = new URLSearchParams({ joined: '1' });
   if (email) params.set('email', email);
+  params.set('next', safeNextPath(nextPath));
   return `${window.location.origin}${prefix}/bureaux?${params.toString()}`;
-}
-
-function authConfirmUrl() {
-  return `${window.location.origin}/auth/confirm`;
-}
-
-async function sendSignInLink(email: string) {
-  const supabase = createClient();
-  try {
-    document.cookie = `fjorr_auth_next=${encodeURIComponent('/bureaux')}; Path=/; Max-Age=900; SameSite=Lax`;
-  } catch {
-    /* ignore */
-  }
-  const { error } = await supabase.auth.signInWithOtp({
-    email,
-    options: {
-      shouldCreateUser: false,
-      emailRedirectTo: authConfirmUrl(),
-    },
-  });
-  if (error) throw error;
 }
 
 function CheckoutForm({
   email,
   signedIn,
   onPaidGuest,
+  nextPath,
 }: {
   email: string;
   signedIn: boolean;
   onPaidGuest: (email: string) => void;
+  nextPath: string;
 }) {
   const t = useTranslations('Bureaux');
   const locale = useLocale();
@@ -123,7 +117,8 @@ function CheckoutForm({
 
     const returnUrl = accountReturnUrl(
       locale,
-      signedIn ? null : email
+      signedIn ? null : email,
+      nextPath
     );
     const { error, paymentIntent } = await stripe.confirmPayment({
       elements,
@@ -137,10 +132,7 @@ function CheckoutForm({
     });
 
     if (error) {
-      setMessage(
-        error.message ||
-          `${t('checkoutError')} — ${error.type || 'confirm_failed'}`
-      );
+      setMessage(t('checkoutError'));
       setSubmitting(false);
       return;
     }
@@ -156,19 +148,11 @@ function CheckoutForm({
         window.location.assign(returnUrl);
         return;
       }
-      try {
-        await sendSignInLink(email);
-        onPaidGuest(email);
-      } catch (err) {
-        setMessage(
-          err instanceof Error ? err.message : t('joinCheckEmailError')
-        );
-        setSubmitting(false);
-      }
+      onPaidGuest(email);
       return;
     }
 
-    setMessage(`${t('checkoutError')} — status ${status}`);
+    setMessage(t('checkoutError'));
     setSubmitting(false);
   };
 
@@ -221,15 +205,19 @@ export default function BureauxCheckout({
   signedIn = false,
   accountEmail = null,
   price,
+  nextPath,
 }: {
   /** Session present (unpaid member finishing join). */
   signedIn?: boolean;
   accountEmail?: string | null;
   /** Formatted annual price, e.g. "$100". */
   price: string;
+  /** Post-auth destination after guest join claim. */
+  nextPath?: string;
 }) {
   const t = useTranslations('Bureaux');
   const { isLight } = useColorScheme();
+  const claimNext = safeNextPath(nextPath);
   const [started, setStarted] = useState(false);
   const [email, setEmail] = useState(accountEmail || '');
   const [clientSecret, setClientSecret] = useState<string | null>(null);
@@ -276,9 +264,7 @@ export default function BureauxCheckout({
       try {
         result = JSON.parse(text) as typeof result;
       } catch {
-        setError(
-          `${t('checkoutError')} — bad response (${res.status}): ${text.slice(0, 180)}`
-        );
+        setError(t('checkoutError'));
         setClientSecret(null);
         setLoading(false);
         return;
@@ -292,13 +278,7 @@ export default function BureauxCheckout({
               ? t('joinEmailRequired')
               : result.error === 'config'
                 ? t('checkoutConfig')
-                : [
-                    t('checkoutError'),
-                    result.detail || `HTTP ${res.status}`,
-                    result.error ? `code=${result.error}` : null,
-                  ]
-                    .filter(Boolean)
-                    .join(' — ');
+                : t('checkoutError');
         setError(message);
         setClientSecret(null);
         setLoading(false);
@@ -309,9 +289,8 @@ export default function BureauxCheckout({
       setCheckoutEmail(result.email || nextEmail);
       setCheckoutSignedIn(Boolean(result.signedIn));
       setLoading(false);
-    } catch (err) {
-      const detail = err instanceof Error ? err.message : 'Network error';
-      setError(`${t('checkoutError')} — ${detail}`);
+    } catch {
+      setError(t('checkoutError'));
       setClientSecret(null);
       setLoading(false);
     }
@@ -320,28 +299,13 @@ export default function BureauxCheckout({
   if (!publishableKey || !stripePromise) {
     return (
       <p className="font-sans text-[14px] text-page-faint leading-relaxed">
-        {t('checkoutConfig')} (missing publishable key)
+        {t('checkoutConfig')}
       </p>
     );
   }
 
   if (paidEmail) {
-    return (
-      <div className="w-full max-w-sm flex flex-col items-stretch sm:items-center gap-3 text-left sm:text-center">
-        <h2 className="m-0 font-sans text-[18px] font-semibold tracking-tight text-page">
-          {t('joinCheckEmailTitle')}
-        </h2>
-        <p className="m-0 font-sans text-[16px] text-page-muted leading-relaxed">
-          {t('joinCheckEmailBody', { email: paidEmail })}
-        </p>
-        <Link
-          href={`/signin?next=${encodeURIComponent('/bureaux')}`}
-          className="font-sans text-[13px] font-semibold text-page-muted underline underline-offset-2 hover:text-page transition-colors self-start sm:self-center"
-        >
-          {t('joinCheckEmailSignIn')}
-        </Link>
-      </div>
-    );
+    return <BureauxJoinClaim email={paidEmail} nextPath={claimNext} />;
   }
 
   if (clientSecret && checkoutEmail) {
@@ -379,6 +343,7 @@ export default function BureauxCheckout({
           <CheckoutForm
             email={checkoutEmail}
             signedIn={checkoutSignedIn}
+            nextPath={claimNext}
             onPaidGuest={(paid) => setPaidEmail(paid)}
           />
         </Elements>
@@ -403,7 +368,7 @@ export default function BureauxCheckout({
           <p className="m-0 font-sans text-[13px] text-page-faint leading-relaxed text-left sm:text-center">
             {t('joinReturning')}{' '}
             <Link
-              href={`/signin?next=${encodeURIComponent('/bureaux')}`}
+              href={`/signin?next=${encodeURIComponent(claimNext)}`}
               className="font-semibold text-page-muted underline underline-offset-2 hover:text-page transition-colors"
             >
               {t('ctaSignIn')}
@@ -442,7 +407,7 @@ export default function BureauxCheckout({
           </p>
           {error === t('checkoutAlready') ? (
             <Link
-              href={`/signin?next=${encodeURIComponent('/bureaux')}`}
+              href={`/signin?next=${encodeURIComponent(claimNext)}`}
               className="font-sans text-[13px] font-semibold text-page underline underline-offset-2"
             >
               {t('joinCheckEmailSignIn')}
@@ -463,7 +428,7 @@ export default function BureauxCheckout({
         <p className="m-0 font-sans text-[13px] text-page-faint leading-relaxed text-left sm:text-center">
           {t('joinReturning')}{' '}
           <Link
-            href={`/signin?next=${encodeURIComponent('/bureaux')}`}
+            href={`/signin?next=${encodeURIComponent(claimNext)}`}
             className="font-semibold text-page-muted underline underline-offset-2 hover:text-page transition-colors"
           >
             {t('ctaSignIn')}

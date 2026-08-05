@@ -32,7 +32,8 @@
     "cabinet": "The Cabinet",
     "cabinetShort": "Cabinet",
     "plus": "Plus",
-    "bureaux": "The Bureaux"
+    "bureaux": "The Bureaux",
+    "signedInCueAria": "Signed in"
   },
   "DisplayMode": {
     "cinematic": "Cine",
@@ -45,7 +46,9 @@
     "film": "Films",
     "artifact": "Artifacts",
     "toggleMode": "Toggle display mode",
-    "toggleType": "Toggle content type"
+    "toggleType": "Toggle content type",
+    "viewLabel": "View",
+    "viewMenuAria": "Browse view: {mode}"
   },
   "Timeline": {
     "undated": "Undated",
@@ -57,8 +60,11 @@
     "heroLine2": "runs on atoms.",
     "heroLine3": "And stories.",
     "learnMore": "Learn more",
+    "more": "More",
     "noTitles": "No titles available.",
-    "srTitle": "Fjorr — Short films of the world's greatest stories."
+    "srTitle": "Fjorr — Short films of the world's greatest stories.",
+    "emptyFeatured": "New films are on the way. Browse below, or join the Bureaux.",
+    "joinCue": "Join the Bureaux"
   },
   "NotFound": {
     "title": "LOST?",
@@ -677,10 +683,10 @@
     "description": "Pick a hunt. Pitch the story. If we make it, you get paid — and your name on the film.",
     "membersNote": "Bounties are for Bureaux members.",
     "signIn": "Sign in",
-    "empty": "No active bounties right now. A General pitch is always open.",
+    "empty": "No active bounties right now. A general nomination is always open.",
     "pitchThis": "Nominate",
     "signInToPitch": "Sign in to nominate",
-    "joinToPitch": "Join to pitch",
+    "joinToPitch": "Join to nominate",
     "active": "Active",
     "backToGrid": "All bounties",
     "bountyNumber": "Bounty No. {number}",
@@ -825,6 +831,7 @@
     "ctaScoutBureaux": "Join the Bureaux",
     "membersOnlyBody": "The Cabinet is for Bureaux members.",
     "joinToSend": "Join to send a name",
+    "signInToNote": "Sign in",
     "disciplinesParagraph": "Archivists, cinematographers, composers, curators, directors, editors, producers, researchers, sound designers, writers, and more. Chronicling the human story, one myth at a time."
   },
   "Plus": {
@@ -978,7 +985,7 @@
     "ctaSubscribe": "Join the Bureaux",
     "ctaJoinPrice": "Join for {price}/year",
     "ctaPending": "Preparing…",
-    "ctaSignIn": "Sign in to join",
+    "ctaSignIn": "Sign in",
     "alreadyIn": "You're in the Bureaux.",
     "manageLink": "Manage subscription",
     "footnote": "Cancel anytime.",
@@ -1003,6 +1010,11 @@
     "joinCheckEmailTitle": "You're in. Check your email.",
     "joinCheckEmailBody": "We sent a sign-in link to {email}. Open it to enter the Bureaux.",
     "joinCheckEmailSignIn": "Sign in",
-    "joinCheckEmailError": "Payment went through, but we couldn't send the sign-in link. Use Sign in with this email."
+    "joinCheckEmailError": "Payment went through, but we couldn't send the sign-in link. Resend the link, sign in, or write us.",
+    "joinPaidTitle": "You're in. Finish your account.",
+    "joinPaidBody": "Payment succeeded. We sent a sign-in link to {email}. Open it, continue with Google, or resend the link.",
+    "joinResend": "Resend link",
+    "joinContinueGoogle": "Continue with Google",
+    "joinSupport": "Still stuck? Write control@fjorr.com"
   }
 }

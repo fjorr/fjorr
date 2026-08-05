@@ -31,9 +31,14 @@ export default function HomeWithSearch({
     };
   }, []);
 
-  // Warm theater after first paint / idle — don't race hero LCP.
+  // Warm theater after load + idle — don't race hero LCP.
   useEffect(() => {
+    let cancelled = false;
+    let idleId: number | undefined;
+    let timeoutId: number | undefined;
+
     const warm = () => {
+      if (cancelled) return;
       const conn = (navigator as Navigator & {
         connection?: { saveData?: boolean };
       }).connection;
@@ -41,27 +46,40 @@ export default function HomeWithSearch({
       void preloadCinemaTheater();
     };
 
-    const ric = (
-      window as Window & {
-        requestIdleCallback?: (
-          cb: () => void,
-          opts?: { timeout: number }
-        ) => number;
-        cancelIdleCallback?: (id: number) => void;
-      }
-    ).requestIdleCallback;
+    const schedule = () => {
+      const ric = (
+        window as Window & {
+          requestIdleCallback?: (
+            cb: () => void,
+            opts?: { timeout: number }
+          ) => number;
+          cancelIdleCallback?: (id: number) => void;
+        }
+      ).requestIdleCallback;
 
-    if (typeof ric === 'function') {
-      const id = ric(warm, { timeout: 6000 });
-      return () => {
-        (
-          window as Window & { cancelIdleCallback?: (id: number) => void }
-        ).cancelIdleCallback?.(id);
-      };
+      if (typeof ric === 'function') {
+        idleId = ric(warm, { timeout: 10000 });
+      } else {
+        timeoutId = window.setTimeout(warm, 5000);
+      }
+    };
+
+    if (document.readyState === 'complete') {
+      schedule();
+    } else {
+      window.addEventListener('load', schedule, { once: true });
     }
 
-    const t = window.setTimeout(warm, 2500);
-    return () => window.clearTimeout(t);
+    return () => {
+      cancelled = true;
+      window.removeEventListener('load', schedule);
+      if (idleId != null) {
+        (
+          window as Window & { cancelIdleCallback?: (id: number) => void }
+        ).cancelIdleCallback?.(idleId);
+      }
+      if (timeoutId != null) window.clearTimeout(timeoutId);
+    };
   }, []);
 
   return (

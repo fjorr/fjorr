@@ -4,6 +4,7 @@ import React from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
+import MembersGateActions from '@/components/MembersGateActions';
 import type { BountyRow, BountyStatus } from '@/lib/nomination-actions';
 
 const HAIRLINE = 'color-mix(in srgb, var(--page-fg) 10%, transparent)';
@@ -74,8 +75,8 @@ export default function BountyBriefClient({
   return (
     <main className="w-full min-h-[calc(100dvh-72px)] bg-[var(--page-bg)] text-page flex items-center justify-center px-5 sm:px-8 py-10 sm:py-14">
       <div className="w-full max-w-[980px] flex flex-col lg:flex-row lg:items-center gap-8 sm:gap-10 lg:gap-12">
-        {/* Poster — left on desktop, below copy on mobile */}
-        <div className="w-full lg:w-[380px] xl:w-[420px] shrink-0 order-2 lg:order-1 opacity-0 animate-slide-up style-delay-body">
+        {/* Poster — first on mobile, left on desktop */}
+        <div className="w-full lg:w-[380px] xl:w-[420px] shrink-0 order-1 opacity-0 animate-slide-up style-delay-body">
           {bounty.poster_image_url ? (
             <img
               src={bounty.poster_image_url}
@@ -94,8 +95,8 @@ export default function BountyBriefClient({
           )}
         </div>
 
-        {/* Brief — first on mobile, right on desktop */}
-        <aside className="w-full lg:flex-1 min-w-0 flex flex-col justify-center order-1 lg:order-2">
+        {/* Brief — below poster on mobile, right on desktop */}
+        <aside className="w-full lg:flex-1 min-w-0 flex flex-col justify-center order-2">
           <Link
             href="/bounties"
             className="inline-flex items-center gap-1.5 font-sans text-[13px] font-semibold text-page-faint hover:text-page-muted transition-colors w-fit mb-6 opacity-0 animate-slide-up style-delay-headline"
@@ -162,12 +163,12 @@ export default function BountyBriefClient({
                 <p className="font-sans font-medium text-[14px] leading-relaxed text-page-muted tracking-tight max-w-sm">
                   {t('membersNote')}
                 </p>
-                <Link
-                  href="/bureaux"
-                  className="px-10 h-14 inline-flex items-center justify-center bg-[var(--page-fg)] text-[var(--page-bg)] font-sans font-bold text-[15px] tracking-tight rounded-full shadow-2xl hover:opacity-90 active:scale-95 transition-all duration-150"
-                >
-                  {t('joinToPitch')}
-                </Link>
+                <MembersGateActions
+                  joinLabel={t('joinToPitch')}
+                  signInLabel={t('signInToPitch')}
+                  nextPath={`/bounties/${bounty.slug}`}
+                  className="items-start max-w-none"
+                />
               </div>
             )
           ) : (

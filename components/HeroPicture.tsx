@@ -49,16 +49,24 @@ export default function HeroPicture({
   return (
     <picture className={className}>
       {wideSrcSet ? (
-        <source media="(min-width: 1024px)" srcSet={wideSrcSet} sizes="100vw" />
+        <source
+          media="(min-width: 1024px)"
+          srcSet={wideSrcSet}
+          sizes="(max-width: 1440px) 100vw, 1440px"
+        />
       ) : null}
       {clsxSrcSet ? (
-        <source media="(min-width: 768px)" srcSet={clsxSrcSet} sizes="100vw" />
+        <source
+          media="(min-width: 768px)"
+          srcSet={clsxSrcSet}
+          sizes="(max-width: 1440px) 100vw, 1440px"
+        />
       ) : null}
       <Image
         src={fallback}
         alt={alt}
         fill
-        sizes="100vw"
+        sizes="(max-width: 1440px) 100vw, 1440px"
         priority={priority}
         fetchPriority={priority ? 'high' : 'auto'}
         loading={priority ? 'eager' : 'lazy'}

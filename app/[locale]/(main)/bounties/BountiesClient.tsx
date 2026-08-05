@@ -4,6 +4,7 @@ import React from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import ManualHelpButton from '@/components/help/ManualHelpButton';
+import MembersGateActions from '@/components/MembersGateActions';
 import type { BountyRow } from '@/lib/nomination-actions';
 
 function formatMoney(cents: number, currency: string) {
@@ -113,24 +114,29 @@ export default function BountiesClient({
               <ManualHelpButton slug="bounties" audience="member" />
             </div>
           ) : (
-            <div className="mt-8 w-full max-w-sm flex flex-col items-center gap-5 opacity-0 animate-slide-up style-delay-form">
-              <p className="font-sans font-medium text-[14px] leading-relaxed text-page-muted tracking-tight text-center">
+            <div className="mt-8 w-full flex flex-col items-center gap-5 opacity-0 animate-slide-up style-delay-form">
+              <p className="font-sans font-medium text-[14px] leading-relaxed text-page-muted tracking-tight text-center max-w-sm">
                 {t('membersNote')}
               </p>
-              <Link
-                href="/bureaux"
-                className="px-10 h-14 inline-flex items-center justify-center bg-[var(--page-fg)] text-[var(--page-bg)] font-sans font-bold text-[15px] tracking-tight rounded-full shadow-2xl hover:opacity-90 active:scale-95 transition-all duration-150"
-              >
-                {t('joinToPitch')}
-              </Link>
+              <MembersGateActions
+                joinLabel={t('joinToPitch')}
+                signInLabel={t('signInToPitch')}
+                nextPath="/bounties"
+              />
             </div>
           )}
         </div>
       </div>
 
       {bounties.length === 0 ? (
-        <div className="w-full max-w-5xl mx-auto px-5 sm:px-8 mt-10 text-center opacity-0 animate-slide-up style-delay-form">
+        <div className="w-full max-w-5xl mx-auto px-5 sm:px-8 mt-10 text-center opacity-0 animate-slide-up style-delay-form flex flex-col items-center gap-4">
           <p className="font-sans text-[16px] text-page-muted">{t('empty')}</p>
+          <Link
+            href="/nominate"
+            className="font-sans text-[14px] font-semibold text-page-muted hover:text-page transition-colors underline underline-offset-2"
+          >
+            {t('pitchThis')}
+          </Link>
         </div>
       ) : (
         <div className="w-full max-w-5xl mx-auto px-5 sm:px-8 mt-10 opacity-0 animate-slide-up style-delay-form">

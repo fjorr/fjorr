@@ -59,14 +59,22 @@ export default function FeatureRail({
   isBrowseActive = true,
 }: FeatureRailProps) {
   const t = useTranslations('Film');
+  const tHome = useTranslations('Home');
   const fallbackBg = 'linear-gradient(to bottom, #4C7A57, #36593E)';
   const railRef = useRef<HTMLDivElement>(null);
   const ignoreScrollSync = useRef(false);
 
-  const [isPlaying, setIsPlaying] = useState(true);
+  // Start paused until we know motion preference (SSR-safe; no brief autoplay flash).
+  const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const AUTOPLAY_DELAY = 5000;
   const TICK_RATE = 100;
+
+  useEffect(() => {
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setIsPlaying(true);
+    }
+  }, []);
 
   const RADIUS = 18.75;
   const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
@@ -259,14 +267,15 @@ export default function FeatureRail({
                     : { contentVisibility: 'auto', containIntrinsicSize: '100vw 56.25vw' }
                 }
               >
-                <PrefetchLink
-                  href={`/film/${film.slug || ''}`}
-                  className="absolute inset-0 w-full h-full block z-0 cursor-pointer"
+                <button
+                  type="button"
+                  onClick={() => onPlayClick(film)}
+                  className="absolute inset-0 w-full h-full block z-0 cursor-pointer border-0 p-0 text-left"
                   style={{
                     background:
                       'linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0) 100%)',
                   }}
-                  draggable={false}
+                  aria-label={t('playShort')}
                 >
                   {mountHero ? (
                     <HeroPicture
@@ -279,9 +288,9 @@ export default function FeatureRail({
                       imgClassName="object-cover"
                       onError={(e) => {
                         e.currentTarget.style.display = 'none';
-                        const link = e.currentTarget.closest('a');
-                        if (link instanceof HTMLElement) {
-                          link.style.background = fallbackBg;
+                        const host = e.currentTarget.closest('button');
+                        if (host instanceof HTMLElement) {
+                          host.style.background = fallbackBg;
                         }
                       }}
                     />
@@ -297,7 +306,7 @@ export default function FeatureRail({
                     className="absolute inset-x-0 bottom-0 h-1/2 z-10 pointer-events-none"
                     style={{ background: 'linear-gradient(to top, #000000BF 0%, #00000000 100%)' }}
                   />
-                </PrefetchLink>
+                </button>
 
                 <div className="absolute inset-x-0 bottom-0 px-8 md:px-12 pb-14 md:pb-16 pt-16 md:pt-32 z-20 max-w-2xl w-full flex flex-col text-center md:text-left items-center md:items-start mx-auto md:mx-0 pointer-events-none">
                   {sponsorName && (
@@ -364,22 +373,31 @@ export default function FeatureRail({
                     {film.teaser}
                   </p>
 
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      onPlayClick(film);
-                    }}
-                    className="h-10 px-6 inline-flex items-center justify-center gap-2 bg-white hover:bg-white/90 text-black font-sans font-bold text-sm tracking-normal rounded-full transition-all active:scale-[0.98] duration-150 shadow-lg pointer-events-auto cursor-pointer border-0 outline-none"
-                  >
-                    <img
-                      src="/icons/play.svg"
-                      className="w-4 h-4 select-none object-contain translate-y-[0.5px]"
-                      alt=""
-                    />
-                    <span>{t('play', { runtime: getRuntimeDisplay(film) })}</span>
-                  </button>
+                  <div className="flex items-center justify-center md:justify-start gap-4 pointer-events-auto">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        onPlayClick(film);
+                      }}
+                      className="h-10 px-6 inline-flex items-center justify-center gap-2 bg-white hover:bg-white/90 text-black font-sans font-bold text-sm tracking-normal rounded-full transition-all active:scale-[0.98] duration-150 shadow-lg cursor-pointer border-0 outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                    >
+                      <img
+                        src="/icons/play.svg"
+                        className="w-4 h-4 select-none object-contain translate-y-[0.5px]"
+                        alt=""
+                      />
+                      <span>{t('play', { runtime: getRuntimeDisplay(film) })}</span>
+                    </button>
+                    <PrefetchLink
+                      href={`/film/${film.slug || ''}`}
+                      className="font-sans font-semibold text-sm text-white/80 hover:text-white underline underline-offset-2 transition-colors"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {tHome('more')}
+                    </PrefetchLink>
+                  </div>
                 </div>
               </article>
             );

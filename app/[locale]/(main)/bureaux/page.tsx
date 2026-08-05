@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { redirect } from '@/i18n/navigation';
 import { createClient } from '@/lib/supabase/server';
-import BureauxCheckout from '@/components/BureauxCheckout';
+import BureauxCheckoutLazy from '@/components/BureauxCheckoutLazy';
 import BureauxIncludedList from '@/components/BureauxIncludedList';
 import BureauxJoinClaim from '@/components/BureauxJoinClaim';
 import BureauxJoinedRefresh from '@/components/BureauxJoinedRefresh';
@@ -47,6 +47,13 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+function safeNextPath(raw?: string) {
+  if (typeof raw === 'string' && raw.startsWith('/') && !raw.startsWith('//')) {
+    return raw;
+  }
+  return '/account/bureaux';
+}
+
 export default async function BureauxPage({
   params,
   searchParams,
@@ -57,6 +64,7 @@ export default async function BureauxPage({
     email?: string;
     gift?: string;
     session_id?: string;
+    next?: string;
   }>;
 }) {
   const { locale } = await params;
@@ -65,7 +73,9 @@ export default async function BureauxPage({
     email: joinedEmailRaw,
     gift,
     session_id: giftSessionId,
+    next: nextRaw,
   } = await searchParams;
+  const nextPath = safeNextPath(nextRaw);
   const joinedEmail =
     typeof joinedEmailRaw === 'string' && joinedEmailRaw.includes('@')
       ? joinedEmailRaw.trim().toLowerCase()
@@ -130,12 +140,13 @@ export default async function BureauxPage({
 
           <footer className="mt-8 flex flex-col items-stretch sm:items-center gap-5 w-full text-left sm:text-center opacity-0 animate-slide-up style-delay-form">
             {justJoined && !user && joinedEmail ? (
-              <BureauxJoinClaim email={joinedEmail} />
+              <BureauxJoinClaim email={joinedEmail} nextPath={nextPath} />
             ) : (
-              <BureauxCheckout
+              <BureauxCheckoutLazy
                 signedIn={Boolean(user)}
                 accountEmail={user?.email || null}
                 price={price}
+                nextPath={nextPath}
               />
             )}
             <p className="m-0 font-sans text-[13px] text-page-faint leading-relaxed max-w-sm">

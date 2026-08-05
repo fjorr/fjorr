@@ -28,6 +28,18 @@ export async function updateSession(
     return supabaseResponse;
   }
 
+  // Skip session refresh for anonymous visitors — no auth cookie to keep warm.
+  const hasAuthCookie = request.cookies
+    .getAll()
+    .some(
+      (c) =>
+        c.name.startsWith("sb-") &&
+        (c.name.includes("auth-token") || c.name.endsWith("-auth-token")),
+    );
+  if (!hasAuthCookie) {
+    return supabaseResponse;
+  }
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     supabaseAnonKey(),

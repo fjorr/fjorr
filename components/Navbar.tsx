@@ -55,8 +55,8 @@ function Navbar({ variant = 'light' }: NavbarProps) {
           variant === 'light'
             ? 'color-mix(in srgb, var(--page-bg-color, #1F1F1F) 78%, transparent)'
             : 'color-mix(in srgb, var(--page-bg-color, #EDE8DF) 82%, transparent)',
-        backdropFilter: 'blur(28px) saturate(1.4)',
-        WebkitBackdropFilter: 'blur(28px) saturate(1.4)',
+        backdropFilter: 'blur(16px) saturate(1.3)',
+        WebkitBackdropFilter: 'blur(16px) saturate(1.3)',
         transform: 'translateZ(0)',
       }
     : undefined;
@@ -142,7 +142,7 @@ function Navbar({ variant = 'light' }: NavbarProps) {
 
   /** Scales down on narrow viewports — never ellipsize; the bar grows to fit. */
   const taglineClass =
-    'font-sans font-medium tracking-normal whitespace-nowrap text-[clamp(10px,0.2rem+1.8vw,13px)]';
+    'font-sans font-medium tracking-normal whitespace-nowrap text-[clamp(10px,0.2rem+1.8vw,13px)] hidden min-[400px]:inline';
 
   return (
     <header className="sticky top-0 z-50 w-full h-[56px] pt-[12px] px-4 flex justify-center pointer-events-none overflow-visible">

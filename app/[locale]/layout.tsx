@@ -4,12 +4,14 @@ import { getMessages, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { DisplayModeProvider } from '@/components/DisplayModeProvider';
 import { ColorSchemeProvider } from '@/components/ColorSchemeProvider';
-import TypekitLoader from '@/components/TypekitLoader';
+import { AuthPresenceProvider } from '@/components/AuthPresenceProvider';
 import { fontVariables } from '@/lib/fonts';
-import { TYPEKIT_HREF } from '@/lib/typekit';
 import { DISPLAY_MODE_COOKIE, parseDisplayMode } from '@/lib/display-mode';
 import { COLOR_SCHEME_COOKIE, parseColorScheme } from '@/lib/color-scheme';
 import { routing } from '@/i18n/routing';
+
+/** Skip long legal copy on the client — pages read those via server getTranslations. */
+const CLIENT_SKIP_NAMESPACES = new Set(['Privacy', 'Terms']);
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -28,7 +30,12 @@ export default async function LocaleLayout({
   }
 
   setRequestLocale(locale);
-  const messages = await getMessages();
+  const allMessages = await getMessages();
+  const messages = Object.fromEntries(
+    Object.entries(allMessages as Record<string, unknown>).filter(
+      ([ns]) => !CLIENT_SKIP_NAMESPACES.has(ns),
+    ),
+  );
   const cookieStore = await cookies();
   const initialMode = parseDisplayMode(
     cookieStore.get(DISPLAY_MODE_COOKIE)?.value
@@ -40,16 +47,14 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} className={`${fontVariables} ${schemeClass}`}>
-      <head>
-        <link rel="stylesheet" href={TYPEKIT_HREF} />
-      </head>
       <body className="font-sans antialiased text-base min-h-screen bg-[var(--page-bg)] text-[var(--page-fg)]">
-        <TypekitLoader />
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ColorSchemeProvider initialScheme={initialScheme}>
-            <DisplayModeProvider initialMode={initialMode}>
-              {children}
-            </DisplayModeProvider>
+            <AuthPresenceProvider>
+              <DisplayModeProvider initialMode={initialMode}>
+                {children}
+              </DisplayModeProvider>
+            </AuthPresenceProvider>
           </ColorSchemeProvider>
         </NextIntlClientProvider>
       </body>

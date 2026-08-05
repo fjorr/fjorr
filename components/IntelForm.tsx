@@ -66,11 +66,13 @@ export function IntelForm({ variant, isCustomVariant = true }: IntelFormProps) {
           </div>
 
           <input
-            type="text"
+            type="email"
             name="email"
+            autoComplete="email"
+            aria-label={t('emailPlaceholder')}
             placeholder={t('emailPlaceholder')}
             disabled={isPending}
-            className={`w-full rounded-[8px] h-12 pl-5 pr-12 font-sans font-semibold text-[14px] focus:outline-none transition-all duration-200 disabled:opacity-50
+            className={`w-full rounded-[8px] h-12 pl-5 pr-12 font-sans font-semibold text-[14px] focus:outline-none focus-visible:ring-2 focus-visible:ring-current/30 transition-all duration-200 disabled:opacity-50
               ${
                 isCustomVariant
                   ? `${textColor} focus:border-current/30 ${

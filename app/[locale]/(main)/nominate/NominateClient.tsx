@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import NominateSuccessView from '@/components/NominateSuccessView';
+import MembersGateActions from '@/components/MembersGateActions';
 import ManualHelpButton from '@/components/help/ManualHelpButton';
 import {
   submitNomination,
@@ -200,25 +201,25 @@ export default function NominateClient({
             </div>
 
             {!bureauxActive ? (
-              <div className="mt-8 w-full max-w-sm flex flex-col items-center gap-5 opacity-0 animate-slide-up style-delay-form">
-                <p className="font-sans font-medium text-[14px] leading-relaxed text-page-muted tracking-tight text-center">
+              <div className="mt-8 w-full flex flex-col items-center gap-5 opacity-0 animate-slide-up style-delay-form">
+                <p className="font-sans font-medium text-[14px] leading-relaxed text-page-muted tracking-tight text-center max-w-sm">
                   {t('membersOnlyBody')}
                 </p>
-                <Link
-                  href="/bureaux"
-                  className="px-10 h-14 inline-flex items-center justify-center bg-[var(--page-fg)] text-[var(--page-bg)] font-sans font-bold text-[15px] tracking-tight rounded-full shadow-2xl hover:opacity-90 active:scale-95 transition-all duration-150"
+                <MembersGateActions
+                  joinLabel={t('joinToNominate')}
+                  signInLabel={t('signInToNominate')}
+                  nextPath="/nominate"
                 >
-                  {t('joinToNominate')}
-                </Link>
-                <div className="flex flex-col items-center gap-2.5">
-                  <Link
-                    href="/principles"
-                    className="font-sans text-[13px] sm:text-[14px] font-semibold text-page-muted hover:text-page transition-colors underline underline-offset-2"
-                  >
-                    {t('principlesLink')}
-                  </Link>
-                  <ManualHelpButton slug="nominate" audience="guest" />
-                </div>
+                  <div className="flex flex-col items-center gap-2.5">
+                    <Link
+                      href="/principles"
+                      className="font-sans text-[13px] sm:text-[14px] font-semibold text-page-muted hover:text-page transition-colors underline underline-offset-2"
+                    >
+                      {t('principlesLink')}
+                    </Link>
+                    <ManualHelpButton slug="nominate" audience="guest" />
+                  </div>
+                </MembersGateActions>
               </div>
             ) : (
               <>

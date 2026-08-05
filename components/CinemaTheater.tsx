@@ -958,7 +958,7 @@ function CinemaTheater({
       <video
         ref={bindFilmPlayer}
         id="fjorr-engine"
-        preload="auto"
+        preload="metadata"
         playsInline
         crossOrigin="anonymous"
         onCanPlay={(e) => {

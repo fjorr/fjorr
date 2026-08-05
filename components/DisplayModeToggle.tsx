@@ -72,7 +72,7 @@ export default function DisplayModeToggle() {
             aria-label={option.label}
             aria-pressed={active}
             onClick={() => setMode(option.id)}
-            className={`w-8 h-8 inline-flex items-center justify-center rounded-[6px] transition-colors ${
+            className={`w-8 h-8 inline-flex items-center justify-center rounded-[6px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--page-fg)_35%,transparent)] ${
               active
                 ? 'bg-page-chip-active text-page'
                 : 'text-page-faint hover:text-page-muted'

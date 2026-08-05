@@ -19,6 +19,7 @@ function noteTicket(id: string): string {
  */
 export default function TheaterPlusPanel({
   filmId,
+  filmSlug,
   atSeconds,
   isLight = false,
   onExit,
@@ -93,6 +94,7 @@ export default function TheaterPlusPanel({
   }
 
   if (!bureauxActive) {
+    const signInNext = filmSlug ? `/film/${filmSlug}` : '/';
     return (
       <div className="w-full flex flex-col gap-3">
         <span className={`font-interTight text-[16px] font-bold tracking-tight ${ink}`}>
@@ -101,18 +103,26 @@ export default function TheaterPlusPanel({
         <p className={`font-sans text-[14px] leading-snug ${muted}`}>
           {t('modeInvite')}
         </p>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col items-start gap-3">
+          <div className="flex items-center gap-4">
+            <Link
+              href="/bureaux"
+              className={`h-9 px-4 inline-flex items-center justify-center rounded-[8px] ${controlType} ${sendBtn}`}
+            >
+              {t('joinToNote')}
+            </Link>
+            {onExit ? (
+              <button type="button" onClick={onExit} className={textBtn}>
+                {t('craftClose')}
+              </button>
+            ) : null}
+          </div>
           <Link
-            href="/bureaux"
-            className={`h-9 px-4 inline-flex items-center justify-center rounded-[8px] ${controlType} ${sendBtn}`}
+            href={`/signin?next=${encodeURIComponent(signInNext)}`}
+            className={`font-sans text-[13px] font-semibold underline underline-offset-2 ${muted} hover:opacity-100 transition-opacity`}
           >
-            {t('joinToNote')}
+            {t('signInToNote')}
           </Link>
-          {onExit ? (
-            <button type="button" onClick={onExit} className={textBtn}>
-              {t('craftClose')}
-            </button>
-          ) : null}
         </div>
       </div>
     );

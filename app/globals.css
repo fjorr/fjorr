@@ -348,10 +348,13 @@ body {
   .manual-modal-scrim-in,
   .manual-modal-card-in,
   .principles-hero-in,
-  .principles-slide-in {
-    animation: none;
-    opacity: 1;
-    transform: none;
+  .principles-slide-in,
+  .animate-slide-up,
+  .animate-fade-up,
+  .animate-sweep-right {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
     filter: none;
   }
 
