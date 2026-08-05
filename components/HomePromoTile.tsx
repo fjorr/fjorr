@@ -7,7 +7,7 @@ type HomePromoTileProps = {
   subhead: string;
   cta: string;
   bgClassName: string;
-  /** Futura display vs Inter Tight (bounties). */
+  /** Futura display vs Inter Tight (tiles default to Inter Tight). */
   headlineStyle?: 'futura' | 'interTight';
   /** `banner` = full-width lead; `tile` = grid cell. */
   layout?: 'tile' | 'banner';
@@ -22,14 +22,16 @@ export default function HomePromoTile({
   subhead,
   cta,
   bgClassName,
-  headlineStyle = 'futura',
+  headlineStyle,
   layout = 'tile',
 }: HomePromoTileProps) {
   const isBanner = layout === 'banner';
-  const headlineClass =
-    headlineStyle === 'interTight'
-      ? 'font-interTight font-extrabold capitalize tracking-normal'
-      : 'font-futura font-extrabold uppercase tracking-tighter';
+  const useInterTight = headlineStyle
+    ? headlineStyle === 'interTight'
+    : !isBanner;
+  const headlineClass = useInterTight
+    ? 'font-interTight font-extrabold tracking-tight'
+    : 'font-futura font-extrabold uppercase tracking-tighter';
 
   return (
     <Link
@@ -38,22 +40,22 @@ export default function HomePromoTile({
         isBanner
           ? // Lead tile: tall on mobile, wide banner from sm up.
             'aspect-[4/5] min-h-[340px] sm:aspect-[21/9] sm:min-h-[260px]'
-          : // Secondary: compact on mobile stack, square/landscape in the row.
-            'aspect-[16/10] min-h-[160px] sm:aspect-square sm:min-h-0 lg:aspect-[5/4]'
+          : // Secondary: portrait tiles.
+            'aspect-[3/4] min-h-[240px] sm:min-h-0'
       }`}
     >
       <div
-        className={`absolute inset-0 flex flex-col justify-end items-start text-left ${
+        className={`absolute inset-0 flex flex-col ${
           isBanner
-            ? 'p-6 sm:p-8 md:p-10 max-w-xl'
-            : 'p-5 sm:p-8 md:p-10 max-w-md'
+            ? 'justify-end items-start text-left p-6 sm:p-8 md:p-10 max-w-xl'
+            : 'justify-start items-center text-center p-5 sm:p-6 md:p-7'
         }`}
       >
         <h2
-          className={`${headlineClass} leading-[0.95] mb-2.5 sm:mb-3 ${
+          className={`${headlineClass} leading-[1.05] mb-2 sm:mb-2.5 ${
             isBanner
               ? 'text-[clamp(2.25rem,8vw,3.25rem)]'
-              : 'text-[clamp(1.35rem,4vw,2.5rem)]'
+              : 'text-[clamp(1.2rem,2.4vw,1.45rem)]'
           }`}
         >
           {headline}
@@ -61,8 +63,8 @@ export default function HomePromoTile({
         <p
           className={`font-sans font-medium leading-relaxed text-white/70 tracking-tight ${
             isBanner
-              ? 'text-[13px] sm:text-[14px] mb-5 sm:mb-6 max-w-sm'
-              : 'text-[12px] sm:text-[14px] mb-4 sm:mb-6 max-w-xs line-clamp-2 sm:line-clamp-none'
+              ? 'text-[16px] sm:text-[18px] mb-5 sm:mb-6 max-w-md'
+              : 'text-[12px] sm:text-[13px] mb-4 sm:mb-5 max-w-[16rem]'
           }`}
         >
           {subhead}

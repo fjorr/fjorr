@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { redirect } from '@/i18n/navigation';
 import { createClient } from '@/lib/supabase/server';
 import BureauxCheckout from '@/components/BureauxCheckout';
+import BureauxIncludedList from '@/components/BureauxIncludedList';
 import BureauxJoinClaim from '@/components/BureauxJoinClaim';
 import BureauxJoinedRefresh from '@/components/BureauxJoinedRefresh';
 import ManualHelpButton from '@/components/help/ManualHelpButton';
@@ -99,60 +100,35 @@ export default async function BureauxPage({
     });
   }
 
-  const perks = [
-    t('perkNominate'),
-    t('perkBounties'),
-    t('perkPlus'),
-    t('perkEarly'),
-    t('perkBehind'),
-    t('perkNumber'),
-  ];
-
   return (
     <div className="w-full min-h-screen bg-[var(--page-bg)] text-page pb-24">
       <div className="w-full max-w-4xl mx-auto px-[10%] pt-14 sm:pt-20 flex flex-col items-stretch sm:items-center text-left sm:text-center">
         <div className="w-full max-w-xl flex flex-col items-stretch sm:items-center">
           <header className="flex flex-col items-stretch sm:items-center w-full">
-            <p className="font-sans text-lg sm:text-xl font-semibold normal-case tracking-normal text-page select-none">
+            <p className="font-sans text-lg sm:text-xl font-semibold normal-case tracking-normal text-page select-none opacity-0 animate-slide-up style-delay-headline">
               {t('eyebrow')}
             </p>
-            <h1 className="mt-2 sm:mt-2.5 mb-5 sm:mb-6 font-futura tracking-tighter text-page select-none text-5xl sm:text-6xl md:text-7xl !leading-[0.95] w-full max-w-[14rem] sm:max-w-[18rem] md:max-w-[22rem] text-balance text-left sm:text-center">
+            <h1 className="mt-2 sm:mt-2.5 mb-5 sm:mb-6 font-futura tracking-tighter text-page select-none text-5xl sm:text-6xl md:text-7xl !leading-[0.95] w-full max-w-md sm:max-w-xl text-balance text-left sm:text-center opacity-0 animate-slide-up style-delay-headline">
               {t('headline')}
             </h1>
-            <p className="m-0 font-sans font-medium text-[16px] leading-[1.55] tracking-normal text-page max-w-xl text-left sm:text-center">
-              {t('lead')}
-            </p>
+            <div className="font-sans font-medium text-[16px] leading-[1.55] tracking-normal text-page max-w-xl text-left sm:text-center flex flex-col gap-4 opacity-0 animate-slide-up style-delay-body">
+              <p className="m-0">{t('lead')}</p>
+              <p className="m-0">{t('lead2')}</p>
+            </div>
           </header>
 
-          <section className="mt-7 w-full flex justify-start sm:justify-center">
-            <div className="w-full max-w-sm flex flex-col gap-1.5 text-left sm:text-center">
-              <h2 className="m-0 mb-0.5 font-sans text-[12px] font-semibold text-page-muted select-none">
-                {t('perksTitle')}
-              </h2>
-              <ul className="m-0 p-0 list-none flex flex-col gap-1">
-                {perks.map((line) => (
-                  <li
-                    key={line}
-                    className="font-sans text-[14px] text-page leading-snug"
-                  >
-                    {line}
-                  </li>
-                ))}
-              </ul>
-              <p className="m-0 mt-1 font-sans text-[14px] font-semibold text-page leading-snug">
-                {t('perkClosing')}
-              </p>
-            </div>
+          <section className="mt-7 w-full flex justify-start sm:justify-center opacity-0 animate-slide-up style-delay-body">
+            <BureauxIncludedList />
           </section>
 
           {justJoined && user ? (
-            <p className="mt-8 font-sans text-[14px] text-page-muted leading-relaxed">
+            <p className="mt-8 font-sans text-[14px] text-page-muted leading-relaxed opacity-0 animate-slide-up style-delay-form">
               {ta('bureauxJoining')}
             </p>
           ) : null}
           {justJoined && user && !active ? <BureauxJoinedRefresh /> : null}
 
-          <footer className="mt-8 flex flex-col items-stretch sm:items-center gap-5 w-full text-left sm:text-center">
+          <footer className="mt-8 flex flex-col items-stretch sm:items-center gap-5 w-full text-left sm:text-center opacity-0 animate-slide-up style-delay-form">
             {justJoined && !user && joinedEmail ? (
               <BureauxJoinClaim email={joinedEmail} />
             ) : (

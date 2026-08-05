@@ -82,6 +82,21 @@ export default function ManualMiniSite({
   const [heightReady, setHeightReady] = useState(false);
   const [plateOpen, setPlateOpen] = useState(false);
   const [plateIndex, setPlateIndex] = useState(0);
+  /**
+   * /manual home — technical-document settle on every load.
+   * pending → hide one frame; play → animate; skip → show immediately.
+   */
+  const [docIntro, setDocIntro] = useState<'pending' | 'play' | 'skip'>(
+    mode === 'page' && slug == null ? 'pending' : 'skip'
+  );
+
+  useLayoutEffect(() => {
+    if (mode !== 'page' || slug != null) {
+      setDocIntro('skip');
+      return;
+    }
+    setDocIntro('play');
+  }, [mode, slug]);
 
   const updateFades = useCallback(() => {
     const el = scrollRef.current;
@@ -215,9 +230,18 @@ export default function ManualMiniSite({
   };
 
   return (
-    <div className="relative w-full max-w-[28rem] h-[calc(100dvh-1.5rem)] max-h-[calc(100dvh-1.5rem)] sm:h-auto sm:max-h-[min(76dvh,38rem)] flex flex-col rounded-[16px] bg-page-elevated text-page overflow-visible">
+    <div
+      className={`relative w-full max-w-[28rem] h-[calc(100dvh-1.5rem)] max-h-[calc(100dvh-1.5rem)] sm:h-auto sm:max-h-[min(76dvh,38rem)] flex flex-col rounded-[16px] bg-page-elevated text-page overflow-visible${
+        docIntro === 'play' ? ' manual-doc-in' : ''
+      }`}
+      style={docIntro === 'pending' ? { opacity: 0 } : undefined}
+    >
       {/* Card chrome */}
-      <header className="shrink-0 flex items-center justify-between gap-3 px-10 sm:px-11 h-14 border-b border-[color-mix(in_srgb,var(--page-fg)_8%,transparent)] bg-page-elevated rounded-t-[16px]">
+      <header className="manual-doc-chrome shrink-0 flex items-center justify-between gap-3 px-10 sm:px-11 h-14 bg-page-elevated rounded-t-[16px] relative">
+        <div
+          aria-hidden
+          className="manual-doc-rule absolute left-10 right-10 sm:left-11 sm:right-11 bottom-0 h-px bg-[color-mix(in_srgb,var(--page-fg)_12%,transparent)]"
+        />
         <button
           type="button"
           aria-label={t('indexBrandAria')}
@@ -253,7 +277,7 @@ export default function ManualMiniSite({
 
       {/* Body — hugs content; height eases between entries. Fades + red edge knob. */}
       <div
-        className={`relative min-h-0 overflow-hidden rounded-b-[16px]${heightReady ? ' manual-body-height' : ''}`}
+        className={`manual-doc-body relative min-h-0 overflow-hidden rounded-b-[16px]${heightReady ? ' manual-body-height' : ''}`}
         style={bodyHeight != null ? { height: bodyHeight } : undefined}
       >
         <div
@@ -301,17 +325,17 @@ export default function ManualMiniSite({
               />
             ) : (
               <div className="px-10 pt-7 sm:pt-8 pb-10 flex flex-col gap-5">
-                <h1 className="m-0 font-interTight font-extrabold tracking-tight text-[clamp(1.75rem,4.5vw,2.25rem)] text-page leading-[1.08] text-balance">
+                <h1 className="manual-doc-line manual-doc-line-1 m-0 font-interTight font-extrabold tracking-tight text-[clamp(1.75rem,4.5vw,2.25rem)] text-page leading-[1.08] text-balance">
                   {t('homeHeadline')}
                 </h1>
-                <p className="m-0 font-sans text-[16px] text-page-muted leading-relaxed whitespace-pre-line">
+                <p className="manual-doc-line manual-doc-line-2 m-0 font-sans text-[16px] text-page-muted leading-relaxed whitespace-pre-line">
                   {t('homeLead')}
                 </p>
                 {MANUAL_ENTRIES[0] ? (
                   <button
                     type="button"
                     onClick={() => goToEntry(MANUAL_ENTRIES[0].slug)}
-                    className="self-start inline-flex h-9 items-center px-3.5 rounded-[8px] bg-[var(--page-fg)] text-[var(--page-bg)] font-sans text-[13px] font-semibold tracking-tight hover:opacity-90 transition-opacity border-0 cursor-pointer"
+                    className="manual-doc-line manual-doc-line-3 self-start inline-flex h-9 items-center px-3.5 rounded-[8px] bg-[var(--page-fg)] text-[var(--page-bg)] font-sans text-[13px] font-semibold tracking-tight hover:opacity-90 transition-opacity border-0 cursor-pointer"
                   >
                     {t('beginCta', {
                       number: MANUAL_ENTRIES[0].number,

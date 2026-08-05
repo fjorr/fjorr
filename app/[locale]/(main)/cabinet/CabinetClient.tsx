@@ -32,19 +32,19 @@ export default function CabinetClient({
       <div className="w-full max-w-4xl mx-auto px-[10%] pt-14 sm:pt-20 flex flex-col items-center text-center">
         <div className="w-full max-w-lg flex flex-col items-center">
           <div className="flex flex-col items-center">
-            <p className="font-sans text-lg sm:text-xl font-semibold normal-case tracking-normal text-page select-none">
+            <p className="font-sans text-lg sm:text-xl font-semibold normal-case tracking-normal text-page select-none opacity-0 animate-slide-up style-delay-headline">
               {t('eyebrow')}
             </p>
-            <h1 className="mt-2 sm:mt-2.5 mb-5 sm:mb-6 font-futura tracking-tighter text-page select-none text-5xl sm:text-6xl md:text-7xl !leading-[0.9] max-w-[12ch]">
+            <h1 className="mt-2 sm:mt-2.5 mb-5 sm:mb-6 font-futura tracking-tighter text-page select-none text-5xl sm:text-6xl md:text-7xl !leading-[0.9] max-w-[12ch] opacity-0 animate-slide-up style-delay-headline">
               {t('headline')}
             </h1>
-            <div className="font-sans font-medium text-[16px] leading-[1.55] tracking-normal text-page max-w-md text-center flex flex-col gap-4">
+            <div className="font-sans font-medium text-[16px] leading-[1.55] tracking-normal text-page max-w-md text-center flex flex-col gap-4 opacity-0 animate-slide-up style-delay-body">
               <p className="m-0">{t('disciplinesParagraph')}</p>
               <p className="m-0">{t('scoutLead')}</p>
             </div>
           </div>
 
-          <footer className="mt-8 flex flex-col items-center gap-5 w-full text-center">
+          <footer className="mt-8 flex flex-col items-center gap-5 w-full text-center opacity-0 animate-slide-up style-delay-form">
             <CabinetOfferForm
               bureauxActive={bureauxActive}
               defaultEmail={defaultEmail}

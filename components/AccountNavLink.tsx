@@ -17,12 +17,10 @@ export default function AccountNavLink({
   className,
   mutedClassName,
   onNavigate,
-  onSignIn,
 }: {
   className: string;
   mutedClassName?: string;
   onNavigate?: () => void;
-  onSignIn?: () => void;
 }) {
   const t = useTranslations('Nav');
   const router = useRouter();
@@ -170,13 +168,13 @@ export default function AccountNavLink({
         <span>{t('joinBureaux')}</span>
         <Icon name="arrowRight" className="w-3.5 h-3.5 opacity-55" />
       </Link>
-      <button
-        type="button"
-        onClick={() => onSignIn?.()}
+      <Link
+        href="/signin"
+        onClick={onNavigate}
         className={`${className} text-left opacity-80 hover:opacity-100`}
       >
         {t('signIn')}
-      </button>
+      </Link>
     </div>
   );
 }

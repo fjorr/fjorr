@@ -458,50 +458,6 @@ export default function NominateClient({
         )}
       </div>
 
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-        .style-delay-100 { animation-delay: 100ms; }
-        .style-delay-180 { animation-delay: 180ms; }
-        .style-delay-250 { animation-delay: 250ms; }
-        .style-delay-320 { animation-delay: 320ms; }
-        
-        .style-delay-headline { animation-delay: 500ms !important; }
-        .style-delay-body     { animation-delay: 750ms !important; }
-        .style-delay-form     { animation-delay: 1000ms !important; }
-
-        @keyframes imageSweepRight {
-          from {
-            opacity: 0;
-            transform: translateX(-12px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-
-        @keyframes layoutSlideUp {
-          from {
-            opacity: 0;
-            transform: translateY(14px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        
-        .animate-sweep-right {
-          animation: imageSweepRight 950ms cubic-bezier(0.25, 1, 0.5, 1) forwards;
-        }
-
-        .animate-slide-up {
-          animation: layoutSlideUp 850ms cubic-bezier(0.25, 1, 0.5, 1) forwards;
-        }
-      `,
-        }}
-      />
     </div>
   );
 }

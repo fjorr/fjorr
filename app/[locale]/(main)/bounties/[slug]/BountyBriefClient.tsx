@@ -75,7 +75,7 @@ export default function BountyBriefClient({
     <main className="w-full min-h-[calc(100dvh-72px)] bg-[var(--page-bg)] text-page flex items-center justify-center px-5 sm:px-8 py-10 sm:py-14">
       <div className="w-full max-w-[980px] flex flex-col lg:flex-row lg:items-center gap-8 sm:gap-10 lg:gap-12">
         {/* Poster — left on desktop, below copy on mobile */}
-        <div className="w-full lg:w-[380px] xl:w-[420px] shrink-0 order-2 lg:order-1">
+        <div className="w-full lg:w-[380px] xl:w-[420px] shrink-0 order-2 lg:order-1 opacity-0 animate-slide-up style-delay-body">
           {bounty.poster_image_url ? (
             <img
               src={bounty.poster_image_url}
@@ -98,7 +98,7 @@ export default function BountyBriefClient({
         <aside className="w-full lg:flex-1 min-w-0 flex flex-col justify-center order-1 lg:order-2">
           <Link
             href="/bounties"
-            className="inline-flex items-center gap-1.5 font-sans text-[13px] font-semibold text-page-faint hover:text-page-muted transition-colors w-fit mb-6"
+            className="inline-flex items-center gap-1.5 font-sans text-[13px] font-semibold text-page-faint hover:text-page-muted transition-colors w-fit mb-6 opacity-0 animate-slide-up style-delay-headline"
           >
             <ArrowLeft
               size={14}
@@ -109,10 +109,11 @@ export default function BountyBriefClient({
             {t('backToGrid')}
           </Link>
 
-          <h1 className="font-futura text-[clamp(2rem,5vw,2.75rem)] font-extrabold uppercase tracking-tighter text-page !leading-[0.92] select-none mb-5">
+          <h1 className="font-futura text-[clamp(2rem,5vw,2.75rem)] font-extrabold uppercase tracking-tighter text-page !leading-[0.92] select-none mb-5 opacity-0 animate-slide-up style-delay-headline">
             {bounty.title}
           </h1>
 
+          <div className="opacity-0 animate-slide-up style-delay-body">
           <p className="font-sans text-[18px] sm:text-[20px] font-semibold tracking-tight tabular-nums text-page leading-none mb-3">
             {rewardLabel}
           </p>
@@ -126,7 +127,9 @@ export default function BountyBriefClient({
               {bounty.brief}
             </p>
           ) : null}
+          </div>
 
+          <div className="opacity-0 animate-slide-up style-delay-form">
           {bounty.claimed_at ? (
             <dl
               className="m-0 border-t mb-8"
@@ -181,6 +184,7 @@ export default function BountyBriefClient({
               {t('principlesLink')}
             </Link>
           ) : null}
+          </div>
         </aside>
       </div>
     </main>

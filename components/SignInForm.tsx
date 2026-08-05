@@ -44,12 +44,10 @@ function GoogleGlyph({ className }: { className?: string }) {
 
 export default function SignInForm({
   nextPath = '/bureaux',
-  layout = 'page',
-  variant = 'light',
 }: {
   nextPath?: string;
+  /** @deprecated Menu dropdown removed — prop kept for call-site compatibility. */
   layout?: 'page' | 'menu';
-  /** Navbar glass variant: light = light text on dark glass. */
   variant?: 'light' | 'dark';
 }) {
   const t = useTranslations('Account');
@@ -58,26 +56,7 @@ export default function SignInForm({
     'idle' | 'loading' | 'oauth' | 'sent' | 'error'
   >('idle');
   const [error, setError] = useState<string | null>(null);
-  const isMenu = layout === 'menu';
-  const onDarkGlass = !isMenu || variant === 'light';
   const busy = status === 'loading' || status === 'oauth';
-
-  const titleColor = onDarkGlass ? 'text-white' : 'text-black';
-  const bodyColor = onDarkGlass ? 'text-white/55' : 'text-black/55';
-  const labelColor = onDarkGlass ? 'text-white/35' : 'text-black/35';
-  const dividerColor = onDarkGlass ? 'border-white/10' : 'border-black/8';
-  const oauthClass = onDarkGlass
-    ? 'h-11 rounded-full bg-white/5 hover:bg-white/10 text-white font-sans text-[14px] font-semibold disabled:opacity-40 transition-all active:scale-[0.98] flex items-center justify-center gap-2.5'
-    : 'h-11 rounded-full bg-black/5 hover:bg-black/8 text-black font-sans text-[14px] font-semibold disabled:opacity-40 transition-all active:scale-[0.98] flex items-center justify-center gap-2.5';
-  const inputClass = onDarkGlass
-    ? 'h-11 rounded-[10px] bg-white/5 px-3.5 font-sans text-[15px] text-white placeholder:text-white/35 focus:bg-white/10 focus:outline-none transition-colors'
-    : 'h-11 rounded-[10px] bg-black/5 px-3.5 font-sans text-[15px] text-black placeholder:text-black/35 focus:bg-black/8 focus:outline-none transition-colors';
-  const ctaClass = onDarkGlass
-    ? 'h-11 rounded-full bg-white text-black font-sans text-[14px] font-bold hover:bg-white/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-[0.98]'
-    : 'h-11 rounded-full bg-black text-white font-sans text-[14px] font-bold hover:bg-black/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-[0.98]';
-  const secondaryClass = onDarkGlass
-    ? 'font-sans text-[13px] font-semibold text-white/40 hover:text-white/70 transition-colors'
-    : 'font-sans text-[13px] font-semibold text-black/40 hover:text-black/70 transition-colors';
 
   const handleOAuth = async (provider: Provider) => {
     setStatus('oauth');
@@ -107,7 +86,6 @@ export default function SignInForm({
     try {
       const supabase = createClient();
       stashAuthNext(nextPath);
-
       const { error: otpError } = await supabase.auth.signInWithOtp({
         email: email.trim(),
         options: {
@@ -130,25 +108,22 @@ export default function SignInForm({
     }
   };
 
-  const titleClass = isMenu
-    ? `font-sans text-[15px] font-semibold tracking-tight text-left ${titleColor}`
-    : 'font-sans text-2xl font-bold tracking-tight text-white text-center';
-  const bodyClass = isMenu
-    ? `font-sans text-[13px] leading-snug text-left ${bodyColor}`
-    : 'font-sans text-[16px] text-white/55 leading-relaxed text-center';
-
   if (status === 'sent') {
     return (
-      <div className={`w-full ${isMenu ? '' : 'max-w-sm'} flex flex-col gap-3`}>
-        <h2 className={titleClass}>{t('checkEmailTitle')}</h2>
-        <p className={bodyClass}>{t('checkEmailBody', { email })}</p>
+      <div className="w-full max-w-sm flex flex-col items-center gap-3 text-center opacity-0 animate-slide-up style-delay-headline">
+        <h1 className="m-0 font-interTight text-4xl sm:text-5xl font-extrabold tracking-tight text-page leading-[1.05]">
+          {t('checkEmailTitle')}
+        </h1>
+        <p className="m-0 font-sans text-[16px] text-page-muted leading-relaxed">
+          {t('checkEmailBody', { email })}
+        </p>
         <button
           type="button"
           onClick={() => {
             setStatus('idle');
             setEmail('');
           }}
-          className={`mt-1 ${secondaryClass} ${isMenu ? 'self-start' : 'self-center'}`}
+          className="mt-1 font-sans text-[13px] font-semibold text-page-faint hover:text-page-muted transition-colors bg-transparent border-0 p-0 cursor-pointer"
         >
           {t('useDifferentEmail')}
         </button>
@@ -156,100 +131,86 @@ export default function SignInForm({
     );
   }
 
-  const heading = isMenu ? t('modalTitle') : t('signInTitle');
-  const body = t('signInBody');
-
   return (
-    <div
-      className={`w-full ${isMenu ? '' : 'max-w-sm'} flex flex-col ${isMenu ? 'gap-4' : 'gap-5'}`}
-    >
-      <div className={`flex flex-col ${isMenu ? 'gap-1.5' : 'gap-2'}`}>
-        <h2 className={titleClass}>{heading}</h2>
-        <p className={bodyClass}>{body}</p>
+    <div className="w-full max-w-sm flex flex-col gap-5 text-center">
+      <div className="flex flex-col gap-2">
+        <h1 className="m-0 font-interTight text-4xl sm:text-5xl font-extrabold tracking-tight text-page leading-[1.05] opacity-0 animate-slide-up style-delay-headline">
+          {t('signInTitle')}
+        </h1>
+        <p className="m-0 font-sans text-[16px] text-page-muted leading-relaxed opacity-0 animate-slide-up style-delay-body">
+          {t('signInBody')}
+        </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <label className="flex flex-col gap-2 text-left">
-          <span
-            className={`font-sans text-[13px] font-semibold normal-case tracking-normal ${
-              isMenu ? labelColor : 'text-white/50'
-            }`}
-          >
-            {t('email')}
-          </span>
-          <input
-            type="email"
-            required
-            autoComplete="email"
-            autoFocus={isMenu}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder={t('emailPlaceholder')}
-            disabled={busy}
-            className={
-              isMenu
-                ? inputClass
-                : 'h-12 rounded-[10px] bg-white/5 px-4 font-sans text-[15px] text-white placeholder:text-white/35 focus:bg-white/10 focus:outline-none transition-colors disabled:opacity-40'
-            }
-          />
-        </label>
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col gap-4 text-left opacity-0 animate-slide-up style-delay-form"
+      >
+        <input
+          type="email"
+          required
+          autoComplete="email"
+          autoFocus
+          aria-label={t('email')}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder={t('emailPlaceholder')}
+          disabled={busy}
+          className="w-full rounded-xl px-5 py-4 bg-page-chip font-sans font-semibold text-[15px] text-page placeholder-page-muted border border-page-faint focus:outline-none focus:border-[color-mix(in_srgb,var(--page-fg)_35%,transparent)] disabled:opacity-40 transition-colors"
+        />
 
-        {error && (
-          <div className="flex flex-col gap-2 text-left">
-            <p className="font-sans text-[13px] text-red-400/90">{error}</p>
+        {error ? (
+          <div className="flex flex-col gap-2">
+            <p className="m-0 font-sans text-[13px] text-[#C45B4A]">{error}</p>
             {error === t('createViaBureaux') ? (
               <Link
                 href="/bureaux"
-                className={`font-sans text-[13px] font-semibold underline underline-offset-2 ${
-                  onDarkGlass ? 'text-white/80' : 'text-black/80'
-                }`}
+                className="font-sans text-[13px] font-semibold text-page underline underline-offset-2"
               >
                 {t('createViaBureauxCta')}
               </Link>
             ) : null}
           </div>
-        )}
+        ) : null}
 
         <button
           type="submit"
           disabled={busy || !email.trim()}
-          className={
-            isMenu
-              ? ctaClass
-              : 'h-12 rounded-full bg-white text-black font-sans text-[15px] font-bold hover:bg-white/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-[0.98]'
-          }
+          className="w-full h-14 inline-flex items-center justify-center rounded-full bg-[var(--page-fg)] text-[var(--page-bg)] font-sans text-[15px] font-bold tracking-tight shadow-2xl hover:opacity-90 active:scale-95 transition-all duration-150 disabled:opacity-40 disabled:pointer-events-none"
         >
           {status === 'loading' ? t('sending') : t('sendLink')}
         </button>
       </form>
 
-      <div className="flex items-center gap-3">
-        <div className={`h-px flex-1 border-t ${dividerColor}`} />
-        <span className={`font-sans text-[12px] font-medium ${labelColor}`}>
-          {t('orGoogle')}
-        </span>
-        <div className={`h-px flex-1 border-t ${dividerColor}`} />
-      </div>
+      <div className="flex flex-col gap-5 opacity-0 animate-slide-up style-delay-form">
+        <div className="flex items-center gap-3">
+          <div className="h-px flex-1 border-t border-page-faint" />
+          <span className="font-sans text-[12px] font-medium text-page-faint">
+            {t('orGoogle')}
+          </span>
+          <div className="h-px flex-1 border-t border-page-faint" />
+        </div>
 
-      <button
-        type="button"
-        disabled={busy}
-        onClick={() => handleOAuth('google')}
-        className={oauthClass}
-      >
-        <GoogleGlyph className="w-[18px] h-[18px]" />
-        {t('continueGoogle')}
-      </button>
-
-      <p className={`font-sans text-[12px] leading-snug ${bodyColor}`}>
-        {t('createViaBureaux')}{' '}
-        <Link
-          href="/bureaux"
-          className="font-semibold underline underline-offset-2"
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => handleOAuth('google')}
+          className="h-12 rounded-full bg-page-chip hover:bg-page-chip-hover text-page font-sans text-[14px] font-semibold disabled:opacity-40 transition-all active:scale-[0.98] flex items-center justify-center gap-2.5 border-0 cursor-pointer"
         >
-          {t('createViaBureauxCta')}
-        </Link>
-      </p>
+          <GoogleGlyph className="w-[18px] h-[18px]" />
+          {t('continueGoogle')}
+        </button>
+
+        <p className="m-0 font-sans text-[13px] leading-snug text-page-faint">
+          {t('createViaBureaux')}{' '}
+          <Link
+            href="/bureaux"
+            className="font-semibold text-page-muted underline underline-offset-2 hover:text-page transition-colors"
+          >
+            {t('createViaBureauxCta')}
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }

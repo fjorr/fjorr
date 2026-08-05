@@ -1,23 +1,13 @@
 'use client';
 
-import React, { useEffect } from 'react';
-import { useRouter } from '@/i18n/navigation';
+import React from 'react';
+import SignInForm from '@/components/SignInForm';
 
-/** Deep-link entry: land on home and open sign-in inside the nav glass. */
+/** Standalone sign-in — form centered in the viewport. */
 export default function SignInPageClient({ nextPath }: { nextPath: string }) {
-  const router = useRouter();
-
-  useEffect(() => {
-    router.replace('/');
-    const timer = window.setTimeout(() => {
-      window.dispatchEvent(
-        new CustomEvent('fjorr_open_signin', { detail: { nextPath } }),
-      );
-    }, 50);
-    return () => window.clearTimeout(timer);
-  }, [nextPath, router]);
-
   return (
-    <div className="w-full min-h-[50vh] bg-[#1F1F1F]" aria-busy="true" />
+    <div className="w-full min-h-[calc(100dvh-4.5rem)] bg-[var(--page-bg)] text-page flex items-center justify-center px-[10%] py-16 sm:py-20">
+      <SignInForm nextPath={nextPath} layout="page" />
+    </div>
   );
 }

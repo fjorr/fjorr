@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import dynamic from 'next/dynamic';
 import { useLocale, useTranslations } from 'next-intl';
 import { Icon } from '@/components/ui/Icons';
 import { localeLabels, locales, stripLocalePrefix, type AppLocale } from '@/i18n/config';
@@ -11,13 +10,6 @@ import AccountNavLink from '@/components/AccountNavLink';
 import NavbarBureauxCue from '@/components/NavbarBureauxCue';
 import { useColorScheme } from '@/components/ColorSchemeProvider';
 import { isColorSchemeLockedPath } from '@/lib/color-scheme';
-
-const SignInForm = dynamic(() => import('@/components/SignInForm'), {
-  ssr: false,
-  loading: () => (
-    <div className="h-40 w-full animate-pulse rounded-lg bg-white/5" aria-hidden />
-  ),
-});
 
 interface NavbarProps {
   variant?: 'light' | 'dark';
@@ -32,7 +24,7 @@ const EXPLORE_LINKS = [
   { href: '/manual', labelKey: 'manual' as const },
 ];
 
-type PanelMode = 'closed' | 'nav' | 'lang' | 'auth';
+type PanelMode = 'closed' | 'nav' | 'lang';
 
 const TAGLINE_SCROLL_PX = 40;
 
@@ -45,12 +37,11 @@ function Navbar({ variant = 'light' }: NavbarProps) {
   const showAppearance = !isColorSchemeLockedPath(pathname) && !isLocked;
   const [isTheaterOpen, setIsTheaterOpen] = useState(false);
   const [panel, setPanel] = useState<PanelMode>('closed');
-  const [authNextPath, setAuthNextPath] = useState('/bureaux');
   const [scrolledPast, setScrolledPast] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
 
   const isOpen = panel !== 'closed';
-  const showCloseIcon = panel === 'nav' || panel === 'auth';
+  const showCloseIcon = panel === 'nav';
   const textColor = variant === 'light' ? 'text-white' : 'text-black';
   const subTextColor = variant === 'light' ? 'text-white/80' : 'text-black/80';
   const iconColor = variant === 'light' ? 'text-white/55' : 'text-black/45';
@@ -79,18 +70,11 @@ function Navbar({ variant = 'light' }: NavbarProps) {
   const closePanel = () => setPanel('closed');
 
   const toggleNav = () => {
-    setPanel((current) =>
-      current === 'nav' || current === 'auth' ? 'closed' : 'nav',
-    );
+    setPanel((current) => (current === 'nav' ? 'closed' : 'nav'));
   };
 
   const toggleLang = () => {
     setPanel((current) => (current === 'lang' ? 'closed' : 'lang'));
-  };
-
-  const openAuth = (nextPath = '/bureaux') => {
-    setAuthNextPath(nextPath);
-    setPanel('auth');
   };
 
   const setLocale = (next: AppLocale) => {
@@ -125,18 +109,12 @@ function Navbar({ variant = 'light' }: NavbarProps) {
       setPanel('closed');
     };
     const handleShow = () => setIsTheaterOpen(false);
-    const handleOpenSignIn = (event: Event) => {
-      const detail = (event as CustomEvent<{ nextPath?: string }>).detail;
-      openAuth(detail?.nextPath || '/bureaux');
-    };
 
     window.addEventListener('fjorr_hide_main_navbar', handleHide);
     window.addEventListener('fjorr_show_main_navbar', handleShow);
-    window.addEventListener('fjorr_open_signin', handleOpenSignIn);
     return () => {
       window.removeEventListener('fjorr_hide_main_navbar', handleHide);
       window.removeEventListener('fjorr_show_main_navbar', handleShow);
-      window.removeEventListener('fjorr_open_signin', handleOpenSignIn);
     };
   }, []);
 
@@ -296,15 +274,6 @@ function Navbar({ variant = 'light' }: NavbarProps) {
                     ))}
                   </nav>
                 </div>
-              ) : panel === 'auth' ? (
-                <div className="px-[30px] pb-11 pt-4">
-                  <SignInForm
-                    key={authNextPath}
-                    nextPath={authNextPath}
-                    layout="menu"
-                    variant={variant}
-                  />
-                </div>
               ) : (
                 <div className="px-[30px] pb-11 pt-4 flex flex-col gap-5">
                   <div className="flex flex-col gap-2">
@@ -351,7 +320,6 @@ function Navbar({ variant = 'light' }: NavbarProps) {
                   >
                     <AccountNavLink
                       onNavigate={closePanel}
-                      onSignIn={() => openAuth('/bureaux')}
                       className={`font-sans text-[15px] font-semibold tracking-tight transition-opacity hover:opacity-70 ${textColor}`}
                       mutedClassName={`font-sans text-[13px] font-medium leading-snug ${mutedLabel}`}
                     />

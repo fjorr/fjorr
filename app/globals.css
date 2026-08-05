@@ -106,6 +106,34 @@ body {
   animation: fadeUpReveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* Centered marketing pages — Nominate-style staggered entrance */
+@keyframes layoutSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: layoutSlideUp 850ms cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+.style-delay-headline {
+  animation-delay: 500ms !important;
+}
+
+.style-delay-body {
+  animation-delay: 750ms !important;
+}
+
+.style-delay-form {
+  animation-delay: 1000ms !important;
+}
+
 /* Manual folio — one entrance gesture */
 @keyframes manualFolioIn {
   0% {
@@ -120,6 +148,123 @@ body {
 
 .manual-folio-in {
   animation: manualFolioIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Manual /manual — first-load technical document settle */
+@keyframes manualDocShellIn {
+  0% {
+    opacity: 0;
+    transform: translateY(40px) scale(0.94);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes manualDocChromeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes manualDocRuleIn {
+  0% {
+    transform: scaleX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+
+@keyframes manualDocBodyIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes manualDocLineIn {
+  0% {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.manual-doc-in {
+  animation: manualDocShellIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.manual-doc-in .manual-doc-chrome {
+  opacity: 0;
+  animation: manualDocChromeIn 0.45s ease-out 0.35s both;
+}
+
+.manual-doc-in .manual-doc-rule {
+  transform-origin: left center;
+  animation: manualDocRuleIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.5s both;
+}
+
+.manual-doc-in .manual-doc-body {
+  opacity: 0;
+  animation: manualDocBodyIn 0.01s linear 0.55s both;
+}
+
+.manual-doc-in .manual-doc-line {
+  opacity: 0;
+  animation: manualDocLineIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.manual-doc-in .manual-doc-line-1 {
+  animation-delay: 0.62s;
+}
+
+.manual-doc-in .manual-doc-line-2 {
+  animation-delay: 0.78s;
+}
+
+.manual-doc-in .manual-doc-line-3 {
+  animation-delay: 0.94s;
+}
+
+/* Manual modal — quiet interrupt; same family, smaller gesture */
+@keyframes manualModalScrimIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes manualModalCardIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.manual-modal-scrim-in {
+  animation: manualModalScrimIn 0.22s ease-out both;
+}
+
+.manual-modal-card-in {
+  animation: manualModalCardIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 /* Manual card — soft settle when flipping */
@@ -195,9 +340,19 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .manual-folio-in,
   .manual-card-in,
+  .manual-doc-in,
+  .manual-doc-in .manual-doc-chrome,
+  .manual-doc-in .manual-doc-rule,
+  .manual-doc-in .manual-doc-body,
+  .manual-doc-in .manual-doc-line,
+  .manual-modal-scrim-in,
+  .manual-modal-card-in,
   .principles-hero-in,
   .principles-slide-in {
     animation: none;
+    opacity: 1;
+    transform: none;
+    filter: none;
   }
 
   .manual-body-height,

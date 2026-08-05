@@ -110,7 +110,6 @@ export const MANUAL_ENTRIES: ManualEntry[] = [
     happens:
       'Open a film and press play. Nothing to subscribe to, nothing locked behind a trial. Sign in if you want a Voyageur number; skip it if you just came to watch.',
     actions: both([{ href: '/', label: 'Watch a film' }]),
-    plates: [{ src: '/manual/watch.svg' }],
   }),
   instrument({
     number: '02',
@@ -120,7 +119,6 @@ export const MANUAL_ENTRIES: ManualEntry[] = [
     happens:
       'No pre-rolls, no banners, no mid-rolls, no sponsored interruptions. Watching stays clean — the Bureaux funds the work, not advertisers.',
     actions: both([{ href: '/', label: 'Watch a film' }]),
-    plates: [{ src: '/manual/ad-free.svg' }],
   }),
   instrument({
     number: '03',
@@ -133,7 +131,6 @@ export const MANUAL_ENTRIES: ManualEntry[] = [
       guest: [{ href: '/bureaux', label: 'Join the Bureaux' }],
       member: [{ href: '/bureaux', label: 'Your Bureaux' }],
     },
-    plates: [{ src: '/manual/join.svg' }],
   }),
   instrument({
     number: '04',
@@ -227,7 +224,6 @@ export const MANUAL_ENTRIES: ManualEntry[] = [
       guest: [{ href: '/signin', label: 'Open account' }],
       member: [{ href: '/account/voyages', label: 'Open account' }],
     },
-    plates: [{ src: '/manual/account.svg' }],
   }),
   instrument({
     number: '08',
@@ -239,7 +235,6 @@ export const MANUAL_ENTRIES: ManualEntry[] = [
     actions: both([
       { href: 'clipboard:control@fjorr.com', label: 'Write in' },
     ]),
-    plates: [{ src: '/manual/contact.svg' }],
   }),
   instrument({
     number: '09',
@@ -275,7 +270,6 @@ export const MANUAL_ENTRIES: ManualEntry[] = [
       guest: [{ href: '/signin?next=/bureaux', label: 'Manage membership' }],
       member: [{ href: '/bureaux', label: 'Manage membership' }],
     },
-    plates: [{ src: '/manual/cancel.svg' }],
   }),
   article({
     number: '12',
@@ -352,7 +346,6 @@ export const MANUAL_ENTRIES: ManualEntry[] = [
       { href: '/manual/privacy', label: 'Privacy Notice' },
       { href: 'clipboard:control@fjorr.com', label: 'Write in' },
     ]),
-    plates: [{ src: '/manual/terms-privacy.svg' }],
   }),
   article({
     number: '13',

@@ -53,13 +53,13 @@ export default function ManualCardModal({
         type="button"
         aria-label={t('close')}
         onClick={onClose}
-        className="absolute inset-0 bg-black/50 backdrop-blur-md"
+        className="manual-modal-scrim-in absolute inset-0 bg-black/50 backdrop-blur-md"
       />
       <div
         role="dialog"
         aria-modal="true"
         aria-label={t('title')}
-        className="relative z-[1] w-full max-w-[28rem] text-left overflow-visible"
+        className="manual-modal-card-in relative z-[1] w-full max-w-[28rem] text-left overflow-visible"
       >
         <ManualMiniSite
           mode="modal"
