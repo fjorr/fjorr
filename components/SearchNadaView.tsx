@@ -59,14 +59,24 @@ export default function SearchNadaView({
             ? tf('seeFilmMatches', { count: otherHits })
             : tf('seeArtifactMatches', { count: otherHits })}
         </button>
-      ) : nominate ? (
-        <Link
-          href="/nominate"
-          className="font-sans text-[13px] font-semibold tracking-tight text-page-faint hover:text-page transition-colors"
-        >
-          {t('nominateStory')}
-        </Link>
-      ) : null}
+      ) : (
+        <>
+          {nominate ? (
+            <Link
+              href="/nominate"
+              className="font-sans text-[13px] font-semibold tracking-tight text-page-faint hover:text-page transition-colors"
+            >
+              {t('nominateStory')}
+            </Link>
+          ) : null}
+          <Link
+            href="/bureaux"
+            className="font-sans text-[13px] font-medium tracking-tight text-page-faint hover:text-page-muted transition-colors"
+          >
+            {t('joinBureauxHelp')}
+          </Link>
+        </>
+      )}
     </div>
   );
 }

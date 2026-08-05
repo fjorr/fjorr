@@ -6,9 +6,48 @@ import { Link } from '@/i18n/navigation';
 const POSTER_IMAGE =
   'https://media.fjorr.com/assets/fjorr-home-bureaux-breakdancing.avif';
 
+export type BureauxHomePosterVariant = 'banner' | 'compact';
+
 /** Home promo — light: black/off-white type; dark: off-white/dark type. */
-export default async function BureauxHomePoster() {
+export default async function BureauxHomePoster({
+  variant = 'banner',
+}: {
+  variant?: BureauxHomePosterVariant;
+}) {
   const t = await getTranslations('Bureaux');
+
+  if (variant === 'compact') {
+    return (
+      <Link
+        href="/bureaux"
+        className="group flex w-full items-center gap-5 sm:gap-6 rounded-[8px] bg-black text-[#F3EDE6] dark:bg-[#F3EDE6] dark:text-black px-5 py-5 sm:px-7 sm:py-6"
+      >
+        <div className="flex min-w-0 flex-1 flex-col items-start text-left gap-3">
+          <div className="min-w-0">
+            <h2 className="font-futura font-extrabold uppercase tracking-tighter leading-[1.05] text-[clamp(1.5rem,4vw,2rem)]">
+              {t('homePosterHeadline')}
+            </h2>
+            <p className="mt-1.5 font-sans font-medium leading-snug text-[#F3EDE6]/70 dark:text-black/60 tracking-tight text-[14px] sm:text-[15px]">
+              {t('homePosterSubhead')}
+            </p>
+          </div>
+          <span className="inline-flex items-center h-9 px-4 rounded-full bg-[#F3EDE6] text-black dark:bg-black dark:text-[#F3EDE6] font-sans font-bold text-[12px] sm:text-[13px] group-hover:opacity-90 transition-opacity">
+            {t('homePosterCta')}
+          </span>
+        </div>
+
+        <div className="relative hidden sm:block w-[88px] h-[88px] shrink-0 overflow-hidden rounded-[8px]">
+          <Image
+            src={POSTER_IMAGE}
+            alt=""
+            fill
+            sizes="88px"
+            className="object-cover object-center"
+          />
+        </div>
+      </Link>
+    );
+  }
 
   return (
     <Link

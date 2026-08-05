@@ -79,7 +79,8 @@
     "emptyBody": "We're building though. Know a story the world needs to hear? Nominate it and get your name in the credits.",
     "noTeaser": "No contextual reference details configured.",
     "filmComingSoon": "Film Coming Soon",
-    "nominateStory": "Nominate story"
+    "nominateStory": "Nominate story",
+    "joinBureauxHelp": "Or join the Bureaux to help."
   },
   "Film": {
     "play": "Play {runtime}",

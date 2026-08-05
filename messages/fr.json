@@ -79,7 +79,8 @@
     "emptyBody": "Nous sommes encore en construction. Vous connaissez une histoire que le monde doit entendre ? Nominez-la et voyez votre nom au générique.",
     "noTeaser": "Aucun détail de référence contextuelle configuré.",
     "filmComingSoon": "Film à venir",
-    "nominateStory": "Nominer une histoire"
+    "nominateStory": "Nominer une histoire",
+    "joinBureauxHelp": "Or join the Bureaux to help."
   },
   "Film": {
     "play": "Lire {runtime}",

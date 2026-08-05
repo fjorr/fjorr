@@ -79,7 +79,8 @@
     "emptyBody": "Wir bauen noch. Kennst du eine Geschichte, die die Welt hören muss? Nominiere sie und lies deinen Namen im Abspann.",
     "noTeaser": "Keine kontextbezogenen Referenzdetails konfiguriert.",
     "filmComingSoon": "Film demnächst",
-    "nominateStory": "Geschichte nominieren"
+    "nominateStory": "Geschichte nominieren",
+    "joinBureauxHelp": "Or join the Bureaux to help."
   },
   "Film": {
     "play": "Abspielen {runtime}",

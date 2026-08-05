@@ -79,7 +79,8 @@
     "emptyBody": "Stiamo ancora costruendo. Conosci una storia che il mondo ha bisogno di sentire? Candidala e vedi il tuo nome nei titoli di coda.",
     "noTeaser": "Nessun dettaglio di riferimento contestuale configurato.",
     "filmComingSoon": "Film in arrivo",
-    "nominateStory": "Nomina una storia"
+    "nominateStory": "Nomina una storia",
+    "joinBureauxHelp": "Or join the Bureaux to help."
   },
   "Film": {
     "play": "Riproduci {runtime}",

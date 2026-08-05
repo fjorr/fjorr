@@ -79,7 +79,8 @@
     "emptyBody": "我們仍在努力打造中。你知道一個世界該聽見的故事嗎？推薦它，讓你的名字登上片尾名單。",
     "noTeaser": "尚未設定相關參考資訊。",
     "filmComingSoon": "影片即將上線",
-    "nominateStory": "提名故事"
+    "nominateStory": "提名故事",
+    "joinBureauxHelp": "Or join the Bureaux to help."
   },
   "Film": {
     "play": "播放 {runtime}",

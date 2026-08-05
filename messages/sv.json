@@ -79,7 +79,8 @@
     "emptyBody": "Vi bygger fortfarande. Känner du till en historia som världen behöver höra? Nominera den och få ditt namn i eftertexterna.",
     "noTeaser": "Inga kontextuella referensdetaljer konfigurerade.",
     "filmComingSoon": "Filmen kommer snart",
-    "nominateStory": "Nominera en historia"
+    "nominateStory": "Nominera en historia",
+    "joinBureauxHelp": "Or join the Bureaux to help."
   },
   "Film": {
     "play": "Spela upp {runtime}",

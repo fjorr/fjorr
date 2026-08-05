@@ -79,7 +79,8 @@
     "emptyBody": "저희는 아직 만들어가는 중입니다. 세상이 들어야 할 이야기를 알고 계신가요? 제안하시면 크레딧에 이름이 실립니다.",
     "noTeaser": "설정된 맥락 참조 정보가 없습니다.",
     "filmComingSoon": "영화 공개 예정",
-    "nominateStory": "스토리 추천하기"
+    "nominateStory": "스토리 추천하기",
+    "joinBureauxHelp": "Or join the Bureaux to help."
   },
   "Film": {
     "play": "재생 {runtime}",

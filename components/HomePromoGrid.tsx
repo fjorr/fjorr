@@ -1,13 +1,13 @@
 import React from 'react';
 import BureauxHomePoster from '@/components/BureauxHomePoster';
+import HomePromoGate from '@/components/HomePromoGate';
 
-/** Home promo band — Bureaux only. */
+/** Home promo band — Bureaux only (gated by search/filters + mode). */
 export default function HomePromoGrid() {
   return (
-    <section className="w-full px-8 md:px-16 mt-12 md:mt-16 mb-4 md:mb-8">
-      <div className="w-full max-w-[1440px] mx-auto">
-        <BureauxHomePoster />
-      </div>
-    </section>
+    <HomePromoGate
+      banner={<BureauxHomePoster variant="banner" />}
+      compact={<BureauxHomePoster variant="compact" />}
+    />
   );
 }

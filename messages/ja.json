@@ -79,7 +79,8 @@
     "emptyBody": "私たちはまだ制作中です。世界が聞くべき物語をご存知ですか？推薦して、クレジットにお名前を。",
     "noTeaser": "設定されたコンテキスト参照情報がありません。",
     "filmComingSoon": "映画は近日公開",
-    "nominateStory": "ストーリーをノミネート"
+    "nominateStory": "ストーリーをノミネート",
+    "joinBureauxHelp": "Or join the Bureaux to help."
   },
   "Film": {
     "play": "再生 {runtime}",

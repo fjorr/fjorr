@@ -79,7 +79,8 @@
     "emptyBody": "Ainda estamos construindo. Conhece uma história que o mundo precisa ouvir? Indique-a e veja seu nome nos créditos.",
     "noTeaser": "Nenhum detalhe de referência contextual configurado.",
     "filmComingSoon": "Filme em breve",
-    "nominateStory": "Indicar uma história"
+    "nominateStory": "Indicar uma história",
+    "joinBureauxHelp": "Or join the Bureaux to help."
   },
   "Film": {
     "play": "Reproduzir {runtime}",
