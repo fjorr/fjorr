@@ -1,6 +1,8 @@
 import React, { Suspense } from 'react';
 import { notFound } from 'next/navigation';
-import FilmPageContentWrapper from '@/components/FilmPageContentWrapper';
+import FilmWatchProvider from '@/components/FilmWatchProvider';
+import ArtifactRail from '@/components/ArtifactRail';
+import FilmRail from '@/components/FilmRail';
 import ServerSafeSkeleton from '@/components/ServerSafeSkeleton';
 import type { Metadata } from 'next';
 import { absoluteUrl } from '@/lib/site';
@@ -9,8 +11,9 @@ import {
   getFilmMetadata,
   getFilmPageData,
   getFilmSlugs,
+  getFilmTranscripts,
 } from '@/lib/content/film';
-import { getLocale } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import { parseLocale } from '@/i18n/config';
 
 /** Must be a literal — Next.js cannot analyze imported revalidate values. */
@@ -49,7 +52,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       url: canonical,
       siteName: 'Fjorr',
       type: 'video.movie',
-      images: [{ url: ogImageUrl, width: 1200, height: 630, alt: `Short film poster for ${film.name}` }],
+      images: [
+        {
+          url: ogImageUrl,
+          width: 1200,
+          height: 630,
+          alt: `Short film poster for ${film.name}`,
+        },
+      ],
     },
     twitter: {
       card: 'summary_large_image',
@@ -93,6 +103,14 @@ async function DeferredPageContent({ urlSlug }: { urlSlug: string }) {
   const { filmData, relatedArtifacts, recommendedFilms, subtitleTracks, tagRows, creatorRows } =
     pageData;
 
+  const [ogImageUrl, transcripts, t] = await Promise.all([
+    resolveSocialOgImage(filmData.blok_ogrf),
+    subtitleTracks.length > 0
+      ? getFilmTranscripts(filmData.id)
+      : Promise.resolve([]),
+    getTranslations('Film'),
+  ]);
+
   const displayLocation =
     Array.isArray(filmData.location) && filmData.location.length > 0
       ? filmData.location[0]
@@ -101,7 +119,6 @@ async function DeferredPageContent({ urlSlug }: { urlSlug: string }) {
   const tags = tagRows
     .map((row: any) => row.tag?.name)
     .filter((name: unknown): name is string => Boolean(name));
-  // Computed per-request so "Coming Soon" flips even while film payload is cached.
   const isComingSoon = filmData.release_date
     ? new Date(filmData.release_date).getTime() > Date.now()
     : false;
@@ -116,22 +133,43 @@ async function DeferredPageContent({ urlSlug }: { urlSlug: string }) {
             '@type': 'Movie',
             name: filmData.name,
             description: filmData.teaser,
-            image: await resolveSocialOgImage(filmData.blok_ogrf),
+            image: ogImageUrl,
             datePublished: filmData.release_date,
             productionCompany: { '@type': 'Organization', name: 'Fjorr' },
           }),
         }}
       />
 
-      <FilmPageContentWrapper
+      <FilmWatchProvider
         filmData={filmData}
-        relatedArtifacts={relatedArtifacts}
-        recommendedFilms={recommendedFilms}
         subtitlesData={subtitleTracks}
         tags={tags}
         creatorRows={creatorRows}
         displayLocation={displayLocation}
         isComingSoon={isComingSoon}
+        transcripts={transcripts}
+        aboveSpecs={
+          relatedArtifacts.length > 0 ? (
+            <div className="w-full min-w-0 mt-8 md:mt-12">
+              <ArtifactRail
+                title={t('relatedArtifacts')}
+                artifacts={relatedArtifacts}
+                quietTitle
+              />
+            </div>
+          ) : null
+        }
+        belowSpecs={
+          recommendedFilms.length > 0 ? (
+            <div className="w-full min-w-0 mt-8 md:mt-12">
+              <FilmRail
+                title={t('moreFilms')}
+                films={recommendedFilms}
+                size="compact"
+              />
+            </div>
+          ) : null
+        }
       />
     </>
   );

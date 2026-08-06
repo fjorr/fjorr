@@ -21,6 +21,7 @@ const EXPLORE_LINKS = [
   { href: '/nominate', labelKey: 'nominate' as const },
   { href: '/cabinet', labelKey: 'cabinet' as const },
   { href: '/about', labelKey: 'about' as const },
+  { href: '/principles', labelKey: 'principles' as const },
   { href: '/manual', labelKey: 'manual' as const },
 ];
 
@@ -170,7 +171,9 @@ function Navbar({ variant = 'light' }: NavbarProps) {
             transition-[top,padding,border-radius,background-color,border-color,backdrop-filter] duration-300 ease-out
             ${isOpen
               ? `${openGlassClass} -top-3 pt-3 rounded-b-[10px] rounded-t-none overflow-visible`
-              : `top-0 rounded-[10px] overflow-visible ${glassAnimClass}`}
+              : `top-0 rounded-[10px] overflow-visible ${glassAnimClass} ${
+                  scrolledPast ? 'nav-glass-scrolled' : 'nav-glass-top'
+                }`}
           `}
         >
           <div className="flex h-[44px] w-full pl-3 pr-4 sm:pl-5 sm:pr-5 items-center gap-3 sm:gap-4">
@@ -349,30 +352,36 @@ function Navbar({ variant = 'light' }: NavbarProps) {
       <style
         dangerouslySetInnerHTML={{
           __html: `
-        /* Glass is always on — iOS Safari supports scroll() timelines but does
-           not interpolate backdrop-filter, which left the bar flat/unblurred. */
-        .animate-nav-glass {
+        /* Clear at top so page / artifact color shows through; glass only after scroll.
+           Blur is never keyframed (iOS Safari can’t interpolate backdrop-filter). */
+        .animate-nav-glass,
+        .animate-nav-glass-light {
+          background-color: transparent;
+          border-color: transparent;
+          -webkit-backdrop-filter: none;
+          backdrop-filter: none;
+          transform: translateZ(0);
+          -webkit-transform: translateZ(0);
+        }
+
+        .animate-nav-glass.nav-glass-scrolled {
           background-color: color-mix(in srgb, var(--page-bg-color, #1F1F1F) 72%, transparent);
           border-color: rgba(255, 255, 255, 0.1);
           -webkit-backdrop-filter: blur(24px) saturate(1.4);
           backdrop-filter: blur(24px) saturate(1.4);
-          transform: translateZ(0);
-          -webkit-transform: translateZ(0);
         }
 
-        .animate-nav-glass-light {
+        .animate-nav-glass-light.nav-glass-scrolled {
           background-color: color-mix(in srgb, var(--page-bg-color, #EDE8DF) 78%, transparent);
           border-color: rgba(0, 0, 0, 0.06);
           -webkit-backdrop-filter: blur(24px) saturate(1.4);
           backdrop-filter: blur(24px) saturate(1.4);
-          transform: translateZ(0);
-          -webkit-transform: translateZ(0);
         }
 
         @keyframes revealGlassTint {
           from {
-            background-color: color-mix(in srgb, var(--page-bg-color, #1F1F1F) 28%, transparent);
-            border-color: rgba(255, 255, 255, 0.04);
+            background-color: transparent;
+            border-color: transparent;
           }
           to {
             background-color: color-mix(in srgb, var(--page-bg-color, #1F1F1F) 72%, transparent);
@@ -382,8 +391,8 @@ function Navbar({ variant = 'light' }: NavbarProps) {
 
         @keyframes revealGlassTintLight {
           from {
-            background-color: color-mix(in srgb, var(--page-bg-color, #EDE8DF) 32%, transparent);
-            border-color: rgba(0, 0, 0, 0.03);
+            background-color: transparent;
+            border-color: transparent;
           }
           to {
             background-color: color-mix(in srgb, var(--page-bg-color, #EDE8DF) 78%, transparent);
@@ -391,16 +400,17 @@ function Navbar({ variant = 'light' }: NavbarProps) {
           }
         }
 
-        /* Desktop only: ease tint in on scroll. Keep blur static (never keyframed). */
+        /* Desktop: ease tint in on scroll while still .nav-glass-top.
+           Blur snaps on when JS flips to .nav-glass-scrolled. */
         @supports (animation-timeline: scroll()) {
           @media (hover: hover) and (pointer: fine) {
-            .animate-nav-glass {
+            .animate-nav-glass.nav-glass-top {
               animation: revealGlassTint linear both;
               animation-timeline: scroll(root);
               animation-range: 40px 90px;
             }
 
-            .animate-nav-glass-light {
+            .animate-nav-glass-light.nav-glass-top {
               animation: revealGlassTintLight linear both;
               animation-timeline: scroll(root);
               animation-range: 40px 90px;

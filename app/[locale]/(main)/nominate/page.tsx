@@ -32,12 +32,20 @@ export default async function NominatePage({
   searchParams: Promise<{ bounty?: string }>;
 }) {
   const params = await searchParams;
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const bureauxActive = user ? await isOwnBureauxActive(user.id) : false;
-  const bounties = await listActiveBounties();
+
+  const membershipPromise = (async () => {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return false;
+    return isOwnBureauxActive(user.id);
+  })();
+
+  const [bureauxActive, bounties] = await Promise.all([
+    membershipPromise,
+    listActiveBounties(),
+  ]);
 
   const bountyParam = (params.bounty || '').trim().toLowerCase();
   const initialBountyId =

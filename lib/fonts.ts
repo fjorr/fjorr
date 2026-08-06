@@ -4,8 +4,8 @@ import localFont from "next/font/local";
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-sans",
-  // Weights actually used in UI (medium/semibold/bold/extrabold).
-  weight: ["400", "500", "600", "700", "800"],
+  // Weights used in UI (medium / semibold / bold / extrabold).
+  weight: ["500", "600", "700", "800"],
   display: "swap",
 });
 
@@ -13,15 +13,17 @@ const inter = Inter({
 const interTight = Inter_Tight({
   subsets: ["latin"],
   variable: "--font-inter-tight",
-  weight: ["400", "500", "600", "700", "800"],
+  weight: ["600", "700", "800"],
   display: "swap",
+  preload: false,
 });
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
-  weight: ["400", "500", "700"],
+  weight: ["400", "500"],
   display: "swap",
+  preload: false,
 });
 
 /** Avenir Next Variable (subset woff2) — display headlines via font-futura. */

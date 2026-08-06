@@ -50,7 +50,7 @@ export default function AboutClient({ copy }: { copy: AboutCopy }) {
         }
         io.disconnect();
       },
-      { rootMargin: '300px 0px' }
+      { rootMargin: '100px 0px' }
     );
     io.observe(el);
     return () => io.disconnect();
@@ -86,13 +86,13 @@ export default function AboutClient({ copy }: { copy: AboutCopy }) {
           stagger: 0.7,
         });
 
-        // "Matter fades." — scrubbed fade as the hero leaves. Obvious on purpose.
+        // "Matter fades." — opacity/transform only (blur is compositor-expensive).
         matterFade = gsap.fromTo(
           '.reveal-line-matter',
-          { opacity: 1, filter: 'blur(0px)' },
+          { opacity: 1, y: 0 },
           {
             opacity: 0,
-            filter: 'blur(10px)',
+            y: -12,
             ease: 'power1.in',
             scrollTrigger: {
               trigger: heroSectionRef.current,

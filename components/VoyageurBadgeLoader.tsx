@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import VoyageurBadge from '@/components/VoyageurBadge';
+import VoyageurBadgeMark from '@/components/VoyageurBadgeMark';
 import {
   getOwnVoyageurStampForFilm,
   type VoyageurStamp,
@@ -59,14 +60,18 @@ export default function VoyageurBadgeLoader({
   if (!ready || plusMember) return null;
 
   return (
-    <p className="mt-6 mb-2 max-w-md font-sans text-[13px] leading-snug text-page-faint">
-      {t('voyageurInvite')}{' '}
-      <Link
-        href="/bureaux"
-        className="font-semibold text-page-muted underline underline-offset-4 decoration-[color-mix(in_srgb,var(--page-fg)_22%,transparent)] hover:text-page hover:decoration-[color-mix(in_srgb,var(--page-fg)_40%,transparent)] transition-colors"
-      >
-        {t('voyageurInviteCta')}
-      </Link>
-    </p>
+    <Link
+      href="/bureaux"
+      className="mt-6 mb-2 inline-block max-w-full outline-none transition-opacity hover:opacity-90 focus-visible:rounded-[8px] focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--page-fg)_28%,transparent)]"
+      aria-label={`${t('voyageurBadgeTitleGhost')}. ${t('voyageurInviteCta')}`}
+    >
+      <VoyageurBadgeMark
+        ghost
+        filmName={filmName}
+        filmPoster={filmPoster}
+        footer={t('voyageurInviteCta')}
+        tone="page"
+      />
+    </Link>
   );
 }

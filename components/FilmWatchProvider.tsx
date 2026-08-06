@@ -1,12 +1,16 @@
 'use client';
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
 import dynamic from 'next/dynamic';
-import { useTranslations } from 'next-intl';
-import FilmHero from './FilmHero';
-import ArtifactRail from './ArtifactRail';
-import FilmRail from './FilmRail';
-import FilmSpecs from './FilmSpecs';
+import FilmHero from '@/components/FilmHero';
+import FilmSpecs from '@/components/FilmSpecs';
 import { useWatchProgress } from '@/components/useWatchProgress';
 import TheaterOpenShell from '@/components/TheaterOpenShell';
 import {
@@ -18,37 +22,45 @@ import {
 import { parseViaMemberNumber, writeViaCookie } from '@/lib/voyage-via';
 import { fetchOwnBureauxActive } from '@/lib/bureaux-client';
 import { useRouter } from '@/i18n/navigation';
+
 const CinemaTheater = dynamic(() => import('@/components/CinemaTheater'), {
   ssr: false,
   loading: () => <TheaterOpenShell />,
 });
 
-const FilmTranscriptLazy = dynamic(() => import('@/components/FilmTranscriptLazy'), {
-  ssr: false,
-});
+const FilmTranscriptLazy = dynamic(
+  () => import('@/components/FilmTranscriptLazy'),
+  { ssr: false }
+);
 
-interface WrapperProps {
-  filmData: any;
-  relatedArtifacts: any[];
-  recommendedFilms: any[];
-  subtitlesData: any[];
-  tags: string[];
-  creatorRows: any[];
-  displayLocation: string;
-  isComingSoon: boolean;
-}
+type TranscriptRow = { language_code: string; content: string };
 
-export default function FilmPageContentWrapper({
+/**
+ * Client island for play / theater / specs.
+ * Rails pass through as server `children` slots so they aren't owned by
+ * theater playback state updates.
+ */
+export default function FilmWatchProvider({
   filmData,
-  relatedArtifacts,
-  recommendedFilms,
   subtitlesData,
   tags,
   creatorRows,
   displayLocation,
   isComingSoon,
-}: WrapperProps) {
-  const t = useTranslations('Film');
+  transcripts = [],
+  aboveSpecs,
+  belowSpecs,
+}: {
+  filmData: any;
+  subtitlesData: any[];
+  tags: string[];
+  creatorRows: any[];
+  displayLocation: string;
+  isComingSoon: boolean;
+  transcripts?: TranscriptRow[];
+  aboveSpecs?: ReactNode;
+  belowSpecs?: ReactNode;
+}) {
   const router = useRouter();
   const [showTheater, setShowTheater] = useState(false);
   const [startAt, setStartAt] = useState<number | undefined>(undefined);
@@ -57,7 +69,7 @@ export default function FilmPageContentWrapper({
   const [shareSeconds, setShareSeconds] = useState<number | null>(null);
   const [openInPlus, setOpenInPlus] = useState(false);
   const [bureauxActive, setBureauxActive] = useState<boolean | null>(null);
-  const theaterOpenRef = React.useRef(false);
+  const theaterOpenRef = useRef(false);
   const lastShareFloorRef = useRef<number | null>(null);
   const resumeProgress = useWatchProgress(filmData?.id, filmData?.runtime);
 
@@ -75,8 +87,6 @@ export default function FilmPageContentWrapper({
     theaterOpenRef.current = showTheater;
   }, [showTheater]);
 
-  // Deep link: /film/slug?t=84 opens the theater at that second.
-  // Lineage: /film/slug?via={memberNumber} remembers who passed the film.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const via = parseViaMemberNumber(params.get('via'));
@@ -161,11 +171,12 @@ export default function FilmPageContentWrapper({
   const handleTimeUpdate = useCallback(
     (seconds: number) => {
       setPlaybackTime(seconds);
-      // Throttle share-link updates to once per whole second so the dependent
-      // FilmHero share button doesn't re-render on every parent time tick.
       if (seconds >= 1) {
         const floorSeconds = Math.floor(seconds);
-        if (lastShareFloorRef.current === null || floorSeconds !== lastShareFloorRef.current) {
+        if (
+          lastShareFloorRef.current === null ||
+          floorSeconds !== lastShareFloorRef.current
+        ) {
           lastShareFloorRef.current = floorSeconds;
           setShareSeconds(seconds);
         }
@@ -246,15 +257,7 @@ export default function FilmPageContentWrapper({
         />
 
         <div className="w-full bg-[var(--page-bg)] pt-0 pb-24 flex flex-col gap-0">
-          {relatedArtifacts.length > 0 && (
-            <div className="w-full min-w-0 mt-8 md:mt-12">
-              <ArtifactRail
-                title={t('relatedArtifacts')}
-                artifacts={relatedArtifacts}
-                quietTitle
-              />
-            </div>
-          )}
+          {aboveSpecs}
 
           {!isComingSoon && (
             <div className="w-full mt-8 md:mt-12">
@@ -264,6 +267,7 @@ export default function FilmPageContentWrapper({
                 subtitles={subtitlesData}
                 tags={tags}
                 creators={creatorRows}
+                transcripts={transcripts}
                 onSeek={openFromTime}
                 onOpenPlus={handleOpenPlus}
                 plusMember={bureauxActive === true}
@@ -271,11 +275,7 @@ export default function FilmPageContentWrapper({
             </div>
           )}
 
-          {recommendedFilms.length > 0 && (
-            <div className="w-full min-w-0 mt-8 md:mt-12">
-              <FilmRail title={t('moreFilms')} films={recommendedFilms} size="compact" />
-            </div>
-          )}
+          {belowSpecs}
         </div>
       </div>
     </div>

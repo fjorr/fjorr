@@ -300,7 +300,7 @@ export default function ManualMiniSite({
 
   return (
     <div
-      className={`relative w-full max-w-[28rem] h-[calc(100dvh-1.5rem)] max-h-[calc(100dvh-1.5rem)] sm:h-auto sm:max-h-[min(76dvh,38rem)] flex flex-col rounded-[16px] bg-page-elevated text-page overflow-hidden${
+      className={`relative w-full max-w-[28rem] h-full min-h-0 max-h-full sm:h-auto sm:max-h-[min(76dvh,38rem)] flex flex-col rounded-[16px] bg-page-elevated text-page overflow-hidden${
         docIntro === 'play' ? ' manual-doc-in' : ''
       }`}
       style={docIntro === 'pending' ? { opacity: 0 } : undefined}
@@ -376,7 +376,7 @@ export default function ManualMiniSite({
               <nav
                 id={menuId}
                 aria-label={t('navLabel')}
-                className="px-10 pt-3.5 pb-8 flex flex-col"
+                className="dot-grid min-h-full px-10 pt-3.5 pb-8 flex flex-col"
               >
                 {MANUAL_MENU_GROUPS.map((group, groupIndex) => {
                   const items = group.slugs

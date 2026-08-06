@@ -309,16 +309,7 @@ export default function AccountNav({
       </div>
 
       {/* Desktop sidebar */}
-      <aside
-        className="hidden md:flex w-[15.5rem] shrink-0 border-r border-page-faint px-4 py-8 md:min-h-[calc(100vh-4rem)] flex-col gap-6 relative overflow-hidden"
-        style={{
-          backgroundImage: `radial-gradient(
-            color-mix(in srgb, var(--page-fg) 14%, transparent) 0.7px,
-            transparent 0.7px
-          )`,
-          backgroundSize: '7px 7px',
-        }}
-      >
+      <aside className="dot-grid hidden md:flex w-[15.5rem] shrink-0 border-r border-page-faint px-4 py-8 md:min-h-[calc(100vh-4rem)] flex-col gap-6 relative overflow-hidden">
         <div className="relative flex flex-col gap-6 flex-1 min-h-0">
           {desktopNav}
         </div>

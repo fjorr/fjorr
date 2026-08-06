@@ -48,6 +48,10 @@ const RAIL_SCROLLBAR_CSS = `
     touch-action: pan-y;
     overscroll-behavior-x: contain;
   }
+  @keyframes fjorr-rail-progress {
+    from { stroke-dashoffset: 117.81; }
+    to { stroke-dashoffset: 0; }
+  }
 `;
 
 export default function FeatureRail({
@@ -66,9 +70,8 @@ export default function FeatureRail({
 
   // Start paused until we know motion preference (SSR-safe; no brief autoplay flash).
   const [isPlaying, setIsPlaying] = useState(false);
-  const [progress, setProgress] = useState(0);
   const AUTOPLAY_DELAY = 5000;
-  const TICK_RATE = 100;
+  const progressCircleRef = useRef<SVGCircleElement>(null);
 
   useEffect(() => {
     if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -78,7 +81,6 @@ export default function FeatureRail({
 
   const RADIUS = 18.75;
   const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
-  const strokeDashoffset = CIRCUMFERENCE - (progress / 100) * CIRCUMFERENCE;
 
   const scrollToIndex = useCallback((index: number, behavior: ScrollBehavior = 'smooth') => {
     const el = railRef.current;
@@ -193,26 +195,44 @@ export default function FeatureRail({
     };
   }, [activeIndex, films.length, goTo, scrollToIndex]);
 
+  // CSS stroke animation — no 10Hz React progress state.
   useEffect(() => {
-    if (!isPlaying || !isBrowseActive || isTheaterActive || films.length < 2) return;
+    const circle = progressCircleRef.current;
+    if (!circle) return;
 
-    const timer = setInterval(() => {
-      setProgress((prevProgress) => {
-        if (prevProgress >= 100) {
-          const nextTarget = activeIndex === films.length - 1 ? 0 : activeIndex + 1;
-          setTimeout(() => goTo(nextTarget), 0);
-          return 0;
-        }
-        return prevProgress + (TICK_RATE / AUTOPLAY_DELAY) * 100;
-      });
-    }, TICK_RATE);
+    const stopRing = () => {
+      circle.style.animation = 'none';
+      circle.style.strokeDashoffset = String(CIRCUMFERENCE);
+    };
 
-    return () => clearInterval(timer);
-  }, [isPlaying, isBrowseActive, activeIndex, films.length, goTo, isTheaterActive]);
+    if (!isPlaying || !isBrowseActive || isTheaterActive || films.length < 2) {
+      stopRing();
+      return;
+    }
 
-  useEffect(() => {
-    setProgress(0);
-  }, [activeIndex]);
+    stopRing();
+    void circle.getBoundingClientRect();
+    circle.style.animation = `fjorr-rail-progress ${AUTOPLAY_DELAY}ms linear forwards`;
+
+    const timer = window.setTimeout(() => {
+      const nextTarget = activeIndex === films.length - 1 ? 0 : activeIndex + 1;
+      goTo(nextTarget);
+    }, AUTOPLAY_DELAY);
+
+    return () => {
+      window.clearTimeout(timer);
+      stopRing();
+    };
+  }, [
+    isPlaying,
+    isBrowseActive,
+    activeIndex,
+    films.length,
+    goTo,
+    isTheaterActive,
+    AUTOPLAY_DELAY,
+    CIRCUMFERENCE,
+  ]);
 
   if (!films || films.length === 0) return null;
 
@@ -392,10 +412,10 @@ export default function FeatureRail({
                     </button>
                     <PrefetchLink
                       href={`/film/${film.slug || ''}`}
-                      className="font-sans font-semibold text-sm text-white/80 hover:text-white underline underline-offset-2 transition-colors"
+                      className="font-sans font-semibold text-sm text-white/80 hover:text-white transition-colors"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      {tHome('more')}
+                      {tHome('info')}
                     </PrefetchLink>
                   </div>
                 </div>
@@ -442,6 +462,7 @@ export default function FeatureRail({
                   strokeWidth="2.5"
                 />
                 <circle
+                  ref={progressCircleRef}
                   cx="20"
                   cy="20"
                   r={RADIUS}
@@ -449,8 +470,7 @@ export default function FeatureRail({
                   stroke="#FFFFFF"
                   strokeWidth="2.5"
                   strokeDasharray={CIRCUMFERENCE}
-                  strokeDashoffset={strokeDashoffset}
-                  className="transition-all duration-100 ease-linear"
+                  strokeDashoffset={CIRCUMFERENCE}
                   strokeLinecap="round"
                 />
               </svg>

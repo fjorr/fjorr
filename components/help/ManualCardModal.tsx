@@ -129,7 +129,12 @@ export default function ManualCardModal({
   return createPortal(
     <div
       ref={rootRef}
-      className="fixed inset-0 z-[100060] flex items-center justify-center p-3 sm:p-8 text-left"
+      className="fixed inset-0 z-[100060] flex items-stretch sm:items-center justify-center text-left
+        pl-[max(0.75rem,env(safe-area-inset-left))]
+        pr-[max(0.75rem,env(safe-area-inset-right))]
+        pt-[max(0.75rem,env(safe-area-inset-top))]
+        pb-[max(0.75rem,env(safe-area-inset-bottom))]
+        sm:p-8"
     >
       <button
         type="button"
@@ -144,7 +149,7 @@ export default function ManualCardModal({
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className="manual-modal-card-in relative z-[1] w-full max-w-[28rem] text-left overflow-visible outline-none"
+        className="manual-modal-card-in relative z-[1] w-full max-w-[28rem] h-full sm:h-auto text-left overflow-visible outline-none"
       >
         <span id={titleId} className="sr-only">
           {t('title')}

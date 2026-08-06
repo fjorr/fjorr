@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import dynamic from 'next/dynamic';
-import { useRouter } from '@/i18n/navigation';
+import { Link, useRouter } from '@/i18n/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { parseLocale, localeLabels, locales, type AppLocale } from '@/i18n/config';
 import { absoluteUrl } from '@/lib/site';
@@ -111,6 +111,7 @@ function CinemaTheater({
   const router = useRouter();
   const locale = parseLocale(useLocale());
   const t = useTranslations('Theater');
+  const tFilm = useTranslations('Film');
   const tPlus = useTranslations('Plus');
   const { isLight } = useColorScheme();
   const isEmbed = mode === 'embed';
@@ -134,9 +135,26 @@ function CinemaTheater({
     memberNumber: number | null;
     recordedAt: string | null;
   } | null>(null);
+  /** Guest tease — next Voyageur No. they would claim by joining. */
+  const [ghostVoyageur, setGhostVoyageur] = useState<number | null>(null);
   const plusMode = !isEmbed && theaterMode === 'plus';
 
-  const skipBumper = isEmbed || (typeof startAt === 'number' && startAt > 0);
+  const skipBumper =
+    isEmbed ||
+    (typeof startAt === 'number' && startAt > 0) ||
+    (typeof navigator !== 'undefined' &&
+      (() => {
+        const conn = (
+          navigator as Navigator & {
+            connection?: { saveData?: boolean; effectiveType?: string };
+          }
+        ).connection;
+        if (!conn) return false;
+        if (conn.saveData) return true;
+        return (
+          conn.effectiveType === 'slow-2g' || conn.effectiveType === '2g'
+        );
+      })());
   const [isPlayingLogo, setIsPlayingLogo] = useState(!skipBumper);
   const LOGO_SOURCE =
     'https://media.fjorr.com/assets/studio-logo/fjorr-studio-logo-04.mp4';
@@ -364,7 +382,7 @@ function CinemaTheater({
     setPlusInfoOpen(false);
   }, [isEnded]);
 
-  // First Viewer # on this film → share ritual.
+  // First Voyageur # → member stamp ceremony, or guest ghost tease.
   useEffect(() => {
     if (isEmbed || !film?.id) return;
     const filmId = String(film.id);
@@ -374,6 +392,7 @@ function CinemaTheater({
         viewerNumber?: number;
         filmVersion?: number;
         firstStamp?: boolean;
+        recorded?: boolean;
         memberNumber?: number | null;
         recordedAt?: string | null;
       };
@@ -382,16 +401,69 @@ function CinemaTheater({
       const v = Number(detail?.filmVersion);
       const m = Number(detail?.memberNumber);
       if (!detail?.firstStamp || !Number.isFinite(n) || n < 1) return;
-      setStampShare({
-        viewerNumber: n,
-        filmVersion: Number.isFinite(v) && v >= 1 ? v : 1,
-        memberNumber: Number.isFinite(m) && m >= 1 ? m : null,
-        recordedAt: detail.recordedAt || new Date().toISOString(),
-      });
+      if (detail.recorded) {
+        setGhostVoyageur(null);
+        setStampShare({
+          viewerNumber: n,
+          filmVersion: Number.isFinite(v) && v >= 1 ? v : 1,
+          memberNumber: Number.isFinite(m) && m >= 1 ? m : null,
+          recordedAt: detail.recordedAt || new Date().toISOString(),
+        });
+        return;
+      }
+      // Anonymous pulse burns an ordinal but no passport — ghost it.
+      setStampShare(null);
+      setGhostVoyageur(n);
     };
     window.addEventListener(FILM_RECORDED_EVENT, onRecorded);
     return () => window.removeEventListener(FILM_RECORDED_EVENT, onRecorded);
   }, [isEmbed, film?.id]);
+
+  // Unpaid / no pulse yet: peek next Voyageur No. after Fin. for the ghost.
+  useEffect(() => {
+    if (stampShare) {
+      setGhostVoyageur(null);
+      return;
+    }
+    if (!isEnded || isEmbed || !film?.id) return;
+    if (plusMember === true) return;
+    if (plusMember === null) return;
+    if (ghostVoyageur != null) return;
+
+    const filmId = String(film.id);
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      if (cancelled || ghostVoyageur != null) return;
+      void (async () => {
+        try {
+          const res = await fetch(
+            `/api/film-view/next?filmId=${encodeURIComponent(filmId)}`,
+            { credentials: 'same-origin' }
+          );
+          if (!res.ok || cancelled) return;
+          const row = (await res.json()) as { next_viewer?: number };
+          const n = Number(row.next_viewer);
+          if (!cancelled && Number.isFinite(n) && n >= 1) {
+            setGhostVoyageur(n);
+          }
+        } catch {
+          /* ignore */
+        }
+      })();
+    }, 500);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [
+    isEnded,
+    isEmbed,
+    film?.id,
+    stampShare,
+    plusMember,
+    ghostVoyageur,
+  ]);
 
   const togglePlay = useCallback(() => {
     const player = isPlayingLogo ? logoPlayerRef.current : filmPlayerRef.current;
@@ -1164,6 +1236,27 @@ function CinemaTheater({
               {[film?.name, film?.story_date, film?.location].filter(Boolean).join(' · ')}
             </div>
           )}
+
+          {!isEmbed && !stampShare && ghostVoyageur != null ? (
+            <div
+              className={`flex flex-col items-center gap-1 ${
+                isLight ? 'text-[#0B0B0C]/28' : 'text-[#F5F5F7]/28'
+              }`}
+            >
+              <p className="m-0 font-sans text-[11px] font-normal leading-snug">
+                {tFilm('ghostVoyageurLead')}{' '}
+                <span className="tabular-nums">
+                  {tFilm('voyageurBadgeTitle', { number: ghostVoyageur })}
+                </span>
+              </p>
+              <Link
+                href="/bureaux"
+                className="m-0 font-sans text-[11px] font-normal leading-snug no-underline opacity-90 hover:opacity-100 transition-opacity"
+              >
+                {tFilm('ghostVoyageurCta')}
+              </Link>
+            </div>
+          ) : null}
 
           <div
             className={`flex items-center justify-center gap-x-3.5 ${

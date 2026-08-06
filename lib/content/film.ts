@@ -60,33 +60,21 @@ export async function getFilmSlugs(): Promise<string[]> {
   return (data || []).map((row) => row.slug).filter(Boolean);
 }
 
-export const getFilmMetadata = unstable_cache(
-  async (slug: string, locale: AppLocale = defaultLocale): Promise<FilmMetadataRow | null> => {
-    const supabase = createPublicClient();
-    const { data } = await supabase
-      .from('film')
-      .select('id, name, teaser, slug, blok_ogrf')
-      .eq('slug', slug)
-      .maybeSingle();
-
-    if (!data) return null;
-    if (locale === defaultLocale) {
-      const { id: _id, ...rest } = data;
-      return rest;
-    }
-
-    const trMap = await fetchFilmTranslations(supabase, [data.id], locale);
-    const merged = mergeFilmTranslation(data, trMap.get(data.id));
-    return {
-      name: merged.name,
-      teaser: merged.teaser,
-      slug: merged.slug,
-      blok_ogrf: merged.blok_ogrf,
-    };
-  },
-  ['film-metadata-i18n'],
-  { revalidate: FILM_REVALIDATE_SECONDS, tags: ['film'] }
-);
+/** Metadata from the same cache as the page — one film payload per slug/locale. */
+export async function getFilmMetadata(
+  slug: string,
+  locale: AppLocale = defaultLocale
+): Promise<FilmMetadataRow | null> {
+  const page = await getFilmPageData(slug, locale);
+  if (!page) return null;
+  const { filmData } = page;
+  return {
+    name: filmData.name ?? null,
+    teaser: filmData.teaser ?? null,
+    slug: filmData.slug,
+    blok_ogrf: filmData.blok_ogrf ?? null,
+  };
+}
 
 export const getFilmPageData = unstable_cache(
   async (slug: string, locale: AppLocale = defaultLocale) => {

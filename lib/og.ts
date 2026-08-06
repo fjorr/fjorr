@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { absoluteUrl } from '@/lib/site';
 
 const SAFE_OG_EXT = /\.(jpe?g|png|webp)(\?|$)/i;
@@ -22,26 +23,29 @@ export function socialOgImageUrl(source?: string | null): string {
 /**
  * Like socialOgImageUrl, but if the JPG sibling is missing, use the PNG fallback
  * so share previews never point at an unsupported AVIF or a 404.
+ * Request-cached so metadata + JSON-LD share one HEAD.
  */
-export async function resolveSocialOgImage(source?: string | null): Promise<string> {
-  const fallback = absoluteUrl('/opengraph-image.png');
-  if (!source) return fallback;
+export const resolveSocialOgImage = cache(
+  async (source?: string | null): Promise<string> => {
+    const fallback = absoluteUrl('/opengraph-image.png');
+    if (!source) return fallback;
 
-  if (SAFE_OG_EXT.test(source)) return source;
+    if (SAFE_OG_EXT.test(source)) return source;
 
-  if (AVIF_EXT.test(source)) {
-    const jpgUrl = source.replace(AVIF_EXT, '.jpg$1');
-    try {
-      const res = await fetch(jpgUrl, {
-        method: 'HEAD',
-        next: { revalidate: 3600 },
-      });
-      if (res.ok) return jpgUrl;
-    } catch {
-      // fall through to site PNG
+    if (AVIF_EXT.test(source)) {
+      const jpgUrl = source.replace(AVIF_EXT, '.jpg$1');
+      try {
+        const res = await fetch(jpgUrl, {
+          method: 'HEAD',
+          next: { revalidate: 3600 },
+        });
+        if (res.ok) return jpgUrl;
+      } catch {
+        // fall through to site PNG
+      }
+      return fallback;
     }
-    return fallback;
-  }
 
-  return source;
-}
+    return source;
+  }
+);

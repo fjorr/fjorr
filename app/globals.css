@@ -48,18 +48,44 @@ html.dark {
   --page-chip-hover: rgba(255, 255, 255, 0.14);
 }
 
-/* Flat surfaces in light mode — no elevation shadows, except float menus */
-html.light *:not(.menu-surface) {
+/*
+ * Flat surfaces in light mode — kill elevation only where Tailwind shadows
+ * are applied (not a universal * override). Float menus keep lift.
+ */
+html.light :is(
+  .shadow,
+  .shadow-sm,
+  .shadow-md,
+  .shadow-lg,
+  .shadow-xl,
+  .shadow-2xl,
+  .drop-shadow,
+  .drop-shadow-sm,
+  .drop-shadow-md,
+  .drop-shadow-lg,
+  .drop-shadow-xl,
+  .drop-shadow-2xl
+):not(.menu-surface) {
   box-shadow: none !important;
   --tw-shadow: 0 0 #0000 !important;
   --tw-shadow-colored: 0 0 #0000 !important;
   --tw-drop-shadow: 0 0 #0000 !important;
+  filter: none;
 }
 
 html.light .menu-surface {
   box-shadow:
     0 10px 28px rgba(0, 0, 0, 0.08),
     0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Fine page-fg dot grid — account sidebar, Manual menu, etc. */
+.dot-grid {
+  background-image: radial-gradient(
+    color-mix(in srgb, var(--page-fg) 14%, transparent) 0.7px,
+    transparent 0.7px
+  );
+  background-size: 7px 7px;
 }
 
 html,

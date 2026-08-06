@@ -6,6 +6,9 @@ import { defaultLocale } from '@/i18n/config';
 import { fontVariables } from '@/lib/fonts';
 import { DISPLAY_MODE_COOKIE, parseDisplayMode } from '@/lib/display-mode';
 
+/** Embed player only needs theater + film copy. */
+const EMBED_NAMESPACES = ['Film', 'Theater'] as const;
+
 /** Bare shell for iframe embeds — no site chrome, stable unprefixed URLs. */
 export default async function EmbedLayout({
   children,
@@ -13,7 +16,13 @@ export default async function EmbedLayout({
   children: React.ReactNode;
 }) {
   setRequestLocale(defaultLocale);
-  const messages = await getMessages();
+  const allMessages = await getMessages();
+  const messages = Object.fromEntries(
+    EMBED_NAMESPACES.map((ns) => [
+      ns,
+      (allMessages as Record<string, unknown>)[ns],
+    ]).filter(([, v]) => v != null)
+  );
   const cookieStore = await cookies();
   const initialMode = parseDisplayMode(
     cookieStore.get(DISPLAY_MODE_COOKIE)?.value

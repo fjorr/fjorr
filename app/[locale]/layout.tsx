@@ -10,8 +10,17 @@ import { DISPLAY_MODE_COOKIE, parseDisplayMode } from '@/lib/display-mode';
 import { COLOR_SCHEME_COOKIE, parseColorScheme } from '@/lib/color-scheme';
 import { routing } from '@/i18n/routing';
 
-/** Skip long legal copy on the client — pages read those via server getTranslations. */
-const CLIENT_SKIP_NAMESPACES = new Set(['Privacy', 'Terms']);
+/**
+ * Skip server-only / rarely-hydrated namespaces on the client.
+ * Pages that need these use getTranslations on the server, or a nested provider.
+ */
+const CLIENT_SKIP_NAMESPACES = new Set([
+  'Privacy',
+  'Terms',
+  'Meta',
+  'About',
+  'Auth',
+]);
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));

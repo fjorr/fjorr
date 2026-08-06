@@ -3,7 +3,6 @@
 import React, {
   useState,
   useEffect,
-  useMemo,
   useRef,
   Suspense,
   type ReactNode,
@@ -86,7 +85,11 @@ function SearchContent({
   const boxRef = useRef<HTMLDivElement>(null);
   const controlsSentinelRef = useRef<HTMLDivElement>(null);
   const urlWriteTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const supabase = useMemo(() => createClient(), []);
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null);
+  const getSupabase = () => {
+    if (!supabaseRef.current) supabaseRef.current = createClient();
+    return supabaseRef.current;
+  };
 
   useEffect(() => {
     setQuery(urlQuery);
@@ -121,7 +124,7 @@ function SearchContent({
     const delayDebounceFn = setTimeout(async () => {
       const term = query.trim();
       try {
-        const { data, error } = await supabase.rpc('search_items', {
+        const { data, error } = await getSupabase().rpc('search_items', {
           search_term: term,
           p_locale: locale,
         });
@@ -147,7 +150,7 @@ function SearchContent({
       controller.abort();
       clearTimeout(delayDebounceFn);
     };
-  }, [query, locale, supabase]);
+  }, [query, locale]);
 
   useEffect(() => {
     setFilteredResults(rawResults.filter((item) => item.item_type === contentType));

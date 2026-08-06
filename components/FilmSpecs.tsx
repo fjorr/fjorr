@@ -1,9 +1,8 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
-import { createClient } from '@/lib/supabase/client';
 import VoyageurBadgeLoader from '@/components/VoyageurBadgeLoader';
 import { Link } from '@/i18n/navigation';
 
@@ -33,6 +32,8 @@ interface FilmSpecsProps {
   subtitles: Array<{ name: string; code: string; vtt_url?: string }>;
   tags: string[];
   creators?: CreatorMapRow[];
+  /** Server-loaded transcripts — avoids a client Supabase round-trip. */
+  transcripts?: TranscriptRow[];
   onSeek?: (seconds: number) => void;
   /** Opens theater in Plus mode (or join Bureaux). */
   onOpenPlus?: () => void;
@@ -80,6 +81,7 @@ export default function FilmSpecs({
   subtitles,
   tags,
   creators = [],
+  transcripts = [],
   onSeek,
   onOpenPlus,
   plusMember = false,
@@ -94,26 +96,9 @@ export default function FilmSpecs({
     ? t('runtimeMin', { n: Math.ceil(film.runtime / 60) })
     : t('runtimeMin', { n: 1 });
   const displayRating = film.rating?.name ? t('ages', { n: film.rating.name }) : t('agesFallback');
-  const [transcripts, setTranscripts] = useState<TranscriptRow[]>([]);
 
   const inviteLinkClass =
     'font-semibold text-page-muted underline underline-offset-4 decoration-[color-mix(in_srgb,var(--page-fg)_22%,transparent)] hover:text-page hover:decoration-[color-mix(in_srgb,var(--page-fg)_40%,transparent)] transition-colors';
-
-  useEffect(() => {
-    if (!film?.id || subtitles.length === 0) return;
-    let cancelled = false;
-    const supabase = createClient();
-    supabase
-      .from('transcript')
-      .select('content, language_code')
-      .eq('film_id', film.id)
-      .then(({ data }: { data: TranscriptRow[] | null }) => {
-        if (!cancelled && data) setTranscripts(data);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [film?.id, subtitles.length]);
 
   const hasTranscript = subtitles.length > 0;
 
@@ -225,9 +210,17 @@ export default function FilmSpecs({
                 </Link>
               </span>
             ) : (
-              <Link href="/manual/plus" className={inviteLinkClass}>
-                {t('plusInviteInfo')}
-              </Link>
+              <span className="whitespace-nowrap">
+                <Link href="/bureaux" className={inviteLinkClass}>
+                  {t('plusInviteJoin')}
+                </Link>
+                <span className="text-page-faint/80" aria-hidden>
+                  {' · '}
+                </span>
+                <Link href="/manual/plus" className={inviteLinkClass}>
+                  {t('plusInviteInfo')}
+                </Link>
+              </span>
             )}
           </p>
         ) : null}

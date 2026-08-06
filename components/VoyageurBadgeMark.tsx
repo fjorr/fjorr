@@ -47,6 +47,7 @@ const TONE: Record<
 /**
  * Shared Voyageur mark — poster + three text lines:
  * 1 film title · 2 Voyageur No. (hero) · 3 date
+ * Ghost: empty No. — + footer CTA (guest claim).
  */
 export default function VoyageurBadgeMark({
   filmName,
@@ -55,23 +56,34 @@ export default function VoyageurBadgeMark({
   recordedAt,
   tone = 'page',
   compact = false,
+  ghost = false,
+  footer = null,
   className = '',
 }: {
   filmName: string;
   filmPoster?: string | null;
-  voyageurNumber: number;
+  voyageurNumber?: number | null;
   recordedAt?: string | null;
   tone?: Tone;
   compact?: boolean;
+  /** Empty stamp for guests — same geometry, no earned number. */
+  ghost?: boolean;
+  /** Third line when ghost (e.g. Join CTA). */
+  footer?: string | null;
   className?: string;
 }) {
   const t = useTranslations('Film');
   const locale = useLocale();
   const date = recordedAt ? formatStampDate(recordedAt, locale) : '';
-  if (!date || !filmName.trim()) return null;
+  if (!filmName.trim()) return null;
+  if (!ghost && !date) return null;
 
   const c = TONE[tone];
   const line = 'm-0 font-sans tabular-nums leading-none';
+  const honor = ghost
+    ? t('voyageurBadgeTitleGhost')
+    : t('voyageurBadgeTitle', { number: voyageurNumber ?? 0 });
+  const foot = ghost ? footer?.trim() || '' : date;
   // 2:3 poster ≈ three text lines (13 + 15 + 11 + gaps)
   const posterBox = compact
     ? 'relative w-8 h-12 rounded-[2px] overflow-hidden shrink-0'
@@ -81,7 +93,7 @@ export default function VoyageurBadgeMark({
     <div
       className={`inline-flex max-w-full select-none items-start gap-3 rounded-[6px] text-left ${
         compact ? 'p-3 pr-7' : 'p-4 pr-8'
-      } ${c.shell} ${className}`}
+      } ${c.shell} ${ghost ? 'opacity-80' : ''} ${className}`}
     >
       <div className={`${posterBox} ${c.poster}`}>
         {filmPoster ? (
@@ -90,7 +102,7 @@ export default function VoyageurBadgeMark({
             alt=""
             fill
             sizes={compact ? '32px' : '34px'}
-            className="object-cover"
+            className={`object-cover ${ghost ? 'opacity-70' : ''}`}
           />
         ) : (
           <span
@@ -110,10 +122,16 @@ export default function VoyageurBadgeMark({
         >
           {filmName}
         </p>
-        <p className={`${line} text-[15px] font-bold tracking-tight ${c.honor}`}>
-          {t('voyageurBadgeTitle', { number: voyageurNumber })}
+        <p
+          className={`${line} text-[15px] font-bold tracking-tight ${
+            ghost ? c.date : c.honor
+          }`}
+        >
+          {honor}
         </p>
-        <p className={`${line} text-[11px] font-medium ${c.date}`}>{date}</p>
+        {foot ? (
+          <p className={`${line} text-[11px] font-medium ${c.date}`}>{foot}</p>
+        ) : null}
       </div>
     </div>
   );
