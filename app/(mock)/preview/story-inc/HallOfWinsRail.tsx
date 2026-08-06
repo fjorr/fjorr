@@ -146,7 +146,7 @@ function WinPoster({
 }) {
   return (
     <div
-      className="group relative flex w-full flex-col overflow-hidden rounded-[12px] bg-[#EDE8E3] text-[#1d1d1f] sm:aspect-[21/9] sm:min-h-[260px] sm:flex-row"
+      className="group relative flex w-full flex-col overflow-hidden rounded-[12px] bg-[#EEECEA] text-[#1d1d1f] sm:aspect-[21/9] sm:min-h-[260px] sm:flex-row"
       aria-label={`${win.reward}. ${slideLabel}`}
     >
       <div className="relative z-[1] flex flex-col justify-end gap-2.5 p-7 sm:w-[38%] sm:max-w-md sm:justify-center sm:gap-3 sm:p-9 md:p-10 lg:p-12">
