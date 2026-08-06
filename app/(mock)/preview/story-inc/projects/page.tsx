@@ -8,11 +8,11 @@ export const metadata: Metadata = {
 };
 
 const NAV = [
-  'Markets',
-  'Rewards',
-  'About',
-  'Filmmakers',
-  'Resources',
+  { label: 'Markets', href: null as string | null },
+  { label: 'Rewards', href: '/preview/story-inc/rewards' },
+  { label: 'About', href: null },
+  { label: 'Filmmakers', href: null },
+  { label: 'Resources', href: null },
 ] as const;
 
 /**
@@ -36,11 +36,21 @@ export default function StoryIncProjectsPage() {
             />
           </Link>
           <nav className="hidden items-center gap-5 text-[13px] font-medium text-[#1d1d1f]/75 md:flex">
-            {NAV.map((label) => (
-              <span key={label} className="cursor-default">
-                {label}
-              </span>
-            ))}
+            {NAV.map((item) =>
+              item.href ? (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className="transition-opacity hover:opacity-80"
+                >
+                  {item.label}
+                </Link>
+              ) : (
+                <span key={item.label} className="cursor-default">
+                  {item.label}
+                </span>
+              ),
+            )}
           </nav>
           <div className="flex items-center gap-3 text-[12px] sm:gap-4">
             <span className="hidden text-right sm:block">
