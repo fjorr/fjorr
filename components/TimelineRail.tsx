@@ -25,6 +25,9 @@ export type TimelineRailItem = {
   canResume?: boolean;
   /** Indexed search body — enables tiny match excerpts while searching. */
   search_content?: string | null;
+  creator?: string | null;
+  theme?: string | null;
+  label?: string | null;
 };
 
 function readScroll(key: string): number {
@@ -62,11 +65,14 @@ export default function TimelineRail({
   storageKey,
   groupKeyPrefix = 't',
   onResume,
+  query = '',
 }: {
   items: TimelineRailItem[];
   storageKey: string;
   groupKeyPrefix?: string;
   onResume?: (item: TimelineRailItem) => void;
+  /** Live search query for match snippets. */
+  query?: string;
 }) {
   const tTime = useTranslations('Timeline');
   const tFilm = useTranslations('Film');
@@ -196,18 +202,22 @@ export default function TimelineRail({
                           <h3 className="font-sans text-[16px] md:text-[17px] font-bold tracking-tight text-page leading-snug group-hover:opacity-85 transition-opacity">
                             {item.name}
                           </h3>
+                          <SearchMatchLine
+                            query={query}
+                            item={{
+                              name: item.name,
+                              teaser: item.teaser,
+                              search_content: item.search_content,
+                              creator: item.creator,
+                              theme: item.theme,
+                              label: item.label,
+                            }}
+                          />
                           {item.teaser ? (
                             <p className="font-sans text-[13px] font-normal text-page-muted leading-relaxed line-clamp-4">
                               {item.teaser}
                             </p>
                           ) : null}
-                          <SearchMatchLine
-                            item={{
-                              name: item.name,
-                              teaser: item.teaser,
-                              search_content: item.search_content,
-                            }}
-                          />
                         </PrefetchLink>
 
                         {resume && onResume ? (

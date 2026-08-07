@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Elements,
   PaymentElement,
@@ -22,6 +22,43 @@ import BureauxJoinClaim from '@/components/BureauxJoinClaim';
 
 const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '';
 const DEFAULT_NEXT = '/account/bureaux';
+
+type CheckoutApiResult = {
+  ok?: boolean;
+  clientSecret?: string;
+  email?: string | null;
+  signedIn?: boolean;
+  error?: string;
+  detail?: string;
+};
+
+function isValidEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
+async function requestCheckoutSecret(email: string): Promise<{
+  res: Response;
+  result: CheckoutApiResult;
+  text: string;
+}> {
+  const res = await fetch('/api/stripe/bureaux-checkout', {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email }),
+  });
+  const text = await res.text();
+  let result: CheckoutApiResult = {};
+  try {
+    result = JSON.parse(text) as CheckoutApiResult;
+  } catch {
+    result = {};
+  }
+  return { res, result, text };
+}
 
 function safeNextPath(raw?: string | null) {
   if (typeof raw === 'string' && raw.startsWith('/') && !raw.startsWith('//')) {
@@ -226,16 +263,61 @@ export default function BureauxCheckout({
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [paidEmail, setPaidEmail] = useState<string | null>(null);
+  const prefetchRef = useRef<{
+    email: string;
+    promise: Promise<{ res: Response; result: CheckoutApiResult }>;
+  } | null>(null);
 
   const stripePromise = useMemo(() => {
     if (!publishableKey) return null;
     return loadStripe(publishableKey);
   }, []);
 
+  // Warm Stripe.js + DNS as soon as the join chrome mounts.
+  useEffect(() => {
+    if (!publishableKey) return;
+    const links: HTMLLinkElement[] = [];
+    for (const href of ['https://js.stripe.com', 'https://api.stripe.com']) {
+      const link = document.createElement('link');
+      link.rel = 'preconnect';
+      link.href = href;
+      link.crossOrigin = 'anonymous';
+      document.head.appendChild(link);
+      links.push(link);
+    }
+    void loadStripe(publishableKey);
+    return () => {
+      for (const link of links) link.remove();
+    };
+  }, []);
+
+  const prefetchCheckout = (rawEmail: string) => {
+    const nextEmail = rawEmail.trim().toLowerCase();
+    if (!isValidEmail(nextEmail)) return;
+    if (prefetchRef.current?.email === nextEmail) return;
+    prefetchRef.current = {
+      email: nextEmail,
+      promise: requestCheckoutSecret(nextEmail).then(({ res, result }) => ({
+        res,
+        result,
+      })),
+    };
+  };
+
+  // Signed-in members: start preparing the Payment Element while they tap Continue.
+  useEffect(() => {
+    if (!started || !signedIn) return;
+    const nextEmail = (accountEmail || email).trim().toLowerCase();
+    if (isValidEmail(nextEmail)) prefetchCheckout(nextEmail);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- prefetch once when join starts
+  }, [started, signedIn, accountEmail]);
+
   const startCheckout = async (event?: React.FormEvent) => {
     event?.preventDefault();
-    const nextEmail = (signedIn ? accountEmail || email : email).trim().toLowerCase();
-    if (!nextEmail || !nextEmail.includes('@')) {
+    const nextEmail = (signedIn ? accountEmail || email : email)
+      .trim()
+      .toLowerCase();
+    if (!isValidEmail(nextEmail)) {
       setError(t('joinEmailRequired'));
       return;
     }
@@ -243,27 +325,19 @@ export default function BureauxCheckout({
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/stripe/bureaux-checkout', {
-        method: 'POST',
-        credentials: 'same-origin',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email: nextEmail }),
-      });
-      const text = await res.text();
-      let result: {
-        ok?: boolean;
-        clientSecret?: string;
-        email?: string | null;
-        signedIn?: boolean;
-        error?: string;
-        detail?: string;
-      } = {};
-      try {
-        result = JSON.parse(text) as typeof result;
-      } catch {
+      // Warm Stripe.js in parallel with the secret request.
+      void stripePromise;
+
+      let res: Response;
+      let result: CheckoutApiResult;
+      const prefetched = prefetchRef.current;
+      if (prefetched?.email === nextEmail) {
+        ({ res, result } = await prefetched.promise);
+      } else {
+        ({ res, result } = await requestCheckoutSecret(nextEmail));
+      }
+
+      if (!result || Object.keys(result).length === 0) {
         setError(t('checkoutError'));
         setClientSecret(null);
         setLoading(false);
@@ -282,6 +356,7 @@ export default function BureauxCheckout({
         setError(message);
         setClientSecret(null);
         setLoading(false);
+        prefetchRef.current = null;
         return;
       }
 
@@ -293,6 +368,7 @@ export default function BureauxCheckout({
       setError(t('checkoutError'));
       setClientSecret(null);
       setLoading(false);
+      prefetchRef.current = null;
     }
   };
 
@@ -393,7 +469,18 @@ export default function BureauxCheckout({
           required
           autoComplete="email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => {
+            setEmail(e.target.value);
+            // Invalidate stale prefetch when the address changes.
+            const next = e.target.value.trim().toLowerCase();
+            if (
+              prefetchRef.current &&
+              prefetchRef.current.email !== next
+            ) {
+              prefetchRef.current = null;
+            }
+          }}
+          onBlur={() => prefetchCheckout(email)}
           placeholder={t('joinEmailPlaceholder')}
           disabled={loading || (signedIn && Boolean(accountEmail))}
           className="w-full rounded-xl px-5 py-4 bg-page-chip font-sans font-semibold text-[15px] text-page placeholder-page-muted border border-page-faint focus:outline-none focus:border-[color-mix(in_srgb,var(--page-fg)_35%,transparent)] disabled:opacity-50 transition-colors"

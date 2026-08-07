@@ -72,7 +72,13 @@ function MetaLine({ item }: { item: SearchItem }) {
   );
 }
 
-export default function SearchResultsMinimal({ results }: { results: SearchItem[] }) {
+export default function SearchResultsMinimal({
+  results,
+  query = '',
+}: {
+  results: SearchItem[];
+  query?: string;
+}) {
   const t = useTranslations('Film');
   const { sort, theme, mix, mixes, setThemes } = useMinimalFilter();
   const watchProgress = useWatchProgressMap();
@@ -135,12 +141,12 @@ export default function SearchResultsMinimal({ results }: { results: SearchItem[
                 <h2 className="font-sans text-[18px] font-bold tracking-tight text-page leading-tight group-hover:opacity-80 transition-opacity">
                   {item.name}
                 </h2>
+                <SearchMatchLine item={item} query={query} />
                 {item.teaser && (
                   <p className="font-sans text-[14px] font-normal text-page-muted leading-snug line-clamp-2">
                     {item.teaser}
                   </p>
                 )}
-                <SearchMatchLine item={item} />
                 <MetaLine item={item} />
               </PrefetchLink>
 

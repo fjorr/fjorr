@@ -24,20 +24,26 @@ function HighlightedSnippet({ snippet }: { snippet: MatchSnippet }) {
   );
 }
 
-/** Super-small match excerpt under a search result (reads `?q=`). */
+/** Super-small match excerpt under a search result. */
 export default function SearchMatchLine({
   item,
+  query: queryProp,
   className = '',
 }: {
   item: {
     name?: string | null;
     teaser?: string | null;
     search_content?: string | null;
+    creator?: string | null;
+    theme?: string | null;
+    label?: string | null;
   };
+  /** Prefer live search state — URL `?q=` can lag behind results. */
+  query?: string;
   className?: string;
 }) {
   const searchParams = useSearchParams();
-  const query = searchParams.get('q') || '';
+  const query = (queryProp ?? searchParams.get('q') ?? '').trim();
 
   const snippet = useMemo(
     () => searchMatchSnippet(item, query),
@@ -48,7 +54,8 @@ export default function SearchMatchLine({
 
   return (
     <p
-      className={`font-sans text-[11px] font-normal leading-snug text-page-faint line-clamp-1 ${className}`}
+      className={`font-sans text-[12px] font-medium leading-snug text-page-muted line-clamp-1 ${className}`}
+      title={snippet.text}
     >
       <HighlightedSnippet snippet={snippet} />
     </p>

@@ -46,8 +46,10 @@ function isComingSoon(releaseDate?: string | null) {
 /** Search results rendered in the vertical Time rail. */
 export default function SearchResultsTimeline({
   results,
+  query = '',
 }: {
   results: SearchItem[];
+  query?: string;
 }) {
   const { theme, mix, mixes, setThemes, contentType } = useMinimalFilter();
   const [storyDates, setStoryDates] = useState<Record<string, string | null>>({});
@@ -134,6 +136,9 @@ export default function SearchResultsTimeline({
         runtime: item.runtime ?? null,
         canResume: isFilm && !isComingSoon(item.release_date),
         search_content: item.search_content || null,
+        creator: item.creator || null,
+        theme: item.theme || null,
+        label: item.label || null,
       };
     });
   }, [storyDates, typed]);
@@ -158,6 +163,7 @@ export default function SearchResultsTimeline({
     <>
       <TimelineRail
         items={items}
+        query={query}
         storageKey={`fjorr-timeline-scroll:search:${contentType}`}
         groupKeyPrefix={`search-${contentType}`}
         onResume={contentType === 'artifact' ? undefined : handleResume}

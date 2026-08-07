@@ -268,11 +268,11 @@ function SearchContent({
       </div>
     )
   ) : isTimeline ? (
-    <SearchResultsTimeline results={filteredResults} />
+    <SearchResultsTimeline results={filteredResults} query={query} />
   ) : isMinimal ? (
-    <SearchResultsMinimal results={filteredResults} />
+    <SearchResultsMinimal results={filteredResults} query={query} />
   ) : (
-    <SearchResultsGrid results={filteredResults} />
+    <SearchResultsGrid results={filteredResults} query={query} />
   );
 
   /** Shared shell so empty / hero share the same Y across Cine · Mini · Time. */

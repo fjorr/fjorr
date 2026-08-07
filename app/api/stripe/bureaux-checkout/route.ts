@@ -7,6 +7,7 @@ import {
   ensureAuthUserByEmail,
   getBureauxMembershipByUserId,
   isBureauxMembershipActive,
+  type BureauxMembership,
 } from '@/lib/bureaux';
 
 export const runtime = 'nodejs';
@@ -43,11 +44,16 @@ function normalizeEmail(raw: unknown): string | null {
   return email;
 }
 
-async function ensureStripeCustomer(user: {
-  id: string;
-  email?: string | null;
-}): Promise<string> {
-  const existing = await getBureauxMembershipByUserId(user.id);
+const SUB_EXPAND = [
+  'latest_invoice.confirmation_secret',
+  'latest_invoice.payment_intent',
+  'pending_setup_intent',
+] as const;
+
+async function ensureStripeCustomer(
+  user: { id: string; email?: string | null },
+  existing: BureauxMembership | null
+): Promise<string> {
   if (existing?.stripe_customer_id) return existing.stripe_customer_id;
 
   const stripe = getStripe();
@@ -70,6 +76,68 @@ async function ensureStripeCustomer(user: {
   );
   if (error) throw new Error(`membership upsert: ${error.message}`);
   return customer.id;
+}
+
+async function persistIncomplete(
+  userId: string,
+  customerId: string,
+  subscriptionId: string
+) {
+  const db = createServiceClient();
+  await db.from('bureaux_memberships').upsert(
+    {
+      user_id: userId,
+      stripe_customer_id: customerId,
+      stripe_subscription_id: subscriptionId,
+      status: 'incomplete',
+      cancel_at_period_end: false,
+    },
+    { onConflict: 'user_id' }
+  );
+}
+
+/**
+ * Try to reuse an incomplete subscription’s Payment Element secret so retries
+ * don’t pay for cancel + create round-trips.
+ */
+async function reuseIncompleteSecret(
+  customerId: string
+): Promise<{ clientSecret: string; subscriptionId: string } | null> {
+  const stripe = getStripe();
+  const incomplete = await stripe.subscriptions.list({
+    customer: customerId,
+    status: 'incomplete',
+    limit: 5,
+    expand: [
+      'data.latest_invoice.confirmation_secret',
+      'data.latest_invoice.payment_intent',
+      'data.pending_setup_intent',
+    ],
+  });
+
+  for (const sub of incomplete.data) {
+    let secret = clientSecretFromSubscription(sub);
+    if (!secret) {
+      // List expand can miss nested secrets — one retrieve is still cheaper than create.
+      const full = await stripe.subscriptions.retrieve(sub.id, {
+        expand: [...SUB_EXPAND],
+      });
+      secret = clientSecretFromSubscription(full);
+    }
+    if (secret) {
+      return { clientSecret: secret, subscriptionId: sub.id };
+    }
+  }
+
+  // Stuck incompletes without a payable secret — clear so create can proceed.
+  if (incomplete.data.length) {
+    await Promise.all(
+      incomplete.data.map((sub) =>
+        stripe.subscriptions.cancel(sub.id).catch(() => null)
+      )
+    );
+  }
+  return null;
 }
 
 /**
@@ -135,31 +203,24 @@ export async function POST(req: Request) {
     }
 
     const stripe = getStripe();
-    const customerId = await ensureStripeCustomer({ id: userId, email });
-
-    // Expire abandoned Checkout Sessions from earlier experiments.
-    const open = await stripe.checkout.sessions.list({
-      customer: customerId,
-      status: 'open',
-      limit: 100,
-    });
-    await Promise.all(
-      open.data.map((s) =>
-        stripe.checkout.sessions.expire(s.id).catch(() => null)
-      )
+    const customerId = await ensureStripeCustomer(
+      { id: userId, email },
+      membership
     );
 
-    // Cancel stuck incomplete subscriptions, then create a fresh one.
-    const incomplete = await stripe.subscriptions.list({
-      customer: customerId,
-      status: 'incomplete',
-      limit: 10,
-    });
-    await Promise.all(
-      incomplete.data.map((sub) =>
-        stripe.subscriptions.cancel(sub.id).catch(() => null)
-      )
-    );
+    // Prefer an existing incomplete sub (common on Continue retries / email blur prefetch).
+    const reused = await reuseIncompleteSecret(customerId);
+    if (reused) {
+      await persistIncomplete(userId, customerId, reused.subscriptionId);
+      return NextResponse.json({
+        ok: true,
+        clientSecret: reused.clientSecret,
+        email,
+        signedIn: Boolean(sessionUser),
+        mode: 'payment_element',
+        reused: true,
+      });
+    }
 
     const subscription = await stripe.subscriptions.create({
       customer: customerId,
@@ -170,11 +231,7 @@ export async function POST(req: Request) {
         payment_method_types: ['card'],
       },
       metadata: { supabase_user_id: userId },
-      expand: [
-        'latest_invoice.confirmation_secret',
-        'latest_invoice.payment_intent',
-        'pending_setup_intent',
-      ],
+      expand: [...SUB_EXPAND],
     });
 
     const clientSecret = clientSecretFromSubscription(subscription);
@@ -189,17 +246,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const db = createServiceClient();
-    await db.from('bureaux_memberships').upsert(
-      {
-        user_id: userId,
-        stripe_customer_id: customerId,
-        stripe_subscription_id: subscription.id,
-        status: 'incomplete',
-        cancel_at_period_end: false,
-      },
-      { onConflict: 'user_id' }
-    );
+    await persistIncomplete(userId, customerId, subscription.id);
 
     return NextResponse.json({
       ok: true,

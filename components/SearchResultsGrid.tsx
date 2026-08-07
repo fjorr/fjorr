@@ -17,6 +17,8 @@ import { formatResumeClock } from '@/lib/watch-progress';
 
 interface ResultsGridProps {
   results: SearchItem[];
+  /** Live search query for match snippets (URL `?q=` can lag). */
+  query?: string;
   /** Cine browse: posters only — titles live in Mini / search. */
   postersOnly?: boolean;
 }
@@ -29,7 +31,11 @@ const glassBadgeStyle: React.CSSProperties = {
   transform: 'translateZ(0)',
 };
 
-export default function SearchResultsGrid({ results, postersOnly = false }: ResultsGridProps) {
+export default function SearchResultsGrid({
+  results,
+  query = '',
+  postersOnly = false,
+}: ResultsGridProps) {
   const t = useTranslations('Film');
   const tSearch = useTranslations('Search');
   const { sort, theme, mix, mixes, setThemes } = useMinimalFilter();
@@ -137,6 +143,9 @@ export default function SearchResultsGrid({ results, postersOnly = false }: Resu
                   {item.name}
                 </h2>
 
+                {/* Match hit directly under title — before meta/teaser so it’s never buried. */}
+                <SearchMatchLine item={item} query={query} />
+
                 <div className="font-sans font-medium text-[11px] tracking-normal capitalize text-page-faint flex items-center min-h-[16px] truncate">
                   {isFilm ? (
                     isFutureRelease ? (
@@ -169,7 +178,6 @@ export default function SearchResultsGrid({ results, postersOnly = false }: Resu
                 <p className="font-sans font-medium text-[13px] leading-snug text-page-muted tracking-normal line-clamp-2 mt-0.5">
                   {item.teaser || tSearch('noTeaser')}
                 </p>
-                <SearchMatchLine item={item} className="mt-0.5" />
               </div>
             )}
           </PrefetchLink>
