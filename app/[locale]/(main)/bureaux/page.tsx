@@ -118,7 +118,7 @@ export default async function BureauxPage({
             <p className="font-sans text-lg sm:text-xl font-semibold normal-case tracking-normal text-page select-none opacity-0 animate-slide-up style-delay-headline">
               {t('eyebrow')}
             </p>
-            <h1 className="mt-2 sm:mt-2.5 mb-5 sm:mb-6 font-futura tracking-tighter text-page select-none text-5xl sm:text-6xl md:text-7xl !leading-[0.95] w-full max-w-md sm:max-w-xl text-balance text-left sm:text-center opacity-0 animate-slide-up style-delay-headline">
+            <h1 className="mt-2 sm:mt-2.5 mb-5 sm:mb-6 font-futura tracking-tighter text-page select-none text-5xl sm:text-6xl md:text-7xl !leading-[0.95] w-full max-w-md sm:max-w-xl whitespace-pre-line text-balance text-left sm:text-center opacity-0 animate-slide-up style-delay-headline">
               {t('headline')}
             </h1>
             <div className="font-sans font-medium text-[16px] leading-[1.55] tracking-normal text-page max-w-xl text-left sm:text-center flex flex-col gap-4 opacity-0 animate-slide-up style-delay-body">
@@ -149,9 +149,6 @@ export default async function BureauxPage({
                 nextPath={nextPath}
               />
             )}
-            <p className="m-0 font-sans text-[13px] text-page-faint leading-relaxed max-w-sm">
-              {t('footnote')}
-            </p>
             <ManualHelpButton slug="join" audience="guest" />
           </footer>
         </div>

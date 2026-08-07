@@ -493,8 +493,8 @@
     "crowdAlt": "कहानियाँ महसूस करती भीड़"
   },
   "About": {
-    "hero": "पदार्थ फीका पड़ता है।\nमिथक नहीं।",
-    "manifesto": "Not designed to hijack attention. No ads, no algorithm, no noise.\n\nJust short films of the greatest stories, made to raise people with wonder and hope, free forever for anyone in the world. A few minutes. Done right. Not to keep you glued to glass. To send you back into the world with something to carry.\n\nFjorr. The myth engine.",
+    "hero": "Matter fades.\nMyth don't.",
+    "manifesto": "A parable here, a lecture there, lost in a noisy feed, a story told in a pub. Nobody gave them a gold standard format and a dedicated home.\n\nFjorr just did.\n\nShort films of the greatest stories — under twenty minutes, always — made to raise people with wonder and hope, free forever for anyone in the world. We're chronicling the human story, one myth at a time. And doing it cleanly. No ads. No algorithm. No noise.\n\nOne standard. One home for the stories that shaped what it means to be human. Not to keep you glued to glass. To send you back into the world with something to carry.\n\nFjorr. The myth engine.",
     "logoLabel": "लोगो",
     "logoTitle": "गत्ते का हेलमेट।",
     "logoBody": "बॉक्स रॉकेट से पहले आता है।",
@@ -504,7 +504,7 @@
     "namePronunciation": "[फ़-यॉर] — \"तौर\" से मेल खाता है।",
     "exploreFjorr": "Fjorr देखें",
     "howWeMakeThem": "Fjorr मिथक के सिद्धांत",
-    "manifestoHeadline": "So we're chronicling the human story, one myth at a time."
+    "manifestoHeadline": "But they are hard to find."
   },
   "Privacy": {
     "title": "Privacy Notice",
@@ -608,7 +608,7 @@
   },
   "Meta": {
     "aboutTitle": "परिचय",
-    "aboutDescription": "दुनिया की महानतम कहानियों की लघु फ़िल्में।",
+    "aboutDescription": "But they are hard to find. Short films of the greatest stories — under twenty minutes, always — free forever. Fjorr. The myth engine.",
     "partnerTitle": "साझेदार",
     "partnerDescription": "फ़िल्मों और सांस्कृतिक सहयोगों पर Fjorr के साथ साझेदारी करें।",
     "nominateTitle": "नामांकित करें",
@@ -633,7 +633,7 @@
     "plusDescription": "No film is version final. Films on Fjorr ship as v1 — then get sharper.",
     "accountPrivacyTitle": "Privacy",
     "bureauxTitle": "Join the Bureaux",
-    "bureauxDescription": "The internet can be so much more. Short films of the greatest stories, free forever. The Bureaux makes that possible.",
+    "bureauxDescription": "Matter fades. Myth don't. Short films of the greatest stories, free forever. The Bureaux is how this gets done.",
     "accountBureauxTitle": "Bureaux",
     "helpTitle": "The Manual",
     "helpDescription": "Six short entries on watching, joining, nominating, Plus, account, and the desk.",
@@ -887,9 +887,9 @@
   },
   "Bureaux": {
     "eyebrow": "Join the Bureaux",
-    "headline": "The internet can be so much more.",
-    "lead": "No ads. No algorithm. No slop. No noise. Just short films of the greatest stories, made to raise people with wonder and hope, free forever for anyone in the world. We're chronicling the human story, one myth at a time.",
-    "lead2": "The Bureaux is who makes that possible. You can be one of them.",
+    "headline": "Matter fades.\nMyth don't.",
+    "lead": "But they are hard to find — a parable here, a lecture there, lost in a noisy feed. Nobody gave them a gold standard format and a dedicated home. Fjorr did. Short films of the greatest stories, under twenty minutes, always, free forever for anyone in the world. No ads. No algorithm. No noise.",
+    "lead2": "The Bureaux is how this gets done — and how you take part.",
     "priceLabel": "Subscription",
     "priceValue": "{price} / year",
     "accessLabel": "Films",
@@ -909,13 +909,13 @@
     "ctaSignIn": "Sign in",
     "alreadyIn": "You're in the Bureaux.",
     "manageLink": "Manage subscription",
-    "footnote": "Cancel anytime. Watching never requires a subscription.",
+    "footnote": "Watching never requires a subscription.",
     "checkoutTitle": "Join the Bureaux",
     "checkoutSignIn": "Sign in to manage your Bureaux membership.",
     "checkoutAlready": "This email already has a Bureaux membership. Sign in.",
     "checkoutConfig": "Checkout isn't configured yet. Try again shortly.",
     "checkoutError": "Couldn't open checkout. Try again.",
-    "dek": "The internet can be so much more.",
+    "dek": "Matter fades. Myth don't.",
     "homePosterHeadline": "The Bureaux",
     "homePosterSubhead": "The people who make it possible.",
     "homePosterCta": "Join",

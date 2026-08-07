@@ -28,7 +28,7 @@ const jsonLd = {
   '@type': 'AboutPage',
   name: 'About Fjorr',
   description:
-    "We are building a myth engine. Short, cinematic films about the world’s greatest stories designed to form imagination, character, and cultural literacy.",
+    "But they are hard to find. Short films of the greatest stories — under twenty minutes, always — free forever. Fjorr. The myth engine.",
   publisher: {
     '@type': 'Organization',
     name: 'Fjorr',

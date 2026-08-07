@@ -21,8 +21,8 @@ const SCOUT_SRC = '/fjorr_scout.mp4';
 
 /**
  * About — three beats:
- * 1 Statement (headline)
- * 2 Character + belief (scout cut, manifesto under it)
+ * 1 Statement (Matter / Myth)
+ * 2 Scout stage — small overlay line on the girl, then body reveal
  * 3 Name / mark cards
  */
 export default function AboutClient({ copy }: { copy: AboutCopy }) {
@@ -62,8 +62,13 @@ export default function AboutClient({ copy }: { copy: AboutCopy }) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let openTl: any = null;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let matterFade: any = null;
+    let matterReplay: any = null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let mythExit: any = null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let scoutTl: any = null;
     let scoutTrigger: { kill: () => void } | null = null;
+    let heroReplayTrigger: { kill: () => void } | null = null;
     let ctx: { revert: () => void } | null = null;
 
     const run = async () => {
@@ -77,52 +82,181 @@ export default function AboutClient({ copy }: { copy: AboutCopy }) {
 
       openTl = gsap.timeline({ defaults: { ease: 'none' } });
       if (reduced) {
-        gsap.set('.reveal-line', { visibility: 'visible' });
+        gsap.set('.reveal-line', { visibility: 'visible', opacity: 1 });
+        gsap.set('.scout-headline', { opacity: 1, y: 0 });
+        gsap.set('.scout-body-p', { opacity: 1, y: 0 });
+        gsap.set('.scout-explore', { opacity: 1 });
       } else {
-        gsap.set('.reveal-line', { visibility: 'hidden' });
-        openTl.to('.reveal-line', {
+        // Both lines on page load: fade + rise, line 1 then line 2.
+        // Then Matter fades after a read beat — Myth stays until scout.
+        gsap.set('.reveal-line', {
           visibility: 'visible',
-          duration: 0,
-          stagger: 0.7,
+          opacity: 0,
+          y: 22,
+          filter: 'blur(0px)',
         });
 
-        // "Matter fades." — opacity/transform only (blur is compositor-expensive).
-        matterFade = gsap.fromTo(
+        openTl.to('.reveal-line-matter', {
+          opacity: 1,
+          y: 0,
+          duration: 0.8,
+          ease: 'power3.out',
+        });
+        openTl.to(
+          '.reveal-line-myth',
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            ease: 'power3.out',
+          },
+          '-=0.4'
+        );
+        openTl.to(
           '.reveal-line-matter',
-          { opacity: 1, y: 0 },
           {
             opacity: 0,
-            y: -12,
-            ease: 'power1.in',
-            scrollTrigger: {
-              trigger: heroSectionRef.current,
-              start: 'top top',
-              end: '+=35%',
-              scrub: 0.15,
-            },
-          }
+            filter: 'blur(10px)',
+            y: -8,
+            duration: 1,
+            ease: 'power2.inOut',
+          },
+          '+=1.15'
         );
+
+        // Wire Myth's scroll-exit only after the entrance finishes —
+        // otherwise ScrollTrigger's fromTo immediate-renders and skips the fade-up.
+        openTl.add(() => {
+          mythExit = gsap.fromTo(
+            '.reveal-line-myth',
+            { opacity: 1, y: 0 },
+            {
+              opacity: 0,
+              y: -16,
+              ease: 'power1.in',
+              immediateRender: false,
+              scrollTrigger: {
+                trigger: scoutSectionRef.current,
+                start: 'top 85%',
+                end: 'top 45%',
+                scrub: 0.2,
+              },
+            }
+          );
+        });
+
+        // Scroll back to hero → Matter is present again, then blurs out.
+        const replayMatterFade = () => {
+          matterReplay?.kill();
+          gsap.killTweensOf('.reveal-line-matter');
+          gsap.set('.reveal-line-matter', {
+            visibility: 'visible',
+            opacity: 1,
+            y: 0,
+            filter: 'blur(0px)',
+            clearProps: 'autoAlpha',
+          });
+          gsap.set('.reveal-line-myth', {
+            visibility: 'visible',
+            opacity: 1,
+            y: 0,
+          });
+          matterReplay = gsap.to('.reveal-line-matter', {
+            opacity: 0,
+            filter: 'blur(10px)',
+            y: -8,
+            duration: 1,
+            ease: 'power2.inOut',
+            delay: 0.85,
+          });
+        };
+
+        heroReplayTrigger = ScrollTrigger.create({
+          trigger: heroSectionRef.current,
+          start: 'top 70%',
+          // Skip the initial enter (openTl handles first play).
+          onEnterBack: replayMatterFade,
+        });
+
+        gsap.set('.scout-headline', { opacity: 0, y: 10 });
+        gsap.set('.scout-body-p', { opacity: 0, y: 14 });
+        gsap.set('.scout-explore', { opacity: 0 });
       }
 
-      let scoutPlayed = false;
-      const playScout = () => {
-        if (!video || scoutPlayed || reduced) return;
+      const ensureScoutSrc = () => {
+        if (!video) return;
         if (!video.getAttribute('src')) {
           video.src = SCOUT_SRC;
           video.load();
         }
-        scoutPlayed = true;
+      };
+
+      const playScout = () => {
+        if (!video || reduced) return;
+        ensureScoutSrc();
+        video.pause();
         video.currentTime = 0;
         video.loop = false;
         const p = video.play();
         if (p && typeof p.catch === 'function') p.catch(() => {});
       };
 
+      const resetScoutReveal = () => {
+        if (reduced) return;
+        scoutTl?.kill();
+        scoutTl = null;
+        if (video) {
+          video.pause();
+          try {
+            video.currentTime = 0;
+          } catch {
+            /* ignore seek before load */
+          }
+        }
+        gsap.set('.scout-headline', { opacity: 0, y: 10 });
+        gsap.set('.scout-body-p', { opacity: 0, y: 14 });
+        gsap.set('.scout-explore', { opacity: 0 });
+      };
+
+      const runScoutReveal = () => {
+        if (reduced) return;
+        // Restart cleanly if user scrolled away mid-sequence.
+        scoutTl?.kill();
+        playScout();
+
+        scoutTl = gsap.timeline({ defaults: { ease: 'power2.out' } });
+        // Small line fades over her after the scout has a beat alone.
+        scoutTl.fromTo(
+          '.scout-headline',
+          { opacity: 0, y: 10 },
+          { opacity: 1, y: 0, duration: 1.05, delay: 1.1 }
+        );
+        // Body follows after the line has been readable.
+        scoutTl.fromTo(
+          '.scout-body-p',
+          { opacity: 0, y: 14 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.55,
+            stagger: 0.14,
+          },
+          '+=1.35'
+        );
+        scoutTl.fromTo(
+          '.scout-explore',
+          { opacity: 0 },
+          { opacity: 1, duration: 0.4 },
+          '-=0.15'
+        );
+      };
+
+      // Replay when scrolling back up past the stage, then down again.
       scoutTrigger = ScrollTrigger.create({
         trigger: scoutSectionRef.current,
-        start: 'top 65%',
-        once: true,
-        onEnter: playScout,
+        start: 'top 62%',
+        onEnter: runScoutReveal,
+        onLeaveBack: resetScoutReveal,
       });
 
       ctx = gsap.context(() => {
@@ -226,9 +360,12 @@ export default function AboutClient({ copy }: { copy: AboutCopy }) {
     return () => {
       cancelled = true;
       openTl?.kill();
-      matterFade?.scrollTrigger?.kill();
-      matterFade?.kill();
+      matterReplay?.kill();
+      mythExit?.scrollTrigger?.kill();
+      mythExit?.kill();
+      scoutTl?.kill();
       scoutTrigger?.kill();
+      heroReplayTrigger?.kill();
       videoRef.current?.pause();
       ctx?.revert();
     };
@@ -245,7 +382,13 @@ export default function AboutClient({ copy }: { copy: AboutCopy }) {
           {heroLines.map((line, i) => (
             <span
               key={line}
-              className={`reveal-line block invisible${i === 0 ? ' reveal-line-matter' : ''}`}
+              className={`reveal-line block${
+                i === 0
+                  ? ' reveal-line-matter'
+                  : i === 1
+                    ? ' reveal-line-myth'
+                    : ''
+              }`}
             >
               {line}
             </span>
@@ -253,33 +396,47 @@ export default function AboutClient({ copy }: { copy: AboutCopy }) {
         </h1>
       </section>
 
-      {/* Beat 2 — Character + belief copy (connected) */}
+      {/* Beat 2 — Scout stage + overlay line, then body */}
       <section
         ref={scoutSectionRef}
-        className="relative w-full flex flex-col items-center px-6 pt-8 md:pt-10 pb-12 md:pb-16"
+        className="relative w-full flex flex-col items-center px-6 pb-14 md:pb-20"
       >
-        <div className="w-full max-w-[min(440px,72vw)] aspect-[440/359]">
-          <video
-            ref={videoRef}
-            muted
-            playsInline
-            preload="none"
-            className="w-full h-full object-contain"
-            aria-label="Fjorr scout"
-          />
+        <div className="relative flex w-full min-h-[min(78dvh,720px)] flex-col items-center justify-center pt-6 md:pt-10">
+          <div className="relative w-full max-w-[min(620px,88vw)] aspect-[440/359]">
+            <video
+              ref={videoRef}
+              muted
+              playsInline
+              preload="none"
+              className="h-full w-full object-contain"
+              aria-label="Fjorr scout"
+            />
+            {/* Soft veil so small type reads over the lantern */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-x-[8%] bottom-[18%] top-[42%] rounded-full opacity-80"
+              style={{
+                background:
+                  'radial-gradient(ellipse at center, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.18) 48%, transparent 72%)',
+              }}
+            />
+            <h2 className="scout-headline pointer-events-none absolute inset-x-6 top-[52%] z-[1] -translate-y-1/2 text-center font-interTight text-[clamp(1.05rem,2.6vw,1.35rem)] font-semibold leading-snug tracking-tight text-[#f5f5f7] text-balance sm:inset-x-10">
+              {manifestoHeadline}
+            </h2>
+          </div>
         </div>
-        <h2 className="mt-10 md:mt-12 mx-auto max-w-[34rem] w-full font-interTight font-bold normal-case tracking-normal text-[clamp(1.5rem,3.8vw,2.25rem)] leading-[1.15] text-[#f5f5f7] text-left">
-          {manifestoHeadline}
-        </h2>
-        <div className="mt-5 md:mt-6 mx-auto max-w-[34rem] w-full space-y-5 md:space-y-6 text-left font-sans text-[clamp(1.15rem,2.4vw,1.45rem)] font-medium leading-[1.55] tracking-normal text-[#f5f5f7]/88">
+
+        <div className="mx-auto mt-2 w-full max-w-[28rem] space-y-4 text-left font-sans text-[clamp(1.05rem,2.1vw,1.2rem)] font-medium leading-[1.5] tracking-normal text-[#f5f5f7]/88 md:mt-4 md:space-y-5">
           {manifestoParagraphs.map((paragraph) => (
-            <p key={paragraph.slice(0, 24)}>{paragraph}</p>
+            <p key={paragraph.slice(0, 24)} className="scout-body-p m-0">
+              {paragraph}
+            </p>
           ))}
         </div>
-        <div className="mt-8 md:mt-10 mx-auto max-w-[34rem] w-full flex justify-start">
+        <div className="scout-explore mx-auto mt-7 w-full max-w-[28rem] md:mt-8">
           <Link
             href="/"
-            className="font-sans text-[14px] font-semibold text-white/45 hover:text-white/80 transition-colors underline underline-offset-4 decoration-white/20"
+            className="font-sans text-[14px] font-semibold text-white/45 underline decoration-white/20 underline-offset-4 transition-colors hover:text-white/80"
           >
             {copy.exploreFjorr}
           </Link>
