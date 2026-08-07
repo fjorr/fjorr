@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import SignInPageClient from './SignInPageClient';
@@ -14,6 +15,18 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+function hasSupabaseAuthCookie(
+  cookieStore: Awaited<ReturnType<typeof cookies>>
+) {
+  return cookieStore
+    .getAll()
+    .some(
+      (c) =>
+        c.name.startsWith('sb-') &&
+        (c.name.includes('auth-token') || c.name.endsWith('-auth-token'))
+    );
+}
+
 export default async function SignInPage({
   searchParams,
 }: {
@@ -22,13 +35,20 @@ export default async function SignInPage({
   const params = await searchParams;
   const nextPath = safeInternalPath(params.next ?? null, '/bureaux');
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Guests: skip Supabase round-trip (same short-circuit as middleware).
+  const cookieStore = await cookies();
+  if (!hasSupabaseAuthCookie(cookieStore)) {
+    return <SignInPageClient nextPath={nextPath} />;
+  }
 
-  if (user) {
-    const active = await isOwnBureauxActive(user.id);
+  const supabase = await createClient();
+  // getClaims() is cheaper than getUser() for the redirect gate.
+  const { data } = await supabase.auth.getClaims();
+  const userId =
+    typeof data?.claims?.sub === 'string' ? data.claims.sub : null;
+
+  if (userId) {
+    const active = await isOwnBureauxActive(userId);
     const path = nextPath.split('?')[0];
     const joining = path === '/bureaux' || path.startsWith('/bureaux/');
     if (!active && !joining) {

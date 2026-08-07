@@ -5,7 +5,7 @@ import { usePathname } from '@/i18n/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useColorScheme } from '@/components/ColorSchemeProvider';
-import { isColorSchemeLockedPath } from '@/lib/color-scheme';
+import { isAboutPath, isColorSchemeLockedPath } from '@/lib/color-scheme';
 
 /**
  * Client chrome only — pathname / scheme for nav+footer.
@@ -14,9 +14,11 @@ import { isColorSchemeLockedPath } from '@/lib/color-scheme';
 export default function MainChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() || '';
   const isWatchPage = pathname.startsWith('/watch');
-  const isPrinciplesPage =
-    pathname === '/principles' || pathname.startsWith('/principles/');
-  const hideChrome = isWatchPage || isPrinciplesPage;
+  const isSignInPage =
+    pathname === '/signin' || pathname.startsWith('/signin/');
+  const aboutPage = isAboutPath(pathname);
+  const hideChrome = isWatchPage;
+  const hideFooter = hideChrome || isSignInPage;
   const isArtifactPage = pathname.startsWith('/artifact/');
   const isLocked = isColorSchemeLockedPath(pathname);
   const { isLight } = useColorScheme();
@@ -57,13 +59,15 @@ export default function MainChrome({ children }: { children: React.ReactNode }) 
             }
           : undefined
       }
-      className="relative flex flex-col min-h-screen justify-between bg-[var(--page-bg)] text-[var(--page-fg)]"
+      className={`relative flex flex-col min-h-screen justify-between text-[var(--page-fg)] ${
+        aboutPage ? 'bg-black' : 'bg-[var(--page-bg)]'
+      }`}
     >
       {!hideChrome && <Navbar variant={navVariant} />}
 
-      <main className="flex-grow w-full relative">{children}</main>
+      <main className="flex-grow w-full relative flex flex-col">{children}</main>
 
-      {!hideChrome && <Footer variant={footerVariant} />}
+      {!hideFooter && <Footer variant={footerVariant} />}
     </div>
   );
 }

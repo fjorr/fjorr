@@ -10,7 +10,6 @@ import React, {
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Link, useRouter } from '@/i18n/navigation';
-import FjorrMark from '@/components/help/FjorrMark';
 
 const PRINCIPLES = [
   { title: 'p1Title', body: 'p1Body', numeral: 'I' },
@@ -26,7 +25,7 @@ const TOTAL_SLIDES = PRINCIPLES.length + 2;
 
 /**
  * Principles of a Myth — click-through cards (Manual-like).
- * No site nav/footer. Hero → myths → Nominate.
+ * Site nav + footer stay visible; card centers in the remaining main area.
  */
 export default function PrinciplesClient() {
   const t = useTranslations('Principles');
@@ -113,7 +112,8 @@ export default function PrinciplesClient() {
     'inline-flex items-center justify-center size-9 rounded-full bg-transparent border-0 p-0 text-page-faint hover:text-page transition-colors cursor-pointer disabled:opacity-25 disabled:pointer-events-none';
 
   return (
-    <div className="relative w-full min-h-dvh bg-page text-page flex flex-col">
+    // Fill the viewport under the sticky 56px nav so the site footer sits below the fold.
+    <div className="relative w-full min-h-[calc(100dvh-56px)] flex flex-col bg-page text-page">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -127,8 +127,8 @@ export default function PrinciplesClient() {
         }}
       />
 
-      <main className="flex-1 w-full px-4 sm:px-6 flex flex-col items-center justify-center">
-        <div className="relative w-full max-w-[28rem] -translate-y-3 sm:-translate-y-5">
+      <div className="flex-1 w-full px-4 sm:px-6 flex flex-col items-center justify-center py-8">
+        <div className="relative w-full max-w-[28rem]">
           {/* Subtle running title — only after the hero */}
           <p
             aria-hidden={isHero}
@@ -157,7 +157,6 @@ export default function PrinciplesClient() {
                   className="principles-hero-in w-full text-center bg-transparent border-0 p-0 cursor-pointer group"
                   aria-label={t('next')}
                 >
-                  <FjorrMark className="mx-auto mb-5 sm:mb-6 h-[22px] w-auto text-page" />
                   <h1 className="m-0 font-futura tracking-tighter text-page select-none text-[clamp(2.5rem,8vw,3.5rem)] !leading-[0.92] text-balance">
                     {t('title')
                       .split('\n')
@@ -263,7 +262,7 @@ export default function PrinciplesClient() {
             </button>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

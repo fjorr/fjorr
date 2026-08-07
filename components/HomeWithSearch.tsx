@@ -6,23 +6,14 @@ import React, {
   useState,
   type ReactNode,
 } from 'react';
-import dynamic from 'next/dynamic';
 import { MinimalFilterProvider } from '@/components/MinimalFilterContext';
+import SearchExperience from '@/components/SearchExperience';
 import type { HomeMix } from '@/lib/home-mix';
 import { preloadCinemaTheater } from '@/lib/cinema-theater';
 
-const SearchExperience = dynamic(() => import('@/components/SearchExperience'), {
-  ssr: false,
-  loading: () => (
-    <div className="w-full pt-4 pb-4 px-[10%] flex flex-col items-center">
-      <div className="w-full max-w-sm h-11 rounded-[10px] bg-page-chip animate-pulse" />
-    </div>
-  ),
-});
-
 /**
- * Home shell: defer SearchExperience (and Supabase) until idle / query / focus.
- * Browse children stay mounted for LCP.
+ * Home shell: search chrome + browse children stay mounted from first paint
+ * so mobile doesn’t flash a Search stub then remount the hero controls.
  */
 export default function HomeWithSearch({
   children,
@@ -32,7 +23,6 @@ export default function HomeWithSearch({
   mixes?: HomeMix[];
 }) {
   const [theaterOpen, setTheaterOpen] = useState(false);
-  const [searchReady, setSearchReady] = useState(false);
 
   useEffect(() => {
     const hide = () => setTheaterOpen(true);
@@ -44,51 +34,6 @@ export default function HomeWithSearch({
       window.removeEventListener('fjorr_show_main_navbar', show);
     };
   }, []);
-
-  // Mount search on ?q=, first interaction, or after a short idle.
-  useEffect(() => {
-    if (searchReady) return;
-    const params = new URLSearchParams(window.location.search);
-    if (params.has('q') || params.has('mix')) {
-      setSearchReady(true);
-      return;
-    }
-
-    const activate = () => setSearchReady(true);
-    const onPointer = () => activate();
-    const onKey = () => activate();
-    window.addEventListener('pointerdown', onPointer, { once: true, passive: true });
-    window.addEventListener('keydown', onKey, { once: true });
-
-    let idleId: number | undefined;
-    let timeoutId: number | undefined;
-    const ric = (
-      window as Window & {
-        requestIdleCallback?: (
-          cb: () => void,
-          opts?: { timeout: number }
-        ) => number;
-        cancelIdleCallback?: (id: number) => void;
-      }
-    ).requestIdleCallback;
-
-    if (typeof ric === 'function') {
-      idleId = ric(activate, { timeout: 2000 });
-    } else {
-      timeoutId = window.setTimeout(activate, 1200);
-    }
-
-    return () => {
-      window.removeEventListener('pointerdown', onPointer);
-      window.removeEventListener('keydown', onKey);
-      if (idleId != null) {
-        (
-          window as Window & { cancelIdleCallback?: (id: number) => void }
-        ).cancelIdleCallback?.(idleId);
-      }
-      if (timeoutId != null) window.clearTimeout(timeoutId);
-    };
-  }, [searchReady]);
 
   // Warm theater after load + idle — don't race hero LCP.
   useEffect(() => {
@@ -151,26 +96,10 @@ export default function HomeWithSearch({
           <h1 className="sr-only">
             Fjorr — Short films of the world&apos;s greatest stories
           </h1>
-          {searchReady ? (
-            <SearchExperience
-              browseContent={children}
-              theaterOpen={theaterOpen}
-            />
-          ) : (
-            <>
-              <div className="w-full pt-4 pb-4 px-[10%] flex flex-col items-center">
-                <button
-                  type="button"
-                  onClick={() => setSearchReady(true)}
-                  onFocus={() => setSearchReady(true)}
-                  className="w-full max-w-sm h-11 rounded-[10px] bg-page-chip text-page-faint font-sans text-sm font-medium text-left px-4 border-0 cursor-text"
-                >
-                  Search
-                </button>
-              </div>
-              <div className="relative z-0 w-full">{children}</div>
-            </>
-          )}
+          <SearchExperience
+            browseContent={children}
+            theaterOpen={theaterOpen}
+          />
         </div>
       </MinimalFilterProvider>
     </Suspense>

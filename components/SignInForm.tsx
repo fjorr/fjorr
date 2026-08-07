@@ -110,7 +110,7 @@ export default function SignInForm({
 
   if (status === 'sent') {
     return (
-      <div className="w-full max-w-sm flex flex-col items-center gap-3 text-center opacity-0 animate-slide-up style-delay-headline">
+      <div className="w-full max-w-sm flex flex-col items-center gap-3 text-center">
         <h1 className="m-0 font-interTight text-4xl sm:text-5xl font-extrabold tracking-tight text-page leading-[1.05]">
           {t('checkEmailTitle')}
         </h1>
@@ -134,18 +134,15 @@ export default function SignInForm({
   return (
     <div className="w-full max-w-sm flex flex-col gap-5 text-center">
       <div className="flex flex-col gap-2">
-        <h1 className="m-0 font-interTight text-4xl sm:text-5xl font-extrabold tracking-tight text-page leading-[1.05] opacity-0 animate-slide-up style-delay-headline">
+        <h1 className="m-0 font-interTight text-4xl sm:text-5xl font-extrabold tracking-tight text-page leading-[1.05]">
           {t('signInTitle')}
         </h1>
-        <p className="m-0 font-sans text-[16px] text-page-muted leading-relaxed opacity-0 animate-slide-up style-delay-body">
+        <p className="m-0 font-sans text-[16px] text-page-muted leading-relaxed">
           {t('signInBody')}
         </p>
       </div>
 
-      <form
-        onSubmit={handleSubmit}
-        className="flex flex-col gap-4 text-left opacity-0 animate-slide-up style-delay-form"
-      >
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4 text-left">
         <input
           type="email"
           required
@@ -182,7 +179,7 @@ export default function SignInForm({
         </button>
       </form>
 
-      <div className="flex flex-col gap-5 opacity-0 animate-slide-up style-delay-form">
+      <div className="flex flex-col gap-5">
         <div className="flex items-center gap-3">
           <div className="h-px flex-1 border-t border-page-faint" />
           <span className="font-sans text-[12px] font-medium text-page-faint">

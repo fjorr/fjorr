@@ -28,6 +28,22 @@ function FeatureRailFallback() {
           variant="feature"
           className="rounded-none min-[1440px]:rounded-xl"
         />
+        {/* Reserve carousel chrome so dots/pause don’t pop in when the rail streams. */}
+        <div className="absolute inset-x-0 bottom-8 z-30 flex items-center justify-center pointer-events-none px-8 md:px-12">
+          <div className="flex items-center justify-center gap-2 mx-auto">
+            {Array.from({ length: 4 }, (_, i) => (
+              <span
+                key={i}
+                className={`w-1.5 h-1.5 rounded-full ${
+                  i === 0 ? 'bg-white/70' : 'bg-white/25'
+                }`}
+              />
+            ))}
+          </div>
+          <div className="absolute right-6 md:right-12">
+            <span className="block w-10 h-10 rounded-full bg-white/10 border border-white/10" />
+          </div>
+        </div>
       </div>
     </section>
   );

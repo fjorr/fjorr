@@ -335,9 +335,7 @@ function SearchContent({
       {showIdle ? (
         <div
           className={`relative z-0 w-full ${
-            theaterOpen
-              ? 'pointer-events-none'
-              : 'animate-in fade-in duration-300'
+            theaterOpen ? 'pointer-events-none' : ''
           }`}
           aria-hidden={theaterOpen}
         >
@@ -354,18 +352,44 @@ function SearchContent({
   );
 }
 
-function SearchLoadingFallback() {
-  const t = useTranslations('Search');
+/** Matches SearchMixesSplit + BrowseControlBar so Suspense doesn’t collapse chrome. */
+function SearchChromeFallback() {
   return (
-    <div className="text-page-faint font-sans text-sm mt-12 animate-pulse">
-      {t('loading')}
-    </div>
+    <section
+      className="relative z-30 w-full pt-4 pb-4 px-[10%] flex flex-col items-center"
+      aria-hidden
+    >
+      <div className="w-full max-w-4xl flex flex-col items-center gap-4">
+        <div className="relative w-full max-w-sm flex flex-col items-stretch">
+          <div className="w-full h-12 rounded-[10px] bg-page-chip" />
+        </div>
+        <div className="w-full max-w-sm flex justify-center">
+          <div className="h-9 w-full max-w-[280px] rounded-[8px] bg-page-chip" />
+        </div>
+      </div>
+    </section>
   );
 }
 
 export default function SearchExperience(props: SearchExperienceProps) {
+  const { browseContent, theaterOpen = false } = props;
   return (
-    <Suspense fallback={<SearchLoadingFallback />}>
+    <Suspense
+      fallback={
+        <>
+          <SearchChromeFallback />
+          {/* Keep browse mounted while useSearchParams resolves — avoids hero flash. */}
+          <div
+            className={`relative z-0 w-full ${
+              theaterOpen ? 'pointer-events-none' : ''
+            }`}
+            aria-hidden={theaterOpen}
+          >
+            {browseContent}
+          </div>
+        </>
+      }
+    >
       <SearchContent {...props} />
     </Suspense>
   );

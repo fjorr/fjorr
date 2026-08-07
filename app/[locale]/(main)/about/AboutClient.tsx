@@ -21,7 +21,7 @@ const SCOUT_SRC = '/fjorr_scout.mp4';
 
 /**
  * About — three beats:
- * 1 Statement (Matter / Myth)
+ * 1 Statement (Matter / Myth) — on-screen until scroll; Matter fades out quickly
  * 2 Scout stage — small overlay line on the girl, then body reveal
  * 3 Name / mark cards
  */
@@ -60,15 +60,12 @@ export default function AboutClient({ copy }: { copy: AboutCopy }) {
   useEffect(() => {
     let cancelled = false;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let openTl: any = null;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let matterReplay: any = null;
+    let matterExit: any = null;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let mythExit: any = null;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let scoutTl: any = null;
     let scoutTrigger: { kill: () => void } | null = null;
-    let heroReplayTrigger: { kill: () => void } | null = null;
     let ctx: { revert: () => void } | null = null;
 
     const run = async () => {
@@ -80,103 +77,56 @@ export default function AboutClient({ copy }: { copy: AboutCopy }) {
       const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       const video = videoRef.current;
 
-      openTl = gsap.timeline({ defaults: { ease: 'none' } });
       if (reduced) {
         gsap.set('.reveal-line', { visibility: 'visible', opacity: 1 });
         gsap.set('.scout-headline', { opacity: 1, y: 0 });
         gsap.set('.scout-body-p', { opacity: 1, y: 0 });
         gsap.set('.scout-explore', { opacity: 1 });
       } else {
-        // Both lines on page load: fade + rise, line 1 then line 2.
-        // Then Matter fades after a read beat — Myth stays until scout.
+        // Hero copy on-screen from load. Matter stays until scroll, then
+        // fades out over a short scrub distance; Myth holds until scout.
         gsap.set('.reveal-line', {
           visibility: 'visible',
-          opacity: 0,
-          y: 22,
+          opacity: 1,
+          y: 0,
           filter: 'blur(0px)',
         });
 
-        openTl.to('.reveal-line-matter', {
-          opacity: 1,
-          y: 0,
-          duration: 0.8,
-          ease: 'power3.out',
-        });
-        openTl.to(
-          '.reveal-line-myth',
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.8,
-            ease: 'power3.out',
-          },
-          '-=0.4'
-        );
-        openTl.to(
+        matterExit = gsap.fromTo(
           '.reveal-line-matter',
+          { opacity: 1, y: 0, filter: 'blur(0px)' },
           {
             opacity: 0,
             filter: 'blur(10px)',
             y: -8,
-            duration: 1,
-            ease: 'power2.inOut',
-          },
-          '+=1.15'
+            ease: 'power1.out',
+            immediateRender: false,
+            scrollTrigger: {
+              trigger: heroSectionRef.current,
+              start: 'top top',
+              // Short range → quick fade as soon as the user scrolls.
+              end: '+=90',
+              scrub: 0.05,
+            },
+          }
         );
 
-        // Wire Myth's scroll-exit only after the entrance finishes —
-        // otherwise ScrollTrigger's fromTo immediate-renders and skips the fade-up.
-        openTl.add(() => {
-          mythExit = gsap.fromTo(
-            '.reveal-line-myth',
-            { opacity: 1, y: 0 },
-            {
-              opacity: 0,
-              y: -16,
-              ease: 'power1.in',
-              immediateRender: false,
-              scrollTrigger: {
-                trigger: scoutSectionRef.current,
-                start: 'top 85%',
-                end: 'top 45%',
-                scrub: 0.2,
-              },
-            }
-          );
-        });
-
-        // Scroll back to hero → Matter is present again, then blurs out.
-        const replayMatterFade = () => {
-          matterReplay?.kill();
-          gsap.killTweensOf('.reveal-line-matter');
-          gsap.set('.reveal-line-matter', {
-            visibility: 'visible',
-            opacity: 1,
-            y: 0,
-            filter: 'blur(0px)',
-            clearProps: 'autoAlpha',
-          });
-          gsap.set('.reveal-line-myth', {
-            visibility: 'visible',
-            opacity: 1,
-            y: 0,
-          });
-          matterReplay = gsap.to('.reveal-line-matter', {
+        mythExit = gsap.fromTo(
+          '.reveal-line-myth',
+          { opacity: 1, y: 0 },
+          {
             opacity: 0,
-            filter: 'blur(10px)',
-            y: -8,
-            duration: 1,
-            ease: 'power2.inOut',
-            delay: 0.85,
-          });
-        };
-
-        heroReplayTrigger = ScrollTrigger.create({
-          trigger: heroSectionRef.current,
-          start: 'top 70%',
-          // Skip the initial enter (openTl handles first play).
-          onEnterBack: replayMatterFade,
-        });
+            y: -16,
+            ease: 'power1.in',
+            immediateRender: false,
+            scrollTrigger: {
+              trigger: scoutSectionRef.current,
+              start: 'top 85%',
+              end: 'top 45%',
+              scrub: 0.2,
+            },
+          }
+        );
 
         gsap.set('.scout-headline', { opacity: 0, y: 10 });
         gsap.set('.scout-body-p', { opacity: 0, y: 14 });
@@ -218,6 +168,12 @@ export default function AboutClient({ copy }: { copy: AboutCopy }) {
         gsap.set('.scout-explore', { opacity: 0 });
       };
 
+      const showScoutCopy = () => {
+        gsap.set('.scout-headline', { opacity: 1, y: 0 });
+        gsap.set('.scout-body-p', { opacity: 1, y: 0 });
+        gsap.set('.scout-explore', { opacity: 1 });
+      };
+
       const runScoutReveal = () => {
         if (reduced) return;
         // Restart cleanly if user scrolled away mid-sequence.
@@ -225,37 +181,43 @@ export default function AboutClient({ copy }: { copy: AboutCopy }) {
         playScout();
 
         scoutTl = gsap.timeline({ defaults: { ease: 'power2.out' } });
-        // Small line fades over her after the scout has a beat alone.
+        // Overlay line soon after enter — don’t wait on the scout clip.
         scoutTl.fromTo(
           '.scout-headline',
           { opacity: 0, y: 10 },
-          { opacity: 1, y: 0, duration: 1.05, delay: 1.1 }
+          { opacity: 1, y: 0, duration: 0.7, delay: 0.2 }
         );
-        // Body follows after the line has been readable.
+        // Body comes in right after the line, so fast scrollers still catch it.
         scoutTl.fromTo(
           '.scout-body-p',
           { opacity: 0, y: 14 },
           {
             opacity: 1,
             y: 0,
-            duration: 0.55,
-            stagger: 0.14,
+            duration: 0.5,
+            stagger: 0.1,
           },
-          '+=1.35'
+          '+=0.2'
         );
         scoutTl.fromTo(
           '.scout-explore',
           { opacity: 0 },
-          { opacity: 1, duration: 0.4 },
-          '-=0.15'
+          { opacity: 1, duration: 0.35 },
+          '-=0.2'
         );
       };
 
       // Replay when scrolling back up past the stage, then down again.
+      // If they leave downward mid-sequence, snap copy visible so it isn’t blank.
       scoutTrigger = ScrollTrigger.create({
         trigger: scoutSectionRef.current,
-        start: 'top 62%',
+        start: 'top 72%',
         onEnter: runScoutReveal,
+        onLeave: () => {
+          scoutTl?.kill();
+          scoutTl = null;
+          showScoutCopy();
+        },
         onLeaveBack: resetScoutReveal,
       });
 
@@ -359,13 +321,12 @@ export default function AboutClient({ copy }: { copy: AboutCopy }) {
 
     return () => {
       cancelled = true;
-      openTl?.kill();
-      matterReplay?.kill();
+      matterExit?.scrollTrigger?.kill();
+      matterExit?.kill();
       mythExit?.scrollTrigger?.kill();
       mythExit?.kill();
       scoutTl?.kill();
       scoutTrigger?.kill();
-      heroReplayTrigger?.kill();
       videoRef.current?.pause();
       ctx?.revert();
     };

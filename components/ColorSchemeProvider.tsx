@@ -5,13 +5,16 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useState,
 } from 'react';
 import { usePathname } from '@/i18n/navigation';
 import {
   type ColorScheme,
+  ABOUT_PAGE_BG,
   DARK_PAGE_BG,
   DARK_PAGE_FG,
+  isAboutPath,
   isColorSchemeLockedPath,
   LIGHT_PAGE_BG,
   LIGHT_PAGE_FG,
@@ -32,7 +35,11 @@ type ColorSchemeContextValue = {
 
 const ColorSchemeContext = createContext<ColorSchemeContextValue | null>(null);
 
-function applyDomScheme(scheme: ColorScheme, locked: boolean) {
+function applyDomScheme(
+  scheme: ColorScheme,
+  locked: boolean,
+  pathname: string
+) {
   const root = document.documentElement;
   // Locked routes (about, partner, …) always paint dark — even if preference is light.
   const effective: ColorScheme = locked ? 'dark' : scheme;
@@ -41,7 +48,11 @@ function applyDomScheme(scheme: ColorScheme, locked: boolean) {
   root.dataset.colorScheme = effective;
   root.style.colorScheme = effective;
 
-  const bg = effective === 'light' ? LIGHT_PAGE_BG : DARK_PAGE_BG;
+  const bg = isAboutPath(pathname)
+    ? ABOUT_PAGE_BG
+    : effective === 'light'
+      ? LIGHT_PAGE_BG
+      : DARK_PAGE_BG;
   const fg = effective === 'light' ? LIGHT_PAGE_FG : DARK_PAGE_FG;
   // Always set (don’t leave prior light inline vars stuck on locked pages).
   root.style.setProperty('--page-bg', bg);
@@ -65,9 +76,10 @@ export function ColorSchemeProvider({
     setPreference(readColorSchemeCookie());
   }, []);
 
-  useEffect(() => {
-    applyDomScheme(preference, locked);
-  }, [preference, locked]);
+  // Layout effect so about’s true-black surface lands before paint.
+  useLayoutEffect(() => {
+    applyDomScheme(preference, locked, pathname);
+  }, [preference, locked, pathname]);
 
   const setScheme = useCallback((next: ColorScheme) => {
     setPreference(next);

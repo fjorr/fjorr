@@ -7,6 +7,8 @@ export const LIGHT_PAGE_BG = '#F5F5F7';
 export const LIGHT_PAGE_FG = '#0B0B0C';
 export const DARK_PAGE_BG = '#1F1F1F';
 export const DARK_PAGE_FG = '#F5F5F7';
+/** About is true black end-to-end (nav chrome included). */
+export const ABOUT_PAGE_BG = '#000000';
 
 export function parseColorScheme(value?: string | null): ColorScheme {
   return value === 'light' ? 'light' : 'dark';
@@ -36,4 +38,9 @@ export function isColorSchemeLockedPath(pathname?: string | null): boolean {
   if (path.startsWith('/artifact/')) return true;
   if (path === '/admin' || path.startsWith('/admin/')) return true;
   return false;
+}
+
+export function isAboutPath(pathname?: string | null): boolean {
+  const path = pathname || '/';
+  return path === '/about' || path.startsWith('/about/');
 }
