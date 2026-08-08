@@ -9,9 +9,9 @@ type Props = {
   /** Primary CTA — lives with arrows, not on each card. */
   ctaHref?: string;
   ctaLabel?: string;
-  /** Secondary — catalog / upcoming rewards. */
-  secondaryHref?: string;
-  secondaryLabel?: string;
+  /** Secondary — catalog / upcoming rewards. Null/undefined hides it. */
+  secondaryHref?: string | null;
+  secondaryLabel?: string | null;
   className?: string;
   /** Auto-advance interval ms; 0 = off. */
   autoMs?: number;
@@ -25,8 +25,8 @@ export default function HallOfWinsRail({
   wins = HALL_OF_WINS,
   ctaHref = '/preview/story-inc/projects',
   ctaLabel = 'Predict to win',
-  secondaryHref = 'https://app.storyincmedia.com/rewards',
-  secondaryLabel = 'View rewards',
+  secondaryHref = null,
+  secondaryLabel = null,
   className = '',
   autoMs = 5500,
 }: Props) {

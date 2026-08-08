@@ -35,7 +35,8 @@ export async function middleware(request: NextRequest) {
     return await updateSession(request);
   }
 
-  // Partner embeds + temp client mocks: no i18n prefix, no site-password gate.
+  // Partner embeds + Story Inc client comps: no i18n prefix, no site-password gate.
+  // Fjorr pages on staging/production stay gated when SITE_GATE_ENABLED=true.
   if (pathname.startsWith("/embed") || pathname.startsWith("/preview")) {
     return await updateSession(request);
   }
