@@ -133,7 +133,7 @@ export const ANGRY_BIRDS: ProjectPageData = {
       place: 'Mumbai',
       time: '2h ago',
       initials: 'FW',
-      avatarColor: '#00a6ff',
+      avatarColor: '#00A6FF',
       body: "my kids saw the teaser once and won't stop quoting it, so Paramount already won",
     },
     {

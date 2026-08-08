@@ -47,7 +47,7 @@ export default function AppleChrome() {
         <div className="flex items-center gap-2 sm:gap-3">
           <a
             href="#rewards"
-            className={`inline-flex h-8 items-center rounded-full bg-[#00a6ff] px-3.5 text-[12px] font-semibold text-white transition-all duration-200 hover:bg-[#0095e6] ${
+            className={`inline-flex h-8 items-center rounded-full bg-[#00A6FF] px-3.5 text-[12px] font-semibold text-white transition-all duration-200 hover:opacity-90 ${
               showRewards
                 ? 'pointer-events-auto scale-100 opacity-100'
                 : 'pointer-events-none scale-95 opacity-0'
@@ -66,7 +66,7 @@ export default function AppleChrome() {
             className={`inline-flex h-8 items-center rounded-full px-3.5 text-[12px] font-semibold transition-colors ${
               showRewards
                 ? 'bg-transparent text-[#1d1d1f]/80 hover:text-[#1d1d1f]'
-                : 'bg-[#00a6ff] text-white hover:bg-[#0095e6]'
+                : 'bg-[#00A6FF] text-white hover:opacity-90'
             }`}
           >
             Sign up

@@ -69,7 +69,7 @@ export default function StoryIncProjectsPage() {
       <main>
         {/* Homepage-style centered header */}
         <section className="mx-auto max-w-[720px] px-5 pb-10 pt-14 text-center sm:pb-12 sm:pt-20">
-          <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-[#00a6ff]">
+          <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-[#00A6FF]">
             Projects
           </p>
           <h1 className="mt-4 text-[32px] font-bold leading-[1.08] tracking-[-0.03em] text-[#1d1d1f] sm:text-[44px] md:text-[52px]">

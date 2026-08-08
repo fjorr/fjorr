@@ -21,7 +21,7 @@ export default function ProjectPage({ data }: { data: ProjectPageData }) {
       <main>
         <section className="relative overflow-hidden bg-[#fbfbfd]">
           <div className="mx-auto max-w-[980px] px-5 pb-6 pt-12 text-center sm:pb-8 sm:pt-16">
-            <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-[#00a6ff]">
+            <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-[#00A6FF]">
               {data.kick}
             </p>
             <h1
@@ -92,7 +92,7 @@ export default function ProjectPage({ data }: { data: ProjectPageData }) {
                 <a
                   key={item.label}
                   href={item.href}
-                  className="rounded-2xl border border-black/[0.08] bg-white px-4 py-3 text-left transition-colors hover:border-[#00a6ff]/40 hover:bg-[#00a6ff]/[0.03]"
+                  className="rounded-2xl border border-black/[0.08] bg-white px-4 py-3 text-left transition-colors hover:border-[#00A6FF]/40 hover:bg-[#00A6FF]/[0.03]"
                 >
                   <div className="text-[14px] font-bold text-[#1d1d1f]">
                     {item.label}
@@ -111,7 +111,7 @@ export default function ProjectPage({ data }: { data: ProjectPageData }) {
               ))}
             </div>
 
-            <p className="max-w-md text-center text-[14px] font-semibold leading-[1.5] text-[#00a6ff]">
+            <p className="max-w-md text-center text-[14px] font-semibold leading-[1.5] text-[#00A6FF]">
               {data.followLine}
             </p>
           </div>
@@ -122,7 +122,7 @@ export default function ProjectPage({ data }: { data: ProjectPageData }) {
           className="relative scroll-mt-[52px] overflow-hidden py-16 sm:py-20"
           style={{
             background:
-              'linear-gradient(165deg, #0090e0 0%, #00a6ff 42%, #006bb3 100%)',
+              'linear-gradient(165deg, #33B8FF 0%, #00A6FF 42%, #0085CC 100%)',
           }}
         >
           <div
@@ -166,7 +166,7 @@ export default function ProjectPage({ data }: { data: ProjectPageData }) {
                         className="aspect-[16/10] w-full shrink-0"
                       />
                       <div className="flex flex-1 flex-col gap-2 p-4">
-                        <p className="m-0 self-start rounded-full bg-[#00a6ff]/12 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-[#0077c8]">
+                        <p className="m-0 self-start rounded-full bg-[#00A6FF]/12 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-[#00A6FF]">
                           {r.status}
                         </p>
                         <h3 className="m-0 min-h-[2.5em] text-[15px] font-bold leading-[1.25] tracking-[-0.02em] text-[#1d1d1f]">
@@ -200,10 +200,10 @@ export default function ProjectPage({ data }: { data: ProjectPageData }) {
         >
           <div className="mx-auto max-w-[980px] px-5">
             <div className="text-center sm:text-left">
-              <div className="mb-2 inline-flex items-center gap-2 text-[12px] font-semibold text-[#00a6ff]">
+              <div className="mb-2 inline-flex items-center gap-2 text-[12px] font-semibold text-[#00A6FF]">
                 <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#00a6ff] opacity-75" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-[#00a6ff]" />
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#00A6FF] opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-[#00A6FF]" />
                 </span>
                 Markets are live
               </div>
@@ -258,11 +258,11 @@ export default function ProjectPage({ data }: { data: ProjectPageData }) {
                     type="text"
                     placeholder="Share an idea or market call…"
                     readOnly
-                    className="h-12 w-full flex-1 rounded-2xl border-0 bg-[#fbfbfd] px-4 text-[15px] outline-none ring-1 ring-black/5 placeholder:text-[#aeaeb2] focus:ring-2 focus:ring-[#00a6ff]/40"
+                    className="h-12 w-full flex-1 rounded-2xl border-0 bg-[#fbfbfd] px-4 text-[15px] outline-none ring-1 ring-black/5 placeholder:text-[#aeaeb2] focus:ring-2 focus:ring-[#00A6FF]/40"
                   />
                   <button
                     type="button"
-                    className="inline-flex h-12 items-center justify-center rounded-full bg-[#00a6ff] px-6 text-[14px] font-semibold text-white"
+                    className="inline-flex h-12 items-center justify-center rounded-full bg-[#00A6FF] px-6 text-[14px] font-semibold text-white"
                   >
                     Post
                   </button>
@@ -293,7 +293,7 @@ export default function ProjectPage({ data }: { data: ProjectPageData }) {
                           {c.place} · {c.time}
                         </span>
                         {c.badge ? (
-                          <span className="rounded-full bg-[#00a6ff]/10 px-2 py-0.5 text-[11px] font-semibold text-[#00a6ff]">
+                          <span className="rounded-full bg-[#00A6FF]/10 px-2 py-0.5 text-[11px] font-semibold text-[#00A6FF]">
                             {c.badge}
                           </span>
                         ) : null}
@@ -330,7 +330,7 @@ export default function ProjectPage({ data }: { data: ProjectPageData }) {
                   </p>
 
                   <div className="mt-10 rounded-3xl bg-[#fbfbfd] p-6 sm:p-8">
-                    <p className="text-[12px] font-semibold uppercase tracking-wide text-[#00a6ff]">
+                    <p className="text-[12px] font-semibold uppercase tracking-wide text-[#00A6FF]">
                       Watch & share
                     </p>
                     <ul className="mt-6 space-y-5">
@@ -382,7 +382,7 @@ export default function ProjectPage({ data }: { data: ProjectPageData }) {
                             <p className="mt-1 text-[14px] font-medium leading-[1.55] text-[#6e6e73]">
                               {t.meta}
                             </p>
-                            <p className="mt-2 text-[13px] font-semibold text-[#00a6ff]">
+                            <p className="mt-2 text-[13px] font-semibold text-[#00A6FF]">
                               {t.status}
                             </p>
                           </div>
@@ -396,12 +396,12 @@ export default function ProjectPage({ data }: { data: ProjectPageData }) {
               {data.hasTickets ? (
                 <div
                   id="tickets"
-                  className={`scroll-mt-[52px] flex flex-col gap-3 rounded-2xl bg-[#e8f4fc] px-5 py-4 ring-1 ring-[#00a6ff]/15 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-6 ${
+                  className={`scroll-mt-[52px] flex flex-col gap-3 rounded-2xl bg-[#e8f4fc] px-5 py-4 ring-1 ring-[#00A6FF]/15 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-6 ${
                     hasTrailers ? 'mt-4' : 'mt-10'
                   }`}
                 >
                   <div className="min-w-0">
-                    <p className="text-[12px] font-semibold uppercase tracking-wide text-[#00a6ff]">
+                    <p className="text-[12px] font-semibold uppercase tracking-wide text-[#00A6FF]">
                       Tickets
                     </p>
                     <p className="mt-1 text-[15px] font-medium leading-[1.45] text-[#4a6578]">
@@ -410,7 +410,7 @@ export default function ProjectPage({ data }: { data: ProjectPageData }) {
                   </div>
                   <button
                     type="button"
-                    className="inline-flex h-11 shrink-0 items-center justify-center rounded-full bg-[#00a6ff] px-6 text-[14px] font-semibold text-white hover:bg-[#0095e6]"
+                    className="inline-flex h-11 shrink-0 items-center justify-center rounded-full bg-[#00A6FF] px-6 text-[14px] font-semibold text-white hover:opacity-90"
                   >
                     Pre-purchase tickets
                   </button>
@@ -487,7 +487,7 @@ export default function ProjectPage({ data }: { data: ProjectPageData }) {
           className="scroll-mt-[52px] border-t border-black/[0.06] py-14 sm:py-16"
         >
           <div className="mx-auto max-w-[680px] px-5">
-            <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-[#00a6ff]">
+            <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-[#00A6FF]">
               Followers only
             </p>
             <h2 className="mt-2 text-[28px] font-bold tracking-[-0.02em] sm:text-[32px]">

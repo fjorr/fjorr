@@ -112,7 +112,7 @@ export const COMMENTS = [
     place: 'Mumbai',
     handle: '@filmwatcher87',
     initials: 'FW',
-    avatarColor: '#00a6ff',
+    avatarColor: '#00A6FF',
     time: '2h ago',
     badge: null as string | null,
     body: "my kids saw the teaser once and won't stop quoting it, so Paramount already won",

@@ -88,7 +88,7 @@ export default function HallOfWinsRail({
             <div className="flex min-w-0 items-center gap-3 sm:gap-4">
               <Link
                 href={ctaHref}
-                className="truncate text-[13px] font-semibold text-[#00a6ff] underline-offset-4 transition-opacity hover:opacity-80 hover:underline"
+                className="truncate text-[13px] font-semibold text-[#00A6FF] underline-offset-4 transition-opacity hover:opacity-80 hover:underline"
               >
                 {ctaLabel}
               </Link>
@@ -150,7 +150,7 @@ function WinPoster({
       aria-label={`${win.reward}. ${slideLabel}`}
     >
       <div className="relative z-[1] flex flex-col justify-end gap-2.5 p-7 sm:w-[38%] sm:max-w-md sm:justify-center sm:gap-3 sm:p-9 md:p-10 lg:p-12">
-        <p className="m-0 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#00a6ff]">
+        <p className="m-0 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#00A6FF]">
           Hall of Wins
         </p>
 

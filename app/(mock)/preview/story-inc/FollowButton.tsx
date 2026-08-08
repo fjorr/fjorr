@@ -29,7 +29,7 @@ export default function FollowButton({
         : 'bg-black text-white hover:bg-black/85'
       : following || secondary
         ? 'border border-black/15 bg-white text-[#171717] hover:bg-black/[0.03]'
-        : 'bg-[#00a6ff] text-white hover:bg-[#0095e6]';
+        : 'bg-[#00A6FF] text-white hover:opacity-90';
 
   const sizeClass =
     size === 'lg'

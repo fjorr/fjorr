@@ -120,7 +120,7 @@ export default function StoryIncProjectMockPage() {
             <a
               key={item.label}
               href={item.href}
-              className="rounded-2xl border border-black/[0.08] bg-white px-4 py-3 transition-colors hover:border-[#00a6ff]/40 hover:bg-[#00a6ff]/[0.03]"
+              className="rounded-2xl border border-black/[0.08] bg-white px-4 py-3 transition-colors hover:border-[#00A6FF]/40 hover:bg-[#00A6FF]/[0.03]"
             >
               <div className="text-sm font-bold">{item.label}</div>
               <div className="mt-0.5 text-xs text-[#8e8e8e]">{item.sub}</div>
@@ -140,7 +140,7 @@ export default function StoryIncProjectMockPage() {
           className="relative mt-12 overflow-hidden rounded-3xl px-5 py-10 sm:px-8 sm:py-12"
           style={{
             background:
-              'linear-gradient(165deg, #0090e0 0%, #00a6ff 42%, #006bb3 100%)',
+              'linear-gradient(165deg, #33B8FF 0%, #00A6FF 42%, #0085CC 100%)',
           }}
         >
           <div
@@ -185,7 +185,7 @@ export default function StoryIncProjectMockPage() {
                       className={`mb-2 inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${
                         r.status === 'Granted'
                           ? 'bg-black/[0.06] text-[#666]'
-                          : 'bg-[#00a6ff]/12 text-[#0077c8]'
+                          : 'bg-[#00A6FF]/12 text-[#00A6FF]'
                       }`}
                     >
                       {r.status === 'Granted' ? 'Granted' : 'Open now'}
@@ -208,7 +208,7 @@ export default function StoryIncProjectMockPage() {
             <section id="markets">
               <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
                 <SectionLabel>Project Markets</SectionLabel>
-                <DeadLink className="mb-5 text-sm font-medium text-[#00a6ff] hover:opacity-80">
+                <DeadLink className="mb-5 text-sm font-medium text-[#00A6FF] hover:opacity-80">
                   Learn how markets work →
                 </DeadLink>
               </div>
@@ -241,7 +241,7 @@ export default function StoryIncProjectMockPage() {
                             </div>
                             <div className="h-1.5 overflow-hidden rounded-full bg-[#eee]">
                               <div
-                                className="h-full rounded-full bg-[#00a6ff]"
+                                className="h-full rounded-full bg-[#00A6FF]"
                                 style={{ width: `${o.pct}%` }}
                               />
                             </div>
@@ -318,7 +318,7 @@ export default function StoryIncProjectMockPage() {
               <Card className="overflow-hidden">
                 <div className="grid gap-0 md:grid-cols-[1.2fr_1fr]">
                   <div className="p-6">
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-[#00a6ff]">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-[#00A6FF]">
                       Pre-purchase
                     </p>
                     <h3 className="mt-2 text-xl font-bold">
@@ -347,15 +347,15 @@ export default function StoryIncProjectMockPage() {
                   <div className="border-t border-black/[0.06] bg-[#fff7f0] p-6 md:border-l md:border-t-0">
                     <ul className="space-y-3 text-sm text-[#444]">
                       <li className="flex gap-2">
-                        <span className="text-[#00a6ff]">✓</span>
+                        <span className="text-[#00A6FF]">✓</span>
                         Holiday weekend holds
                       </li>
                       <li className="flex gap-2">
-                        <span className="text-[#00a6ff]">✓</span>
+                        <span className="text-[#00A6FF]">✓</span>
                         Fan-first windows for Followers
                       </li>
                       <li className="flex gap-2">
-                        <span className="text-[#00a6ff]">✓</span>
+                        <span className="text-[#00A6FF]">✓</span>
                         Bundle with premiere rewards
                       </li>
                     </ul>
@@ -379,12 +379,12 @@ export default function StoryIncProjectMockPage() {
                     <input
                       type="text"
                       placeholder="Share a take, theory, or market call…"
-                      className="h-11 w-full flex-1 rounded-xl border border-black/10 bg-[#fafafa] px-4 text-sm outline-none ring-[#00a6ff] placeholder:text-[#aaa] focus:ring-2"
+                      className="h-11 w-full flex-1 rounded-xl border border-black/10 bg-[#fafafa] px-4 text-sm outline-none ring-[#00A6FF] placeholder:text-[#aaa] focus:ring-2"
                       readOnly
                     />
                     <button
                       type="button"
-                      className="inline-flex h-11 items-center justify-center rounded-full bg-[#00a6ff] px-6 text-sm font-semibold text-white"
+                      className="inline-flex h-11 items-center justify-center rounded-full bg-[#00A6FF] px-6 text-sm font-semibold text-white"
                     >
                       Post
                     </button>
@@ -410,7 +410,7 @@ export default function StoryIncProjectMockPage() {
                             {c.place} · {c.time}
                           </span>
                           {c.badge ? (
-                            <span className="rounded-full bg-[#00a6ff]/10 px-2 py-0.5 text-[11px] font-semibold text-[#00a6ff]">
+                            <span className="rounded-full bg-[#00A6FF]/10 px-2 py-0.5 text-[11px] font-semibold text-[#00A6FF]">
                               {c.badge}
                             </span>
                           ) : null}
@@ -459,12 +459,12 @@ export default function StoryIncProjectMockPage() {
                   <input
                     type="email"
                     placeholder="Email"
-                    className="h-11 rounded-xl border border-black/10 bg-[#fafafa] px-4 text-sm outline-none focus:ring-2 focus:ring-[#00a6ff]"
+                    className="h-11 rounded-xl border border-black/10 bg-[#fafafa] px-4 text-sm outline-none focus:ring-2 focus:ring-[#00A6FF]"
                     readOnly
                   />
                   <button
                     type="button"
-                    className="inline-flex h-11 items-center justify-center rounded-full bg-[#00a6ff] text-sm font-semibold text-white"
+                    className="inline-flex h-11 items-center justify-center rounded-full bg-[#00A6FF] text-sm font-semibold text-white"
                   >
                     Notify me
                   </button>
