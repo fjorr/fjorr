@@ -3,12 +3,16 @@
 import React from 'react';
 import { useTranslations } from 'next-intl';
 import { ContactPill } from '@/components/ui/contact-pill';
+import HouseScrollFooter from '@/components/HouseScrollFooter';
 
+/**
+ * Partner — white paper chrome; copy lives on the crowd image (old layout).
+ */
 export default function PartnerClient() {
   const t = useTranslations('Partner');
 
   return (
-    <div className="w-full min-h-[calc(100vh-160px)] md:min-h-[calc(100vh-500px)] bg-[#1F1F1F] text-[#F5F5F7] flex items-center justify-center font-sans select-none pb-12">
+    <div className="flex min-h-screen w-full flex-col bg-white text-[#0B0B0C]">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -26,45 +30,59 @@ export default function PartnerClient() {
         }}
       />
 
-      <div className="w-full max-w-[1240px] px-6 sm:px-10 md:px-16 relative flex flex-col items-center justify-center">
-        <picture className="w-full h-auto select-none pointer-events-none z-0 block opacity-0 animate-fade-in drop-shadow-[0_15px_25px_rgba(0,0,0,0.45)]">
-          <source
-            media="(min-width: 768px)"
-            srcSet="https://media.fjorr.com/app-assets/fjorr-partner-crowd-desktop-v05.avif"
-          />
-          <source
-            media="(max-width: 767px)"
-            srcSet="https://media.fjorr.com/app-assets/fjorr-partner-crowd-mobile-v05.avif"
-          />
-          <img
-            src="https://media.fjorr.com/app-assets/fjorr-partner-crowd-mobile-v05.avif"
-            className="w-full h-auto object-contain block mx-auto"
-            alt={t('imageAlt')}
-          />
-        </picture>
+      <div className="flex w-full flex-1 items-center justify-center px-6 pb-12 pt-10 font-sans select-none sm:px-10 md:px-16 md:pt-6">
+        <div className="relative flex w-full max-w-[1240px] flex-col items-center justify-center">
+          <picture className="pointer-events-none z-0 block h-auto w-full select-none opacity-0 animate-fade-in">
+            <source
+              media="(min-width: 768px)"
+              srcSet="https://media.fjorr.com/app-assets/fjorr-partner-crowd-desktop-v05.avif"
+            />
+            <source
+              media="(max-width: 767px)"
+              srcSet="https://media.fjorr.com/app-assets/fjorr-partner-crowd-mobile-v05.avif"
+            />
+            <img
+              src="https://media.fjorr.com/app-assets/fjorr-partner-crowd-mobile-v05.avif"
+              className="mx-auto block h-auto w-full object-contain"
+              alt={t('imageAlt')}
+            />
+          </picture>
 
-        <div className="absolute inset-x-0 top-0 bottom-[32%] md:bottom-[40%] flex flex-col items-center justify-center text-center gap-3 md:gap-3 z-20 px-12 sm:px-20 md:px-32 mt-6 sm:mt-16 md:mt-0">
-          <h1
-            className="text-6xl sm:text-7xl md:text-8xl font-extrabold uppercase tracking-tighter text-light-01 leading-[52px] sm:leading-[64px] md:leading-[76px] font-futura mb-1.5 opacity-0 animate-slide-up whitespace-pre-line"
-            style={{ animationDelay: '400ms' }}
-          >
-            {t('headlineLine1')}
-            <br />
-            {t('headlineLine2')}
-          </h1>
+          <div className="absolute inset-x-0 bottom-[32%] top-0 z-20 mt-6 flex flex-col items-center justify-center gap-3 px-12 text-center sm:mt-16 sm:px-20 md:bottom-[40%] md:mt-0 md:px-32">
+            <h1
+              className="mb-1.5 whitespace-pre-line font-futura text-6xl leading-[52px] tracking-tighter text-white opacity-0 animate-slide-up sm:text-7xl sm:leading-[64px] md:text-8xl md:leading-[76px]"
+              style={{ animationDelay: '400ms' }}
+            >
+              {t('headlineLine1')}
+              <br />
+              {t('headlineLine2')}
+            </h1>
 
-          <p
-            className="text-base font-medium font-inter text-light-02 max-w-[260px] sm:max-w-sm leading-relaxed mb-4 md:mb-6 drop-shadow-xl opacity-0 animate-slide-up"
-            style={{ animationDelay: '700ms' }}
-          >
-            {t('description')}
-          </p>
+            <p
+              className="mb-4 max-w-[260px] font-inter text-base font-medium leading-relaxed text-white/70 opacity-0 animate-slide-up drop-shadow-xl sm:max-w-sm md:mb-6"
+              style={{ animationDelay: '700ms' }}
+            >
+              {t('description')}
+            </p>
 
-          <div className="opacity-0 animate-slide-up" style={{ animationDelay: '950ms' }}>
-            <ContactPill />
+            <div
+              className="opacity-0 animate-slide-up"
+              style={
+                {
+                  animationDelay: '950ms',
+                  // Pill inverts off paper vars — white on the image, as before.
+                  ['--page-fg' as string]: '#FFFFFF',
+                  ['--page-bg' as string]: '#0B0B0C',
+                } as React.CSSProperties
+              }
+            >
+              <ContactPill />
+            </div>
           </div>
         </div>
       </div>
+
+      <HouseScrollFooter />
 
       <style
         dangerouslySetInnerHTML={{
@@ -83,7 +101,7 @@ export default function PartnerClient() {
             transform: translateY(0);
           }
         }
-        
+
         .animate-fade-in {
           animation: sceneReveal 1000ms cubic-bezier(0.25, 1, 0.5, 1) forwards;
         }

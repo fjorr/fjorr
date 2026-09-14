@@ -63,7 +63,7 @@ export default function SearchNadaView({
         <>
           {nominate ? (
             <Link
-              href="/nominate"
+              href="/account/nominations"
               className="font-sans text-[13px] font-semibold tracking-tight text-page-faint hover:text-page transition-colors"
             >
               {t('nominateStory')}

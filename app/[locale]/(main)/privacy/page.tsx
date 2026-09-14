@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import LegalDoc, { type LegalSection } from '@/components/LegalDoc';
+import HouseScrollFooter from '@/components/HouseScrollFooter';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('Meta');
@@ -13,7 +14,6 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function PrivacyPage() {
   const t = await getTranslations('Privacy');
-  const tFooter = await getTranslations('Footer');
 
   const sections: LegalSection[] = [
     {
@@ -91,7 +91,7 @@ export default async function PrivacyPage() {
       after: (
         <a
           href="mailto:control@fjorr.com"
-          className="text-page underline underline-offset-4 decoration-[color-mix(in_srgb,var(--page-fg)_30%,transparent)] hover:decoration-[color-mix(in_srgb,var(--page-fg)_55%,transparent)]"
+          className="text-[#0B0B0C] underline decoration-black/25 underline-offset-4 transition-colors hover:decoration-black/55"
         >
           control@fjorr.com
         </a>
@@ -100,12 +100,16 @@ export default async function PrivacyPage() {
   ];
 
   return (
-    <LegalDoc
-      title={t('title')}
-      lastUpdatedLabel={t('lastUpdated')}
-      date={t('date')}
-      sections={sections}
-      footerLinks={[{ href: '/terms', label: tFooter('terms') }]}
-    />
+    <div className="flex min-h-screen w-full flex-col bg-white text-[#0B0B0C]">
+      <div className="flex w-full flex-1 flex-col">
+        <LegalDoc
+          title={t('title')}
+          lastUpdatedLabel={t('lastUpdated')}
+          date={t('date')}
+          sections={sections}
+        />
+      </div>
+      <HouseScrollFooter />
+    </div>
   );
 }

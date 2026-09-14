@@ -14,7 +14,7 @@ import {
   ABOUT_PAGE_BG,
   DARK_PAGE_BG,
   DARK_PAGE_FG,
-  isAboutPath,
+  isAboutBlackPath,
   isColorSchemeLockedPath,
   isHousePath,
   HOUSE_PAGE_BG,
@@ -51,7 +51,7 @@ function applyDomScheme(
   root.dataset.colorScheme = effective;
   root.style.colorScheme = effective;
 
-  const bg = isAboutPath(pathname)
+  const bg = isAboutBlackPath(pathname)
     ? ABOUT_PAGE_BG
     : house
       ? HOUSE_PAGE_BG

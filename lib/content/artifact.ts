@@ -85,7 +85,7 @@ export const getArtifactPageData = unstable_cache(
       .from('artifact')
       .select(`
       id, name, slug, label, description, teaser, quote, primary_color, is_dark_bg, hero_clsx, hero_tall, blok_ogrf, link_cta, link, release_date,
-      film!film_artifact ( id, name, slug, runtime )
+      film!film_artifact ( id, name, slug, runtime, story_date, release_date, blok_wide, blok_tall, hero_wide, hero_clsx, hero_tall )
     `)
       .eq('slug', slug)
       .maybeSingle();
@@ -104,7 +104,13 @@ export const getArtifactPageData = unstable_cache(
     const creatorName = rawCreatorObj?.name || '';
 
     let localizedArtifact: any = artifact;
-    let relatedFilms: any[] = Array.isArray(artifact.film) ? artifact.film : [];
+    // PostgREST may return a single related row as an object.
+    const rawFilms = artifact.film;
+    let relatedFilms: any[] = Array.isArray(rawFilms)
+      ? rawFilms
+      : rawFilms
+        ? [rawFilms]
+        : [];
 
     if (locale !== defaultLocale) {
       const [trMap, filmTrMap] = await Promise.all([
@@ -121,10 +127,12 @@ export const getArtifactPageData = unstable_cache(
         film?.id ? mergeFilmTranslation(film, filmTrMap.get(film.id)) : film
       );
       localizedArtifact = { ...localizedArtifact, film: relatedFilms };
+    } else {
+      localizedArtifact = { ...artifact, film: relatedFilms };
     }
 
     return { artifact: localizedArtifact, creatorName };
   },
-  ['artifact-page-i18n'],
+  ['artifact-page-i18n-v3'],
   { revalidate: ARTIFACT_REVALIDATE_SECONDS, tags: ['artifact'] }
 );

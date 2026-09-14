@@ -48,14 +48,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPaths = [
     '/',
     '/about',
-    '/principles',
-    '/bounties',
-    '/cabinet',
+    '/about/the-mark',
+    '/about/100-years-of-failure',
     '/bureaux',
-    '/nominate',
-    '/manual/plus',
     '/partner',
-    '/manual',
     '/terms',
     '/privacy',
   ];
@@ -80,14 +76,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 
-  const [filmsResponse, artifactsResponse, bountiesResponse] = await Promise.all([
+  const [filmsResponse, artifactsResponse] = await Promise.all([
     supabase.from('film').select('slug, updated_at').not('slug', 'is', null),
     supabase.from('artifact').select('slug, updated_at').not('slug', 'is', null),
-    supabase
-      .from('bounties')
-      .select('slug, updated_at')
-      .in('status', ['open', 'claimed', 'in_production'])
-      .not('slug', 'is', null),
   ]);
 
   if (filmsResponse.error) {
@@ -95,9 +86,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
   if (artifactsResponse.error) {
     console.error('sitemap: artifact query failed', artifactsResponse.error.message);
-  }
-  if (bountiesResponse.error) {
-    console.error('sitemap: bounties query failed', bountiesResponse.error.message);
   }
 
   const filmRoutes: MetadataRoute.Sitemap = ((filmsResponse.data || []) as SlugRow[])
@@ -122,11 +110,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       )
     );
 
-  const bountyRoutes: MetadataRoute.Sitemap = ((bountiesResponse.data || []) as SlugRow[])
-    .filter((b) => Boolean(b.slug))
-    .map((b) =>
-      entry(`/bounties/${b.slug}`, lastMod(b.updated_at), 'weekly', 0.65)
-    );
-
-  return [...staticRoutes, ...filmRoutes, ...artifactRoutes, ...bountyRoutes];
+  return [...staticRoutes, ...filmRoutes, ...artifactRoutes];
 }

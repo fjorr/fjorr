@@ -1,14 +1,13 @@
-import { Metadata } from 'next';
+import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import PartnerClient from './PartnerClient'; // 🛠️ Points directly to your layout code file Above
+import PartnerClient from './PartnerClient';
 
-// 🎯 SERVER-SIDE METADATA ENGINE FOR PARTNERSHIPS
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('Meta');
   const title = t('partnerTitle');
   const description = t('partnerDescription');
   return {
-    title, // Automatically transforms to "Partner | Fjorr" via layout.tsx
+    title,
     description,
     alternates: { canonical: '/partner' },
     openGraph: {

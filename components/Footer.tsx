@@ -189,7 +189,7 @@ export default function Footer({ variant }: FooterProps) {
         className={`flex items-center justify-center gap-2 font-sans text-[12px] transition-colors ${subTextColor}`}
       >
         <Link
-          href="/manual"
+          href="/about"
           className={`hover:opacity-80 transition-colors ${subTextColor}`}
         >
           {t('help')}

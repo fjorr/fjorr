@@ -4,7 +4,9 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import HeroPicture from '@/components/HeroPicture';
 import PrefetchLink from '@/components/PrefetchLink';
+import { Icon } from '@/components/ui/Icons';
 import { resolveTitleArtColor, sanitizeTitleArtSvg } from '@/lib/sanitize-svg';
+import RatingBadge from '@/components/house/RatingBadge';
 
 interface FilmAsset {
   id: string;
@@ -363,11 +365,7 @@ export default function FeatureRail({
                       const ratingVal =
                         typeof film.rating === 'object' ? film.rating?.name : film.rating;
                       if (!ratingVal) return null;
-                      return (
-                        <span className="px-1 py-0.25 border border-white/60 rounded-[4px] text-white/60 font-semibold text-[12px] capitalize">
-                          {ratingVal}
-                        </span>
-                      );
+                      return <RatingBadge rating={String(ratingVal)} tone="onDark" />;
                     })()}
 
                     {(() => {
@@ -403,10 +401,10 @@ export default function FeatureRail({
                       }}
                       className="h-10 px-6 inline-flex items-center justify-center gap-2 bg-white hover:bg-white/90 text-black font-sans font-bold text-sm tracking-normal rounded-full transition-all active:scale-[0.98] duration-150 shadow-lg cursor-pointer border-0 outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
                     >
-                      <img
-                        src="/icons/play.svg"
-                        className="w-4 h-4 select-none object-contain translate-y-[0.5px]"
-                        alt=""
+                      <Icon
+                        name="play"
+                        className="h-4 w-4 select-none translate-y-[0.5px]"
+                        aria-hidden
                       />
                       <span>{t('play', { runtime: getRuntimeDisplay(film) })}</span>
                     </button>

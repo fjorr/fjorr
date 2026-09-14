@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { getLocale } from 'next-intl/server';
-import AmbientHome, { type AmbientFilm } from '@/components/ambient/AmbientHome';
-import { getAmbientCarouselFilms } from '@/lib/content/home';
+import HouseHome, { type HouseFilm } from '@/components/house/HouseHome';
+import { getHouseCarouselFilms } from '@/lib/content/home';
 import type { AppLocale } from '@/i18n/config';
 import { SITE_ORIGIN, absoluteUrl } from '@/lib/site';
 
@@ -43,10 +43,20 @@ function asText(value: unknown): string | null {
   return null;
 }
 
+function formatLocation(raw: unknown): string | null {
+  if (!raw) return null;
+  if (typeof raw === 'string') return raw.trim() || null;
+  if (Array.isArray(raw)) {
+    const parts = raw.map((v) => String(v).trim()).filter(Boolean);
+    return parts.length ? parts.join(', ') : null;
+  }
+  return null;
+}
+
 export default async function Home() {
   const locale = (await getLocale()) as AppLocale;
-  const carousel = await getAmbientCarouselFilms(locale);
-  const films: AmbientFilm[] = carousel.map((film) => ({
+  const carousel = await getHouseCarouselFilms(locale);
+  const films: HouseFilm[] = carousel.map((film) => ({
     id: String(film.id),
     name: film.name,
     slug: String(film.slug),
@@ -54,8 +64,11 @@ export default async function Home() {
     hero_wide: film.hero_wide,
     hero_clsx: film.hero_clsx,
     hero_tall: film.hero_tall,
+    blok_tall: film.blok_tall,
+    blok_ogrf: film.blok_ogrf,
     teaser: film.teaser,
     story_date: asText(film.story_date),
+    location: formatLocation(film.location),
     runtime: film.runtime,
     release_date: film.release_date,
     comingSoon:
@@ -75,7 +88,7 @@ export default async function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd) }}
       />
-      <AmbientHome films={films} />
+      <HouseHome films={films} />
     </>
   );
 }

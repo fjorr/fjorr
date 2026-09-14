@@ -150,7 +150,7 @@ export default function TheaterPlusPanel({
             ) : null}
           </div>
           <div className="flex items-center gap-4 shrink-0">
-            <Link href="/account/plus" className={textBtn}>
+            <Link href="/account/voyages" className={textBtn}>
               {t('viewLogs')}
             </Link>
             <button
@@ -217,7 +217,7 @@ export default function TheaterPlusPanel({
         </div>
 
         <div className="flex items-center gap-4 shrink-0">
-          <Link href="/manual/plus" className={textBtn}>
+          <Link href="/about" className={textBtn}>
             {t('craftInfo')}
           </Link>
           {onExit ? (

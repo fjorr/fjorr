@@ -3,19 +3,29 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import dynamic from 'next/dynamic';
-import { Link, useRouter } from '@/i18n/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { parseLocale, localeLabels, locales, type AppLocale } from '@/i18n/config';
 import { absoluteUrl } from '@/lib/site';
 import { useTheaterHls } from '@/lib/theater/use-theater-hls';
 import { useTheaterCaptions } from '@/lib/theater/use-theater-captions';
 import { useTheaterChrome } from '@/lib/theater/use-theater-chrome';
-import TheaterRamsChrome, { TheaterRamsIdentity, PLAQUE_WIDTH } from '@/components/TheaterRamsChrome';
-import { FjorrIcon } from '@/components/brand/FjorrMarks';
-import { useColorScheme } from '@/components/ColorSchemeProvider';
-import { LIGHT_PAGE_BG, LIGHT_PAGE_FG } from '@/lib/color-scheme';
+import {
+  TheaterCaptionsIcon,
+  TheaterEnterFullscreenIcon,
+  TheaterExitFullscreenIcon,
+  TheaterPauseIcon,
+  TheaterPlayIcon,
+  TheaterPlusIcon,
+  TheaterSeekBackIcon,
+  TheaterSeekForwardIcon,
+  TheaterSpeakerIcon,
+  TheaterSpeakerMuteIcon,
+} from '@/components/icons/TheaterControlIcons';
+import { TheaterControlChip, TheaterRamsIdentity, TheaterRamsScrubber } from '@/components/TheaterRamsChrome';
 import { FILM_RECORDED_EVENT, maybeRecordFilmView } from '@/lib/record-view';
 import { fetchOwnBureauxActive } from '@/lib/bureaux-client';
+import { storySettingDisplay } from '@/lib/story-year';
 
 /** Throttle scrub-driven seeks to ~12.5Hz — UI paints immediately, video seeks lag slightly. */
 const SCRUB_SEEK_INTERVAL_MS = 80;
@@ -31,6 +41,7 @@ interface CinemaTheaterProps {
     slug: any;
     mux_playback_id: any;
     last_line: any;
+    last_line_attribution?: string | null;
     story_date: any;
     location: any;
     teaser?: string | null;
@@ -112,12 +123,12 @@ function CinemaTheater({
   const router = useRouter();
   const locale = parseLocale(useLocale());
   const t = useTranslations('Theater');
-  const tFilm = useTranslations('Film');
   const tPlus = useTranslations('Plus');
-  const { isLight } = useColorScheme();
+  /** Theater is always a black room — house keeps paper outside. */
+  const isLight = false;
   const isEmbed = mode === 'embed';
-  const chromeFg = isLight ? LIGHT_PAGE_FG : '#F5F5F7';
-  const shellBg = isLight ? LIGHT_PAGE_BG : '#000000';
+  const chromeFg = '#F5F5F7';
+  const shellBg = '#000000';
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -136,8 +147,6 @@ function CinemaTheater({
     memberNumber: number | null;
     recordedAt: string | null;
   } | null>(null);
-  /** Guest tease — next Voyageur No. they would claim by joining. */
-  const [ghostVoyageur, setGhostVoyageur] = useState<number | null>(null);
   const plusMode = !isEmbed && theaterMode === 'plus';
 
   const skipBumper =
@@ -194,6 +203,7 @@ function CinemaTheater({
   const lastParentTimePushRef = useRef(0);
 
   const playheadRef = useRef<HTMLDivElement | null>(null);
+  const playedFillRef = useRef<HTMLDivElement | null>(null);
   const scrubberRef = useRef<HTMLInputElement | null>(null);
   const elapsedTimeRef = useRef<HTMLSpanElement | null>(null);
   const durationTimeRef = useRef<HTMLSpanElement | null>(null);
@@ -248,6 +258,20 @@ function CinemaTheater({
     const ratio = dur > 0 ? Math.min(1, Math.max(0, time / dur)) : 0;
     const pct = ratio * 100;
     if (playheadRef.current) playheadRef.current.style.left = `${pct}%`;
+    if (playedFillRef.current && playheadRef.current) {
+      const lane = playheadRef.current.parentElement;
+      const bar = playedFillRef.current.parentElement;
+      if (lane && bar) {
+        const barW = bar.clientWidth;
+        const laneW = lane.clientWidth;
+        const inset = Math.max(0, (barW - laneW) / 2);
+        playedFillRef.current.style.width = `${inset + (pct / 100) * laneW}px`;
+      } else {
+        playedFillRef.current.style.width = `${pct}%`;
+      }
+    } else if (playedFillRef.current) {
+      playedFillRef.current.style.width = `${pct}%`;
+    }
     if (scrubberRef.current) {
       if (dur > 0) scrubberRef.current.max = String(dur);
       if (document.activeElement !== scrubberRef.current) {
@@ -281,6 +305,36 @@ function CinemaTheater({
     if (backUrl) router.push(backUrl);
     else onClose();
   }, [isEmbed, watchOnFjorrUrl, backUrl, router, onClose, film?.id, film?.runtime]);
+
+  /** End screen → film info / artifacts sheet. */
+  const handleArtifacts = useCallback(() => {
+    const slug = film?.slug ? String(film.slug) : '';
+    if (isEmbed) {
+      window.open(
+        slug ? absoluteUrl(`/film/${slug}#info`) : watchOnFjorrUrl,
+        '_blank',
+        'noopener,noreferrer'
+      );
+      return;
+    }
+    if (film?.id) {
+      maybeRecordFilmView(
+        String(film.id),
+        currentTimeRef.current,
+        durationRef.current || film.runtime || null
+      );
+    }
+    onClose();
+    if (slug) router.push(`/film/${slug}#info`);
+  }, [
+    isEmbed,
+    watchOnFjorrUrl,
+    film?.id,
+    film?.slug,
+    film?.runtime,
+    onClose,
+    router,
+  ]);
 
   /** Escape: dismiss info → leave Plus → close theater. */
   const handleTheaterEscape = useCallback(() => {
@@ -383,7 +437,7 @@ function CinemaTheater({
     setPlusInfoOpen(false);
   }, [isEnded]);
 
-  // First Voyageur # → member stamp ceremony, or guest ghost tease.
+  // First Voyageur # → member stamp ceremony.
   useEffect(() => {
     if (isEmbed || !film?.id) return;
     const filmId = String(film.id);
@@ -402,69 +456,17 @@ function CinemaTheater({
       const v = Number(detail?.filmVersion);
       const m = Number(detail?.memberNumber);
       if (!detail?.firstStamp || !Number.isFinite(n) || n < 1) return;
-      if (detail.recorded) {
-        setGhostVoyageur(null);
-        setStampShare({
-          viewerNumber: n,
-          filmVersion: Number.isFinite(v) && v >= 1 ? v : 1,
-          memberNumber: Number.isFinite(m) && m >= 1 ? m : null,
-          recordedAt: detail.recordedAt || new Date().toISOString(),
-        });
-        return;
-      }
-      // Anonymous pulse burns an ordinal but no passport — ghost it.
-      setStampShare(null);
-      setGhostVoyageur(n);
+      if (!detail.recorded) return;
+      setStampShare({
+        viewerNumber: n,
+        filmVersion: Number.isFinite(v) && v >= 1 ? v : 1,
+        memberNumber: Number.isFinite(m) && m >= 1 ? m : null,
+        recordedAt: detail.recordedAt || new Date().toISOString(),
+      });
     };
     window.addEventListener(FILM_RECORDED_EVENT, onRecorded);
     return () => window.removeEventListener(FILM_RECORDED_EVENT, onRecorded);
   }, [isEmbed, film?.id]);
-
-  // Unpaid / no pulse yet: peek next Voyageur No. after Fin. for the ghost.
-  useEffect(() => {
-    if (stampShare) {
-      setGhostVoyageur(null);
-      return;
-    }
-    if (!isEnded || isEmbed || !film?.id) return;
-    if (plusMember === true) return;
-    if (plusMember === null) return;
-    if (ghostVoyageur != null) return;
-
-    const filmId = String(film.id);
-    let cancelled = false;
-    const timer = window.setTimeout(() => {
-      if (cancelled || ghostVoyageur != null) return;
-      void (async () => {
-        try {
-          const res = await fetch(
-            `/api/film-view/next?filmId=${encodeURIComponent(filmId)}`,
-            { credentials: 'same-origin' }
-          );
-          if (!res.ok || cancelled) return;
-          const row = (await res.json()) as { next_viewer?: number };
-          const n = Number(row.next_viewer);
-          if (!cancelled && Number.isFinite(n) && n >= 1) {
-            setGhostVoyageur(n);
-          }
-        } catch {
-          /* ignore */
-        }
-      })();
-    }, 500);
-
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timer);
-    };
-  }, [
-    isEnded,
-    isEmbed,
-    film?.id,
-    stampShare,
-    plusMember,
-    ghostVoyageur,
-  ]);
 
   const togglePlay = useCallback(() => {
     const player = isPlayingLogo ? logoPlayerRef.current : filmPlayerRef.current;
@@ -554,31 +556,45 @@ function CinemaTheater({
   });
   prepareFullscreenEnterRef.current = prepareFullscreenEnter;
 
-  /** Rams chrome visible — drives plaque shrink. Plus pins plaque. */
+  const onFrameClick = useCallback(
+    (event: React.MouseEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target?.closest('[data-ui-control="true"]')) return;
+      if (isEnded) return;
+      if (showCCMenu) {
+        setShowCCMenu(false);
+        return;
+      }
+      togglePlay();
+      showUIControls();
+    },
+    [isEnded, showCCMenu, showUIControls, togglePlay]
+  );
+
+  /** Rams chrome visible — identity above + tools below; frame size stays put. */
   const ramsChromeUp = (controlsVisible || plusMode) && !isPlayingLogo && !isEmbed;
-  const plaqueCompact = ramsChromeUp;
   const captionsOn = selectedLangCode !== 'none';
 
   // Plaque chrome stays mounted — repaint playhead when it becomes visible.
   useLayoutEffect(() => {
     if (isPlayingLogo) return;
     paintProgress(currentTimeRef.current, durationRef.current);
-  }, [isPlayingLogo, plaqueCompact, paintProgress]);
+  }, [isPlayingLogo, ramsChromeUp, paintProgress]);
 
   // rAF clock while playing — skipped entirely when chrome is down and captions are off,
   // since there's nothing on screen to paint.
   useEffect(() => {
     if (!isPlaying || isPlayingLogo) return;
-    if (!plaqueCompact && !captionsOn) return;
+    if (!ramsChromeUp && !captionsOn) return;
     let raf = 0;
     const loop = () => {
-      if (plaqueCompact) paintTimeUi();
+      if (ramsChromeUp) paintTimeUi();
       if (captionsOn) syncCueToTime();
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [isPlaying, isPlayingLogo, plaqueCompact, captionsOn, paintTimeUi, syncCueToTime]);
+  }, [isPlaying, isPlayingLogo, ramsChromeUp, captionsOn, paintTimeUi, syncCueToTime]);
 
   // Film Log / Viewer # — native listeners + interval (don't rely on React onTimeUpdate alone).
   useEffect(() => {
@@ -650,6 +666,17 @@ function CinemaTheater({
   useEffect(() => {
     if (!controlsVisible) setShowCCMenu(false);
   }, [controlsVisible]);
+
+  useEffect(() => {
+    if (!showCCMenu) return;
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target?.closest('[data-cc-menu-root="true"]')) return;
+      setShowCCMenu(false);
+    };
+    document.addEventListener('pointerdown', onPointerDown);
+    return () => document.removeEventListener('pointerdown', onPointerDown);
+  }, [showCCMenu]);
 
   useEffect(() => {
     if (!isPlayingLogo || !logoMediaEl) return;
@@ -883,9 +910,10 @@ function CinemaTheater({
   );
 
   const toolBtn =
-    'font-interTight text-[15px] font-bold tracking-normal bg-transparent border-0 outline-none cursor-pointer p-0 leading-none whitespace-nowrap transition-opacity hover:opacity-100';
+    'inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-0 bg-transparent p-0 text-[#F5F5F7] outline-none transition-opacity duration-200 hover:opacity-100 sm:h-9 sm:w-9';
+  const iconSize = 18;
 
-  const ramsToolsSlot = (
+  const ramsToolsLeading = (
     <>
       <button
         type="button"
@@ -893,50 +921,118 @@ function CinemaTheater({
         aria-label={isPlaying ? t('pause') : t('play')}
         className={`${toolBtn} opacity-100`}
       >
-        {isPlaying ? t('pause') : t('play')}
+        {isPlaying ? (
+          <TheaterPauseIcon size={iconSize} />
+        ) : (
+          <TheaterPlayIcon size={iconSize} />
+        )}
       </button>
-      {!isEmbed && !plusMode && plusMember ? (
-        <button
-          type="button"
-          onClick={enterPlus}
-          aria-label={tPlus('modePlus')}
-          className={`${toolBtn} opacity-90 hover:opacity-100`}
-        >
-          + {tPlus('modePlus')}
-        </button>
-      ) : null}
+      <button
+        type="button"
+        onClick={() => {
+          seekBy(-10);
+          showUIControls();
+        }}
+        aria-label={t('rewind')}
+        className={`${toolBtn} opacity-90 hover:opacity-100`}
+      >
+        <TheaterSeekBackIcon size={iconSize} />
+      </button>
+      <button
+        type="button"
+        onClick={() => {
+          seekBy(10);
+          showUIControls();
+        }}
+        aria-label={t('fastForward')}
+        className={`${toolBtn} opacity-90 hover:opacity-100`}
+      >
+        <TheaterSeekForwardIcon size={iconSize} />
+      </button>
+    </>
+  );
+
+  const ramsToolsTrailing = (
+    <>
       {tracks.length > 0 ? (
-        <button
-          type="button"
-          onClick={() => setShowCCMenu((v) => !v)}
-          aria-label={t('captions')}
-          aria-expanded={showCCMenu}
-          className={`${toolBtn} ${
-            showCCMenu || selectedLangCode !== 'none'
-              ? isLight
-                ? 'text-[#C9A24B] opacity-100'
-                : 'text-[#ffd446] opacity-100'
-              : 'opacity-90'
-          }`}
-        >
-          {selectedLangCode !== 'none'
-            ? `${t('subs')} (${selectedLangCode.toUpperCase()})`
-            : t('subs')}
-        </button>
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => {
+              setShowCCMenu((v) => !v);
+              showUIControls();
+            }}
+            aria-label={t('captions')}
+            aria-expanded={showCCMenu}
+            aria-haspopup="listbox"
+            className={`${toolBtn} ${
+              showCCMenu || selectedLangCode !== 'none'
+                ? 'text-[#F5F5F7] opacity-100'
+                : 'opacity-90'
+            }`}
+          >
+            <TheaterCaptionsIcon size={iconSize} />
+          </button>
+          {showCCMenu && !isPlayingLogo ? (
+            <div
+              data-ui-control="true"
+              data-cc-pop="true"
+              role="listbox"
+              aria-label={t('captions')}
+              className="absolute bottom-full left-1/2 z-50 mb-2 max-h-[min(40vh,16rem)] min-w-[10rem] -translate-x-1/2 overflow-y-auto overscroll-contain rounded-[10px] bg-[#1C1C1E] py-1.5 text-[#F5F5F7] shadow-[0_8px_28px_rgba(0,0,0,0.35)] ring-1 ring-white/10"
+            >
+              <button
+                type="button"
+                role="option"
+                aria-selected={selectedLangCode === 'none'}
+                onClick={() => pickCaptionLanguage('none')}
+                className={`flex w-full items-center px-3 py-1.5 text-left font-sans text-[13px] leading-none tracking-normal border-0 bg-transparent outline-none cursor-pointer ${
+                  selectedLangCode === 'none'
+                    ? 'font-semibold opacity-100'
+                    : 'font-medium opacity-60 hover:opacity-100'
+                }`}
+              >
+                {t('ccOff')}
+              </button>
+              {captionMenuItems(tracks).map((item) => {
+                const active =
+                  selectedLangCode?.toLowerCase().trim() ===
+                  item.code.toLowerCase();
+                return (
+                  <button
+                    key={item.code}
+                    type="button"
+                    role="option"
+                    aria-selected={active}
+                    disabled={!item.available}
+                    onClick={() => pickCaptionLanguage(item.code)}
+                    className={`flex w-full items-center px-3 py-1.5 text-left font-sans text-[13px] leading-none tracking-normal border-0 bg-transparent outline-none ${
+                      !item.available
+                        ? 'cursor-default opacity-25'
+                        : active
+                          ? 'cursor-pointer font-semibold opacity-100'
+                          : 'cursor-pointer font-medium opacity-60 hover:opacity-100'
+                    }`}
+                  >
+                    {item.name}
+                  </button>
+                );
+              })}
+            </div>
+          ) : null}
+        </div>
       ) : null}
       <button
         type="button"
         onClick={toggleMute}
         aria-label={isMuted ? t('unmute') : t('mute')}
-        className={`${toolBtn} transition-[opacity,color,text-shadow] duration-200 ${
-          isMuted
-            ? isLight
-              ? 'text-[#0B0B0C] opacity-100 [text-shadow:0_0_10px_rgba(11,11,12,0.35),0_0_22px_rgba(11,11,12,0.18)]'
-              : 'text-[#F5F5F7] opacity-100 [text-shadow:0_0_10px_rgba(245,245,247,0.55),0_0_22px_rgba(245,245,247,0.28)]'
-            : 'opacity-90'
-        }`}
+        className={`${toolBtn} ${isMuted ? 'opacity-100' : 'opacity-90'}`}
       >
-        {isMuted ? t('unmute') : t('mute')}
+        {isMuted ? (
+          <TheaterSpeakerMuteIcon size={iconSize} />
+        ) : (
+          <TheaterSpeakerIcon size={iconSize} />
+        )}
       </button>
       {!plusMode ? (
         <button
@@ -945,54 +1041,75 @@ function CinemaTheater({
           aria-label={isFullscreen ? t('exitFullscreen') : t('fullscreen')}
           className={`${toolBtn} opacity-90`}
         >
-          {isFullscreen ? t('exit') : t('full')}
+          {isFullscreen ? (
+            <TheaterExitFullscreenIcon size={iconSize} />
+          ) : (
+            <TheaterEnterFullscreenIcon size={iconSize} />
+          )}
         </button>
       ) : null}
-      <button
-        type="button"
-        onClick={handleCloseNavigation}
-        aria-label={t('closeTheater')}
-        title={t('close')}
-        className="font-interTight text-[18px] font-bold leading-none bg-transparent border-0 outline-none cursor-pointer p-0 whitespace-nowrap opacity-90 hover:opacity-100"
-      >
-        ×
-      </button>
     </>
   );
 
   const ramsFilmMeta = (() => {
-    const dateVal = film?.story_date || '';
-    const locationVal = film?.location || '';
-    if (dateVal && locationVal) return `${dateVal} · ${locationVal}`;
-    return dateVal || locationVal || undefined;
+    const setting = storySettingDisplay(film?.story_date);
+    const rawLoc = film?.location;
+    const place =
+      typeof rawLoc === 'string'
+        ? rawLoc.trim() || null
+        : Array.isArray(rawLoc)
+          ? rawLoc.map((v) => String(v).trim()).filter(Boolean).join(', ') || null
+          : null;
+    if (setting && place) return `${setting} · ${place}`;
+    return setting || place || undefined;
   })();
 
-  const ramsIdentity = !isPlayingLogo ? (
-      <TheaterRamsIdentity
-        isLight={isLight}
-        logoLabel={isEmbed ? t('watchOnFjorr') : t('closeTheater')}
-        onLogoClick={handleCloseNavigation}
-        filmTitle={film?.name || undefined}
-        filmMeta={ramsFilmMeta}
-      />
-    ) : null;
-
-  const ramsChrome = !isPlayingLogo ? (
-    <TheaterRamsChrome
+  const ramsScrubber = !isPlayingLogo ? (
+    <TheaterRamsScrubber
       scrubberRef={scrubberRef}
       playheadRef={playheadRef}
+      playedFillRef={playedFillRef}
       elapsedRef={elapsedTimeRef}
       durationRef={durationTimeRef}
       isScrubbing={isScrubbing}
-      isLight={isLight}
-      logoLabel={isEmbed ? t('watchOnFjorr') : t('closeTheater')}
-      onLogoClick={handleCloseNavigation}
-      filmTitle={film?.name || undefined}
-      filmMeta={ramsFilmMeta}
-      toolsSlot={ramsToolsSlot}
       plusMode={plusMode}
-      belowToolsSlot={
-        plusMode && film?.id ? (
+      compact
+      onScrubStart={handleScrubStart}
+      onScrubChange={handleScrubChange}
+      onScrubEnd={handleScrubEnd}
+    />
+  ) : null;
+
+  const ramsControlChip =
+    !isPlayingLogo && ramsScrubber ? (
+      <TheaterControlChip
+        visible={ramsChromeUp}
+        toolsLeading={ramsToolsLeading}
+        toolsTrailing={ramsToolsTrailing}
+        scrubber={ramsScrubber}
+        isScrubbing={isScrubbing}
+        plusMode={plusMode}
+        onKeepAwake={() => {
+          showUIControls();
+          paintProgress(currentTimeRef.current, durationRef.current);
+        }}
+      />
+    ) : null;
+
+  const ramsIdentity = !isPlayingLogo ? (
+    <div
+      className={`absolute left-0 right-0 top-full z-20 mt-3 transition-opacity duration-300 ease-out ${
+        ramsChromeUp ? 'opacity-100' : 'opacity-0 pointer-events-none'
+      }`}
+      aria-hidden={!ramsChromeUp}
+    >
+      <TheaterRamsIdentity
+        isLight={isLight}
+        filmTitle={film?.name || undefined}
+        filmMeta={ramsFilmMeta}
+      />
+      {plusMode && film?.id ? (
+        <div className="mt-3 max-h-[36dvh] w-full max-w-lg overflow-y-auto">
           <TheaterPlusPanel
             filmId={String(film.id)}
             filmSlug={film.slug ? String(film.slug) : undefined}
@@ -1000,13 +1117,9 @@ function CinemaTheater({
             isLight={isLight}
             onExit={exitPlus}
           />
-        ) : null
-      }
-      hideHeader
-      onScrubStart={handleScrubStart}
-      onScrubChange={handleScrubChange}
-      onScrubEnd={handleScrubEnd}
-    />
+        </div>
+      ) : null}
+    </div>
   ) : null;
 
   const showRamsCaptionsOnVideo =
@@ -1076,57 +1189,12 @@ function CinemaTheater({
         onEnded={handleVideoEnded}
       />
       {showRamsCaptionsOnVideo && (
-        <div className="absolute left-1/2 -translate-x-1/2 bottom-[8%] max-w-[min(92%,36rem)] px-3 py-1.5 rounded-[6px] bg-zinc-950/90 backdrop-blur-md border border-white/10 text-center text-[#F5F5F7] font-medium text-[13px] sm:text-[15px] tracking-tight leading-[1.35] z-25 pointer-events-none select-none font-sans whitespace-pre-line shadow-2xl">
+        <div
+          className="absolute bottom-[10%] left-1/2 z-25 max-w-[min(92%,36rem)] -translate-x-1/2 rounded-[6px] border border-white/10 bg-zinc-950/90 px-3 py-1.5 text-center font-sans text-[13px] font-medium leading-[1.35] tracking-tight text-[#F5F5F7] shadow-2xl pointer-events-none select-none whitespace-pre-line backdrop-blur-md sm:text-[15px]"
+        >
           {currentSubtitleText}
         </div>
       )}
-      {showCCMenu && tracks.length > 0 && !isPlayingLogo ? (
-        <div
-          data-ui-control="true"
-          role="dialog"
-          aria-label={t('captions')}
-          className="absolute inset-0 z-40 flex items-stretch justify-start bg-black/60 px-4 py-4 sm:px-6"
-          onClick={() => setShowCCMenu(false)}
-        >
-          <div
-            className="h-full w-full max-w-[min(100%,22rem)] overflow-hidden columns-2 gap-x-5 [column-fill:auto]"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              type="button"
-              onClick={() => pickCaptionLanguage('none')}
-              className={`inline-block mb-1.5 p-[6px] rounded-[4px] font-mono text-[13px] font-medium tracking-[0.05em] uppercase leading-none border-0 outline-none cursor-pointer break-inside-avoid ${
-                selectedLangCode === 'none'
-                  ? 'bg-[#ffd446] text-[#0B0B0C]'
-                  : 'bg-[#8A8A8E] text-[#F5F5F7] hover:bg-[#9A9A9E]'
-              }`}
-            >
-              {t('ccOff')}
-            </button>
-            {captionMenuItems(tracks).map((item) => {
-              const active =
-                selectedLangCode?.toLowerCase().trim() === item.code.toLowerCase();
-              return (
-                <button
-                  key={item.code}
-                  type="button"
-                  disabled={!item.available}
-                  onClick={() => pickCaptionLanguage(item.code)}
-                  className={`block w-full py-1 text-left font-mono text-[13px] font-medium tracking-[0.05em] uppercase leading-tight bg-transparent border-0 outline-none transition-opacity break-inside-avoid ${
-                    active
-                      ? 'text-[#ffd446] opacity-100 cursor-pointer'
-                      : item.available
-                        ? 'text-[#F5F5F7] opacity-80 hover:opacity-100 cursor-pointer'
-                        : 'text-[#F5F5F7] opacity-25 cursor-default'
-                  }`}
-                >
-                  {item.name}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      ) : null}
       {isLoading && (
         <div className="absolute inset-0 bg-black flex items-center justify-center text-sm font-sans font-bold tracking-normal text-white/0 z-30">
           {t('rolling')}
@@ -1147,60 +1215,48 @@ function CinemaTheater({
           : 'fixed inset-0 w-full h-[100dvh] select-none overflow-hidden touch-none flex flex-col font-sans z-[99999] outline-none'
       }
     >
+      {!isEmbed ? (
+        <button
+          type="button"
+          data-ui-control="true"
+          onClick={handleCloseNavigation}
+          aria-label={t('closeTheater')}
+          title={t('close')}
+          className={`pointer-events-auto absolute right-4 top-3 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-transparent transition-opacity hover:opacity-100 md:right-8 md:top-6 lg:right-10 lg:top-8 [@media(max-height:740px)]:right-3 [@media(max-height:740px)]:top-2 [@media(max-height:740px)]:h-8 [@media(max-height:740px)]:w-8 ${
+            isLight ? 'text-[#0B0B0C]/55 hover:text-[#0B0B0C]' : 'text-[#F5F5F7]/55 hover:text-[#F5F5F7]'
+          }`}
+        >
+          <span className="text-[28px] font-light leading-none [@media(max-height:740px)]:text-[22px]" aria-hidden>
+            ×
+          </span>
+        </button>
+      ) : null}
+
       <div
         data-rams-layout="plaque"
         className={`absolute inset-0 z-10 flex items-center justify-center pointer-events-none ${
-          isFullscreen && !plaqueCompact ? 'px-0' : 'px-4'
+          isFullscreen ? 'px-0' : 'px-4 pb-16 sm:pb-20'
         }`}
       >
         <div
-          className={`flex flex-col items-center pointer-events-auto transition-[gap,max-width] duration-500 ease-out ${
-            isFullscreen && !plaqueCompact
-              ? 'w-full h-full max-w-none gap-0'
-              : `w-full max-w-[1200px] ${plaqueCompact ? 'gap-6 sm:gap-8' : 'gap-0'}`
+          className={`relative w-full pointer-events-auto ${
+            isFullscreen ? 'h-full max-w-none' : 'max-w-[1200px]'
           }`}
         >
           <div
-            className={`w-full flex justify-center overflow-hidden transition-all duration-500 ease-out ${
-              plaqueCompact
-                ? 'opacity-100 max-h-28 translate-y-0'
-                : 'opacity-0 max-h-0 -translate-y-2 pointer-events-none'
+            onClick={onFrameClick}
+            className={`relative isolate w-full cursor-pointer overflow-hidden bg-black transition-[border-radius,box-shadow] duration-500 ease-out transform-gpu ${
+              isFullscreen
+                ? 'h-full max-w-none rounded-none shadow-none'
+                : plusMode
+                  ? 'aspect-video max-h-[calc(100dvh-11rem)] rounded-none shadow-none min-[1201px]:rounded-[12px]'
+                  : 'aspect-video max-h-[calc(100dvh-8rem)] rounded-none shadow-none min-[1201px]:rounded-[12px]'
             }`}
-          >
-            {ramsIdentity}
-          </div>
-          <div
-            className={`relative isolate overflow-hidden bg-black shrink-0 transition-all duration-500 ease-out transform-gpu ${
-              isFullscreen && !plaqueCompact
-                ? 'w-full h-full max-w-none rounded-none shadow-none'
-                : plaqueCompact
-                  ? `${PLAQUE_WIDTH} aspect-video rounded-[10px] shadow-[0_24px_80px_rgba(0,0,0,0.55)]`
-                  : 'w-full aspect-video max-h-[calc(100dvh-3rem)] rounded-none min-[1201px]:rounded-[12px] shadow-none'
-            }`}
-            style={
-              isLight && !(isFullscreen && !plaqueCompact)
-                ? {
-                    // Cover subpixel black AA on rounded edges against the light page.
-                    boxShadow: `0 0 0 1px ${LIGHT_PAGE_BG}`,
-                    WebkitMaskImage: '-webkit-radial-gradient(white, black)',
-                  }
-                : undefined
-            }
           >
             {ramsVideoStack}
+            {ramsControlChip}
           </div>
-          <div
-            className={`w-full flex justify-center overflow-hidden transition-all duration-500 ease-out ${
-              plaqueCompact
-                ? plusMode
-                  ? 'opacity-100 max-h-[28rem] translate-y-0'
-                  : 'opacity-100 max-h-48 translate-y-0'
-                : 'opacity-0 max-h-0 translate-y-2 pointer-events-none'
-            }`}
-            aria-hidden={!plaqueCompact}
-          >
-            {ramsChrome}
-          </div>
+          {!isFullscreen ? ramsIdentity : null}
         </div>
       </div>
 
@@ -1220,13 +1276,28 @@ function CinemaTheater({
             isLight ? 'text-[#0B0B0C]' : 'text-[#F5F5F7]'
           }`}
         >
-          <p
-            className={`font-sans text-lg font-semibold leading-relaxed max-w-lg ${
-              isLight ? 'text-[#0B0B0C]/90' : 'text-[#F5F5F7]/90'
-            }`}
-          >
-            {film?.last_line || t('fin')}
-          </p>
+          {film?.last_line || film?.last_line_attribution ? (
+            <div className="flex max-w-lg flex-col items-center gap-3">
+              {film?.last_line ? (
+                <p
+                  className={`font-sans text-lg font-semibold leading-relaxed ${
+                    isLight ? 'text-[#0B0B0C]/90' : 'text-[#F5F5F7]/90'
+                  }`}
+                >
+                  {film.last_line}
+                </p>
+              ) : null}
+              {film?.last_line_attribution ? (
+                <p
+                  className={`font-sans text-[12px] font-medium leading-snug tracking-normal ${
+                    isLight ? 'text-[#0B0B0C]/40' : 'text-[#F5F5F7]/40'
+                  }`}
+                >
+                  {film.last_line_attribution}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
 
           {(film?.name || film?.story_date || film?.location) && (
             <div
@@ -1238,27 +1309,6 @@ function CinemaTheater({
             </div>
           )}
 
-          {!isEmbed && !stampShare && ghostVoyageur != null ? (
-            <div
-              className={`flex flex-col items-center gap-1 ${
-                isLight ? 'text-[#0B0B0C]/28' : 'text-[#F5F5F7]/28'
-              }`}
-            >
-              <p className="m-0 font-sans text-[11px] font-normal leading-snug">
-                {tFilm('ghostVoyageurLead')}{' '}
-                <span className="tabular-nums">
-                  {tFilm('voyageurBadgeTitle', { number: ghostVoyageur })}
-                </span>
-              </p>
-              <Link
-                href="/bureaux"
-                className="m-0 font-sans text-[11px] font-normal leading-snug no-underline opacity-90 hover:opacity-100 transition-opacity"
-              >
-                {tFilm('ghostVoyageurCta')}
-              </Link>
-            </div>
-          ) : null}
-
           <div
             className={`flex items-center justify-center gap-x-3.5 ${
               isLight ? 'text-[#0B0B0C]/55' : 'text-[#F5F5F7]/55'
@@ -1266,10 +1316,10 @@ function CinemaTheater({
           >
             <button
               type="button"
-              onClick={handleCloseNavigation}
+              onClick={handleArtifacts}
               className="font-mono text-[13px] font-medium tracking-[0.05em] uppercase bg-transparent border-0 outline-none cursor-pointer p-0 leading-none whitespace-nowrap opacity-90 hover:opacity-100 transition-opacity"
             >
-              {t('close')}
+              {t('artifacts')}
             </button>
             <button
               type="button"
@@ -1279,8 +1329,6 @@ function CinemaTheater({
               {t('rewatch')}
             </button>
           </div>
-
-          <FjorrIcon className={`h-7 w-7 opacity-80 ${isLight ? 'text-[#0B0B0C]' : 'text-[#F5F5F7]'}`} />
         </div>
       </div>
 

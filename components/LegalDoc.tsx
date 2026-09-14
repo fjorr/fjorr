@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link } from '@/i18n/navigation';
 
 export type LegalSection = {
   title: string;
@@ -11,7 +10,7 @@ export type LegalSection = {
 
 /**
  * Full-page legal reading layout — Privacy / Terms.
- * Content comes from next-intl message namespaces (one source of truth).
+ * White house reading surface; content from next-intl.
  */
 export default function LegalDoc({
   title,
@@ -19,27 +18,25 @@ export default function LegalDoc({
   date,
   lead,
   sections,
-  footerLinks,
 }: {
   title: string;
   lastUpdatedLabel: string;
   date: string;
   lead?: string;
   sections: LegalSection[];
-  footerLinks?: { href: string; label: string }[];
 }) {
   return (
-    <div className="w-full min-h-[calc(100dvh-8rem)] px-6 sm:px-8 md:px-16 pt-10 md:pt-14 pb-20 md:pb-28">
+    <div className="w-full bg-white px-5 pb-16 pt-10 text-[#0B0B0C] sm:px-8 md:px-[60px] md:pb-24 md:pt-14 lg:px-[100px]">
       <article className="mx-auto w-full max-w-[40rem]">
-        <header className="flex flex-col gap-3 mb-12 md:mb-16">
-          <h1 className="m-0 font-interTight font-extrabold tracking-tight text-[clamp(1.75rem,4vw,2.5rem)] leading-[1.1] text-page text-balance">
+        <header className="mb-12 flex flex-col items-center gap-3 text-center md:mb-16">
+          <h1 className="m-0 text-balance font-interTight text-[clamp(1.75rem,4vw,2.5rem)] font-bold leading-[1.1] tracking-tight text-[#0B0B0C]">
             {title}
           </h1>
-          <p className="m-0 mb-4 md:mb-5 font-sans text-[13px] font-medium text-page-faint tabular-nums">
+          <p className="m-0 font-sans text-[13px] font-medium tabular-nums text-black/35">
             {lastUpdatedLabel} · {date}
           </p>
           {lead ? (
-            <p className="m-0 font-sans text-[17px] font-medium leading-[1.5] text-page tracking-[-0.01em]">
+            <p className="m-0 max-w-[36rem] text-balance font-sans text-[17px] font-medium leading-[1.5] tracking-[-0.01em] text-[#0B0B0C]">
               {lead}
             </p>
           ) : null}
@@ -53,23 +50,23 @@ export default function LegalDoc({
                 i === 0 ? '' : 'mt-10 md:mt-12'
               }`}
             >
-              <h2 className="m-0 font-interTight font-bold tracking-tight text-[1.1rem] sm:text-[1.2rem] leading-[1.3] text-page">
+              <h2 className="m-0 font-interTight text-[1.1rem] font-bold leading-[1.3] tracking-tight text-[#0B0B0C] sm:text-[1.2rem]">
                 {section.title}
               </h2>
               {section.paragraphs?.map((p) => (
                 <p
                   key={p.slice(0, 48)}
-                  className="m-0 font-sans text-[15px] sm:text-[16px] text-page-muted leading-[1.6] tracking-[-0.01em]"
+                  className="m-0 font-sans text-[15px] leading-[1.6] tracking-[-0.01em] text-black/55 sm:text-[16px]"
                 >
                   {p}
                 </p>
               ))}
               {section.bullets && section.bullets.length > 0 ? (
-                <ul className="m-0 mt-1 pl-[1.1em] flex flex-col gap-2.5 list-disc marker:text-page-faint">
+                <ul className="m-0 mt-1 flex list-disc flex-col gap-2.5 pl-[1.1em] marker:text-black/30">
                   {section.bullets.map((item) => (
                     <li
                       key={item}
-                      className="font-sans text-[15px] sm:text-[16px] text-page-muted leading-[1.6] tracking-[-0.01em] pl-0.5"
+                      className="pl-0.5 font-sans text-[15px] leading-[1.6] tracking-[-0.01em] text-black/55 sm:text-[16px]"
                     >
                       {item}
                     </li>
@@ -77,27 +74,13 @@ export default function LegalDoc({
                 </ul>
               ) : null}
               {section.after ? (
-                <div className="font-sans text-[15px] sm:text-[16px] text-page-muted leading-[1.6]">
+                <div className="font-sans text-[15px] leading-[1.6] text-black/55 sm:text-[16px]">
                   {section.after}
                 </div>
               ) : null}
             </section>
           ))}
         </div>
-
-        {footerLinks && footerLinks.length > 0 ? (
-          <div className="mt-12 pt-6 border-t border-[color-mix(in_srgb,var(--page-fg)_10%,transparent)] flex flex-wrap gap-x-5 gap-y-2">
-            {footerLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="font-sans text-[14px] font-semibold text-page underline underline-offset-4 decoration-[color-mix(in_srgb,var(--page-fg)_25%,transparent)] hover:decoration-[color-mix(in_srgb,var(--page-fg)_55%,transparent)]"
-              >
-                {link.label}
-              </Link>
-            ))}
-          </div>
-        ) : null}
       </article>
     </div>
   );

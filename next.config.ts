@@ -1,9 +1,14 @@
 import type { NextConfig } from "next";
+import path from "path";
 import createNextIntlPlugin from "next-intl/plugin";
 
 const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 
 const nextConfig: NextConfig = {
+  // Pin Turbopack to this app — a stray ~/package-lock.json otherwise wins the root.
+  turbopack: {
+    root: path.join(__dirname),
+  },
   cacheComponents: false,
   images: {
     loader: "custom",
@@ -31,67 +36,61 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     const localePrefix = "/:locale(es|fr|it|de|pt|sv|hi|ko|ja|zh-tw)";
+    const cut = (source: string, destination: string, permanent = true) => [
+      { source, destination, permanent },
+      {
+        source: `${localePrefix}${source}`,
+        destination: destination === "/" ? "/:locale" : `/:locale${destination}`,
+        permanent,
+      },
+    ];
     return [
+      ...cut("/contact", "/about"),
+      ...cut("/search", "/"),
+      // Launch cut — archived / deleted surfaces
+      ...cut("/nominate", "/"),
+      ...cut("/plus", "/"),
+      ...cut("/bounties", "/"),
+      ...cut("/bounties/:slug", "/"),
+      ...cut("/cabinet", "/"),
+      ...cut("/bureau", "/bureaux"),
+      ...cut("/manual", "/about"),
+      ...cut("/manual/:slug", "/about"),
+      ...cut("/help", "/about"),
+      ...cut("/help/:slug", "/about"),
+      ...cut("/principles", "/about"),
+      ...cut("/manual/principles", "/about"),
+      ...cut("/help/principles", "/about"),
+      ...cut("/account/plus", "/account/voyages"),
+      ...cut("/account/cabinet", "/account/voyages"),
+      ...cut("/account/profile", "/account/bureaux"),
+      ...cut("/account/privacy", "/account/voyages"),
+      ...cut("/account/logs", "/account/voyages"),
+      ...cut("/account/recut", "/account/voyages"),
+      ...cut("/bureaux/gift/:token", "/bureaux"),
+      // Legacy account profile URLs → public Bureaux profile paths
       {
-        source: "/contact",
-        destination: "/",
+        source: "/account/:memberNumber(\\d+)",
+        destination: "/:memberNumber",
         permanent: true,
       },
       {
-        source: `${localePrefix}/contact`,
-        destination: "/:locale",
+        source: `${localePrefix}/account/:memberNumber(\\d+)`,
+        destination: "/:locale/:memberNumber",
         permanent: true,
       },
       {
-        source: "/search",
-        destination: "/",
+        source: "/account/:memberNumber(\\d+)/:slug",
+        destination: "/:memberNumber/:slug",
         permanent: true,
       },
       {
-        source: `${localePrefix}/search`,
-        destination: "/:locale",
+        source: `${localePrefix}/account/:memberNumber(\\d+)/:slug`,
+        destination: "/:locale/:memberNumber/:slug",
         permanent: true,
       },
-      {
-        source: "/manual/principles",
-        destination: "/principles",
-        permanent: true,
-      },
-      {
-        source: `${localePrefix}/manual/principles`,
-        destination: "/:locale/principles",
-        permanent: true,
-      },
-      {
-        source: "/help/principles",
-        destination: "/principles",
-        permanent: true,
-      },
-      {
-        source: `${localePrefix}/help/principles`,
-        destination: "/:locale/principles",
-        permanent: true,
-      },
-      {
-        source: "/help",
-        destination: "/manual",
-        permanent: true,
-      },
-      {
-        source: `${localePrefix}/help`,
-        destination: "/:locale/manual",
-        permanent: true,
-      },
-      {
-        source: "/help/:slug",
-        destination: "/manual/:slug",
-        permanent: true,
-      },
-      {
-        source: `${localePrefix}/help/:slug`,
-        destination: "/:locale/manual/:slug",
-        permanent: true,
-      },
+      ...cut("/admin", "/"),
+      ...cut("/admin/:path*", "/"),
     ];
   },
 };

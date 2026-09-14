@@ -227,7 +227,7 @@ function CheckoutForm({
       <button
         type="submit"
         disabled={!stripe || !elements || !ready || submitting}
-        className={ctaClass}
+        className={ctaClassWide}
       >
         {submitting ? t('ctaPending') : t('ctaSubscribe')}
       </button>
@@ -236,7 +236,8 @@ function CheckoutForm({
 }
 
 const ctaClass =
-  'w-full max-w-sm px-10 h-14 inline-flex items-center justify-center bg-[var(--page-fg)] text-[var(--page-bg)] font-sans font-bold text-[15px] tracking-tight rounded-full shadow-2xl hover:opacity-90 active:scale-95 transition-all duration-150 disabled:opacity-50 disabled:pointer-events-none';
+  'w-auto px-8 h-12 inline-flex items-center justify-center bg-[var(--page-fg)] text-[var(--page-bg)] font-sans font-bold text-[15px] tracking-tight rounded-full shadow-2xl hover:opacity-90 active:scale-95 transition-all duration-150 disabled:opacity-50 disabled:pointer-events-none';
+const ctaClassWide = `${ctaClass} w-full max-w-sm`;
 
 export default function BureauxCheckout({
   signedIn = false,
@@ -429,7 +430,7 @@ export default function BureauxCheckout({
 
   if (!started) {
     return (
-      <div className="w-full max-w-sm flex flex-col items-stretch sm:items-center gap-4 text-left sm:text-center">
+      <div className="flex w-full max-w-sm flex-col items-center gap-4 text-center">
         <button
           type="button"
           onClick={() => setStarted(true)}
@@ -437,15 +438,12 @@ export default function BureauxCheckout({
         >
           {t('ctaJoinPrice', { price })}
         </button>
-        <p className="m-0 font-sans text-[13px] font-medium text-page-muted tracking-tight">
-          {t('accessValue')}
-        </p>
         {!signedIn ? (
-          <p className="m-0 font-sans text-[13px] text-page-faint leading-relaxed text-left sm:text-center">
+          <p className="m-0 font-sans text-[13px] leading-relaxed text-page-faint">
             {t('joinReturning')}{' '}
             <Link
               href={`/signin?next=${encodeURIComponent(claimNext)}`}
-              className="font-semibold text-page-muted underline underline-offset-2 hover:text-page transition-colors"
+              className="font-semibold text-page-muted underline underline-offset-2 transition-colors hover:text-page"
             >
               {t('ctaSignIn')}
             </Link>
@@ -458,7 +456,7 @@ export default function BureauxCheckout({
   return (
     <form
       onSubmit={(e) => void startCheckout(e)}
-      className="w-full max-w-sm flex flex-col gap-4 text-left"
+      className="flex w-full max-w-sm flex-col gap-4 text-left"
     >
       <label className="flex flex-col gap-2">
         <span className="font-sans text-[13px] font-semibold normal-case tracking-normal text-page-muted">
@@ -506,17 +504,17 @@ export default function BureauxCheckout({
       <button
         type="submit"
         disabled={loading || !email.trim()}
-        className={ctaClass}
+        className={ctaClassWide}
       >
         {loading ? t('ctaPending') : t('joinContinue')}
       </button>
 
       {!signedIn ? (
-        <p className="m-0 font-sans text-[13px] text-page-faint leading-relaxed text-left sm:text-center">
+        <p className="m-0 text-center font-sans text-[13px] leading-relaxed text-page-faint">
           {t('joinReturning')}{' '}
           <Link
             href={`/signin?next=${encodeURIComponent(claimNext)}`}
-            className="font-semibold text-page-muted underline underline-offset-2 hover:text-page transition-colors"
+            className="font-semibold text-page-muted underline underline-offset-2 transition-colors hover:text-page"
           >
             {t('ctaSignIn')}
           </Link>

@@ -1,9 +1,8 @@
 import React, { Suspense } from 'react';
 import { notFound } from 'next/navigation';
-import Image from 'next/image';
 import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-import { ArtifactSidebar } from '@/components/ArtifactSidebar';
+import ArtifactHouseFooter from '@/components/ArtifactHouseFooter';
+import ArtifactExhibit from '@/components/ArtifactExhibit';
 import ServerSafeSkeleton from '@/components/ServerSafeSkeleton';
 import type { Metadata } from 'next';
 import { absoluteUrl } from '@/lib/site';
@@ -81,17 +80,17 @@ export default async function DynamicArtifactPage({ params }: ArtifactPageProps)
         backgroundColor: customBg,
         ['--page-bg-color' as string]: customBg,
       }}
-      className={`w-full min-h-screen flex flex-col justify-between select-none transition-colors duration-500 ease-out ${textClass}`}
+      className={`flex h-dvh max-h-dvh w-full flex-col overflow-hidden select-none transition-colors duration-500 ease-out ${textClass}`}
     >
       <Navbar variant={isDarkBg ? 'light' : 'dark'} />
 
       <Suspense
         fallback={
-          <main className="w-full lg:h-screen flex-grow flex flex-col lg:flex-row items-stretch lg:items-center relative z-0">
-            <div className="w-full lg:w-[calc(100%-360px)] xl:w-[calc(100%-400px)] h-auto lg:h-full flex items-center justify-center p-6 md:p-10 lg:p-12 relative z-0 flex-grow">
-              <div className="w-full max-w-[400px] md:max-w-4xl max-h-[min(100%,80vh)] overflow-hidden relative">
-                <div className="relative w-full aspect-[1/1.618] sm:aspect-[4/3] md:aspect-[16/10] z-10">
-                  <div className="absolute inset-0 w-full h-full z-0">
+          <>
+            <main className="relative z-0 flex min-h-0 w-full flex-1 flex-col">
+              <div className="relative z-0 flex min-h-0 w-full flex-1 items-center justify-center p-6 md:p-10 lg:p-12">
+                <div className="relative w-full max-w-4xl max-h-full overflow-hidden">
+                  <div className="relative aspect-[1/1.618] w-full sm:aspect-[4/3] md:aspect-[16/10]">
                     <ServerSafeSkeleton
                       variant="feature"
                       backgroundColor={customBg}
@@ -101,26 +100,9 @@ export default async function DynamicArtifactPage({ params }: ArtifactPageProps)
                   </div>
                 </div>
               </div>
-            </div>
-
-            <ArtifactSidebar
-              name=""
-              label={null}
-              creatorName=""
-              releaseYear={null}
-              description={null}
-              quote={null}
-              filmConnections={[]}
-              linkCta={null}
-              link={null}
-              isDarkBg={isDarkBg}
-              customBg={customBg}
-              textClass={textClass}
-              subTextClass=""
-              mutedTextClass=""
-              isLoader={true}
-            />
-          </main>
+            </main>
+            <ArtifactHouseFooter isDarkBg={isDarkBg} pageBg={customBg} />
+          </>
         }
       >
         <DeferredArtifactContent
@@ -130,8 +112,6 @@ export default async function DynamicArtifactPage({ params }: ArtifactPageProps)
           textClass={textClass}
         />
       </Suspense>
-
-      <Footer variant={isDarkBg ? 'light' : 'dark'} />
     </div>
   );
 }
@@ -152,13 +132,11 @@ async function DeferredArtifactContent({
   if (!pageData) notFound();
 
   const { artifact, creatorName } = pageData;
-  const subTextClass = isDarkBg ? 'text-white/60' : 'text-black/60';
-  const mutedTextClass = isDarkBg ? 'text-white/40' : 'text-black/40';
   const releaseYear = artifact.release_date ? new Date(artifact.release_date).getFullYear() : null;
   const filmConnections = artifact.film || [];
 
   return (
-    <main className="w-full lg:h-screen flex-grow flex flex-col lg:flex-row items-stretch lg:items-center text-current relative z-0">
+    <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -174,27 +152,7 @@ async function DeferredArtifactContent({
           }),
         }}
       />
-
-      <div className="w-full lg:w-[calc(100%-360px)] xl:w-[calc(100%-400px)] h-auto lg:h-full flex items-center justify-center p-6 md:p-10 lg:p-12 relative z-0 flex-grow">
-        <picture className="w-full max-w-4xl h-auto max-h-[min(100%,80vh)] flex items-center justify-center">
-          {(artifact.hero_clsx || artifact.hero_tall) && (
-            <source media="(min-width: 768px)" srcSet={artifact.hero_clsx || artifact.hero_tall || ''} />
-          )}
-          {(artifact.hero_tall || artifact.hero_clsx) && (
-            <Image
-              src={artifact.hero_tall || artifact.hero_clsx || ''}
-              alt={artifact.name || 'Fjorr Artifact Screen'}
-              width={1600}
-              height={2400}
-              priority
-              sizes="(max-width: 1024px) 100vw, 55vw"
-              className="w-full h-auto max-h-[min(100%,80vh)] object-contain block mx-auto"
-            />
-          )}
-        </picture>
-      </div>
-
-      <ArtifactSidebar
+      <ArtifactExhibit
         name={artifact.name || urlSlug.replace(/-/g, ' ')}
         label={artifact.label}
         creatorName={creatorName}
@@ -204,12 +162,12 @@ async function DeferredArtifactContent({
         filmConnections={filmConnections}
         linkCta={artifact.link_cta}
         link={artifact.link}
+        heroTall={artifact.hero_tall || null}
+        heroClsx={artifact.hero_clsx || null}
         isDarkBg={isDarkBg}
         customBg={customBg}
         textClass={textClass}
-        subTextClass={subTextClass}
-        mutedTextClass={mutedTextClass}
       />
-    </main>
+    </>
   );
 }

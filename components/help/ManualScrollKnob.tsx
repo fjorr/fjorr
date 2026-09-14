@@ -118,7 +118,7 @@ export default function ManualScrollKnob({
       aria-valuemax={overflowing ? 100 : undefined}
       aria-valuenow={overflowing ? Math.round(ratio * 100) : undefined}
       tabIndex={overflowing ? 0 : undefined}
-      className={`manual-doc-rule absolute left-10 right-10 sm:left-11 sm:right-11 bottom-0 h-3 -mb-1 flex items-center touch-none select-none ${
+      className={`manual-doc-rule absolute bottom-0 left-11 right-11 -mb-1 flex h-3 items-center touch-none select-none sm:left-12 sm:right-12 lg:left-14 lg:right-14 ${
         overflowing ? 'cursor-grab active:cursor-grabbing' : 'pointer-events-none'
       }`}
       onPointerDown={onPointerDown}

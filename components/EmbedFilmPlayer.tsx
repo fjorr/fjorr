@@ -67,7 +67,7 @@ export default function EmbedFilmPlayer({ film, startAt = 0 }: EmbedFilmPlayerPr
   return (
     <div className="relative w-full h-full min-h-[200px] bg-black overflow-hidden">
       <CinemaTheater
-        mode="embed"
+        mode="theater"
         startAt={startAt > 0 ? startAt : undefined}
         onClose={() => {
           window.open(watchUrl, '_blank', 'noopener,noreferrer');

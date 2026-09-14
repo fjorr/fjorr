@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import LegalDoc, { type LegalSection } from '@/components/LegalDoc';
+import HouseScrollFooter from '@/components/HouseScrollFooter';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('Meta');
@@ -13,7 +14,6 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function TermsPage() {
   const t = await getTranslations('Terms');
-  const tFooter = await getTranslations('Footer');
 
   const title = `${t('titleLine1')} ${t('titleLine2')}`;
   const sections: LegalSection[] = [
@@ -30,12 +30,16 @@ export default async function TermsPage() {
   ];
 
   return (
-    <LegalDoc
-      title={title}
-      lastUpdatedLabel={t('lastUpdated')}
-      date={t('date')}
-      sections={sections}
-      footerLinks={[{ href: '/privacy', label: tFooter('privacy') }]}
-    />
+    <div className="flex min-h-screen w-full flex-col bg-white text-[#0B0B0C]">
+      <div className="flex w-full flex-1 flex-col">
+        <LegalDoc
+          title={title}
+          lastUpdatedLabel={t('lastUpdated')}
+          date={t('date')}
+          sections={sections}
+        />
+      </div>
+      <HouseScrollFooter />
+    </div>
   );
 }

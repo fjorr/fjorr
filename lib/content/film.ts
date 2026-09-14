@@ -92,7 +92,7 @@ export const getFilmPageData = unstable_cache(
     const showSubtitles = filmData.has_subtitles !== false;
     const currentIsoString = new Date().toISOString();
 
-    const [junctionRows, allFilmsResponse, subtitleRows, tagsResponse, creatorsResponse] =
+    const [junctionRows, allFilmsResponse, subtitleRows, tagsResponse, creatorsResponse, processResponse] =
       await Promise.all([
         supabase
           .from('film_artifact')
@@ -123,10 +123,27 @@ export const getFilmPageData = unstable_cache(
         supabase.from('tag_map').select('tag:tag_id ( id, name )').eq('film_id', filmData.id),
         supabase
           .from('creator_map')
-          .select('role, role_code, creator:creator_id ( name )')
+          .select('role, role_code, creator:creator_id ( id, name, slug, image )')
+          .eq('film_id', filmData.id)
+          .order('sort_order', { ascending: true }),
+        supabase
+          .from('film_process')
+          .select('id, url, thumb_url, caption, sort_order')
           .eq('film_id', filmData.id)
           .order('sort_order', { ascending: true }),
       ]);
+
+    // Table may not exist until migration 20260910_film_process.sql is applied.
+    const processRows =
+      processResponse.error || !processResponse.data
+        ? []
+        : (processResponse.data as Array<{
+            id: string;
+            url: string;
+            thumb_url: string | null;
+            caption: string | null;
+            sort_order: number;
+          }>);
 
     let localizedFilm: any = filmData;
     let recommended: any[] = allFilmsResponse.data || [];
@@ -222,6 +239,12 @@ export const getFilmPageData = unstable_cache(
       subtitleTracks,
       tagRows,
       creatorRows,
+      processImages: processRows.map((row) => ({
+        id: row.id,
+        url: row.url,
+        thumbUrl: row.thumb_url,
+        caption: row.caption,
+      })),
     };
   },
   ['film-page-i18n'],

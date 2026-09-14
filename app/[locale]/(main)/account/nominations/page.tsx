@@ -23,10 +23,7 @@ export default async function AccountNominationsPage() {
       profile={profile}
       title={t('nominationsTitle')}
       description={t('nominationsBody')}
-      headerLinks={[
-        { href: '/nominate', label: t('nominationsLinkNominate') },
-        { href: '/bounties', label: t('nominationsLinkBounties') },
-      ]}
+      headerLinks={[]}
       manualSlug="nominate"
       wide
       introNarrow

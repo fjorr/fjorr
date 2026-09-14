@@ -1,12 +1,14 @@
 import type { Metadata } from 'next';
+import type { CSSProperties } from 'react';
 import { getTranslations } from 'next-intl/server';
-import { redirect } from '@/i18n/navigation';
+import { Link, redirect } from '@/i18n/navigation';
 import { createClient } from '@/lib/supabase/server';
 import BureauxCheckoutLazy from '@/components/BureauxCheckoutLazy';
+import BureauxHero from '@/components/BureauxHero';
+import BureauxHouseFooter from '@/components/HouseScrollFooter';
 import BureauxIncludedList from '@/components/BureauxIncludedList';
 import BureauxJoinClaim from '@/components/BureauxJoinClaim';
 import BureauxJoinedRefresh from '@/components/BureauxJoinedRefresh';
-import ManualHelpButton from '@/components/help/ManualHelpButton';
 import {
   getBureauxAnnualAmountCents,
   getOwnBureauxMembership,
@@ -110,49 +112,67 @@ export default async function BureauxPage({
     });
   }
 
+  const joinBlock = (
+    <div className="mx-auto flex w-full flex-col items-center">
+      {justJoined && user ? (
+        <p className="mb-4 text-center font-sans text-[14px] leading-relaxed text-page-muted">
+          {ta('bureauxJoining')}
+        </p>
+      ) : null}
+      {justJoined && user && !active ? <BureauxJoinedRefresh /> : null}
+      {justJoined && !user && joinedEmail ? (
+        <BureauxJoinClaim email={joinedEmail} nextPath={nextPath} />
+      ) : (
+        <BureauxCheckoutLazy
+          signedIn={Boolean(user)}
+          accountEmail={user?.email || null}
+          price={price}
+          nextPath={nextPath}
+        />
+      )}
+    </div>
+  );
+
   return (
-    <div className="w-full min-h-screen bg-[var(--page-bg)] text-page pb-24">
-      <div className="w-full max-w-4xl mx-auto px-[10%] pt-14 sm:pt-20 flex flex-col items-stretch sm:items-center text-left sm:text-center">
-        <div className="w-full max-w-xl flex flex-col items-stretch sm:items-center">
-          <header className="flex flex-col items-stretch sm:items-center w-full">
-            <p className="font-sans text-lg sm:text-xl font-semibold normal-case tracking-normal text-page select-none opacity-0 animate-slide-up style-delay-headline">
-              {t('eyebrow')}
-            </p>
-            <h1 className="mt-2 sm:mt-2.5 mb-5 sm:mb-6 font-futura tracking-tighter text-page select-none text-5xl sm:text-6xl md:text-7xl !leading-[0.95] w-full max-w-md sm:max-w-xl whitespace-pre-line text-balance text-left sm:text-center opacity-0 animate-slide-up style-delay-headline">
-              {t('headline')}
-            </h1>
-            <div className="font-sans font-medium text-[16px] leading-[1.55] tracking-normal text-page max-w-xl text-left sm:text-center flex flex-col gap-4 opacity-0 animate-slide-up style-delay-body">
-              <p className="m-0">{t('lead')}</p>
-              <p className="m-0">{t('lead2')}</p>
-            </div>
-          </header>
+    <div className="flex min-h-screen w-full flex-col bg-white text-[#0B0B0C]">
+      <BureauxHero title={t('headline')} />
 
-          <section className="mt-7 w-full flex justify-start sm:justify-center opacity-0 animate-slide-up style-delay-body">
-            <BureauxIncludedList />
-          </section>
+      <div
+        className="flex w-full flex-1 flex-col pb-24 md:pb-28 lg:pb-32"
+        style={
+          {
+            ['--page-bg' as string]: '#ffffff',
+            ['--page-bg-color' as string]: '#ffffff',
+            ['--page-fg' as string]: '#0B0B0C',
+            ['--page-muted' as string]: 'rgba(11, 11, 12, 0.55)',
+          } as CSSProperties
+        }
+      >
+        <section className="mx-auto flex w-full max-w-3xl flex-col items-center px-5 pt-14 text-center md:max-w-4xl md:px-[60px] md:pt-16 lg:px-[100px] lg:pt-20">
+          <h2 className="m-0 max-w-[22ch] font-interTight text-[clamp(2rem,5.5vw,3.25rem)] font-bold leading-[1.05] tracking-tight text-[#0B0B0C] select-none">
+            {t('subhead')}
+          </h2>
+          <p className="mt-5 max-w-xl font-interTight text-[21px] font-semibold leading-normal tracking-tight text-[#0B0B0C]/75 text-pretty select-none sm:mt-6">
+            {t('lead')}
+          </p>
+          <p className="mt-4 m-0">
+            <Link
+              href="/about"
+              className="font-sans text-[14px] font-semibold tracking-tight text-[#0B0B0C]/55 underline underline-offset-[3px] transition-colors hover:text-[#0B0B0C]"
+            >
+              {t('learnMore')}
+            </Link>
+          </p>
 
-          {justJoined && user ? (
-            <p className="mt-8 font-sans text-[14px] text-page-muted leading-relaxed opacity-0 animate-slide-up style-delay-form">
-              {ta('bureauxJoining')}
-            </p>
-          ) : null}
-          {justJoined && user && !active ? <BureauxJoinedRefresh /> : null}
+          <div className="mt-10 w-full sm:mt-12">
+            <BureauxIncludedList align="center" />
+          </div>
 
-          <footer className="mt-8 flex flex-col items-stretch sm:items-center gap-5 w-full text-left sm:text-center opacity-0 animate-slide-up style-delay-form">
-            {justJoined && !user && joinedEmail ? (
-              <BureauxJoinClaim email={joinedEmail} nextPath={nextPath} />
-            ) : (
-              <BureauxCheckoutLazy
-                signedIn={Boolean(user)}
-                accountEmail={user?.email || null}
-                price={price}
-                nextPath={nextPath}
-              />
-            )}
-            <ManualHelpButton slug="join" audience="guest" />
-          </footer>
-        </div>
+          <div className="mt-10 w-full sm:mt-12">{joinBlock}</div>
+        </section>
       </div>
+
+      <BureauxHouseFooter />
     </div>
   );
 }

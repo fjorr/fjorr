@@ -1,12 +1,23 @@
 'use client';
 
-import React, { useActionState, useRef, useEffect } from 'react';
+import React, {
+  useActionState,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import { useTranslations } from 'next-intl';
 import { subscribeToNewsletter, FormState } from './intel';
 
 interface IntelFormProps {
   variant?: 'light' | 'dark';
   isCustomVariant?: boolean;
+  /** Sheet-scale: huge centered email + submit below. */
+  size?: 'md' | 'lg';
+  /** Fired on successful subscribe (or already subscribed). */
+  onSuccess?: () => void;
 }
 
 const initialState: FormState = {
@@ -23,12 +34,139 @@ const MESSAGE_KEYS = new Set([
   'somethingWrong',
 ]);
 
-export function IntelForm({ variant, isCustomVariant = true }: IntelFormProps) {
+const EMAIL_MAX_PX = 140;
+const EMAIL_MIN_PX = 22;
+
+/** Huge centered email — full width; scales down so one line always fits. */
+function SpecimenEmailInput({
+  disabled,
+  placeholder,
+  ariaLabel,
+  onValueChange,
+}: {
+  disabled?: boolean;
+  placeholder: string;
+  ariaLabel: string;
+  onValueChange?: (value: string) => void;
+}) {
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const mirrorRef = useRef<HTMLSpanElement>(null);
+  const [value, setValue] = useState('');
+  const [focused, setFocused] = useState(false);
+  const [fontPx, setFontPx] = useState(EMAIL_MAX_PX);
+
+  const fit = useCallback(() => {
+    const wrap = wrapRef.current;
+    const input = inputRef.current;
+    const mirror = mirrorRef.current;
+    if (!wrap || !input || !mirror) return;
+
+    const sample = (value || placeholder || 'Email').trim() || 'Email';
+    mirror.textContent = sample;
+
+    // Usable width is the input’s content box (full stage width, no inner pad).
+    const available = Math.max(0, input.clientWidth || wrap.clientWidth);
+    if (available < 8) return;
+
+    let size = EMAIL_MAX_PX;
+    mirror.style.fontSize = `${size}px`;
+    while (size > EMAIL_MIN_PX && mirror.scrollWidth > available) {
+      size -= 1;
+      mirror.style.fontSize = `${size}px`;
+    }
+    // Tiny safety so bold metrics / subpixel never clip the last glyph.
+    if (size > EMAIL_MIN_PX && mirror.scrollWidth > available - 2) {
+      size = Math.max(EMAIL_MIN_PX, size - 1);
+      mirror.style.fontSize = `${size}px`;
+    }
+    input.style.fontSize = `${size}px`;
+    setFontPx(size);
+  }, [placeholder, value]);
+
+  useLayoutEffect(() => {
+    fit();
+    const frame = window.requestAnimationFrame(() => fit());
+    const wrap = wrapRef.current;
+    const ro =
+      typeof ResizeObserver !== 'undefined' && wrap
+        ? new ResizeObserver(() => fit())
+        : null;
+    ro?.observe(wrap!);
+    window.addEventListener('resize', fit);
+    let cancelled = false;
+    void document.fonts?.ready?.then(() => {
+      if (!cancelled) fit();
+    });
+    return () => {
+      cancelled = true;
+      window.cancelAnimationFrame(frame);
+      ro?.disconnect();
+      window.removeEventListener('resize', fit);
+    };
+  }, [fit]);
+
+  const empty = value.length === 0;
+  // Empty: custom bar sized to the type (native caret looks like a needle).
+  // Typing: soft native caret again — position tracking isn’t worth the fight.
+  const showCustomCaret = focused && empty && !disabled;
+
+  return (
+    <div ref={wrapRef} className="relative w-full min-w-0">
+      <span
+        ref={mirrorRef}
+        aria-hidden
+        className="pointer-events-none absolute left-0 top-0 -z-10 whitespace-nowrap font-interTight font-bold leading-none tracking-tight opacity-0"
+      />
+      <input
+        ref={inputRef}
+        type="email"
+        name="email"
+        autoComplete="email"
+        autoFocus
+        aria-label={ariaLabel}
+        placeholder={placeholder}
+        disabled={disabled}
+        value={value}
+        onChange={(event) => {
+          const next = event.target.value;
+          setValue(next);
+          onValueChange?.(next);
+        }}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        className={`box-border w-full min-w-0 border-0 bg-transparent p-0 text-center font-interTight font-bold leading-[0.9] tracking-tight text-[#0B0B0C] outline-none placeholder:text-black/30 disabled:opacity-50 ${
+          empty ? 'caret-transparent' : 'caret-black/50'
+        }`}
+        style={{ fontSize: `${EMAIL_MAX_PX}px` }}
+      />
+      {showCustomCaret ? (
+        <span
+          aria-hidden
+          className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-[1px] bg-[#0B0B0C] animate-[blinkCursor_1.05s_steps(1,end)_infinite]"
+          style={{
+            width: Math.max(3, Math.round(fontPx * 0.038)),
+            height: Math.round(fontPx * 0.72),
+          }}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+export function IntelForm({
+  variant,
+  isCustomVariant = true,
+  size = 'md',
+  onSuccess,
+}: IntelFormProps) {
   const t = useTranslations('Footer');
   const [state, formAction, isPending] = useActionState(subscribeToNewsletter, initialState);
   const formRef = useRef<HTMLFormElement>(null);
+  const [errorDismissed, setErrorDismissed] = useState(false);
 
   const isDarkBg = variant === 'light';
+  const large = size === 'lg';
 
   const textColor = isCustomVariant
     ? isDarkBg
@@ -48,20 +186,92 @@ export function IntelForm({ variant, isCustomVariant = true }: IntelFormProps) {
     }
   }, [state.status]);
 
+  useEffect(() => {
+    if (state.status === 'error') {
+      setErrorDismissed(false);
+    }
+  }, [state]);
+
+  const clearErrorOnEdit = useCallback(() => {
+    setErrorDismissed(true);
+  }, []);
+
+  const successFired = useRef(false);
+  useEffect(() => {
+    if (!onSuccess || successFired.current) return;
+    if (state.status === 'success') {
+      successFired.current = true;
+      onSuccess();
+      return;
+    }
+    if (state.status === 'error' && state.message === 'alreadyIn') {
+      successFired.current = true;
+      onSuccess();
+    }
+  }, [onSuccess, state.message, state.status]);
+
   const displayMessage =
     state.message && MESSAGE_KEYS.has(state.message)
       ? t(state.message as 'welcome')
       : state.message;
 
+  if (large) {
+    // Parent owns the success beat — keep errors here only.
+    const showError =
+      !errorDismissed &&
+      state.status === 'error' &&
+      state.message !== 'alreadyIn' &&
+      displayMessage;
+
+    return (
+      <div className="flex w-full min-w-0 flex-col items-center justify-center">
+        <form
+          ref={formRef}
+          action={formAction}
+          noValidate
+          className="flex w-full min-w-0 flex-col items-center gap-6 md:gap-7"
+        >
+          <div className="pointer-events-none absolute z-[-10] h-0 w-0 overflow-hidden opacity-0">
+            <input
+              type="text"
+              name="website_source_confirm"
+              tabIndex={-1}
+              autoComplete="off"
+            />
+          </div>
+
+          <SpecimenEmailInput
+            disabled={isPending}
+            placeholder=""
+            ariaLabel={t('emailPlaceholder')}
+            onValueChange={clearErrorOnEdit}
+          />
+
+          <button
+            type="submit"
+            disabled={isPending}
+            aria-live="polite"
+            className={`inline-flex h-10 items-center justify-center rounded-full px-5 font-sans text-[14px] font-semibold tracking-tight text-white transition-[background-color,opacity] duration-150 hover:opacity-85 disabled:opacity-40 ${
+              showError ? 'bg-red-600' : 'bg-[#0B0B0C]'
+            }`}
+          >
+            {isPending ? t('subscribing') : showError ? displayMessage : t('subscribe')}
+          </button>
+        </form>
+      </div>
+    );
+  }
+
   return (
-    <div className="w-full max-w-64 flex flex-col items-center justify-center min-h-[48px]">
+    <div className="flex w-full max-w-64 flex-col items-center justify-center min-h-[48px]">
       {state.status !== 'success' && (
         <form
           ref={formRef}
           action={formAction}
-          className="w-full relative group flex items-center animate-fadeIn"
+          noValidate
+          className="group relative flex w-full items-center animate-fadeIn"
         >
-          <div className="absolute opacity-0 pointer-events-none z-[-10] h-0 w-0 overflow-hidden">
+          <div className="pointer-events-none absolute z-[-10] h-0 w-0 overflow-hidden opacity-0">
             <input type="text" name="website_source_confirm" tabIndex={-1} autoComplete="off" />
           </div>
 
@@ -72,27 +282,25 @@ export function IntelForm({ variant, isCustomVariant = true }: IntelFormProps) {
             aria-label={t('emailPlaceholder')}
             placeholder={t('emailPlaceholder')}
             disabled={isPending}
-            className={`w-full rounded-[8px] h-12 pl-5 pr-12 font-sans font-semibold text-[14px] focus:outline-none focus-visible:ring-2 focus-visible:ring-current/30 transition-all duration-200 disabled:opacity-50
-              ${
-                isCustomVariant
-                  ? `${textColor} focus:border-current/30 ${
-                      variant === 'light'
-                        ? 'bg-white/10 placeholder-white/40'
-                        : 'bg-black/5 placeholder-black/40'
-                    }`
-                  : 'bg-black/5 dark:bg-white/5 text-black dark:text-white placeholder-black/40 dark:placeholder-white/60 border border-transparent focus:border-black/20 dark:focus:border-white/20'
-              }
-            `}
+            className={`h-12 w-full rounded-[8px] pl-5 pr-12 font-sans text-[14px] font-semibold transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-current/30 disabled:opacity-50 ${
+              isCustomVariant
+                ? `${textColor} focus:border-current/30 ${
+                    variant === 'light'
+                      ? 'bg-white/10 placeholder-white/40'
+                      : 'bg-black/5 placeholder-black/40'
+                  }`
+                : 'border border-transparent bg-black/5 text-black placeholder-black/40 focus:border-black/20 dark:bg-white/5 dark:text-white dark:placeholder-white/60 dark:focus:border-white/20'
+            }`}
           />
 
           <button
             type="submit"
             disabled={isPending}
-            className={`absolute right-4 top-1/2 -translate-y-1/2 hover:opacity-100 group-hover:translate-x-0.5 transition-all duration-200 flex items-center justify-center disabled:opacity-40 disabled:pointer-events-none ${subTextColor}`}
+            className={`absolute right-4 top-1/2 flex -translate-y-1/2 items-center justify-center transition-all duration-200 hover:opacity-100 group-hover:translate-x-0.5 disabled:pointer-events-none disabled:opacity-40 ${subTextColor}`}
             aria-label={t('subscribeAria')}
           >
             {isPending ? (
-              <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+              <svg className="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
                 <circle
                   className="opacity-25"
                   cx="12"
@@ -109,7 +317,7 @@ export function IntelForm({ variant, isCustomVariant = true }: IntelFormProps) {
               </svg>
             ) : (
               <svg
-                className="w-5 h-5"
+                className="h-5 w-5"
                 viewBox="0 0 640 640"
                 fill="currentColor"
                 xmlns="http://www.w3.org/2000/svg"
@@ -124,7 +332,7 @@ export function IntelForm({ variant, isCustomVariant = true }: IntelFormProps) {
 
       {displayMessage && (
         <p
-          className={`text-[14px] font-sans font-semibold animate-fadeIn transition-colors text-center ${
+          className={`animate-fadeIn text-center font-sans text-[14px] font-semibold transition-colors ${
             state.status === 'success'
               ? `py-3 ${isCustomVariant ? (isDarkBg ? 'text-blue-400' : 'text-blue-600') : 'text-blue-500'}`
               : 'mt-3 text-red-500'

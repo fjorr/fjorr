@@ -37,6 +37,7 @@ export default function FeatureRailClient({ films }: { films: any[] }) {
         slug: filmAsset.slug,
         mux_playback_id: filmAsset.mux_playback_id,
         last_line: filmAsset.last_line,
+        last_line_attribution: filmAsset.last_line_attribution,
         story_date: filmAsset.story_date,
         location: filmAsset.location,
         runtime: filmAsset.runtime,

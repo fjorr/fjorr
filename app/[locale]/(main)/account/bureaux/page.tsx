@@ -5,7 +5,6 @@ import AccountDeleteAccount from '@/components/AccountDeleteAccount';
 import AccountShell from '@/components/AccountShell';
 import BureauxAccountActions from '@/components/BureauxAccountActions';
 import BureauxCancelMembership from '@/components/BureauxCancelMembership';
-import BureauxGiftSeat from '@/components/BureauxGiftSeat';
 import { requireOwnAccount } from '@/lib/account-session';
 import {
   ensureBureauxNumber,
@@ -14,11 +13,6 @@ import {
   isBureauxMembershipActive,
 } from '@/lib/bureaux';
 import { getOwnBureauxCardOnFile } from '@/lib/bureaux-actions';
-import {
-  getOwnGiftSeatState,
-  syncBureauxGiftFromCheckoutSession,
-} from '@/lib/bureaux-gift';
-import { appUrl } from '@/lib/site';
 
 function formatDate(iso: string | null, locale: string) {
   if (!iso) return null;
@@ -53,21 +47,13 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function AccountBureauxPage({
   searchParams,
 }: {
-  searchParams: Promise<{ gift?: string; session_id?: string; joined?: string }>;
+  searchParams: Promise<{ joined?: string }>;
 }) {
   const { user, profile } = await requireOwnAccount('/account/bureaux');
-  const { gift, session_id: giftSessionId, joined } = await searchParams;
+  const { joined } = await searchParams;
   const locale = await getLocale();
   const t = await getTranslations('Account');
   const justJoined = joined === '1';
-
-  if (gift === '1' && giftSessionId) {
-    try {
-      await syncBureauxGiftFromCheckoutSession(giftSessionId, user.id);
-    } catch (err) {
-      console.error('gift session sync failed:', err);
-    }
-  }
 
   let membership = await getOwnBureauxMembership(user.id);
   const active = isBureauxMembershipActive(membership);
@@ -76,18 +62,13 @@ export default async function AccountBureauxPage({
     if (n) membership = { ...membership, bureaux_number: n };
   }
 
-  const [lineage, giftSeat, card] = await Promise.all([
+  const [lineage, card] = await Promise.all([
     active ? getOwnBureauxLineage(user.id) : Promise.resolve(null),
-    active ? getOwnGiftSeatState(user.id) : Promise.resolve(null),
     active && !membership?.comp_lifetime
       ? getOwnBureauxCardOnFile(membership)
       : Promise.resolve(null),
   ]);
 
-  const openGiftUrl =
-    giftSeat?.openGift?.status === 'open'
-      ? appUrl(`/bureaux/gift/${giftSeat.openGift.token}`)
-      : null;
   const renews = formatDate(membership?.current_period_end || null, locale);
 
   return (
@@ -190,15 +171,6 @@ export default async function AccountBureauxPage({
           showCardUpdate={!membership?.comp_lifetime}
           returnPath="/account/bureaux"
         />
-
-        {giftSeat ? (
-          <BureauxGiftSeat
-            canGift={giftSeat.canGift}
-            reason={giftSeat.reason}
-            openGiftUrl={openGiftUrl}
-            openGiftEmail={giftSeat.openGift?.to_email || null}
-          />
-        ) : null}
 
         <div className="flex flex-col gap-6">
           {!membership?.comp_lifetime ? (

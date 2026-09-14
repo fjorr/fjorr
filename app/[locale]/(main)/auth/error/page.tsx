@@ -4,7 +4,7 @@ import { getTranslations } from 'next-intl/server';
 export default async function AuthErrorPage() {
   const t = await getTranslations('Auth');
   return (
-    <div className="w-full min-h-[70vh] bg-[var(--page-bg)] text-page flex flex-col items-center justify-center px-6 py-24 text-center">
+    <div className="w-full min-h-[70vh] bg-white text-page flex flex-col items-center justify-center px-6 py-24 text-center">
       <div className="w-full max-w-sm flex flex-col gap-4">
         <h1 className="font-sans text-2xl font-bold tracking-tight text-page">
           {t('errorTitle')}

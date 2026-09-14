@@ -10,7 +10,7 @@ const BureauxCheckout = dynamic(() => import('@/components/BureauxCheckout'), {
   ssr: false,
   loading: () => (
     <div
-      className="w-full max-w-sm h-14 rounded-full bg-page-chip animate-pulse"
+      className="mx-auto h-12 w-40 rounded-full bg-page-chip animate-pulse"
       aria-hidden
     />
   ),

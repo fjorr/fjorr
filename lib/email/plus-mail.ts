@@ -30,7 +30,7 @@ export async function sendPlusNoteSeenEmail(input: {
   if (!to || !to.includes('@')) return;
 
   const film = (input.filmName || 'a film').trim();
-  const logsUrl = absoluteUrl('/account/plus');
+  const logsUrl = absoluteUrl('/account/voyages');
   const momentUrl =
     input.filmSlug && input.atSeconds != null
       ? absoluteUrl(

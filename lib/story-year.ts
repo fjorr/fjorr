@@ -78,6 +78,16 @@ export function displayLabelFromRaw(
   return String(Math.abs(year) || year);
 }
 
+/** Quiet display string for UI chrome (no "Setting" prefix). */
+export function storySettingDisplay(raw?: string | null): string | null {
+  if (raw == null) return null;
+  const text = String(raw).trim();
+  if (!text) return null;
+  const year = parseStoryYear(text);
+  if (year == null) return text;
+  return displayLabelFromRaw(text, year);
+}
+
 function labelRank(label: string): number {
   // Prefer labels that include an era suffix from Supabase.
   if (/\bAD\b/i.test(label)) return 2;

@@ -28,7 +28,7 @@ const jsonLd = {
   '@type': 'AboutPage',
   name: 'About Fjorr',
   description:
-    "But they are hard to find. Short films of the greatest stories — under twenty minutes, always — free forever. Fjorr. The myth engine.",
+    "We're building a myth engine. The world's greatest stories as short films. Under 20 minutes, always. Free for anyone in the world. Fjorr.",
   publisher: {
     '@type': 'Organization',
     name: 'Fjorr',
@@ -36,24 +36,45 @@ const jsonLd = {
   },
 };
 
+const MARK_IMAGE =
+  'https://media.fjorr.com/app-assets/animation/icon/fjorr-production-logo-frame-05.avif';
+
+/** One manifesto line = one slide (keeps “Fjorr. The myth engine.” together). */
+function buildManifestoBeats(manifesto: string): { text: string }[] {
+  return manifesto
+    .split(/\n+/)
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .map((text) => ({ text }));
+}
+
 export default async function AboutPage() {
   const t = await getTranslations('About');
+  const partner = await getTranslations('Partner');
   const copy: AboutCopy = {
-    heroLines: t('hero').split('\n').filter(Boolean),
-    manifestoHeadline: t('manifestoHeadline'),
-    manifestoParagraphs: t('manifesto')
-      .split(/\n\n+/)
-      .map((p) => p.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim())
-      .filter(Boolean),
-    logoLabel: t('logoLabel'),
-    logoTitle: t('logoTitle'),
-    logoBody: t('logoBody'),
-    nameLabel: t('nameLabel'),
-    nameTitle: t('nameTitle'),
-    nameBody: t.rich('nameBody', {
-      i: (chunks) => <em className="italic">{chunks}</em>,
-    }),
-    exploreFjorr: t('exploreFjorr'),
+    manifestoBeats: buildManifestoBeats(t('manifesto')),
+    scrollLabel: t('scrollCue'),
+    deckHintLead: t('deckHintLead'),
+    deckHint: t('deckHint'),
+    contactHeadlineLines: [partner('headlineLine1'), partner('headlineLine2')],
+    contactBlurb: t('contactBlurb'),
+    posters: [
+      {
+        href: '/about/100-years-of-failure',
+        title: t('posterEssayTitle'),
+        titleLines: ['100 Years', 'of Failure'],
+        tagline: t('posterEssayTagline'),
+        image: null,
+        video: '/about/fjorr-le-voyage-dans-la-lune-bg.mp4',
+      },
+      {
+        href: '/about/the-mark',
+        title: t('posterMarkTitle'),
+        tagline: t('posterMarkTagline'),
+        image: MARK_IMAGE,
+        imageFit: 'contain',
+      },
+    ],
   };
 
   return (

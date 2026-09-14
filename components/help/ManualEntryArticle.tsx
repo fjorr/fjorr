@@ -99,8 +99,8 @@ export function ManualEntryArticle({
   const plates = getManualPlates(entry);
 
   const shell = bare
-    ? 'flex flex-col gap-7 sm:gap-8 w-full px-10 pt-6 sm:pt-7 pb-10 print:break-after-page'
-    : 'manual-card-in flex flex-col gap-7 sm:gap-8 w-full rounded-[16px] bg-page-elevated px-6 py-7 sm:px-9 sm:py-9 print:break-after-page';
+    ? 'flex w-full flex-col gap-8 px-11 pb-12 pt-7 sm:gap-9 sm:px-12 sm:pb-14 sm:pt-8 lg:px-14 print:break-after-page'
+    : 'manual-card-in flex w-full flex-col gap-7 rounded-[16px] bg-page-elevated px-7 py-8 sm:gap-8 sm:px-10 sm:py-10 print:break-after-page';
 
   return (
     <article className={`${shell} ${className}`}>

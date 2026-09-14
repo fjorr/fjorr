@@ -28,9 +28,12 @@ export const getFeaturedFilms = unstable_cache(
         mux_playback_id,
         teaser,
         story_date,
+        location,
         hero_wide,
         hero_clsx,
         hero_tall,
+        blok_tall,
+        blok_ogrf,
         title_art_code,
         title_art_hex,
         title_art_scale,
@@ -63,20 +66,23 @@ export const getFeaturedFilms = unstable_cache(
 
     return localizeFilmsWithThemes(supabase, films, locale);
   },
-  ['home-featured-i18n-v3'],
+  ['home-featured-i18n-v5'],
   { revalidate: HOME_FILM_REVALIDATE_SECONDS, tags: ['film', 'home'] }
 );
 
-const AMBIENT_FILM_SELECT = `
+const HOUSE_FILM_SELECT = `
   id,
   name,
   slug,
   mux_playback_id,
   teaser,
   story_date,
+  location,
   hero_wide,
   hero_clsx,
   hero_tall,
+  blok_tall,
+  blok_ogrf,
   title_art_code,
   title_art_hex,
   title_art_scale,
@@ -103,7 +109,7 @@ function resolveSponsorName(row: any) {
   return null;
 }
 
-function mapAmbientFilmRow(row: any) {
+function mapHouseFilmRow(row: any) {
   if (!row) return null;
   return {
     ...row,
@@ -113,7 +119,7 @@ function mapAmbientFilmRow(row: any) {
 
 const CAROUSEL_SIZE = 10;
 
-async function fetchAmbientFilmRows(
+async function fetchHouseFilmRows(
   supabase: ReturnType<typeof createPublicClient>,
   mode: 'coming' | 'released'
 ) {
@@ -127,22 +133,22 @@ async function fetchAmbientFilmRows(
 
   const listed = await idsQuery;
   if (listed.error) {
-    console.error(`Ambient ${mode} films failed:`, listed.error.message);
+    console.error(`House ${mode} films failed:`, listed.error.message);
     return [];
   }
 
   const ids = (listed.data || []).map((row) => row.id).filter(Boolean);
   if (!ids.length) return [];
 
-  const full = await supabase.from('film').select(AMBIENT_FILM_SELECT).in('id', ids);
+  const full = await supabase.from('film').select(HOUSE_FILM_SELECT).in('id', ids);
   if (full.error || !full.data?.length) {
-    if (full.error) console.error(`Ambient ${mode} detail failed:`, full.error.message);
-    return (listed.data || []).map(mapAmbientFilmRow).filter(Boolean);
+    if (full.error) console.error(`House ${mode} detail failed:`, full.error.message);
+    return (listed.data || []).map(mapHouseFilmRow).filter(Boolean);
   }
 
   const order = new Map(ids.map((id, i) => [String(id), i]));
   return full.data
-    .map(mapAmbientFilmRow)
+    .map(mapHouseFilmRow)
     .filter(Boolean)
     .sort((a, b) => (order.get(String(a.id)) ?? 0) - (order.get(String(b.id)) ?? 0))
     .map((film) =>
@@ -151,7 +157,7 @@ async function fetchAmbientFilmRows(
 }
 
 /** Ten films: featured first, then every coming-soon title, then released to fill. */
-export async function getAmbientCarouselFilms(locale: AppLocale = defaultLocale) {
+export async function getHouseCarouselFilms(locale: AppLocale = defaultLocale) {
   const supabase = createPublicClient();
   const now = new Date().toISOString();
 
@@ -159,16 +165,16 @@ export async function getAmbientCarouselFilms(locale: AppLocale = defaultLocale)
     getFeaturedFilms(locale),
     supabase
       .from('film')
-      .select(AMBIENT_FILM_SELECT)
+      .select(HOUSE_FILM_SELECT)
       .order('release_date', { ascending: true })
       .limit(40),
   ]);
 
   if (catalog.error) {
-    console.error('Ambient catalog failed:', catalog.error.message);
+    console.error('House catalog failed:', catalog.error.message);
   }
 
-  const rows = (catalog.data || []).map(mapAmbientFilmRow).filter(Boolean);
+  const rows = (catalog.data || []).map(mapHouseFilmRow).filter(Boolean);
   const localized = await localizeFilmsWithThemes(supabase, rows, locale);
   const isFuture = (film: any) =>
     Boolean(film?.release_date) && new Date(film.release_date).getTime() > Date.parse(now);

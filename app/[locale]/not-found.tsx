@@ -1,76 +1,37 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useTranslations } from 'next-intl';
-import { Link } from '@/i18n/navigation';
 import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
+import HouseScrollFooter from '@/components/HouseScrollFooter';
+import { useHouseOverlay } from '@/components/HouseOverlayProvider';
 
 export default function NotFound() {
   const t = useTranslations('NotFound');
-  // Stagger gates to coordinate our cinematic entry cadence
-  const [animateHeadline, setAnimateHeadline] = useState(false);
-  const [showBodyElements, setShowBodyElements] = useState(false);
-
-  useEffect(() => {
-    // 🎥 1. Fire the headline fade-and-glide immediately on page mount
-    setAnimateHeadline(true);
-
-    // 🎥 2. Wait exactly 350ms for the headline to land, then bring up the technical metadata strings
-    const timer = setTimeout(() => {
-      setShowBodyElements(true);
-    }, 350);
-
-    return () => clearTimeout(timer);
-  }, []);
+  const { open } = useHouseOverlay();
 
   return (
-    <>
-      <Navbar />
-      
-      <div className="w-full h-dvh flex flex-col items-center justify-center bg-[#1f1f1f] text-white px-6 relative font-sans select-none">
-        
-        {/* COMPACT CENTER PANEL GRID */}
-        <div className="max-w-xl text-center flex flex-col items-center gap-4 z-10">
-          
-          {/* HERO TITLE BLOCK */}
-          {/* ⚡ CINEMATIC HEADLINE REVEAL ENGINE */}
-          <h1 
-            className={`text-[52px] sm:text-[75px] md:text-[95px] font-extrabold uppercase tracking-tighter text-white leading-[0.9] font-futura mx-auto select-none mb-3 transform-gpu transition-all ease-out duration-[900ms] ${
-              animateHeadline ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
-            }`}
-          >
-            {t('title')}
-          </h1>
-          
-          {/* SECONDARY LAYER STAGGER WRAPPER */}
-          <div 
-            className={`flex flex-col items-center gap-4 transform-gpu transition-all ease-out duration-[700ms] ${
-              showBodyElements ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'
-            }`}
-          >
-          
-
-            {/* THE EDITORIAL DECK BLURB */}
-            <p className="text-[16px] font-medium font-inter text-zinc-400 max-w-xs tracking-relaxed leading-relaxed mb-4">
-              {t('body')}
-            </p>
-
-            {/* ACTION HOVER PILL BUTTON */}
-            <div>
-              <Link 
-                href="/"
-                className="inline-flex items-center justify-center bg-white text-black font-semibold font-sans text-[14px] px-8 py-3 rounded-full hover:bg-zinc-200 transition-colors duration-200 ease-out shadow-lg"
-              >
-                {t('home')}
-              </Link>
-            </div>
-          </div>
-          
-        </div>
+    <div className="flex min-h-dvh flex-col bg-white text-[#0B0B0C]">
+      {/* Fixed so centered content can’t paint over chrome. */}
+      <div className="fixed inset-x-0 top-0 z-[60]">
+        <Navbar variant="dark" />
       </div>
-
-      <Footer />
-    </>
+      <main className="flex min-h-0 flex-1 flex-col items-center justify-center px-6 pb-8 pt-[56px]">
+        <h1 className="m-0 text-center font-interTight text-[40px] font-bold leading-none tracking-tight text-[#0B0B0C] sm:text-[52px] md:text-[64px]">
+          {t('title')}
+        </h1>
+        <button
+          type="button"
+          onClick={() => open('search')}
+          className="mt-8 inline-flex h-10 items-center gap-2 border-0 bg-transparent p-0 font-sans text-[14px] font-semibold tracking-tight text-[#0B0B0C] transition-opacity hover:opacity-70"
+        >
+          <span>{t('search')}</span>
+          <kbd className="font-sans text-[12px] font-semibold tracking-tight text-black/35">
+            ⌘K
+          </kbd>
+        </button>
+      </main>
+      <HouseScrollFooter />
+    </div>
   );
 }

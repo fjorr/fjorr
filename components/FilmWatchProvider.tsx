@@ -203,6 +203,7 @@ export default function FilmWatchProvider({
       slug: filmData.slug,
       mux_playback_id: filmData.mux_playback_id,
       last_line: filmData.last_line,
+      last_line_attribution: filmData.last_line_attribution ?? null,
       story_date: filmData.story_date || filmData.story_year || '1972',
       location: displayLocation,
       teaser: filmData.teaser,

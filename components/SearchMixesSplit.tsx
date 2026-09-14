@@ -7,6 +7,7 @@ import {
   useMinimalFilterOptional,
 } from '@/components/MinimalFilterContext';
 import { MixesPanel } from '@/components/BrowseFilterPanels';
+import { Icon } from '@/components/ui/Icons';
 
 export type SplitSide = 'idle' | 'search' | 'mixes';
 
@@ -148,19 +149,7 @@ export default function SearchMixesSplit({
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-page-faint hover:text-page transition-colors z-10"
                   aria-label={tf('clear')}
                 >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="3"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
+                  <Icon name="close" className="h-3.5 w-3.5" aria-hidden />
                 </button>
               ) : null}
             </>
@@ -204,19 +193,7 @@ export default function SearchMixesSplit({
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-page-faint hover:text-page transition-colors z-10"
                   aria-label="Clear search"
                 >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="3"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
+                  <Icon name="close" className="h-3.5 w-3.5" aria-hidden />
                 </button>
               ) : null}
             </>
@@ -236,40 +213,10 @@ export default function SearchMixesSplit({
 }
 
 function SearchGlyph() {
-  return (
-    <svg
-      className="w-5 h-5"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.5"
-      viewBox="0 0 24 24"
-      aria-hidden
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-      />
-    </svg>
-  );
+  return <Icon name="search" className="h-5 w-5" aria-hidden />;
 }
 
-/** Lightning mark — same footprint / stroke as search. */
+/** Lightning mark — same footprint as search. */
 function MixesGlyph() {
-  return (
-    <svg
-      className="w-5 h-5"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.5"
-      viewBox="0 0 24 24"
-      aria-hidden
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"
-      />
-    </svg>
-  );
+  return <Icon name="bolt" className="h-5 w-5" aria-hidden />;
 }

@@ -94,7 +94,7 @@ export async function submitFilmNote(input: {
     return { ok: false, error: 'submitError' };
   }
 
-  revalidatePath('/account/plus');
+  revalidatePath('/account/voyages');
   revalidatePath('/admin/plus');
   revalidatePath('/admin');
   return { ok: true, id: String(data.id) };

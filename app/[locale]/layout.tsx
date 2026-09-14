@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { DisplayModeProvider } from '@/components/DisplayModeProvider';
 import { ColorSchemeProvider } from '@/components/ColorSchemeProvider';
 import { AuthPresenceProvider } from '@/components/AuthPresenceProvider';
+import { HouseOverlayProvider } from '@/components/HouseOverlayProvider';
 import { fontVariables } from '@/lib/fonts';
 import { DISPLAY_MODE_COOKIE, parseDisplayMode } from '@/lib/display-mode';
 import { COLOR_SCHEME_COOKIE, parseColorScheme } from '@/lib/color-scheme';
@@ -60,9 +61,11 @@ export default async function LocaleLayout({
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ColorSchemeProvider initialScheme={initialScheme}>
             <AuthPresenceProvider>
-              <DisplayModeProvider initialMode={initialMode}>
-                {children}
-              </DisplayModeProvider>
+              <HouseOverlayProvider>
+                <DisplayModeProvider initialMode={initialMode}>
+                  {children}
+                </DisplayModeProvider>
+              </HouseOverlayProvider>
             </AuthPresenceProvider>
           </ColorSchemeProvider>
         </NextIntlClientProvider>

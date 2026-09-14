@@ -1,15 +1,26 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { usePathname } from '@/i18n/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useColorScheme } from '@/components/ColorSchemeProvider';
-import { isAboutPath, isColorSchemeLockedPath } from '@/lib/color-scheme';
+import {
+  isAboutBlackPath,
+  isAboutPath,
+  isAboutRootPath,
+  isColorSchemeLockedPath,
+  isEssayFailurePath,
+} from '@/lib/color-scheme';
 
 /**
  * Client chrome only — pathname / scheme for nav+footer.
  * Kept out of the (main) layout so page trees stay RSC.
+ *
+ * House home/film mount Navbar themselves inside the fixed house shell.
+ * About root: white nav over hero, dark nav on paper.
+ * The Mark stays black. Paper pages (join, essay, legal, partner) use
+ * dark nav on white. Artifacts live in (exhibition).
  */
 export default function MainChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() || '';
@@ -18,17 +29,62 @@ export default function MainChrome({ children }: { children: React.ReactNode }) 
   const isFilmPoster = pathname.startsWith('/film/');
   const isSignInPage =
     pathname === '/signin' || pathname.startsWith('/signin/');
+  const isBureauxJoinPage = pathname === '/bureaux';
+  const isLegalPage =
+    pathname === '/privacy' ||
+    pathname === '/terms' ||
+    pathname.startsWith('/privacy/') ||
+    pathname.startsWith('/terms/');
+  const isPartnerPage =
+    pathname === '/partner' || pathname.startsWith('/partner/');
+  const isEssayPage = isEssayFailurePath(pathname);
+  const isAboutRoot = isAboutRootPath(pathname);
+  const aboutBlackPage = isAboutBlackPath(pathname);
   const aboutPage = isAboutPath(pathname);
-  const hideChrome = isWatchPage || isHome || isFilmPoster;
-  const hideFooter = hideChrome || isSignInPage || isHome || isFilmPoster;
+  const houseShell = isHome || isFilmPoster;
+  const hideChrome = isWatchPage || houseShell;
+  const hideFooter =
+    hideChrome ||
+    isSignInPage ||
+    isBureauxJoinPage ||
+    isLegalPage ||
+    isPartnerPage ||
+    isEssayPage ||
+    aboutPage;
   const isArtifactPage = pathname.startsWith('/artifact/');
   const isLocked = isColorSchemeLockedPath(pathname);
   const { isLight } = useColorScheme();
+  const [aboutOverHero, setAboutOverHero] = useState(true);
+
+  useEffect(() => {
+    if (!isAboutRoot) {
+      setAboutOverHero(false);
+      return;
+    }
+    setAboutOverHero(true);
+    const onAboutHero = (event: Event) => {
+      const detail = (event as CustomEvent<boolean>).detail;
+      setAboutOverHero(Boolean(detail));
+    };
+    window.addEventListener('fjorr:about-hero', onAboutHero);
+    return () => window.removeEventListener('fjorr:about-hero', onAboutHero);
+  }, [isAboutRoot]);
 
   // Navbar: white text on dark surfaces, black text on light.
-  // Locked pages (about/partner) always use the dark-surface nav (white type),
-  // even when the user’s global preference is light.
-  const navVariant = isLocked || !isLight ? 'light' : 'dark';
+  // About root: white over the black hero, dark once paper takes over.
+  const paperPage =
+    isLegalPage || isPartnerPage || isBureauxJoinPage || isEssayPage;
+  const heroPaperPage = isAboutRoot;
+  const overHero = isAboutRoot ? aboutOverHero : false;
+  const navVariant = heroPaperPage
+    ? overHero
+      ? 'light'
+      : 'dark'
+    : paperPage
+      ? 'dark'
+      : isLocked || !isLight
+        ? 'light'
+        : 'dark';
   const footerVariant = isLocked || !isLight ? 'light' : 'dark';
 
   useEffect(() => {
@@ -46,10 +102,18 @@ export default function MainChrome({ children }: { children: React.ReactNode }) 
           'important'
         );
       }
+    } else if (paperPage) {
+      document.body.style.setProperty('background-color', '#ffffff', 'important');
+    } else if (heroPaperPage) {
+      document.body.style.setProperty(
+        'background-color',
+        overHero ? '#000000' : '#ffffff',
+        'important'
+      );
     } else {
       document.body.style.removeProperty('background-color');
     }
-  }, [pathname, isArtifactPage]);
+  }, [pathname, isArtifactPage, paperPage, heroPaperPage, overHero]);
 
   return (
     <div
@@ -59,15 +123,31 @@ export default function MainChrome({ children }: { children: React.ReactNode }) 
               backgroundColor: 'var(--page-bg-color)',
               transition: 'background-color 500ms cubic-bezier(0.25, 1, 0.5, 1)',
             }
-          : undefined
+          : paperPage
+            ? ({
+                ['--page-bg-color' as string]: '#ffffff',
+                ['--page-fg' as string]: '#0B0B0C',
+              } as React.CSSProperties)
+            : heroPaperPage
+              ? ({
+                  ['--page-bg-color' as string]: overHero
+                    ? '#000000'
+                    : '#ffffff',
+                  ['--page-fg' as string]: overHero ? '#F5F5F7' : '#0B0B0C',
+                } as React.CSSProperties)
+              : undefined
       }
-      className={`relative flex flex-col min-h-screen justify-between text-[var(--page-fg)] ${
-        aboutPage ? 'bg-black' : 'bg-[var(--page-bg)]'
+      className={`relative flex min-h-screen flex-col justify-between text-[var(--page-fg)] ${
+        aboutBlackPage || (heroPaperPage && overHero)
+          ? 'bg-black'
+          : paperPage || heroPaperPage
+            ? 'bg-white text-[#0B0B0C]'
+            : 'bg-[var(--page-bg)]'
       }`}
     >
       {!hideChrome && <Navbar variant={navVariant} />}
 
-      <main className="flex-grow w-full relative flex flex-col">{children}</main>
+      <main className="relative flex w-full flex-grow flex-col">{children}</main>
 
       {!hideFooter && <Footer variant={footerVariant} />}
     </div>

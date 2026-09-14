@@ -205,7 +205,7 @@ export default function FilmSpecs({
                 <span className="text-page-faint/80" aria-hidden>
                   {' · '}
                 </span>
-                <Link href="/manual/plus" className={inviteLinkClass}>
+                <Link href="/about" className={inviteLinkClass}>
                   {t('plusInviteInfo')}
                 </Link>
               </span>
@@ -217,7 +217,7 @@ export default function FilmSpecs({
                 <span className="text-page-faint/80" aria-hidden>
                   {' · '}
                 </span>
-                <Link href="/manual/plus" className={inviteLinkClass}>
+                <Link href="/about" className={inviteLinkClass}>
                   {t('plusInviteInfo')}
                 </Link>
               </span>

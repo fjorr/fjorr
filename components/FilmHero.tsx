@@ -7,6 +7,7 @@ import HeroPicture from '@/components/HeroPicture';
 import { Icon } from '@/components/ui/Icons';
 import { resolveTitleArtColor, sanitizeTitleArtSvg } from '@/lib/sanitize-svg';
 import { formatResumeClock } from '@/lib/watch-progress';
+import RatingBadge from '@/components/house/RatingBadge';
 
 const FilmSendSheet = dynamic(() => import('@/components/FilmSendSheet'), {
   ssr: false,
@@ -124,11 +125,7 @@ export default function FilmHero({
                 const ratingVal =
                   typeof film.rating === 'object' ? film.rating?.name : film.rating;
                 if (!ratingVal) return null;
-                return (
-                  <span className="px-1 py-0.25 border border-white/60 rounded-[4px] text-white/60 font-semibold text-[12px] capitalize">
-                    {ratingVal}
-                  </span>
-                );
+                return <RatingBadge rating={String(ratingVal)} tone="onDark" />;
               })()}
               {(() => {
                 const themeVal = typeof film.theme === 'object' ? film.theme?.name : film.theme;
@@ -157,10 +154,10 @@ export default function FilmHero({
                   onClick={onPlayClick}
                   className="h-10 px-6 inline-flex items-center justify-center gap-2 bg-white hover:bg-white/90 text-black font-sans font-bold text-sm tracking-normal rounded-full transition-all active:scale-[0.98] duration-150 cursor-pointer border-0 outline-none"
                 >
-                  <img
-                    src="/icons/play.svg"
-                    className="w-5 h-5 select-none object-contain translate-y-[0.5px]"
-                    alt={t('playShort')}
+                  <Icon
+                    name="play"
+                    className="h-5 w-5 select-none translate-y-[0.5px]"
+                    aria-hidden
                   />
                   <span>
                     {resumeSeconds != null && resumeSeconds > 0

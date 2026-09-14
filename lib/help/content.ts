@@ -155,7 +155,7 @@ article({
     ],
     actions: {
       guest: [{ href: '/bureaux', label: 'Join to nominate' }],
-      member: [{ href: '/nominate', label: 'Nominate' }],
+      member: [{ href: '/account/nominations', label: 'Nominations' }],
     },
     plates: [{ src: '/manual/nominate.svg', label: 'Nominate' }],
   }),
@@ -165,10 +165,10 @@ article({
     title: 'Bounties',
     headline: 'Find it. Get paid.',
     lead: [
-      'Open hunts for stories Fjorr wants made — brief and reward attached. Browse posters on the [Bounties wall](/bounties).',
+      'Open hunts for stories Fjorr wants made — brief and reward attached. Browse posters on the [Bounties wall](/).',
       "Read the brief, then nominate your take. If yours is selected and the film gets made, the reward is paid and you're credited. Answering a bounty is a member move.",
     ],
-    actions: both([{ href: '/bounties', label: 'Browse Bounties' }]),
+    actions: both([{ href: '/', label: 'Watch films' }]),
     plates: [{ src: '/manual/bounties.svg', label: 'Bounties' }],
   }),
 article({
@@ -178,11 +178,11 @@ article({
     headline: 'No film is version final.',
     lead: [
       "Bureaux members flag what's not working; the Cabinet decides. If they're right, they plus it — sharper edit, better score, a braver idea. v2 goes live; v1 stays archived, credited, visible.",
-      'Every film has a Plus button. Leave a note on the exact timecode, submit a patch if you have one, and track it from [your account](/account/plus).',
+      'Every film has a Plus button. Leave a note on the exact timecode, submit a patch if you have one, and track it from [your account](/account/voyages).',
     ],
     actions: {
       guest: [{ href: '/bureaux', label: 'Join the Bureaux' }],
-      member: [{ href: '/account/plus', label: 'Your Plus notes' }],
+      member: [{ href: '/account/voyages', label: 'Your Voyages' }],
     },
     plates: [{ src: '/manual/plus.svg', label: 'Plus' }],
   }),
@@ -193,11 +193,11 @@ article({
     headline: 'A collective of world-class talent.',
     lead: [
       "Directors, editors, composers, and more — the people who make Fjorr's films.",
-      'Apply to join, or suggest someone who belongs, at [the Cabinet](/cabinet). Not everyone is accepted.',
+      'Apply to join, or suggest someone who belongs, at [the Cabinet](/bureaux). Not everyone is accepted.',
     ],
     actions: {
-      guest: [{ href: '/cabinet', label: 'Apply to join' }],
-      member: [{ href: '/cabinet', label: 'Open The Cabinet' }],
+      guest: [{ href: '/bureaux', label: 'Join the Bureaux' }],
+      member: [{ href: '/account/bureaux', label: 'Your Bureaux' }],
     },
   }),
 article({
@@ -234,7 +234,7 @@ article({
     title: 'Contact',
     headline: "Let's talk.",
     lead: [
-      "Partnership, press, or something worth making — we're here for it. Email reaches a real person. For how stories earn a place on Fjorr, read the [Principles of a Myth](/principles).",
+      "Partnership, press, or something worth making — we're here for it. Email reaches a real person.",
     ],
     actions: both([
       { href: 'clipboard:control@fjorr.com', label: 'Write in' },

@@ -10,8 +10,10 @@ import {
 import { DialsPanel, MixesPanel } from '@/components/BrowseFilterPanels';
 import { nextDisplayMode } from '@/lib/display-mode';
 
-/** Navbar occupies 56px; leave 10px air before the sticky glass. */
-const STICKY_TOP_PX = 66;
+/** Navbar height: 44 / 60 / 100 — leave a little air under glass. */
+const STICKY_TOP_CLASS = 'top-[54px] md:top-[70px] lg:top-[110px]';
+/** IntersectionObserver rootMargin uses a single px value; use lg height. */
+const STICKY_TOP_PX = 110;
 
 type Panel = 'mixes' | 'dials' | null;
 
@@ -83,8 +85,7 @@ export default function StickyQueryStrip({
 
   return (
     <div
-      className="fixed left-0 right-0 z-40 px-4 flex justify-center pointer-events-none animate-in fade-in slide-in-from-top-2 duration-200"
-      style={{ top: STICKY_TOP_PX }}
+      className={`fixed left-0 right-0 z-40 px-4 flex justify-center pointer-events-none animate-in fade-in slide-in-from-top-2 duration-200 ${STICKY_TOP_CLASS}`}
     >
       <div
         ref={stripRef}

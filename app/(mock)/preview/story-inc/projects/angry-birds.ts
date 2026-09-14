@@ -33,8 +33,8 @@ export const ANGRY_BIRDS: ProjectPageData = {
   followLine:
     'Follow this page for VIP access, early notifications, and reward drops from the filmmakers.',
   jumpTiles: [
-    { label: 'Rewards', sub: '{rewards} live drops', href: '#rewards' },
     { label: 'Markets', sub: '{markets} live now', href: '#markets' },
+    { label: 'Rewards', sub: '{rewards} live drops', href: '#rewards' },
     { label: 'Trailers', sub: 'Watch & share', href: '#trailers' },
     { label: 'Follow page', sub: 'VIP + notifications', href: '#notify' },
   ],
@@ -43,6 +43,7 @@ export const ANGRY_BIRDS: ProjectPageData = {
   heroPoster: img.hero,
   teaserLabel: 'Official trailer',
   fanCount: 84200,
+  marketsFirst: true,
   rewardGroups: [
     {
       heading: 'Rewards',

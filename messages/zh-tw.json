@@ -1,5 +1,5 @@
 {
-  "Nav": {
+  "Nav":   {
     "tagline": "偉大故事的短片",
     "explore": "探索 Fjorr",
     "films": "影片",
@@ -34,7 +34,27 @@
     "accountMarkAria": "{name}, open account",
     "plus": "Plus",
     "cabinetShort": "Cabinet",
-    "signedInCueAria": "Signed in"
+    "signedInCueAria": "Signed in",
+    "search": "Search",
+    "join": "Join",
+    "enter": "Enter",
+    "openCommand": "Open command",
+    "backToIndexAria": "Back to index",
+    "accountShort": "Account",
+    "exploreHeadline": "Explore",
+    "exploreAboutDesc": "Who we are",
+    "exploreSignInDesc": "Re-entry",
+    "exploreAccountDesc": "Your account",
+    "exploreBureaux": "Bureaux",
+    "exploreBureauxDesc": "Membership",
+    "bureauxChooserAria": "Bureaux",
+    "bureauxSignIn": "Sign in",
+    "bureauxSignInDesc": "Re-entry",
+    "bureauxJoin": "Join",
+    "bureauxJoinDesc": "Membership",
+    "languagesChange": "Change",
+    "languagesPrevious": "Previous languages",
+    "languagesNext": "Next languages"
   },
   "DisplayMode": {
     "cinematic": "影院",
@@ -56,7 +76,7 @@
     "scrollEarlier": "較早",
     "scrollLater": "較晚"
   },
-  "Home": {
+  "Home":   {
     "heroLine1": "這世界",
     "heroLine2": "以原子運轉。",
     "heroLine3": "也以故事運轉。",
@@ -66,14 +86,19 @@
     "srTitle": "Fjorr — 世界上最偉大故事的短片。",
     "info": "資訊",
     "emptyFeatured": "New films are on the way. Browse below, or join the Bureaux.",
-    "joinCue": "Join the Bureaux"
+    "joinCue": "Join the Bureaux",
+    "introCta": "Watch films",
+    "introLearnMore": "Learn more",
+    "introAria": "What Fjorr is",
+    "introHeadline": "The world's greatest stories as short films."
   },
-  "NotFound": {
+  "NotFound":   {
     "title": "迷路了嗎？",
     "body": "更好的故事在這邊。",
-    "home": "首頁"
+    "home": "首頁",
+    "search": "Search"
   },
-  "Search": {
+  "Search":   {
     "placeholder": "搜尋",
     "film": "影片",
     "artifact": "文物",
@@ -82,9 +107,10 @@
     "noTeaser": "尚未設定相關參考資訊。",
     "filmComingSoon": "影片即將上線",
     "nominateStory": "提名故事",
-    "joinBureauxHelp": "Or join the Bureaux to help."
+    "joinBureauxHelp": "Or join the Bureaux to help.",
+    "nothingMatches": "Nothing matches."
   },
-  "Film": {
+  "Film":   {
     "play": "播放 {runtime}",
     "playShort": "播放",
     "resume": "繼續播放 · {time}",
@@ -166,9 +192,44 @@
     "stampShareVersion": "Watched v{version} · {date}",
     "stampShareVersionOnly": "Watched v{version}",
     "voyageurBadgeVersionShort": "Watched v{version}",
-    "stampShareViewFilm": "View film"
+    "stampShareViewFilm": "View film",
+    "browseHeadline": "Catalog",
+    "browseViewIndex": "Index",
+    "browseViewGrid": "Grid",
+    "browseFilterAll": "All",
+    "browseFilterFilm": "Films",
+    "browseFilterArtifact": "Artifacts",
+    "browseArtifact": "Artifact",
+    "browseSortCatalog": "Catalog",
+    "browseSortTitle": "Title",
+    "browseChronological": "Year",
+    "browseSortRuntime": "Runtime",
+    "shuffle": "Shuffle",
+    "previousFilm": "Previous",
+    "nextFilm": "Next",
+    "watch": "Watch {runtime}",
+    "watchPlain": "Watch",
+    "sheetLabel": "Film",
+    "process": "Process",
+    "keysHint": "Keys",
+    "keysLead": "A few keys run the house.",
+    "keysStart": "See the keys",
+    "keysPrevious": "Previous",
+    "keysNext": "Next",
+    "keysClose": "Close",
+    "keysBrowse": "Browse",
+    "keysBrowseDesc": "Move through the catalog.",
+    "keysShuffle": "Shuffle",
+    "keysShuffleDesc": "Land on another film.",
+    "keysPlay": "Play",
+    "keysPlayDesc": "Start or pause the film.",
+    "keysInfo": "Info",
+    "keysInfoDesc": "Open the film sheet.",
+    "keysSearch": "Search",
+    "keysSearchDesc": "Find a title or story.",
+    "keysCloseDesc": "Leave the sheet."
   },
-  "Theater": {
+  "Theater":   {
     "watchOnFjorr": "在 Fjorr 上觀看",
     "closeTheater": "關閉劇院模式",
     "close": "關閉",
@@ -192,14 +253,16 @@
     "share": "Share",
     "onward": "繼續",
     "rewatch": "重看",
-    "linkCopied": "連結已複製到剪貼簿"
+    "linkCopied": "連結已複製到剪貼簿",
+    "artifacts": "Artifacts"
   },
-  "Artifact": {
+  "Artifact":   {
     "label": "影片文物",
     "relatedFilms": "相關影片",
     "untitled": "未命名的連結",
     "notFound": "找不到文物",
-    "exploreMeta": "在 Fjorr 上探索這件文化文物。"
+    "exploreMeta": "在 Fjorr 上探索這件文化文物。",
+    "info": "Info"
   },
   "MinimalList": {
     "filter": "調整",
@@ -227,7 +290,7 @@
     "seeFilmMatches": "有 {count} 部符合的影片。",
     "seeArtifactMatches": "有 {count} 件符合的文物。"
   },
-  "Account": {
+  "Account":   {
     "modalTitle": "登入或註冊",
     "close": "關閉",
     "signInTitle": "Re-entry.",
@@ -421,7 +484,10 @@
     "bureauxCardValue": "{brand} ···· {last4}",
     "updateDisplayName": "Update name",
     "updateDisplayNameCancel": "Cancel",
-    "viewManual": "View Manual"
+    "viewManual": "View Manual",
+    "emailRequired": "Email is required.",
+    "emailInvalid": "Enter a valid email.",
+    "noAccount": "No account with that email. Join Bureaux first."
   },
   "Auth": {
     "errorTitle": "登入失敗",
@@ -492,9 +558,9 @@
     "bgAlt": "合作夥伴背景",
     "crowdAlt": "被故事感動的人群"
   },
-  "About": {
-    "hero": "Matter fades.\nMyths matter.",
-    "manifesto": "A parable here, a lecture there, lost in a noisy feed, a story told in a pub. Nobody gave them a gold standard format and a dedicated home.\n\nWell, Fjorr just did.\n\nShort films of the greatest stories — under twenty minutes, always — made to raise people with wonder and hope, free forever for anyone in the world. We're chronicling the human story, one myth at a time. And doing it cleanly. No ads. No algorithm. No noise.\n\nOne standard. One home for the stories that shaped what it means to be human. Not to keep you glued to glass. To send you back into the world with something to carry.\n\nFjorr. The myth engine.",
+  "About":   {
+    "hero": "Matter\nfades.\nMyths don't.",
+    "manifesto": "We're building a myth engine.\nTaking the world's greatest stories.\nAnd making them short films.\nBuilding a home.\nFor the stories that shaped what it means to be human.\nFree for anyone in the world.\nUnder twenty minutes, always.\nOne gold standard.\nNot to keep you glued to glass.\nTo send you back into the world with something to carry.",
     "logoLabel": "標誌",
     "logoTitle": "紙板頭盔。",
     "logoBody": "箱子在火箭之前。",
@@ -504,7 +570,41 @@
     "namePronunciation": "[f-yōr] — 發音近似英文的「your」。",
     "exploreFjorr": "探索 Fjorr",
     "howWeMakeThem": "Fjorr 神話的原則",
-    "manifestoHeadline": "But they are hard to find."
+    "manifestoHeadline": "But they're homeless.",
+    "deckHintLead": "Use",
+    "deckHint": "on your keyboard",
+    "contactBlurb": "We partner with studios, brands, and artists to fund original short films and put real stories in front of a real audience. No logo dumps, no meaningless placements.",
+    "posterEssayTitle": "100 Years of Failure",
+    "posterEssayTagline": "Why short film never found a home.",
+    "posterMarkTitle": "The Mark",
+    "posterMarkTagline": "The cardboard helmet and the name.",
+    "posterExploreTitle": "Explore Fjorr",
+    "posterExploreTagline": "The myth engine.",
+    "posterPartnerTitle": "Work with Fjorr",
+    "essayLink": "Why short film failed for a hundred years",
+    "markLink": "The mark",
+    "moreLabel": "More",
+    "linkPrinciples": "Principles",
+    "linkPrinciplesDesc": "What earns a place",
+    "linkPartner": "Partner",
+    "linkPartnerDesc": "Work with Fjorr",
+    "linkEssay": "100 Years of Failure",
+    "linkEssayDesc": "The founding essay",
+    "linkContact": "Contact",
+    "linkContactDesc": "Write the desk",
+    "scrollCue": "Scroll"
+  },
+  "EssayFailure":   {
+    "title": "100 Years of Failure",
+    "description": "The story of why short films never found a home.",
+    "lead": "The story of why short films never found a home.",
+    "back": "About",
+    "exploreFjorr": "Explore Fjorr"
+  },
+  "AboutMark":   {
+    "title": "The mark",
+    "description": "The cardboard helmet and the name Fjorr.",
+    "back": "About"
   },
   "Privacy": {
     "title": "Privacy Notice",
@@ -590,7 +690,7 @@
     "s10Title": "Changes and contact",
     "s10Body": "We may update this Terms Sheet; the date at the top will change when we do. Continued use after an update means you accept the revised sheet. Questions: control@fjorr.com. Privacy details are in the Privacy Notice."
   },
-  "Footer": {
+  "Footer":   {
     "blurb": "Fjorr 致力於呈現關於世界上最偉大故事的電影感短片。",
     "privacy": "Privacy Notice",
     "terms": "Terms Sheet",
@@ -604,11 +704,22 @@
     "alreadyIn": "此電子郵件已加入。",
     "somethingWrong": "發生錯誤，請再試一次。",
     "partner": "Partner",
-    "help": "The Manual"
+    "help": "The Manual",
+    "legalAria": "Legal",
+    "privacyShort": "Privacy",
+    "privacyDesc": "How we handle data",
+    "termsShort": "Terms",
+    "termsDesc": "How you’re welcome to use Fjorr",
+    "intelHeadline": "Intel",
+    "intelLead": "Films and notes, when they're ready.",
+    "intelYoureIn": "Rolling.",
+    "intelRespect": "We never sell your information.",
+    "subscribe": "Subscribe",
+    "subscribing": "Subscribing…"
   },
-  "Meta": {
+  "Meta":   {
     "aboutTitle": "關於",
-    "aboutDescription": "But they are hard to find. Short films of the greatest stories — under twenty minutes, always — free forever. Fjorr. The myth engine.",
+    "aboutDescription": "We're building a myth engine. The world's greatest stories as short films. Under 20 minutes, always. Free for anyone in the world. Fjorr.",
     "partnerTitle": "合作夥伴",
     "partnerDescription": "與 Fjorr 合作，共創影片與文化合作專案。",
     "nominateTitle": "推薦",
@@ -633,7 +744,7 @@
     "plusDescription": "No film is version final. Films on Fjorr ship as v1 — then get sharper.",
     "accountPrivacyTitle": "Privacy",
     "bureauxTitle": "Join the Bureaux",
-    "bureauxDescription": "Matter fades. Myth don't. Short films of the greatest stories, free forever. The Bureaux is how this gets done.",
+    "bureauxDescription": "None of this exists without people who back it before it's obvious. Help build the archive.",
     "accountBureauxTitle": "Bureaux",
     "helpTitle": "The Manual",
     "helpDescription": "Six short entries on watching, joining, nominating, Plus, account, and the desk.",
@@ -885,21 +996,21 @@
     "craftInfo": "Info",
     "craftClose": "Close"
   },
-  "Bureaux": {
-    "eyebrow": "Join the Bureaux",
-    "headline": "Matter fades.\nMyth don't.",
-    "lead": "But they are hard to find — a parable here, a lecture there, lost in a noisy feed. Nobody gave them a gold standard format and a dedicated home. Fjorr did. Short films of the greatest stories, under twenty minutes, always, free forever for anyone in the world. No ads. No algorithm. No noise.",
-    "lead2": "The Bureaux is how this gets done — and how you take part.",
+  "Bureaux":   {
+    "eyebrow": "Join the",
+    "headline": "The Bureaux",
+    "lead": "None of this exists without people who back it before it's obvious. Help build the archive.",
+    "lead2": "None of that exists without people who back it before it's obvious. The Bureaux, Fjorr's founding membership, is how you become one of them.",
     "priceLabel": "Subscription",
     "priceValue": "{price} / year",
     "accessLabel": "Films",
     "accessValue": "Films free forever. Watching never requires a subscription.",
     "perksTitle": "Included",
-    "perkNumber": "A Bureaux number, permanent, yours.",
-    "perkEarlyFilms": "Early access — new films before anyone else sees them",
+    "perkNumber": "Permanent Bureaux ID.",
+    "perkEarlyFilms": "Early access — watch new films first.",
     "perkEarlyBounties": "Early access to new Bounties, before they're public",
     "perkCredits": "Credited, permanently, on every film you help make possible",
-    "perkBehind": "Behind the work — the cuts, the notes.",
+    "perkBehind": "Behind the work — raw cuts, notes, archive logs.",
     "perkLetter": "A seasonal letter from the desk",
     "perkMark": "A Bureaux number, permanent, yours.",
     "perkNominate": "<manual>Nominate</manual> stories.",
@@ -915,7 +1026,7 @@
     "checkoutAlready": "This email already has a Bureaux membership. Sign in.",
     "checkoutConfig": "Checkout isn't configured yet. Try again shortly.",
     "checkoutError": "Couldn't open checkout. Try again.",
-    "dek": "Matter fades. Myth don't.",
+    "dek": "The world's greatest stories as short films.",
     "homePosterHeadline": "The Bureaux",
     "homePosterSubhead": "The people who make it possible.",
     "homePosterCta": "Join",
@@ -976,7 +1087,9 @@
     "joinPaidBody": "Payment succeeded. We sent a sign-in link to {email}. Open it, continue with Google, or resend the link.",
     "joinResend": "Resend link",
     "joinContinueGoogle": "Continue with Google",
-    "joinSupport": "Still stuck? Write control@fjorr.com"
+    "joinSupport": "Still stuck? Write control@fjorr.com",
+    "subhead": "Founding membership.",
+    "learnMore": "What we're building"
   },
   "Help": {
     "title": "The Manual",

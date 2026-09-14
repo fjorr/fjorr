@@ -2,9 +2,9 @@
 
 import React, { useState } from 'react';
 import dynamic from 'next/dynamic';
-import { BookOpen } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { ManualAudience } from '@/lib/help/content';
+import { Icon } from '@/components/ui/Icons';
 
 const ManualCardModal = dynamic(
   () => import('@/components/help/ManualCardModal'),
@@ -15,7 +15,7 @@ type Variant = 'text' | 'icon' | 'link';
 
 /**
  * Opens The Manual as an in-page card modal.
- * Default: BookOpen + “Manual”. Use `icon` when space is tight.
+ * Default: manual glyph + “Manual”. Use `icon` when space is tight.
  * Use `link` for inline text that opens a Manual card (e.g. perk lists).
  */
 export default function ManualHelpButton({
@@ -54,11 +54,10 @@ export default function ManualHelpButton({
         }
       >
         {variant === 'icon' || variant === 'text' ? (
-          <BookOpen
-            size={variant === 'icon' ? 18 : 15}
-            strokeWidth={1.75}
+          <Icon
+            name="manual"
             aria-hidden
-            className="shrink-0"
+            className={`shrink-0 ${variant === 'icon' ? 'h-[18px] w-[18px]' : 'h-[15px] w-[15px]'}`}
           />
         ) : null}
         {variant === 'text' ? text : null}

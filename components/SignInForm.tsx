@@ -19,6 +19,10 @@ function authRedirectTo() {
   return `${window.location.origin}/auth/confirm`;
 }
 
+function isValidEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
 function GoogleGlyph({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
@@ -56,38 +60,59 @@ export default function SignInForm({
     'idle' | 'loading' | 'oauth' | 'sent' | 'error'
   >('idle');
   const [error, setError] = useState<string | null>(null);
+  const [errorOn, setErrorOn] = useState<'email' | 'oauth' | null>(null);
   const busy = status === 'loading' || status === 'oauth';
+  const emailError = errorOn === 'email' && error ? error : null;
+  const oauthError = errorOn === 'oauth' && error ? error : null;
 
   const handleOAuth = async (provider: Provider) => {
     setStatus('oauth');
     setError(null);
+    setErrorOn(null);
     try {
       stashAuthNext(nextPath);
       const supabase = createClient();
-      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+      const { error: oauthErrorResult } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
           redirectTo: authRedirectTo(),
         },
       });
-      if (oauthError) throw oauthError;
+      if (oauthErrorResult) throw oauthErrorResult;
       // Browser navigates away to the provider.
     } catch (err: unknown) {
       setStatus('error');
+      setErrorOn('oauth');
       setError(err instanceof Error ? err.message : t('errorGeneric'));
     }
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    const trimmed = email.trim();
+
+    if (!trimmed) {
+      setStatus('error');
+      setErrorOn('email');
+      setError(t('emailRequired'));
+      return;
+    }
+    if (!isValidEmail(trimmed)) {
+      setStatus('error');
+      setErrorOn('email');
+      setError(t('emailInvalid'));
+      return;
+    }
+
     setStatus('loading');
     setError(null);
+    setErrorOn(null);
 
     try {
       const supabase = createClient();
       stashAuthNext(nextPath);
       const { error: otpError } = await supabase.auth.signInWithOtp({
-        email: email.trim(),
+        email: trimmed,
         options: {
           shouldCreateUser: false,
           emailRedirectTo: authRedirectTo(),
@@ -98,10 +123,11 @@ export default function SignInForm({
       setStatus('sent');
     } catch (err: unknown) {
       setStatus('error');
+      setErrorOn('email');
       const message = err instanceof Error ? err.message : t('errorGeneric');
       // Unknown email / signups disabled — accounts come from paid Bureaux join.
       if (/signups not allowed|user not found|unable to validate/i.test(message)) {
-        setError(t('createViaBureaux'));
+        setError(t('noAccount'));
       } else {
         setError(message);
       }
@@ -122,6 +148,8 @@ export default function SignInForm({
           onClick={() => {
             setStatus('idle');
             setEmail('');
+            setError(null);
+            setErrorOn(null);
           }}
           className="mt-1 font-sans text-[13px] font-semibold text-page-faint hover:text-page-muted transition-colors bg-transparent border-0 p-0 cursor-pointer"
         >
@@ -142,40 +170,45 @@ export default function SignInForm({
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4 text-left">
+      <form
+        onSubmit={handleSubmit}
+        noValidate
+        className="flex flex-col gap-4 text-left"
+      >
         <input
           type="email"
-          required
           autoComplete="email"
           autoFocus
           aria-label={t('email')}
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => {
+            setEmail(e.target.value);
+            if (errorOn === 'email') {
+              setError(null);
+              setErrorOn(null);
+              if (status === 'error') setStatus('idle');
+            }
+          }}
           placeholder={t('emailPlaceholder')}
           disabled={busy}
           className="w-full rounded-xl px-5 py-4 bg-page-chip font-sans font-semibold text-[15px] text-page placeholder-page-muted border border-page-faint focus:outline-none focus:border-[color-mix(in_srgb,var(--page-fg)_35%,transparent)] disabled:opacity-40 transition-colors"
         />
 
-        {error ? (
-          <div className="flex flex-col gap-2">
-            <p className="m-0 font-sans text-[13px] text-[#C45B4A]">{error}</p>
-            {error === t('createViaBureaux') ? (
-              <Link
-                href="/bureaux"
-                className="font-sans text-[13px] font-semibold text-page underline underline-offset-2"
-              >
-                {t('createViaBureauxCta')}
-              </Link>
-            ) : null}
-          </div>
-        ) : null}
-
         <button
           type="submit"
-          disabled={busy || !email.trim()}
-          className="w-full h-14 inline-flex items-center justify-center rounded-full bg-[var(--page-fg)] text-[var(--page-bg)] font-sans text-[15px] font-bold tracking-tight shadow-2xl hover:opacity-90 active:scale-95 transition-all duration-150 disabled:opacity-40 disabled:pointer-events-none"
+          disabled={busy}
+          aria-live="polite"
+          className={`w-full h-14 inline-flex items-center justify-center rounded-full font-sans text-[15px] font-bold tracking-tight shadow-2xl transition-all duration-150 disabled:opacity-40 disabled:pointer-events-none ${
+            emailError
+              ? 'bg-red-600 text-white hover:opacity-85'
+              : 'bg-[var(--page-fg)] text-[var(--page-bg)] hover:opacity-90 active:scale-95'
+          }`}
         >
-          {status === 'loading' ? t('sending') : t('sendLink')}
+          {status === 'loading'
+            ? t('sending')
+            : emailError
+              ? emailError
+              : t('sendLink')}
         </button>
       </form>
 
@@ -192,10 +225,21 @@ export default function SignInForm({
           type="button"
           disabled={busy}
           onClick={() => handleOAuth('google')}
-          className="h-12 rounded-full bg-page-chip hover:bg-page-chip-hover text-page font-sans text-[14px] font-semibold disabled:opacity-40 transition-all active:scale-[0.98] flex items-center justify-center gap-2.5 border-0 cursor-pointer"
+          aria-live="polite"
+          className={`h-12 rounded-full font-sans text-[14px] font-semibold disabled:opacity-40 transition-all active:scale-[0.98] flex items-center justify-center gap-2.5 border-0 cursor-pointer ${
+            oauthError
+              ? 'bg-red-600 text-white hover:opacity-85'
+              : 'bg-page-chip hover:bg-page-chip-hover text-page'
+          }`}
         >
-          <GoogleGlyph className="w-[18px] h-[18px]" />
-          {t('continueGoogle')}
+          {oauthError ? (
+            oauthError
+          ) : (
+            <>
+              <GoogleGlyph className="w-[18px] h-[18px]" />
+              {t('continueGoogle')}
+            </>
+          )}
         </button>
 
         <p className="m-0 font-sans text-[13px] leading-snug text-page-faint">
