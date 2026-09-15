@@ -35,9 +35,9 @@ let cachedIdentity: CachedIdentity | null = null;
 
 const AuthPresenceContext = createContext<AuthPresence>({
   signedIn: null,
-  bureauxMember: cachedIdentity?.bureauxMember ?? null,
-  displayName: cachedIdentity?.displayName ?? null,
-  bureauxNumber: cachedIdentity?.bureauxNumber ?? null,
+  bureauxMember: null,
+  displayName: null,
+  bureauxNumber: null,
 });
 
 /** One Supabase session + membership check for nav chrome. */
