@@ -9,6 +9,7 @@ import { useHouseOverlay } from '@/components/HouseOverlayProvider';
  * - Default: in document flow — long pages push it below the fold.
  * - Sheet open: pins to the viewport bottom so controls stay above the overlay.
  * Hero home/film keep their own framed HouseFooter inside the fixed shell.
+ * Subscribe → /subscribe (email + RSS), not an overlay sheet.
  */
 export default function HouseScrollFooter({
   variant = 'dark',
@@ -27,11 +28,9 @@ export default function HouseScrollFooter({
     <HouseFooter
       variant={tone}
       langOpen={isOpen('language')}
-      intelOpen={isOpen('intel')}
       shortcutsOpen={isOpen('shortcuts')}
       legalOpen={isOpen('legal')}
       onLanguage={() => toggle('language')}
-      onIntel={() => toggle('intel')}
       onShortcuts={() => toggle('shortcuts')}
       onLegal={() => toggle('legal')}
     />

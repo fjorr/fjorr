@@ -955,7 +955,7 @@ function CinemaTheater({
   const ramsToolsTrailing = (
     <>
       {tracks.length > 0 ? (
-        <div className="relative">
+        <div className="relative" data-cc-menu-root="true">
           <button
             type="button"
             onClick={() => {
@@ -979,7 +979,7 @@ function CinemaTheater({
               data-cc-pop="true"
               role="listbox"
               aria-label={t('captions')}
-              className="absolute bottom-full left-1/2 z-50 mb-2 max-h-[min(40vh,16rem)] min-w-[10rem] -translate-x-1/2 overflow-y-auto overscroll-contain rounded-[10px] bg-[#1C1C1E] py-1.5 text-[#F5F5F7] shadow-[0_8px_28px_rgba(0,0,0,0.35)] ring-1 ring-white/10"
+              className="absolute bottom-full right-0 z-50 mb-2 max-h-[min(50dvh,18rem)] min-w-[10rem] overflow-y-auto overscroll-contain rounded-[10px] bg-[#1C1C1E] py-1.5 text-[#F5F5F7] shadow-[0_8px_28px_rgba(0,0,0,0.35)] ring-1 ring-white/10 sm:left-1/2 sm:right-auto sm:-translate-x-1/2"
             >
               <button
                 type="button"
@@ -1244,8 +1244,7 @@ function CinemaTheater({
           }`}
         >
           <div
-            onClick={onFrameClick}
-            className={`relative isolate w-full cursor-pointer overflow-hidden bg-black transition-[border-radius,box-shadow] duration-500 ease-out transform-gpu ${
+            className={`relative isolate w-full transition-[border-radius,box-shadow] duration-500 ease-out transform-gpu ${
               isFullscreen
                 ? 'h-full max-w-none rounded-none shadow-none'
                 : plusMode
@@ -1253,7 +1252,13 @@ function CinemaTheater({
                   : 'aspect-video max-h-[calc(100dvh-8rem)] rounded-none shadow-none min-[1201px]:rounded-[12px]'
             }`}
           >
-            {ramsVideoStack}
+            {/* Video stays clipped; chrome sits above so the CC menu can open upward. */}
+            <div
+              onClick={onFrameClick}
+              className="absolute inset-0 cursor-pointer overflow-hidden bg-black"
+            >
+              {ramsVideoStack}
+            </div>
             {ramsControlChip}
           </div>
           {!isFullscreen ? ramsIdentity : null}

@@ -1,10 +1,7 @@
-import { cookies } from 'next/headers';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
-import { DisplayModeProvider } from '@/components/DisplayModeProvider';
 import { defaultLocale } from '@/i18n/config';
 import { fontVariables } from '@/lib/fonts';
-import { DISPLAY_MODE_COOKIE, parseDisplayMode } from '@/lib/display-mode';
 
 /** Embed player only needs theater + film copy. */
 const EMBED_NAMESPACES = ['Film', 'Theater'] as const;
@@ -23,18 +20,12 @@ export default async function EmbedLayout({
       (allMessages as Record<string, unknown>)[ns],
     ]).filter(([, v]) => v != null)
   );
-  const cookieStore = await cookies();
-  const initialMode = parseDisplayMode(
-    cookieStore.get(DISPLAY_MODE_COOKIE)?.value
-  );
 
   return (
     <html lang={defaultLocale} className={`${fontVariables} dark`}>
       <body className="font-sans antialiased text-light-01 min-h-screen">
         <NextIntlClientProvider locale={defaultLocale} messages={messages}>
-          <DisplayModeProvider initialMode={initialMode}>
-            {children}
-          </DisplayModeProvider>
+          {children}
         </NextIntlClientProvider>
       </body>
     </html>

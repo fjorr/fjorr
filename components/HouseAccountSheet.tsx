@@ -12,6 +12,7 @@ type NavItem = {
   href: '/account/voyages' | '/account/bureaux' | '/account/early';
   labelKey: 'navLogs' | 'navBureaux' | 'navEarlyRelease';
   hintKey?: 'navLogsHint' | 'navEarlyReleaseHint' | 'navBureauxHint';
+  membersOnly?: boolean;
 };
 
 const ITEMS: NavItem[] = [
@@ -20,6 +21,7 @@ const ITEMS: NavItem[] = [
     href: '/account/early',
     labelKey: 'navEarlyRelease',
     hintKey: 'navEarlyReleaseHint',
+    membersOnly: true,
   },
   {
     href: '/account/bureaux',
@@ -31,6 +33,7 @@ const ITEMS: NavItem[] = [
 /**
  * Account doorway — framed like the house hero poster.
  * Identity comes from AuthPresence (prefetched) so open doesn’t jump.
+ * Unpaid signed-in: soft join CTA instead of member-only doors.
  */
 export default function HouseAccountSheet({
   onNavigate,
@@ -41,8 +44,10 @@ export default function HouseAccountSheet({
   const tNav = useTranslations('Nav');
   const pathname = usePathname() || '';
   const router = useRouter();
-  const { displayName, bureauxNumber } = useAuthPresence();
+  const { displayName, bureauxNumber, bureauxMember } = useAuthPresence();
   const [signingOut, setSigningOut] = useState(false);
+  const isMember = bureauxMember === true;
+  const unpaid = bureauxMember === false;
 
   const handleSignOut = async () => {
     if (signingOut) return;
@@ -56,6 +61,10 @@ export default function HouseAccountSheet({
       setSigningOut(false);
     }
   };
+
+  const visibleItems = ITEMS.filter(
+    (item) => !item.membersOnly || isMember
+  );
 
   return (
     <div
@@ -74,17 +83,37 @@ export default function HouseAccountSheet({
                 {displayName || '\u00a0'}
               </p>
               <p className="m-0 min-h-[1.25rem] font-sans text-[14px] font-semibold tabular-nums tracking-tight text-black/45">
-                {bureauxNumber != null
+                {isMember && bureauxNumber != null
                   ? `${t('bureauxNo')} ${bureauxNumber}`
-                  : '\u00a0'}
+                  : unpaid
+                    ? t('unpaidStatus')
+                    : '\u00a0'}
               </p>
             </div>
+
+            {unpaid ? (
+              <div className="flex flex-col gap-4">
+                <p className="m-0 max-w-[36ch] font-sans text-[15px] font-medium leading-snug tracking-tight text-black/50">
+                  {t('unpaidJoinBody')}
+                </p>
+                <Link
+                  href="/bureaux"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    onNavigate('/bureaux');
+                  }}
+                  className="inline-flex h-11 w-fit items-center justify-center rounded-full bg-[#0B0B0C] px-7 font-sans text-[15px] font-semibold tracking-tight text-white transition-opacity hover:opacity-85"
+                >
+                  {t('unpaidJoinCta')}
+                </Link>
+              </div>
+            ) : null}
 
             <nav
               aria-label={tNav('account')}
               className="flex flex-col gap-4 md:gap-5"
             >
-              {ITEMS.map((item) => {
+              {visibleItems.map((item) => {
                 const active =
                   pathname === item.href ||
                   pathname.startsWith(`${item.href}/`);

@@ -37,7 +37,7 @@ export type AboutCopy = {
 };
 
 const BEAT_TYPE =
-  'm-0 w-full max-w-[42rem] text-center font-interTight text-[clamp(1.75rem,5.2vw,3.25rem)] font-bold leading-[1.15] tracking-tight text-[#f5f5f7] md:max-w-[48rem]';
+  'm-0 w-full max-w-[22rem] text-balance text-center font-interTight text-[30px] font-semibold leading-[1.25] tracking-tight text-[#f5f5f7] sm:max-w-[34rem] md:max-w-[40rem]';
 
 /** Apple-style: soft fade + rise. One motion for every beat. */
 function AppleBeat({ text }: { text: string }) {
@@ -75,6 +75,7 @@ function AppleBeat({ text }: { text: string }) {
       />
       <p
         className={BEAT_TYPE}
+        style={{ fontSize: 30 }}
         aria-label={stacked ? lines.join(' ') : undefined}
       >
         {lines.map((line, i) => (

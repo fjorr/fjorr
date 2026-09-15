@@ -1,13 +1,26 @@
 const GATE_PAYLOAD = 'fjorr-site-gate-v1';
 
-/** Link-preview crawlers must reach film pages for correct Open Graph tags. */
+/**
+ * Link-preview crawlers — need real film HTML + OG tags.
+ * Search engines are NOT included; they get noindex while the gate is on.
+ */
 const SOCIAL_CRAWLER_RE =
-  /facebookexternalhit|Facebot|Twitterbot|LinkedInBot|Slackbot|Discordbot|WhatsApp|TelegramBot|SkypeUriPreview|Applebot|iMessageBot|Googlebot|bingbot|Baiduspider|DuckDuckBot|Embedly|Quora Link Preview|Showyoubot|outbrain|pinterest|redditbot|vkShare|W3C_Validator/i;
+  /facebookexternalhit|Facebot|Twitterbot|LinkedInBot|Slackbot|Discordbot|WhatsApp|TelegramBot|SkypeUriPreview|iMessageBot|Embedly|Quora Link Preview|Showyoubot|outbrain|pinterest|redditbot|vkShare|W3C_Validator/i;
+
+/** Indexing crawlers — must not catalog gated (pre-launch) HTML. */
+const SEARCH_CRAWLER_RE =
+  /Googlebot|Google-Extended|bingbot|Baiduspider|DuckDuckBot|YandexBot|Applebot|Slurp|Bytespider/i;
 
 /** True when the request is a social / messaging link preview crawler. */
 export function isSocialCrawler(userAgent: string | null | undefined): boolean {
   if (!userAgent) return false;
   return SOCIAL_CRAWLER_RE.test(userAgent);
+}
+
+/** True when the request is a search / indexing crawler. */
+export function isSearchCrawler(userAgent: string | null | undefined): boolean {
+  if (!userAgent) return false;
+  return SEARCH_CRAWLER_RE.test(userAgent);
 }
 
 async function hmacHex(secret: string, message: string): Promise<string> {

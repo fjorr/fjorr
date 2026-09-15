@@ -1,8 +1,9 @@
 'use client';
 
+import Image from 'next/image';
 import React, { useEffect, useRef, useState } from 'react';
 
-const POSTER_HOLD_MS = 1200;
+const POSTER_HOLD_MS = 2800;
 const PREVIEW_MS = 8000;
 const FADE_MS = 700;
 
@@ -20,12 +21,15 @@ type Props = {
   runtime?: number | null;
   active: boolean;
   paused?: boolean;
+  /** LCP — priority fetch for the active slide poster. */
+  priority?: boolean;
   className?: string;
 };
 
 /**
  * Poster → muted tease from the same Mux HLS stream (no extra asset).
  * Uses hls.js on Chromium; native HLS only when MSE/hls.js is unavailable (Safari).
+ * Poster goes through next/image + Cloudflare loader for LCP width variants.
  */
 export default function HouseHeroPreview({
   poster,
@@ -33,6 +37,7 @@ export default function HouseHeroPreview({
   runtime,
   active,
   paused = false,
+  priority = false,
   className = '',
 }: Props) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -189,54 +194,73 @@ export default function HouseHeroPreview({
 
     const holdId = window.setTimeout(() => {
       if (cancelled) return;
-      video.muted = true;
-      video.defaultMuted = true;
-      video.playsInline = true;
-      video.setAttribute('playsinline', '');
-      video.setAttribute('webkit-playsinline', '');
 
-      void import('hls.js')
-        .then(({ default: Hls }) => {
-          if (cancelled) return;
+      const startStream = () => {
+        if (cancelled) return;
+        video.muted = true;
+        video.defaultMuted = true;
+        video.playsInline = true;
+        video.setAttribute('playsinline', '');
+        video.setAttribute('webkit-playsinline', '');
 
-          // Chromium reports canPlayType("…mpegurl") as "maybe" but cannot
-          // play HLS without MSE — prefer hls.js whenever it is supported.
-          if (Hls.isSupported()) {
-            const hls = new Hls({
-              enableWorker: true,
-              maxBufferLength: 12,
-              maxMaxBufferLength: 20,
-              // Auto ABR — startLevel: 0 forced potato then upswitch (blurry tease).
-              startLevel: -1,
-              startPosition: startAt,
-            });
-            hlsRef.current = hls;
-            hls.loadSource(hlsUrl);
-            hls.attachMedia(video);
-            hls.on(Hls.Events.MANIFEST_PARSED, () => {
-              if (!cancelled) whenMeta(() => playClip());
-            });
-            hls.on(Hls.Events.ERROR, (_event, data) => {
-              if (!data?.fatal || cancelled) return;
-              console.warn('House preview HLS error:', data.type, data.details);
-              teasedForRef.current = null;
-              destroyStream();
-            });
-            return;
-          }
+        void import('hls.js')
+          .then(({ default: Hls }) => {
+            if (cancelled) return;
 
-          if (video.canPlayType('application/vnd.apple.mpegurl')) {
-            video.src = hlsUrl;
-            video.load();
-            whenMeta(seekThenPlay);
-            return;
-          }
+            // Chromium reports canPlayType("…mpegurl") as "maybe" but cannot
+            // play HLS without MSE — prefer hls.js whenever it is supported.
+            if (Hls.isSupported()) {
+              const hls = new Hls({
+                enableWorker: true,
+                maxBufferLength: 12,
+                maxMaxBufferLength: 20,
+                // Auto ABR — startLevel: 0 forced potato then upswitch (blurry tease).
+                startLevel: -1,
+                startPosition: startAt,
+              });
+              hlsRef.current = hls;
+              hls.loadSource(hlsUrl);
+              hls.attachMedia(video);
+              hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                if (!cancelled) whenMeta(() => playClip());
+              });
+              hls.on(Hls.Events.ERROR, (_event, data) => {
+                if (!data?.fatal || cancelled) return;
+                console.warn('House preview HLS error:', data.type, data.details);
+                teasedForRef.current = null;
+                destroyStream();
+              });
+              return;
+            }
 
-          teasedForRef.current = null;
-        })
-        .catch(() => {
-          teasedForRef.current = null;
-        });
+            if (video.canPlayType('application/vnd.apple.mpegurl')) {
+              video.src = hlsUrl;
+              video.load();
+              whenMeta(seekThenPlay);
+              return;
+            }
+
+            teasedForRef.current = null;
+          })
+          .catch(() => {
+            teasedForRef.current = null;
+          });
+      };
+
+      // Prefer idle time so LCP poster paint wins the network.
+      const ric = (
+        window as Window & {
+          requestIdleCallback?: (
+            cb: () => void,
+            opts?: { timeout: number }
+          ) => number;
+        }
+      ).requestIdleCallback;
+      if (typeof ric === 'function') {
+        ric(startStream, { timeout: 1200 });
+      } else {
+        startStream();
+      }
     }, POSTER_HOLD_MS);
     timersRef.current.push(holdId);
 
@@ -246,15 +270,22 @@ export default function HouseHeroPreview({
     };
   }, [active, paused, pageVisible, canPreview, playbackId, runtime]);
 
+  const eager = Boolean(priority && active);
+
   return (
     <div className={`absolute inset-0 overflow-hidden bg-black ${className}`}>
       {poster ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
+        <Image
           src={poster}
           alt=""
-          className="absolute inset-0 h-full w-full object-cover object-center"
+          fill
+          sizes="100vw"
+          priority={eager}
+          fetchPriority={eager ? 'high' : 'auto'}
+          loading={eager ? 'eager' : 'lazy'}
+          decoding="async"
           draggable={false}
+          className="absolute inset-0 h-full w-full object-cover object-center"
         />
       ) : null}
       <video

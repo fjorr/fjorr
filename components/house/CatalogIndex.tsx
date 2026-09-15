@@ -35,6 +35,13 @@ type Props = {
   /** Open film / artifact. */
   onPlay: (slug: string) => void;
   onHover?: (slug: string) => void;
+  /** Results scroller offset — used to compact the search field on mobile. */
+  onResultsScroll?: (scrollTop: number) => void;
+  /**
+   * When false, filters stay put and the parent owns scrolling
+   * (CommandLine compact-on-scroll).
+   */
+  scrollable?: boolean;
 };
 
 type SortKey = 'catalog' | 'title' | 'year' | 'runtime';
@@ -86,6 +93,8 @@ export default function CatalogIndex({
   showKindFilter = false,
   onPlay,
   onHover,
+  onResultsScroll,
+  scrollable = true,
 }: Props) {
   const t = useTranslations('Film');
   const tSearch = useTranslations('Search');
@@ -234,7 +243,13 @@ export default function CatalogIndex({
   );
 
   return (
-    <div className="flex min-h-0 w-full flex-1 flex-col">
+    <div
+      className={
+        scrollable
+          ? 'flex min-h-0 w-full flex-1 flex-col'
+          : 'flex w-full flex-col'
+      }
+    >
       {/* Filters + view mode stay under the search input width. */}
       <div className="mx-auto w-full max-w-[44rem] shrink-0">{controlBar}</div>
 
@@ -255,10 +270,23 @@ export default function CatalogIndex({
               pageBg: item.pageBg ?? null,
             }))}
             onPlay={onPlay}
+            onScrollOffset={scrollable ? onResultsScroll : undefined}
+            scrollable={scrollable}
           />
         )
       ) : (
-        <div className="mx-auto min-h-0 w-full max-w-[44rem] flex-1 overflow-y-auto">
+        <div
+          className={
+            scrollable
+              ? 'mx-auto min-h-0 w-full max-w-[44rem] flex-1 overflow-y-auto'
+              : 'mx-auto w-full max-w-[44rem]'
+          }
+          onScroll={
+            scrollable && onResultsScroll
+              ? (event) => onResultsScroll(event.currentTarget.scrollTop)
+              : undefined
+          }
+        >
           <ul className="m-0 list-none p-0" aria-label={t('browseHeadline')}>
             {displayItems.length === 0 ? (
               <li

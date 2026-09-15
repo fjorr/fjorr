@@ -7,7 +7,7 @@ import { useAuthPresence } from '@/components/AuthPresenceProvider';
 import { useHouseOverlay } from '@/components/HouseOverlayProvider';
 
 /**
- * “Account” in the nav lump — active Bureaux members only.
+ * “Account” in the nav — any signed-in person (member or unpaid).
  * Opens the account poster sheet (same frame as house heroes).
  */
 export default function NavbarAccountLink({
@@ -22,26 +22,14 @@ export default function NavbarAccountLink({
   const t = useTranslations('Nav');
   const pathname = usePathname() || '';
   const { toggle, isOpen, close } = useHouseOverlay();
-  const { signedIn, bureauxMember } = useAuthPresence();
+  const { signedIn } = useAuthPresence();
 
   const onAccount =
     pathname === '/account' || pathname.startsWith('/account/');
   const accountOpen = isOpen('account');
   const active = accountOpen || onAccount;
 
-  // Reserve width while membership resolves so the chip doesn’t jump.
-  if (signedIn === true && bureauxMember === null) {
-    return (
-      <span
-        aria-hidden
-        className={`pointer-events-none invisible font-sans text-[13px] font-semibold tracking-normal ${mutedClassName} ${className}`}
-      >
-        {t('accountShort')}
-      </span>
-    );
-  }
-
-  if (signedIn !== true || bureauxMember !== true) return null;
+  if (signedIn !== true) return null;
 
   return (
     <button

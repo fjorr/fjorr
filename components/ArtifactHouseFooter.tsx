@@ -32,11 +32,9 @@ export default function ArtifactHouseFooter({
       <HouseFooter
         variant={variant}
         langOpen={isOpen('language')}
-        intelOpen={isOpen('intel')}
         shortcutsOpen={isOpen('shortcuts')}
         legalOpen={isOpen('legal')}
         onLanguage={() => toggle('language')}
-        onIntel={() => toggle('intel')}
         onShortcuts={() => toggle('shortcuts')}
         onLegal={() => toggle('legal')}
       />

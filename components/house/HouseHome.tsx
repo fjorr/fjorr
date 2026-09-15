@@ -114,12 +114,15 @@ export default function HouseHome({
   films,
   cornerChip = null,
   includeIntro = true,
+  emptyMessage = null,
 }: {
   films: HouseFilm[];
   /** Quiet label upper-left on the poster (e.g. early release). */
   cornerChip?: string | null;
   /** Home keeps the brand intro card; other stages can omit it. */
   includeIntro?: boolean;
+  /** Shown in the stage when there are no films (and no intro). */
+  emptyMessage?: string | null;
 }) {
   const router = useRouter();
   const { active, setShortcutHandler, isOpen, toggle } =
@@ -135,6 +138,7 @@ export default function HouseHome({
   const frame = useHeroFrame();
   /** Permanent brand title card while the library grows. */
   const stageFilms = includeIntro ? [HOUSE_INTRO_FILM, ...films] : films;
+  const isEmptyStage = stageFilms.length === 0;
   const previewPaused = sheetOpen || showTheater;
   const { displayIndex: copyIndex, visible: copyVisible } = useHeroCopyFade(
     phase,
@@ -311,6 +315,14 @@ export default function HouseHome({
 
       <div className={`relative min-h-0 flex-1 ${HOUSE_STAGE_SIDE_CLASS}`}>
         <div className="relative h-full w-full overflow-hidden rounded-[8px]">
+        {isEmptyStage ? (
+          <div className="flex h-full w-full items-center justify-center bg-[#0B0B0C] px-8">
+            <p className="m-0 max-w-[32ch] text-center font-sans text-[16px] font-medium leading-relaxed text-white/55">
+              {emptyMessage || '\u00a0'}
+            </p>
+          </div>
+        ) : (
+          <>
         <HouseFrameNav
           onPrev={() => goTo(index - 1)}
           onNext={() => goTo(index + 1)}
@@ -369,6 +381,7 @@ export default function HouseHome({
                 runtime={item.runtime}
                 active={active && phase !== 'from'}
                 paused={previewPaused}
+                priority={active && phase !== 'from'}
               />
             </article>
           );
@@ -429,6 +442,8 @@ export default function HouseHome({
           </div>
         ) : null}
         </div>
+          </>
+        )}
         </div>
       </div>
 
@@ -444,14 +459,10 @@ export default function HouseHome({
       >
         <HouseFooter
           langOpen={isOpen('language')}
-          intelOpen={isOpen('intel')}
           shortcutsOpen={isOpen('shortcuts')}
           legalOpen={isOpen('legal')}
           onLanguage={() => {
             toggle('language');
-          }}
-          onIntel={() => {
-            toggle('intel');
           }}
           onShortcuts={() => {
             toggle('shortcuts');

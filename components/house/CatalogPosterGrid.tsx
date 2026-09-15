@@ -20,9 +20,15 @@ export type CatalogPosterItem = {
 export default function CatalogPosterGrid({
   items,
   onPlay,
+  onScrollOffset,
+  scrollable = true,
 }: {
   items: CatalogPosterItem[];
   onPlay: (slug: string) => void;
+  /** Fires with scrollTop as the results list moves (mobile search compact). */
+  onScrollOffset?: (scrollTop: number) => void;
+  /** When false, grow with content and let a parent scroller own overflow. */
+  scrollable?: boolean;
 }) {
   const t = useTranslations('Film');
 
@@ -33,7 +39,16 @@ export default function CatalogPosterGrid({
   }
 
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto">
+    <div
+      className={
+        scrollable ? 'min-h-0 flex-1 overflow-y-auto' : 'w-full'
+      }
+      onScroll={
+        scrollable && onScrollOffset
+          ? (event) => onScrollOffset(event.currentTarget.scrollTop)
+          : undefined
+      }
+    >
       <ul
         className="m-0 grid list-none grid-cols-2 gap-3 p-0 sm:grid-cols-3 sm:gap-3.5 md:grid-cols-4 md:gap-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7"
         aria-label={t('browseHeadline')}

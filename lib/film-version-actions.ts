@@ -8,6 +8,7 @@ import { revalidatePath } from 'next/cache';
 import { requireAdmin } from '@/lib/admin-auth';
 import { createPublicClient } from '@/lib/supabase/public';
 import { createServiceClient } from '@/lib/supabase/service';
+import { revalidateFilmContent } from '@/lib/revalidate-content';
 import type { FilmVersion } from '@/lib/film-version';
 
 function mapVersion(row: any): FilmVersion {
@@ -89,6 +90,6 @@ export async function shipFilmVersion(
   const version = mapVersion(cut);
   revalidatePath('/admin');
   revalidatePath('/admin/plus');
-  revalidatePath('/');
+  revalidateFilmContent();
   return { ok: true, version };
 }

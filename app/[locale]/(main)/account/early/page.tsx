@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import AccountShell from '@/components/AccountShell';
 import HouseHome, { type HouseFilm } from '@/components/house/HouseHome';
 import { requireOwnAccount } from '@/lib/account-session';
 import {
@@ -72,7 +71,7 @@ export default async function AccountEarlyReleasePage({
 }: {
   searchParams?: Promise<{ preview?: string }>;
 }) {
-  const { profile } = await requireOwnAccount('/account/early');
+  const { profile: _profile } = await requireOwnAccount('/account/early');
   const params = (await searchParams) || {};
   const real = await getEarlyReleaseFilms();
   const films =
@@ -85,11 +84,12 @@ export default async function AccountEarlyReleasePage({
 
   if (films.length === 0) {
     return (
-      <AccountShell profile={profile} wide>
-        <p className="m-0 mx-auto max-w-[32ch] text-center font-sans text-[16px] font-medium leading-relaxed text-black/45">
-          {t('earlyReleaseEmpty')}
-        </p>
-      </AccountShell>
+      <HouseHome
+        films={[]}
+        cornerChip={t('earlyReleaseChip')}
+        includeIntro={false}
+        emptyMessage={t('earlyReleaseEmpty')}
+      />
     );
   }
 

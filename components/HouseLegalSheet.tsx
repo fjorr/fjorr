@@ -39,7 +39,7 @@ export default function HouseLegalSheet({
       <div className="flex min-h-0 flex-1 items-center justify-center px-5 py-10 md:px-10 md:py-14">
         <nav
           aria-label={t('legalAria')}
-          className="grid w-full max-w-[720px] grid-cols-1 gap-5 sm:grid-cols-2 md:gap-6"
+          className="grid w-full max-w-[720px] grid-cols-2 gap-3 sm:gap-5 md:gap-6"
         >
           {LEGAL_LINKS.map((item, i) => (
             <SheetEnter key={item.href} delay={i * 80}>
@@ -54,12 +54,12 @@ export default function HouseLegalSheet({
                     ? 'page'
                     : undefined
                 }
-                className="flex min-h-[220px] flex-col justify-between rounded-[24px] bg-[#F5F5F7] p-6 text-left transition-transform duration-200 ease-out hover:-translate-y-0.5 md:min-h-[260px] md:p-7"
+                className="flex min-h-[160px] flex-col justify-between rounded-[20px] bg-[#F5F5F7] p-4 text-left transition-transform duration-200 ease-out hover:-translate-y-0.5 sm:min-h-[220px] sm:rounded-[24px] sm:p-6 md:min-h-[260px] md:p-7"
               >
-                <span className="font-interTight text-[28px] font-bold leading-none tracking-tight text-[#0B0B0C] md:text-[32px]">
+                <span className="font-interTight text-[22px] font-bold leading-none tracking-tight text-[#0B0B0C] sm:text-[28px] md:text-[32px]">
                   {t(item.labelKey)}
                 </span>
-                <span className="font-sans text-[15px] font-medium leading-snug text-black/45 md:text-[16px]">
+                <span className="font-sans text-[13px] font-medium leading-snug text-black/45 sm:text-[15px] md:text-[16px]">
                   {t(item.descKey)}
                 </span>
               </Link>

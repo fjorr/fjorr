@@ -1,17 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 import HeroPicture from '@/components/HeroPicture';
 import { Icon } from '@/components/ui/Icons';
 import { resolveTitleArtColor, sanitizeTitleArtSvg } from '@/lib/sanitize-svg';
 import { formatResumeClock } from '@/lib/watch-progress';
 import RatingBadge from '@/components/house/RatingBadge';
-
-const FilmSendSheet = dynamic(() => import('@/components/FilmSendSheet'), {
-  ssr: false,
-});
+import FilmSendSheet from '@/components/FilmSendSheet';
 
 interface FilmHeroProps {
   film: any;
@@ -174,10 +170,14 @@ export default function FilmHero({
               <button
                 type="button"
                 onClick={() => setSendOpen(true)}
-                className="h-10 inline-flex items-center justify-center gap-1.5 bg-transparent text-white/75 hover:text-white font-sans font-semibold text-sm tracking-normal transition-colors duration-150 cursor-pointer border-0 outline-none px-0"
+                aria-label={t('send')}
+                className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/25 bg-white/12 text-white/90 backdrop-blur-md transition-colors hover:bg-white/18 hover:text-white"
               >
-                <Icon name="bolt" className="h-4 w-4" aria-hidden />
-                {t('send')}
+                <Icon
+                  name="share"
+                  className="!h-[15px] !w-[12px]"
+                  aria-hidden
+                />
               </button>
             </div>
           </div>

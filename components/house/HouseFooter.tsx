@@ -12,11 +12,9 @@ type Props = {
   /** Poster dots — joins the centered utility cluster when present. */
   center?: ReactNode;
   langOpen?: boolean;
-  intelOpen?: boolean;
   shortcutsOpen?: boolean;
   legalOpen?: boolean;
   onLanguage?: () => void;
-  onIntel?: () => void;
   onShortcuts?: () => void;
   onLegal?: () => void;
   /** Loading shell: muted chrome, no click. */
@@ -33,11 +31,9 @@ export default function HouseFooter({
   left,
   center,
   langOpen = false,
-  intelOpen: _intelOpen = false,
   shortcutsOpen = false,
   legalOpen = false,
   onLanguage,
-  onIntel: _onIntel,
   onShortcuts,
   onLegal,
   staticLanguage = false,

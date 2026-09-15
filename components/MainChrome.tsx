@@ -3,40 +3,32 @@
 import React, { useEffect, useState } from 'react';
 import { usePathname } from '@/i18n/navigation';
 import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
 import { useColorScheme } from '@/components/ColorSchemeProvider';
 import {
-  hasHouseFooterChrome,
   isAboutBlackPath,
-  isAboutPath,
   isAboutRootPath,
   isColorSchemeLockedPath,
   isEssayFailurePath,
 } from '@/lib/color-scheme';
 
 /**
- * Client chrome only — pathname / scheme for nav+footer.
+ * Client chrome only — pathname / scheme for nav.
  * Kept out of the (main) layout so page trees stay RSC.
  *
+ * Classic Footer retired — house/scroll pages use HouseFooter / HouseScrollFooter.
  * House home/film mount Navbar themselves inside the fixed house shell.
- * About root: white nav over hero, dark nav on paper.
- * The Mark stays black. Paper pages (join, essay, legal, partner) use
- * dark nav on white. Artifacts live in (exhibition).
  */
 export default function MainChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() || '';
   const isWatchPage = pathname.startsWith('/watch');
   const isHome = pathname === '/';
   const isFilmPoster = pathname.startsWith('/film/');
-  const isSignInPage =
-    pathname === '/signin' || pathname.startsWith('/signin/');
   const isBureauxJoinPage = pathname === '/bureaux';
   const isLegalPage =
     pathname === '/privacy' ||
     pathname === '/terms' ||
     pathname.startsWith('/privacy/') ||
     pathname.startsWith('/terms/');
-  // Normalize in case a locale prefix ever leaks through.
   const path =
     pathname.replace(/^\/(en|es|fr|it|de|pt|sv|hi|ko|ja|zh-tw)(?=\/|$)/, '') ||
     '/';
@@ -52,19 +44,8 @@ export default function MainChrome({ children }: { children: React.ReactNode }) 
   const isEssayPage = isEssayFailurePath(pathname);
   const isAboutRoot = isAboutRootPath(pathname);
   const aboutBlackPage = isAboutBlackPath(pathname);
-  const aboutPage = isAboutPath(pathname);
   const houseShell = isHome || isFilmPoster || isEarlyReleasePage;
   const hideChrome = isWatchPage || houseShell || isBureauxJoinPage;
-  const hideFooter =
-    hideChrome ||
-    isSignInPage ||
-    isLegalPage ||
-    isFeedPage ||
-    isSubscribePage ||
-    isPartnerPage ||
-    isEssayPage ||
-    aboutPage ||
-    hasHouseFooterChrome(pathname);
   const isArtifactPage = pathname.startsWith('/artifact/');
   const isLocked = isColorSchemeLockedPath(pathname);
   const { isLight } = useColorScheme();
@@ -84,8 +65,6 @@ export default function MainChrome({ children }: { children: React.ReactNode }) 
     return () => window.removeEventListener('fjorr:about-hero', onAboutHero);
   }, [isAboutRoot]);
 
-  // Navbar: white text on dark surfaces, black text on light.
-  // About root: white over the black hero, dark once paper takes over.
   const paperPage =
     isLegalPage ||
     isFeedPage ||
@@ -104,7 +83,6 @@ export default function MainChrome({ children }: { children: React.ReactNode }) 
       : isLocked || !isLight
         ? 'light'
         : 'dark';
-  const footerVariant = isLocked || !isLight ? 'light' : 'dark';
 
   useEffect(() => {
     if (isArtifactPage) {
@@ -167,8 +145,6 @@ export default function MainChrome({ children }: { children: React.ReactNode }) 
       {!hideChrome && <Navbar variant={navVariant} />}
 
       <main className="relative flex w-full flex-grow flex-col">{children}</main>
-
-      {!hideFooter && <Footer variant={footerVariant} />}
     </div>
   );
 }

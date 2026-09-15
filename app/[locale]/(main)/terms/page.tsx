@@ -1,14 +1,34 @@
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
+import type { AppLocale } from '@/i18n/config';
+import { buildAlternates } from '@/lib/seo/alternates';
+import { marketingShareImages } from '@/lib/seo/og';
 import LegalDoc, { type LegalSection } from '@/components/LegalDoc';
 import HouseScrollFooter from '@/components/HouseScrollFooter';
 
 export async function generateMetadata(): Promise<Metadata> {
+  const locale = (await getLocale()) as AppLocale;
   const t = await getTranslations('Meta');
+  const title = t('termsTitle');
+  const description = t('termsDescription');
+  const { openGraphImages, twitterImages } = marketingShareImages(title);
   return {
-    title: t('termsTitle'),
-    description: t('termsDescription'),
-    alternates: { canonical: '/terms' },
+    title,
+    description,
+    alternates: buildAlternates('/terms', locale),
+    openGraph: {
+      title: `${title} | Fjorr`,
+      description,
+      url: 'https://www.fjorr.com/terms',
+      type: 'website',
+      images: openGraphImages,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${title} | Fjorr`,
+      description,
+      images: twitterImages,
+    },
   };
 }
 

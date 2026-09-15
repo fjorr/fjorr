@@ -16,13 +16,9 @@ import { usePathname, useRouter } from '@/i18n/navigation';
 import { hasHouseFooterChrome } from '@/lib/color-scheme';
 import { clearBrowseReturn } from '@/lib/house-browse';
 import { HOUSE_CHROME_COLUMN, HOUSE_CHROME_PX } from '@/lib/house-chrome';
-import CommandLine, { type CommandFilm } from '@/components/house/CommandLine';
-import LanguagePanel from '@/components/house/LanguagePanel';
-import IntelPanel from '@/components/house/IntelPanel';
-import ShortcutsPanel, { type ShortcutAction } from '@/components/house/ShortcutsPanel';
-import HouseLegalSheet from '@/components/HouseLegalSheet';
-import HouseBureauxSheet from '@/components/HouseBureauxSheet';
-import HouseAccountSheet from '@/components/HouseAccountSheet';
+import dynamic from 'next/dynamic';
+import type { CommandFilm } from '@/components/house/CommandLine';
+import type { ShortcutAction } from '@/components/house/ShortcutsPanel';
 import { stripLocalePrefix, type AppLocale } from '@/i18n/config';
 import {
   clearLanguageHello,
@@ -38,18 +34,40 @@ import {
   queueSearchReopen,
 } from '@/lib/house-search-return';
 
+const CommandLine = dynamic(() => import('@/components/house/CommandLine'), {
+  ssr: false,
+});
+const LanguagePanel = dynamic(() => import('@/components/house/LanguagePanel'), {
+  ssr: false,
+});
+const ShortcutsPanel = dynamic(
+  () => import('@/components/house/ShortcutsPanel'),
+  { ssr: false }
+);
+const HouseLegalSheet = dynamic(() => import('@/components/HouseLegalSheet'), {
+  ssr: false,
+});
+const HouseBureauxSheet = dynamic(
+  () => import('@/components/HouseBureauxSheet'),
+  { ssr: false }
+);
+const HouseAccountSheet = dynamic(
+  () => import('@/components/HouseAccountSheet'),
+  { ssr: false }
+);
+
 /**
  * House overlay rules:
  * 1. One sheet at a time — opening any sheet closes every other.
  * 2. Full white between navbar and footer (viewport), on house and scroll pages.
  * 3. Only nav + footer stay visible beside the sheet.
  * 4. Same control toggles closed; Escape closes; theater clears.
- * 5. Sheets: search · language · intel · shortcuts · legal · bureaux · account.
+ * 5. Sheets: search · language · shortcuts · legal · bureaux · account.
+ *    Subscribe lives on /subscribe (no intel overlay).
  */
 export type HouseSheetId =
   | 'search'
   | 'language'
-  | 'intel'
   | 'shortcuts'
   | 'legal'
   | 'bureaux'
@@ -389,7 +407,6 @@ export function HouseOverlayProvider({ children }: { children: ReactNode }) {
                   }}
                 />
               ) : null}
-              {active === 'intel' ? <IntelPanel onClose={close} /> : null}
             </div>
           )}
         </div>

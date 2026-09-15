@@ -111,26 +111,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = Date.now();
   const filmRoutes: MetadataRoute.Sitemap = ((filmsResponse.data || []) as FilmRow[])
     .filter((film) => Boolean(film.slug))
+    .filter((film) => {
+      // Only released titles — coming-soon URLs stay out of the crawl graph.
+      if (film.release_date == null) return false;
+      const t = new Date(film.release_date).getTime();
+      return !Number.isNaN(t) && t <= now;
+    })
     .map((film) => {
       const slug = String(film.slug);
-      const released =
-        film.release_date != null &&
-        !Number.isNaN(new Date(film.release_date).getTime()) &&
-        new Date(film.release_date).getTime() <= now;
-      const videos =
-        released && film.name
-          ? [
-              filmVideoSitemapFields({
-                name: film.name,
-                description: film.teaser,
-                slug,
-                blokOgrf: film.blok_ogrf,
-                muxPlaybackId: film.mux_playback_id,
-                runtimeSeconds: film.runtime,
-                publicationDate: film.release_date,
-              }),
-            ]
-          : undefined;
+      const videos = film.name
+        ? [
+            filmVideoSitemapFields({
+              name: film.name,
+              description: film.teaser,
+              slug,
+              blokOgrf: film.blok_ogrf,
+              muxPlaybackId: film.mux_playback_id,
+              runtimeSeconds: film.runtime,
+              publicationDate: film.release_date,
+            }),
+          ]
+        : undefined;
 
       return entry(
         `/film/${slug}`,

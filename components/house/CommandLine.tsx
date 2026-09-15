@@ -8,6 +8,7 @@ import { usePathname } from '@/i18n/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { storySettingDisplay } from '@/lib/story-year';
 import { setSearchReturn } from '@/lib/house-search-return';
+import { scoreSearchFields } from '@/lib/search-match';
 import {
   hitSnippet,
   snippetContainsQuery,
@@ -83,7 +84,7 @@ const catalogCache = new Map<string, CatalogBundle>();
 const searchCache = new Map<string, SearchBundle>();
 const CATALOG_CACHE_TTL_MS = 2 * 60 * 1000;
 /** Bump when catalog thumb shape changes so warm cache doesn’t keep wrong art. */
-const CATALOG_CACHE_VERSION = 2;
+const CATALOG_CACHE_VERSION = 3;
 
 function catalogCacheKey(locale: string) {
   return `${CATALOG_CACHE_VERSION}:${locale}`;
@@ -265,20 +266,16 @@ function passesIntent(
 }
 
 function scoreFilm(film: CommandFilm, text: string) {
-  if (!text) return 1;
-  const name = film.name.toLowerCase();
-  const creator = (film.creator || '').toLowerCase();
-  const teaser = (film.teaser || '').toLowerCase();
-  const theme = (film.theme || '').toLowerCase();
-  let score = 0;
-  if (name === text) score += 100;
-  else if (name.startsWith(text)) score += 60;
-  else if (name.includes(text)) score += 40;
-  if (film.year === text) score += 30;
-  if (creator.includes(text)) score += 35;
-  if (theme.includes(text)) score += 25;
-  if (teaser.includes(text)) score += 15;
-  return score;
+  return scoreSearchFields(
+    {
+      name: film.name,
+      creator: film.creator,
+      teaser: film.teaser,
+      theme: film.theme,
+      year: film.year,
+    },
+    text
+  );
 }
 
 function rankFilms(catalog: CommandFilm[], query: string) {
@@ -367,6 +364,20 @@ export default function CommandLine({
   );
   const [active, setActive] = useState(0);
   const lastRemoteText = useRef('');
+  const [compactSearch, setCompactSearch] = useState(false);
+  const compactRef = useRef(false);
+
+  const onResultsScroll = (scrollTop: number) => {
+    const next = scrollTop > 20;
+    if (next === compactRef.current) return;
+    compactRef.current = next;
+    setCompactSearch(next);
+  };
+
+  useEffect(() => {
+    compactRef.current = false;
+    setCompactSearch(false);
+  }, [query]);
 
   const searching = query.trim().length > 0;
   const localHits = useMemo(() => {
@@ -418,10 +429,13 @@ export default function CommandLine({
     void (async () => {
       const { data, error } = await supabase
         .from('search')
-        .select('internal_id, slug, name, teaser, creator, theme, label, runtime, release_date, item_type, locale')
+        .select(
+          'internal_id, slug, name, teaser, creator, theme, label, runtime, release_date, item_type, locale'
+        )
         .eq('locale', locale);
       if (cancelled) return;
       if (error || !data?.length) {
+        setCatalog(seedFilms);
         setCatalogReady(true);
         return;
       }
@@ -441,7 +455,7 @@ export default function CommandLine({
         films.map((film) => [film.slug, film] as const)
       );
 
-      // search rows don't store story_date / posters — pull from film.
+      // search rows don't store story_date / posters — pull from film + artifact.
       const filmIds = rows
         .filter((row) => row.item_type === 'film' && row.internal_id)
         .map((row) => String(row.internal_id));
@@ -548,13 +562,16 @@ export default function CommandLine({
           runtime: seed?.runtime ?? film.runtime,
           teaser: film.teaser || seed?.teaser || null,
           comingSoon:
-            seed?.comingSoon != null ? Boolean(seed.comingSoon) : film.comingSoon,
+            seed?.comingSoon != null
+              ? Boolean(seed.comingSoon)
+              : film.comingSoon,
           theme: film.theme || seed?.theme || null,
           poster,
           thumb,
           playbackId,
         };
       };
+
       const loaded = rows
         .filter((row) => row.item_type === 'film')
         .map((row) => toFilm(row))
@@ -574,7 +591,8 @@ export default function CommandLine({
       });
 
       // Films first — don't block browse/search on artifact enrichment.
-      setCatalog(loaded);
+      const catalogFilms = loaded.length ? loaded : seedFilms;
+      setCatalog(catalogFilms);
       setCatalogReady(true);
 
       const artById = new Map(
@@ -597,7 +615,6 @@ export default function CommandLine({
         list.map((item) => {
           const raw = artById.get(item.id);
           if (!raw) return item;
-          // Catalog thumbs use titled blok_tall posters.
           const thumb =
             raw.blok_tall?.trim() ||
             item.thumb ||
@@ -609,7 +626,8 @@ export default function CommandLine({
             item.year || releaseYearLabel(raw.release_date);
           return {
             ...item,
-            poster: raw.hero_clsx || raw.hero_tall || raw.blok_ogrf || item.poster,
+            poster:
+              raw.hero_clsx || raw.hero_tall || raw.blok_ogrf || item.poster,
             thumb,
             pageBg: raw.primary_color?.trim() || '#111111',
             isDarkBg: Boolean(raw.is_dark_bg),
@@ -678,7 +696,7 @@ export default function CommandLine({
       if (cancelled) return;
       setArtifacts(artifactsEnriched);
       catalogCache.set(catalogCacheKey(locale), {
-        films: loaded,
+        films: catalogFilms,
         artifacts: artifactsEnriched,
         at: Date.now(),
       });
@@ -686,7 +704,7 @@ export default function CommandLine({
     return () => {
       cancelled = true;
     };
-  }, [films, locale]);
+  }, [films, locale, seedFilms]);
 
   useEffect(() => {
     const term = query.trim();
@@ -724,18 +742,12 @@ export default function CommandLine({
     const timer = window.setTimeout(async () => {
       try {
         const supabase = createClient();
-        const rpcPromise = supabase.rpc('search_items', {
+        const { data, error } = await supabase.rpc('search_items', {
           search_term: intent.text,
           p_locale: locale,
         });
-        const intelPromise = fetch(
-          `/api/intelligence?q=${encodeURIComponent(intent.text)}`
-        ).catch(() => null);
-
-        const rpcResult = await rpcPromise;
         if (cancelled) return;
 
-        const { data, error } = rpcResult;
         if (error) {
           console.error('search_items failed:', error.message);
         }
@@ -754,72 +766,18 @@ export default function CommandLine({
           .filter((film: CommandFilm | null): film is CommandFilm => Boolean(film))
           .filter((film: CommandFilm) => passesIntent(film, intent));
 
-        const mergeHits = (intelFilms: CommandFilm[]) => {
-          const seen = new Set<string>();
-          return [...intelFilms, ...localHits, ...filmsFromSearch].filter(
-            (film) => {
-              const key = `${film.kind}:${film.slug}`;
-              if (seen.has(key)) return false;
-              seen.add(key);
-              return true;
-            }
-          );
-        };
+        const seen = new Set<string>();
+        const merged = [...localHits, ...filmsFromSearch].filter((film) => {
+          const key = `${film.kind}:${film.slug}`;
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
 
-        // Paint RPC + local first; intelligence can catch up.
-        const early = mergeHits([]);
-        setRemoteHits(early);
-        writeSearchCache(locale, intent.text, early, {});
-        setRemotePending(false);
-
-        const intelRes = await intelPromise;
-        if (cancelled) return;
-
-        const whyMap: Record<string, string> = {};
-        const intelFilms: CommandFilm[] = [];
-        if (intelRes?.ok) {
-          const intel = (await intelRes.json()) as {
-            matches?: Array<{
-              filmId?: string;
-              slug?: string;
-              name?: string;
-              teaser?: string | null;
-              why?: string | null;
-            }>;
-          };
-          for (const m of intel.matches || []) {
-            const slug = String(m.slug || '');
-            if (!slug) continue;
-            if (m.why) whyMap[slug] = m.why;
-            const knownFilm = catalog.find((f) => f.slug === slug);
-            intelFilms.push(
-              knownFilm
-                ? { ...knownFilm, why: m.why || knownFilm.why }
-                : {
-                    id: String(m.filmId || ''),
-                    slug,
-                    name: m.name || slug,
-                    teaser: m.teaser ?? null,
-                    creator: null,
-                    theme: null,
-                    year: null,
-                    storyDate: null,
-                    runtime: null,
-                    rating: null,
-                    comingSoon: false,
-                    kind: 'film',
-                    poster: null,
-                    thumb: null,
-                    playbackId: null,
-                    why: m.why || null,
-                  }
-            );
-          }
-        }
-        setIntelWhy(whyMap);
-        const merged = mergeHits(intelFilms);
         setRemoteHits(merged);
-        writeSearchCache(locale, intent.text, merged, whyMap);
+        setIntelWhy({});
+        writeSearchCache(locale, intent.text, merged, {});
+        setRemotePending(false);
       } catch {
         if (!cancelled && !cached) {
           setRemoteHits(null);
@@ -893,7 +851,11 @@ export default function CommandLine({
       aria-label="Command"
       className="relative z-50 flex h-full flex-col bg-white text-[#0B0B0C]"
     >
-      <div className="mx-auto w-full max-w-[44rem] shrink-0 px-0 pt-2">
+      <div
+        className={`mx-auto w-full max-w-[44rem] shrink-0 px-0 transition-[padding] duration-200 ease-out ${
+          compactSearch ? 'pt-1' : 'pt-2'
+        }`}
+      >
         <form
           role="search"
           onSubmit={(event) => {
@@ -904,8 +866,19 @@ export default function CommandLine({
           <label className="sr-only" htmlFor="fjorr-command">
             Describe a mood, director, or cinematic intent
           </label>
-          <div className="flex w-full items-center gap-3 rounded-[10px] bg-black/[0.05] px-4 py-3.5 md:py-4">
-            <span className="inline-flex shrink-0 text-black/40" aria-hidden>
+          <div
+            className={`flex w-full items-center bg-black/[0.05] transition-[padding,gap,border-radius,box-shadow] duration-200 ease-out ${
+              compactSearch
+                ? 'gap-2 rounded-full px-3 py-1.5 shadow-[0_1px_0_rgba(0,0,0,0.04)]'
+                : 'gap-3 rounded-[10px] px-4 py-3 md:py-4'
+            }`}
+          >
+            <span
+              className={`inline-flex shrink-0 text-black/40 transition-transform duration-200 ${
+                compactSearch ? 'scale-[0.85]' : ''
+              }`}
+              aria-hidden
+            >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                 <circle
                   cx="11"
@@ -927,8 +900,16 @@ export default function CommandLine({
               id="fjorr-command"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="A title, director, or a short phrase"
-              className="h-[1.4em] w-full min-w-0 bg-transparent font-sans text-[17px] font-semibold leading-none tracking-tight text-[#0B0B0C] outline-none placeholder:text-black/35 md:text-[18px]"
+              onFocus={() => {
+                compactRef.current = false;
+                setCompactSearch(false);
+              }}
+              placeholder={
+                compactSearch ? 'Search' : 'A title, director, or a short phrase'
+              }
+              className={`h-[1.4em] w-full min-w-0 bg-transparent font-sans font-semibold leading-none tracking-tight text-[#0B0B0C] outline-none placeholder:text-black/35 transition-[font-size] duration-200 ${
+                compactSearch ? 'text-[14px]' : 'text-[17px] md:text-[18px]'
+              }`}
             />
             {query ? (
               <button
@@ -948,7 +929,10 @@ export default function CommandLine({
         </form>
       </div>
 
-      <div className="mx-auto flex min-h-0 w-full max-w-[90rem] flex-1 flex-col overflow-hidden pt-4 pb-3">
+      <div
+        className="mx-auto min-h-0 w-full max-w-[90rem] flex-1 overflow-y-auto overscroll-contain pb-3 pt-3"
+        onScroll={(event) => onResultsScroll(event.currentTarget.scrollTop)}
+      >
         {searching ? (
           hits.length === 0 ? (
             catalogReady && !remotePending ? (
@@ -961,6 +945,7 @@ export default function CommandLine({
               items={hits.map(toIndexItem)}
               showControls={false}
               showKindFilter
+              scrollable={false}
               onPlay={playFromCatalog}
               onHover={(slug) => {
                 const index = hits.findIndex((row) => row.slug === slug);
@@ -971,6 +956,7 @@ export default function CommandLine({
         ) : (
           <CatalogIndex
             items={catalog.map(toIndexItem)}
+            scrollable={false}
             onPlay={playFromCatalog}
           />
         )}

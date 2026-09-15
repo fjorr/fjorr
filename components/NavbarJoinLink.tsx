@@ -7,8 +7,8 @@ import { useAuthPresence } from '@/components/AuthPresenceProvider';
 import { useHouseOverlay } from '@/components/HouseOverlayProvider';
 
 /**
- * Guest nav: Join + Enter. Signed-in non-members: Join only.
- * Hidden for active Bureaux members (they see Account).
+ * Guest nav: Join + Enter.
+ * Hidden once signed in — Account sheet owns membership / join CTA.
  */
 export default function NavbarJoinLink({
   className = '',
@@ -24,7 +24,7 @@ export default function NavbarJoinLink({
   const t = useTranslations('Nav');
   const pathname = usePathname() || '';
   const { close } = useHouseOverlay();
-  const { signedIn, bureauxMember } = useAuthPresence();
+  const { signedIn } = useAuthPresence();
 
   const onBureaux =
     pathname === '/bureaux' || pathname.startsWith('/bureaux/');
@@ -32,29 +32,12 @@ export default function NavbarJoinLink({
     pathname === '/signin' || pathname.startsWith('/signin/');
 
   if (signedIn === null) return null;
-  // Members (or membership still resolving) — Account link owns this slot.
-  if (signedIn === true && bureauxMember !== false) return null;
+  if (signedIn === true) return null;
 
   const tone = (active: boolean) =>
     `font-sans text-[13px] font-semibold tracking-normal transition-colors ${
       active ? activeClassName || mutedClassName : mutedClassName
     } ${className}`;
-
-  // Already signed in — join is the only door.
-  if (signedIn === true) {
-    return (
-      <Link
-        href="/bureaux"
-        aria-current={onBureaux ? 'page' : undefined}
-        onClick={() => {
-          if (onBureaux) close();
-        }}
-        className={tone(onBureaux)}
-      >
-        {t('join')}
-      </Link>
-    );
-  }
 
   return (
     <span className="inline-flex items-center gap-3 sm:gap-3.5">

@@ -14,7 +14,8 @@ const BUREAUX_IMAGE =
 
 const SITE_BG = LIGHT_PAGE_BG;
 
-const PHASES = ['poster', 'pitch', 'price', 'email'] as const;
+/** Poster → pitch (with price) → checkout. */
+const PHASES = ['poster', 'pitch', 'email'] as const;
 type Phase = (typeof PHASES)[number];
 
 type Props = {
@@ -26,8 +27,8 @@ type Props = {
 };
 
 /**
- * Join deck — four full-bleed slides, content centered.
- * 1) Poster  2) Pitch  3) Price  4) Form
+ * Join deck — three full-bleed slides.
+ * 1) Poster  2) Pitch + price  3) Checkout form
  */
 export default function BureauxJoinStage({
   price,
@@ -41,7 +42,6 @@ export default function BureauxJoinStage({
     startInCheckout ? 'email' : 'poster'
   );
   const [pitchKey, setPitchKey] = useState(0);
-  const [priceKey, setPriceKey] = useState(0);
   const [emailKey, setEmailKey] = useState(0);
 
   useEffect(() => {
@@ -55,7 +55,6 @@ export default function BureauxJoinStage({
     setPhase((current) => {
       if (current === next) return current;
       if (next === 'pitch') setPitchKey((k) => k + 1);
-      if (next === 'price') setPriceKey((k) => k + 1);
       if (next === 'email') setEmailKey((k) => k + 1);
       return next;
     });
@@ -260,7 +259,7 @@ export default function BureauxJoinStage({
           </div>
         </div>
 
-        {/* 2 — Pitch */}
+        {/* 2 — Pitch + price */}
         <div
           className={slideLayer('pitch')}
           style={stageVars}
@@ -269,9 +268,8 @@ export default function BureauxJoinStage({
           {phase === 'pitch' ? (
             <div key={pitchKey} className={centeredPad}>
               <SheetEnter className="flex w-full max-w-[52ch] flex-col items-center text-center md:max-w-[58ch]">
-                <h2 className="m-0 flex flex-col font-interTight text-[clamp(1.65rem,2.8vw,1.75rem)] font-extrabold leading-[1.12] tracking-tight text-[#0B0B0C] md:text-[28px]">
-                  <span>{t('subhead')}</span>
-                  <span>{t('pledge')}</span>
+                <h2 className="m-0 font-interTight text-[clamp(1.65rem,2.8vw,1.75rem)] font-extrabold leading-[1.12] tracking-tight text-[#0B0B0C] md:text-[28px]">
+                  {t('subhead')}
                 </h2>
                 <div className="mt-7 flex w-full flex-col gap-5 font-interTight text-[17px] font-medium leading-[1.45] tracking-tight text-black/50 md:mt-8 md:text-[18px]">
                   {t('aboutBody')
@@ -289,53 +287,21 @@ export default function BureauxJoinStage({
                 </div>
                 <button
                   type="button"
-                  onClick={() => goTo('price')}
-                  aria-label={t('ctaHowMuch')}
-                  className="mt-10 inline-flex size-11 items-center justify-center rounded-full bg-[#0B0B0C] text-white transition-transform hover:scale-[1.04] active:scale-[0.97] md:mt-12 sm:size-12"
+                  onClick={() => goTo('email')}
+                  className="mt-10 inline-flex h-11 items-center justify-center rounded-full bg-[#0B0B0C] px-7 font-interTight text-[15px] font-semibold leading-none tracking-tight text-white transition-opacity hover:opacity-85 active:scale-[0.98] md:mt-12 md:h-12 md:px-8 md:text-[16px]"
                 >
-                  <ArrowRight className="size-5" strokeWidth={2.25} aria-hidden />
+                  {t('ctaJoinPrice', { price })}
                 </button>
-              </SheetEnter>
-            </div>
-          ) : null}
-        </div>
-
-        {/* 3 — Price */}
-        <div
-          className={slideLayer('price')}
-          style={stageVars}
-          aria-hidden={phase !== 'price'}
-        >
-          {phase === 'price' ? (
-            <div key={priceKey} className={centeredPad}>
-              <SheetEnter className="flex w-full max-w-[20rem] flex-col items-center md:max-w-[22rem]">
-                <div className="flex w-full flex-col items-center rounded-[22px] bg-[#0B0B0C] px-8 py-9 text-center text-white md:rounded-[28px] md:px-10 md:py-11">
-                  <div className="flex flex-col items-center tracking-tighter">
-                    <p className="m-0 font-interTight text-[clamp(4rem,11vw,6.5rem)] font-bold leading-none text-white">
-                      {price}
-                    </p>
-                    <p className="m-0 mt-1.5 font-interTight text-[clamp(1.2rem,2.6vw,1.5rem)] font-semibold leading-none tracking-tight text-white/50">
-                      {t('priceYrSuffix')}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => goTo('email')}
-                    className="mt-8 inline-flex h-11 items-center justify-center rounded-full bg-white px-8 font-interTight text-[16px] font-semibold leading-none tracking-tight text-[#0B0B0C] transition-opacity hover:opacity-85 active:scale-[0.98] md:h-12 md:text-[17px]"
-                  >
-                    {t('ctaReady')}
-                  </button>
-                  <div className="mt-5 flex flex-col items-center gap-0 font-interTight text-[13px] font-medium leading-[1.35] tracking-tight text-white/40">
-                    <p className="m-0">{t('billedAnnually')}</p>
-                    <p className="m-0">{t('cancelAnytime')}</p>
-                  </div>
+                <div className="mt-4 flex flex-col items-center gap-0 font-interTight text-[13px] font-medium leading-[1.35] tracking-tight text-black/40">
+                  <p className="m-0">{t('billedAnnually')}</p>
+                  <p className="m-0">{t('cancelAnytime')}</p>
                 </div>
               </SheetEnter>
             </div>
           ) : null}
         </div>
 
-        {/* 4 — Form */}
+        {/* 3 — Form */}
         <div
           className={slideLayer('email')}
           style={stageVars}
@@ -343,8 +309,8 @@ export default function BureauxJoinStage({
         >
           {phase === 'email' ? (
             <div key={emailKey} className={centeredPad}>
-              <SheetEnter className="flex w-full max-w-md flex-col items-center text-center md:max-w-lg">
-                <div className="w-full">{checkout}</div>
+              <SheetEnter className="mx-auto flex w-full max-w-md flex-col items-center justify-center text-center md:max-w-lg">
+                <div className="flex w-full justify-center">{checkout}</div>
               </SheetEnter>
             </div>
           ) : null}

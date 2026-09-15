@@ -1,5 +1,8 @@
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
+import type { AppLocale } from '@/i18n/config';
+import { buildAlternates } from '@/lib/seo/alternates';
+import { marketingShareImages } from '@/lib/seo/og';
 import { redirect } from '@/i18n/navigation';
 import { createClient } from '@/lib/supabase/server';
 import BureauxCheckoutLazy from '@/components/BureauxCheckoutLazy';
@@ -28,22 +31,27 @@ function formatAnnualPrice(cents: number, locale: string) {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
+  const locale = (await getLocale()) as AppLocale;
   const t = await getTranslations('Meta');
   const title = t('bureauxTitle');
   const description = t('bureauxDescription');
+  const { openGraphImages, twitterImages } = marketingShareImages(title);
   return {
     title,
     description,
-    alternates: { canonical: '/bureaux' },
+    alternates: buildAlternates('/bureaux', locale),
     openGraph: {
       title: `${title} | Fjorr`,
       description,
       url: 'https://www.fjorr.com/bureaux',
       type: 'website',
+      images: openGraphImages,
     },
     twitter: {
+      card: 'summary_large_image',
       title: `${title} | Fjorr`,
       description,
+      images: twitterImages,
     },
   };
 }

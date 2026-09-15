@@ -1,7 +1,4 @@
-/**
- * Engine Intelligence dump → ⌘K discovery (notes stay private; API only
- * returns match snippets + seed prompts).
- */
+import { matchesSearchText, searchTokens } from '@/lib/search-match';
 
 export type IntelligencePortrait = {
   filmId: string;
@@ -60,19 +57,12 @@ export function parseDiscoverySeeds(notes: string): string[] {
 }
 
 function tokens(text: string): string[] {
-  return text
-    .toLowerCase()
-    .split(/[^a-z0-9]+/)
-    .filter((t) => t.length >= 2);
+  return searchTokens(text).filter((t) => t.length >= 2);
 }
 
 /** True when the visible snippet still contains the query or a real token. */
 export function snippetContainsQuery(snippet: string, query: string): boolean {
-  const lower = snippet.toLowerCase();
-  const q = query.trim().toLowerCase();
-  if (!q || !lower) return false;
-  if (lower.includes(q)) return true;
-  return tokens(q).some((t) => t.length >= 3 && lower.includes(t));
+  return matchesSearchText(snippet, query);
 }
 
 /**
@@ -87,15 +77,22 @@ export function hitSnippet(
   const q = query.trim().toLowerCase();
   const raw = (source || '').replace(/\s+/g, ' ').trim();
   if (!q || !raw) return null;
+  if (!matchesSearchText(raw, q)) return null;
 
   const lower = raw.toLowerCase();
   let idx = lower.indexOf(q);
   let matchLen = q.length;
   if (idx < 0) {
-    const parts = tokens(q)
-      .filter((t) => t.length >= 3)
-      .sort((a, b) => b.length - a.length);
+    // Prefer longest query token that prefixes a word in the source.
+    const parts = tokens(q).sort((a, b) => b.length - a.length);
+    const words = tokens(lower);
     for (const part of parts) {
+      const word = words.find((w) => w.startsWith(part));
+      if (word) {
+        idx = lower.indexOf(word);
+        matchLen = word.length;
+        break;
+      }
       idx = lower.indexOf(part);
       if (idx >= 0) {
         matchLen = part.length;
@@ -103,10 +100,10 @@ export function hitSnippet(
       }
     }
   }
-  if (idx < 0) return null;
+  if (idx < 0) return raw.length <= maxLen ? raw : `${raw.slice(0, maxLen).trim()}…`;
 
   if (raw.length <= maxLen) {
-    return snippetContainsQuery(raw, q) ? raw : null;
+    return raw;
   }
 
   const side = Math.max(12, Math.floor((maxLen - matchLen) / 2));
@@ -130,7 +127,7 @@ export function hitSnippet(
   let slice = raw.slice(start, end).trim();
   if (start > 0) slice = `…${slice}`;
   if (end < raw.length) slice = `${slice}…`;
-  return snippetContainsQuery(slice, q) ? slice : null;
+  return slice;
 }
 
 export function scoreIntelligence(
@@ -148,24 +145,29 @@ export function scoreIntelligence(
     .join('\n')
     .toLowerCase();
 
+  if (!matchesSearchText(hay, text)) return null;
+
   let score = 0;
   if (portrait.name.toLowerCase() === text) score += 100;
-  else if (portrait.name.toLowerCase().includes(text)) score += 50;
+  else if (matchesSearchText(portrait.name, text)) score += 50;
 
   if (hay.includes(text)) score += 40;
 
-  const qTokens = tokens(text);
-  const noteTokens = new Set(tokens(portrait.notes));
+  const qTokens = searchTokens(text);
+  const noteWords = searchTokens(portrait.notes);
   let hitTokens = 0;
   for (const t of qTokens) {
-    if (noteTokens.has(t)) {
+    if (noteWords.some((w) => w === t || w.startsWith(t))) {
       hitTokens += 1;
       score += t.length >= 5 ? 8 : 3;
     }
   }
 
   // Need a real notes signal for "intelligence" ranking (name-only is local search)
-  if (hitTokens === 0 && !portrait.notes.toLowerCase().includes(text)) {
+  if (
+    hitTokens === 0 &&
+    !matchesSearchText(portrait.notes, text)
+  ) {
     if (score < 40) return null;
   }
 

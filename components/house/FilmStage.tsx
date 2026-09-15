@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useLocale } from 'next-intl';
-import { getPathname, usePathname, useRouter } from '@/i18n/navigation';
+import { getPathname, useRouter } from '@/i18n/navigation';
 import { type AppLocale } from '@/i18n/config';
 import TheaterOpenShell from '@/components/TheaterOpenShell';
 import Navbar from '@/components/Navbar';
@@ -21,9 +21,6 @@ import HouseHeroCopy from '@/components/house/HouseHeroCopy';
 import { useHeroCopyFade } from '@/components/house/useHeroCopyFade';
 import ExhibitionSheet, { type ExhibitionFilm } from '@/components/house/ExhibitionSheet';
 import { useHouseOverlay } from '@/components/HouseOverlayProvider';
-import {
-  resumeSearchReturn,
-} from '@/lib/house-search-return';
 import {
   HOUSE_STAGE_SIDE_CLASS,
   houseStageSidePx,
@@ -98,7 +95,6 @@ function filmHref(slug: string, locale: AppLocale) {
 export default function FilmStage({ id, slug, exhibition, rail: railProp }: FilmStageProps) {
   const locale = useLocale() as AppLocale;
   const router = useRouter();
-  const pathname = usePathname() || '';
   const frame = useHeroFrame();
   const { active, setShortcutHandler, isOpen, toggle } =
     useHouseOverlay();
@@ -266,9 +262,7 @@ export default function FilmStage({ id, slug, exhibition, rail: railProp }: Film
         filmHref(current.slug, locale)
       );
     }
-    // Same return path as theater close — back to the ⌘K index they left.
-    resumeSearchReturn(pathname, (path) => router.push(path));
-  }, [current, locale, pathname, router]);
+  }, [current, locale]);
 
   useEffect(() => {
     // Keep in sync when soft-nav lands on this entry without #info.
@@ -466,6 +460,7 @@ export default function FilmStage({ id, slug, exhibition, rail: railProp }: Film
                 runtime={item.runtime}
                 active={active && phase !== 'from'}
                 paused={previewPaused}
+                priority={active && phase !== 'from'}
               />
             </article>
           );
@@ -493,7 +488,7 @@ export default function FilmStage({ id, slug, exhibition, rail: railProp }: Film
               : null
           }
           visible={copyVisible && !infoOpen}
-          titleAs="h1"
+          titleAs="h2"
           onWatch={() => {
             if (copyFilm && !copyFilm.comingSoon) play(copyFilm);
           }}
@@ -529,14 +524,10 @@ export default function FilmStage({ id, slug, exhibition, rail: railProp }: Film
           >
             <HouseFooter
               langOpen={isOpen('language')}
-              intelOpen={isOpen('intel')}
               shortcutsOpen={isOpen('shortcuts')}
               legalOpen={isOpen('legal')}
               onLanguage={() => {
                 toggle('language');
-              }}
-              onIntel={() => {
-                toggle('intel');
               }}
               onShortcuts={() => {
                 toggle('shortcuts');
@@ -575,7 +566,6 @@ export default function FilmStage({ id, slug, exhibition, rail: railProp }: Film
             setShowTheater(false);
             setSelectedFilm(null);
             setStartAt(undefined);
-            resumeSearchReturn(pathname, (path) => router.push(path));
           }}
         />
       ) : null}

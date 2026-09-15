@@ -1,15 +1,25 @@
 import { updateSession } from "@/lib/supabase/proxy";
-import { isSocialCrawler, isValidGateToken } from "@/lib/site-gate";
+import {
+  isSearchCrawler,
+  isSocialCrawler,
+  isValidGateToken,
+} from "@/lib/site-gate";
 import createMiddleware from "next-intl/middleware";
 import { NextResponse, type NextRequest } from "next/server";
 import { routing } from "@/i18n/routing";
 
 const handleI18nRouting = createMiddleware(routing);
 
+function withGateNoIndex(response: NextResponse): NextResponse {
+  response.headers.set("X-Robots-Tag", "noindex, nofollow");
+  return response;
+}
+
 /**
  * Site password gate is opt-in via SITE_GATE_ENABLED=true.
  * Keep enabled on staging + production until public launch.
  * When enabled, SITE_PASSWORD must be set; cookie value is an HMAC, not a forgeable flag.
+ * Search crawlers that reach HTML while gated always get X-Robots-Tag: noindex.
  */
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -24,6 +34,7 @@ export async function proxy(request: NextRequest) {
   }
 
   const gateEnabled = process.env.SITE_GATE_ENABLED === "true";
+  const ua = request.headers.get("user-agent");
 
   if (
     pathname.startsWith("/_next") ||
@@ -33,7 +44,11 @@ export async function proxy(request: NextRequest) {
     pathname === "/sitemap.xml" ||
     pathname === "/feed.xml"
   ) {
-    return await updateSession(request);
+    const response = await updateSession(request);
+    if (gateEnabled && isSearchCrawler(ua)) {
+      return withGateNoIndex(response);
+    }
+    return response;
   }
 
   // Partner embeds + temp client mocks: no i18n prefix, no site-password gate.
@@ -54,14 +69,20 @@ export async function proxy(request: NextRequest) {
       pathname.endsWith("/auth/error");
 
     // Link-preview bots need real film HTML + Supabase blok_ogrf, not the gate page.
-    if (isSocialCrawler(request.headers.get("user-agent"))) {
+    if (isSocialCrawler(ua)) {
       const response = handleI18nRouting(request);
       return await updateSession(request, response);
     }
 
+    // Search bots: allow HTML through for correct status/body, but never index.
+    if (isSearchCrawler(ua)) {
+      const response = handleI18nRouting(request);
+      return withGateNoIndex(await updateSession(request, response));
+    }
+
     // Password page lives outside [locale] — skip i18n.
     if (pathname === "/password") {
-      return await updateSession(request);
+      return withGateNoIndex(await updateSession(request));
     }
 
     // Auth callbacks must bypass the gate but still run locale rewrite.
@@ -69,12 +90,17 @@ export async function proxy(request: NextRequest) {
     // (breaks magic links, especially when opened from mobile mail clients).
     if (isAuthCallback) {
       const response = handleI18nRouting(request);
-      return await updateSession(request, response);
+      return withGateNoIndex(await updateSession(request, response));
     }
 
     if (!isAuthenticated) {
-      return NextResponse.redirect(new URL("/password", request.nextUrl));
+      return withGateNoIndex(
+        NextResponse.redirect(new URL("/password", request.nextUrl))
+      );
     }
+
+    const response = handleI18nRouting(request);
+    return withGateNoIndex(await updateSession(request, response));
   } else if (pathname === "/password") {
     // Gate off in production — don't leave a public password entry page.
     return NextResponse.redirect(new URL("/", request.nextUrl));

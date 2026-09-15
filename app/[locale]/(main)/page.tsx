@@ -1,37 +1,21 @@
 import type { Metadata } from 'next';
 import { getLocale } from 'next-intl/server';
 import HouseHome, { type HouseFilm } from '@/components/house/HouseHome';
+import HomeFilmCrawlLinks from '@/components/HomeFilmCrawlLinks';
 import { getHouseCarouselFilms } from '@/lib/content/home';
-import type { AppLocale } from '@/i18n/config';
+import { defaultLocale, type AppLocale } from '@/i18n/config';
 import { SITE_ORIGIN, absoluteUrl } from '@/lib/site';
+import { buildAlternates } from '@/lib/seo/alternates';
 
-export const dynamic = 'force-dynamic';
+/** ISR — carousel data is also tagged (`film` / `home`) for on-demand bust. */
+export const revalidate = 60;
 
-export const metadata: Metadata = {
-  alternates: { canonical: '/' },
-};
-
-const siteJsonLd = {
-  '@context': 'https://schema.org',
-  '@graph': [
-    {
-      '@type': 'Organization',
-      '@id': `${SITE_ORIGIN}/#organization`,
-      name: 'Fjorr',
-      url: SITE_ORIGIN,
-      description: "Short films of the world's greatest stories.",
-      logo: absoluteUrl('/opengraph-image.png'),
-    },
-    {
-      '@type': 'WebSite',
-      '@id': `${SITE_ORIGIN}/#website`,
-      name: 'Fjorr',
-      url: SITE_ORIGIN,
-      description: "Short films of the world's greatest stories.",
-      publisher: { '@id': `${SITE_ORIGIN}/#organization` },
-    },
-  ],
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = (await getLocale()) as AppLocale;
+  return {
+    alternates: buildAlternates('/', locale),
+  };
+}
 
 function asText(value: unknown): string | null {
   if (!value) return null;
@@ -82,12 +66,60 @@ export default async function Home() {
     theme: asText(film.theme),
   }));
 
+  const crawlFilms = films
+    .filter(
+      (f): f is HouseFilm & { name: string; slug: string } =>
+        Boolean(f.slug && f.name && !f.comingSoon)
+    )
+    .map((f) => ({ name: f.name, slug: String(f.slug) }));
+
+  const siteJsonLd = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'Organization',
+        '@id': `${SITE_ORIGIN}/#organization`,
+        name: 'Fjorr',
+        url: SITE_ORIGIN,
+        description: "Short films of the world's greatest stories.",
+        logo: absoluteUrl('/opengraph-image.png'),
+      },
+      {
+        '@type': 'WebSite',
+        '@id': `${SITE_ORIGIN}/#website`,
+        name: 'Fjorr',
+        url: SITE_ORIGIN,
+        description: "Short films of the world's greatest stories.",
+        publisher: { '@id': `${SITE_ORIGIN}/#organization` },
+        inLanguage: locale === defaultLocale ? 'en' : locale,
+      },
+      ...(crawlFilms.length
+        ? [
+            {
+              '@type': 'ItemList',
+              '@id': `${SITE_ORIGIN}/#home-films`,
+              name: 'Featured films',
+              numberOfItems: crawlFilms.length,
+              itemListElement: crawlFilms.map((film, index) => ({
+                '@type': 'ListItem',
+                position: index + 1,
+                url: absoluteUrl(`/film/${film.slug}`),
+                name: film.name,
+              })),
+            },
+          ]
+        : []),
+    ],
+  };
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd) }}
       />
+      <h1 className="sr-only">Fjorr — short films of the world&apos;s greatest stories</h1>
+      <HomeFilmCrawlLinks films={crawlFilms} />
       <HouseHome films={films} />
     </>
   );

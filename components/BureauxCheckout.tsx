@@ -219,7 +219,7 @@ function CheckoutForm({
         type="submit"
         disabled={!stripe || !elements || !ready || submitting}
         aria-live="polite"
-        className={`w-full max-w-sm h-12 inline-flex items-center justify-center rounded-full font-sans font-bold text-[15px] tracking-tight shadow-2xl transition-all duration-150 disabled:opacity-50 disabled:pointer-events-none ${
+        className={`mx-auto w-full max-w-sm h-12 inline-flex items-center justify-center rounded-full font-sans font-bold text-[15px] tracking-tight shadow-2xl transition-all duration-150 disabled:opacity-50 disabled:pointer-events-none ${
           message
             ? 'bg-red-600 text-white hover:opacity-85'
             : 'bg-[var(--page-fg)] text-[var(--page-bg)] hover:opacity-90 active:scale-95'
@@ -386,11 +386,11 @@ export default function BureauxCheckout({
     };
 
     return (
-      <div className="mx-auto flex w-full max-w-sm flex-col gap-5 text-left">
-        <h2 className="m-0 text-center font-interTight text-[clamp(1.65rem,2.8vw,1.75rem)] font-extrabold tracking-tight text-[#0B0B0C] md:text-[28px]">
+      <div className="mx-auto flex w-full max-w-sm flex-col items-center gap-5 text-center">
+        <h2 className="m-0 font-interTight text-[clamp(1.65rem,2.8vw,1.75rem)] font-extrabold tracking-tight text-[#0B0B0C] md:text-[28px]">
           {t('priceSlideTitle')}
         </h2>
-        <div className="flex flex-col gap-1 items-center text-center">
+        <div className="flex w-full flex-col gap-1 items-center text-center">
           <p className="m-0 font-sans text-[13px] font-semibold normal-case tracking-normal text-page-muted">
             {t('joinEmailLabel')}
           </p>
@@ -409,17 +409,19 @@ export default function BureauxCheckout({
             {t('joinChangeEmail')}
           </button>
         </div>
-        <Elements
-          key={`${clientSecret}-${isLight ? 'light' : 'dark'}`}
-          stripe={stripePromise}
-          options={options}
-        >
-          <CheckoutForm
-            email={checkoutEmail}
-            signedIn={checkoutSignedIn}
-            nextPath={claimNext}
-          />
-        </Elements>
+        <div className="w-full text-left">
+          <Elements
+            key={`${clientSecret}-${isLight ? 'light' : 'dark'}`}
+            stripe={stripePromise}
+            options={options}
+          >
+            <CheckoutForm
+              email={checkoutEmail}
+              signedIn={checkoutSignedIn}
+              nextPath={claimNext}
+            />
+          </Elements>
+        </div>
       </div>
     );
   }
@@ -442,12 +444,12 @@ export default function BureauxCheckout({
     <form
       onSubmit={(e) => void startCheckout(e)}
       noValidate
-      className="flex w-full max-w-sm flex-col gap-4 text-left"
+      className="mx-auto flex w-full max-w-sm flex-col items-center gap-4 text-center"
     >
-      <h2 className="m-0 text-center font-interTight text-[clamp(1.65rem,2.8vw,1.75rem)] font-extrabold tracking-tight text-[#0B0B0C] md:text-[28px]">
+      <h2 className="m-0 font-interTight text-[clamp(1.65rem,2.8vw,1.75rem)] font-extrabold tracking-tight text-[#0B0B0C] md:text-[28px]">
         {t('priceSlideTitle')}
       </h2>
-      <label className="flex flex-col gap-2">
+      <label className="flex w-full flex-col gap-2 text-left">
         <span className="sr-only">{t('joinEmailLabel')}</span>
         <input
           type="email"
@@ -477,7 +479,7 @@ export default function BureauxCheckout({
         type="submit"
         disabled={loading}
         aria-live="polite"
-        className={`w-full max-w-sm h-12 inline-flex items-center justify-center rounded-full font-sans font-bold text-[15px] tracking-tight shadow-2xl transition-all duration-150 disabled:opacity-50 disabled:pointer-events-none ${
+        className={`w-full h-12 inline-flex items-center justify-center rounded-full font-sans font-bold text-[15px] tracking-tight shadow-2xl transition-all duration-150 disabled:opacity-50 disabled:pointer-events-none ${
           error
             ? 'bg-red-600 text-white hover:opacity-85'
             : 'bg-[var(--page-fg)] text-[var(--page-bg)] hover:opacity-90 active:scale-95'

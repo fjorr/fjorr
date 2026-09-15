@@ -2,20 +2,15 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { absoluteUrl } from '@/lib/site';
 import {
   fetchOwnShareIdentity,
   shareViaMemberNumber,
 } from '@/lib/own-member-client';
-import {
-  getOwnVoyageurStampForFilm,
-  type VoyageurStamp,
-} from '@/lib/film-record-actions';
-import VoyageurBadgeMark from '@/components/VoyageurBadgeMark';
 import { formatCueClock } from '@/lib/vtt';
 import { filmSharePath } from '@/lib/voyage-via';
+import { storySettingDisplay } from '@/lib/story-year';
 
 type FilmSendSheetProps = {
   open: boolean;
@@ -28,6 +23,8 @@ type FilmSendSheetProps = {
     runtime?: number | null;
     blok_tall?: string | null;
     hero_tall?: string | null;
+    storyDate?: string | null;
+    location?: string | string[] | { name?: string } | null;
   };
   /** Last known playback / cue time in seconds (shows timestamp copy when >= 1). */
   shareSeconds?: number | null;
@@ -37,6 +34,25 @@ async function copyText(text: string) {
   await navigator.clipboard.writeText(text);
 }
 
+function formatLocation(
+  raw: string | string[] | { name?: string } | null | undefined
+): string | null {
+  if (!raw) return null;
+  if (typeof raw === 'string') return raw.trim() || null;
+  if (Array.isArray(raw)) {
+    const parts = raw.map((v) => String(v).trim()).filter(Boolean);
+    return parts.length ? parts.join(', ') : null;
+  }
+  if (typeof raw === 'object' && raw.name) return String(raw.name).trim() || null;
+  return null;
+}
+
+const LINK_CLASS =
+  'block w-full border-0 bg-transparent p-0 text-center font-sans text-[15px] font-semibold tracking-tight text-white no-underline transition-opacity hover:opacity-55';
+
+/**
+ * Share sheet — language-card shell, identity header, text action list.
+ */
 export default function FilmSendSheet({
   open,
   onClose,
@@ -46,9 +62,7 @@ export default function FilmSendSheet({
   const t = useTranslations('Film');
   const panelRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState<string | null>(null);
-  const [canNativeShare, setCanNativeShare] = useState(false);
   const [memberNumber, setMemberNumber] = useState<number | null>(null);
-  const [stamp, setStamp] = useState<VoyageurStamp | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -56,19 +70,11 @@ export default function FilmSendSheet({
     void (async () => {
       const identity = await fetchOwnShareIdentity();
       if (!cancelled) setMemberNumber(shareViaMemberNumber(identity));
-
-      const filmId = film.id ? String(film.id) : '';
-      if (filmId) {
-        const row = await getOwnVoyageurStampForFilm(filmId);
-        if (!cancelled) setStamp(row);
-      } else if (!cancelled) {
-        setStamp(null);
-      }
     })();
     return () => {
       cancelled = true;
     };
-  }, [open, film.id]);
+  }, [open]);
 
   const filmUrl = useMemo(
     () => absoluteUrl(filmSharePath({ slug: film.slug, memberNumber })),
@@ -108,44 +114,23 @@ export default function FilmSendSheet({
   const momentPayload =
     momentText && timeUrl ? `${momentText}\n${timeUrl}` : null;
 
-  const stampText = stamp
-    ? t('stampShareText', {
-        number: stamp.voyageurNumber,
-        title: film.name || 'Fjorr',
-        version: stamp.filmVersion,
-      })
-    : null;
-  const filmPayload = stampText
-    ? `${stampText}\n${filmUrl}`
-    : filmUrl;
-
   const shareUrl = timeUrl || filmUrl;
   const shareMessage =
     momentPayload ||
-    (stampText
-      ? `${stampText}\n${shareUrl}`
-      : film.teaser
-        ? `${film.name || 'Fjorr'}\n${film.teaser}\n${shareUrl}`
-        : `${film.name || 'Fjorr'}\n${shareUrl}`);
+    (film.teaser
+      ? `${film.name || 'Fjorr'}\n${film.teaser}\n${shareUrl}`
+      : `${film.name || 'Fjorr'}\n${shareUrl}`);
   const emailSubject = t('sendEmailSubject', {
     title: film.name || 'Fjorr',
   });
   const smsHref = `sms:?&body=${encodeURIComponent(shareMessage)}`;
   const emailHref = `mailto:?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(shareMessage)}`;
 
-  const runtimeLabel = film.runtime
-    ? `${Math.max(1, Math.ceil(film.runtime / 60))}m`
-    : null;
-
-  const poster = film.blok_tall || film.hero_tall || null;
+  const setting = storySettingDisplay(film.storyDate);
+  const place = formatLocation(film.location);
+  const metaLine = [setting, place].filter(Boolean).join(' ') || null;
 
   const embedSnippet = `<iframe src="${embedUrl}" title="${(film.name || 'Fjorr').replace(/"/g, '&quot;')} — Fjorr" width="100%" height="100%" style="aspect-ratio:16/9;width:100%;border:0;border-radius:12px;overflow:hidden" allow="accelerometer; autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="lazy"></iframe>`;
-
-  useEffect(() => {
-    setCanNativeShare(
-      typeof navigator !== 'undefined' && typeof navigator.share === 'function'
-    );
-  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -155,27 +140,18 @@ export default function FilmSendSheet({
         onClose();
       }
     };
-    const onPointer = (e: MouseEvent) => {
-      if (panelRef.current && !panelRef.current.contains(e.target as Node))
-        onClose();
-    };
     document.body.dataset.fjorrOverlay = 'send';
     document.addEventListener('keydown', onKey);
-    document.addEventListener('mousedown', onPointer);
     return () => {
       if (document.body.dataset.fjorrOverlay === 'send') {
         delete document.body.dataset.fjorrOverlay;
       }
       document.removeEventListener('keydown', onKey);
-      document.removeEventListener('mousedown', onPointer);
     };
   }, [open, onClose]);
 
   useEffect(() => {
-    if (!open) {
-      setCopied(null);
-      setStamp(null);
-    }
+    if (!open) setCopied(null);
   }, [open]);
 
   const [mounted, setMounted] = useState(false);
@@ -199,159 +175,76 @@ export default function FilmSendSheet({
     }
   };
 
-  const handleNativeShare = async () => {
-    try {
-      await navigator.share({
-        title: film.name || 'Fjorr',
-        text: momentText || stampText || film.teaser || t('sendNativeText'),
-        url: timeUrl || filmUrl,
-      });
-      onClose();
-    } catch {
-      // user cancelled
-    }
-  };
-
   return createPortal(
     <div
-      className="pointer-events-auto fixed inset-0 z-[100050] flex items-end justify-center p-0 sm:items-center sm:p-6"
-      onClick={(event) => event.stopPropagation()}
+      className="pointer-events-auto fixed inset-0 z-[100050] flex items-center justify-center p-5"
+      onClick={onClose}
       onMouseDown={(event) => event.stopPropagation()}
     >
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]" aria-hidden />
+      <div className="absolute inset-0 bg-black/55" aria-hidden />
 
       <div
         ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-label={t('send')}
-        className="relative w-full sm:max-w-[400px] rounded-t-[16px] border border-white/10 bg-[#1F1F1F] p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-[0_24px_80px_rgba(0,0,0,0.55)] duration-200 animate-in fade-in slide-in-from-bottom-4 sm:rounded-[16px] sm:zoom-in-95"
+        className="relative flex w-[min(72vw,16.5rem)] flex-col rounded-[22px] px-6 pb-10 pt-10 duration-200 animate-in fade-in zoom-in-95 md:w-[18rem] md:rounded-[28px] md:px-7 md:pb-12 md:pt-12"
+        style={{ backgroundColor: '#0B0B0C' }}
+        onClick={(event) => event.stopPropagation()}
       >
-        <div className="flex items-start gap-3 mb-5">
-          {stamp ? (
-            <VoyageurBadgeMark
-              filmName={film.name || ''}
-              filmPoster={poster}
-              voyageurNumber={stamp.voyageurNumber}
-              recordedAt={stamp.recordedAt}
-              tone="onDark"
-              className="min-w-0 flex-1"
-            />
-          ) : (
-            <>
-              <div className="relative w-14 h-[84px] rounded-[6px] overflow-hidden bg-white/5 shrink-0 border border-white/10">
-                {poster ? (
-                  <Image
-                    src={poster}
-                    alt=""
-                    fill
-                    sizes="56px"
-                    className="object-cover"
-                  />
-                ) : null}
-              </div>
-              <div className="min-w-0 flex-1 pt-0.5">
-                <p className="font-sans font-bold text-[16px] text-white leading-tight truncate">
-                  {film.name}
-                </p>
-                <p className="font-sans text-[12px] text-white/45 mt-1">
-                  {[
-                    timeLabel ? t('sendMomentMeta', { time: timeLabel }) : null,
-                    runtimeLabel,
-                    'Fjorr',
-                  ]
+        <div className="flex flex-col items-center text-center">
+          <p className="m-0 font-sans text-[13px] font-medium leading-none tracking-tight text-white/45">
+            {t('send')}
+          </p>
+          <p className="m-0 mt-2.5 font-interTight text-[22px] font-bold leading-none tracking-tight text-white md:text-[24px]">
+            {film.name}
+          </p>
+          {metaLine || timeLabel ? (
+            <p className="m-0 mt-2 max-w-[14rem] font-sans text-[12px] font-medium leading-snug text-white/40">
+              {timeLabel
+                ? [metaLine, t('sendMomentMeta', { time: timeLabel })]
                     .filter(Boolean)
-                    .join(' · ')}
-                </p>
-                {film.teaser && (
-                  <p className="font-sans text-[13px] text-white/55 mt-2 line-clamp-2 leading-snug">
-                    {film.teaser}
-                  </p>
-                )}
-              </div>
-            </>
-          )}
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label={t('sendClose')}
-            className="h-8 w-8 shrink-0 rounded-[8px] bg-white/5 hover:bg-white/10 text-white/50 hover:text-white inline-flex items-center justify-center"
-          >
-            <svg
-              className="w-3.5 h-3.5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
+                    .join(' · ')
+                : metaLine}
+            </p>
+          ) : null}
         </div>
 
-        <div className="flex flex-col gap-2">
-          {momentPayload && timeLabel ? (
-            <button
-              type="button"
-              onClick={() => handleCopy('moment', momentPayload)}
-              className="w-full h-11 rounded-[10px] bg-white text-black font-sans font-bold text-sm hover:bg-white/90 transition-colors"
-            >
-              {copied === 'moment'
-                ? t('sendCopied')
-                : t('sendMoment', { time: timeLabel })}
-            </button>
-          ) : null}
-
+        {momentPayload && timeLabel ? (
           <button
             type="button"
-            onClick={() => handleCopy('link', filmPayload)}
-            className={`w-full h-11 rounded-[10px] font-sans font-semibold text-sm transition-colors ${
-              momentPayload
-                ? 'bg-white/10 text-white hover:bg-white/15'
-                : 'bg-white text-black font-bold hover:bg-white/90'
-            }`}
+            onClick={() => handleCopy('moment', momentPayload)}
+            className={`${LINK_CLASS} mt-8`}
+          >
+            {copied === 'moment'
+              ? t('sendCopied')
+              : t('sendMoment', { time: timeLabel })}
+          </button>
+        ) : null}
+
+        <div
+          className={`flex flex-col items-center gap-4 ${momentPayload && timeLabel ? 'mt-4' : 'mt-8'}`}
+        >
+          <button
+            type="button"
+            onClick={() => handleCopy('link', filmUrl)}
+            className={LINK_CLASS}
           >
             {copied === 'link' ? t('sendCopied') : t('sendCopyLink')}
           </button>
-
-          <div className="grid grid-cols-2 gap-2">
-            <a
-              href={smsHref}
-              onClick={onClose}
-              className="flex h-11 items-center justify-center rounded-[10px] bg-white/10 text-white font-sans font-semibold text-sm hover:bg-white/15 transition-colors"
-            >
-              {t('sendMessages')}
-            </a>
-            <a
-              href={emailHref}
-              onClick={onClose}
-              className="flex h-11 items-center justify-center rounded-[10px] bg-white/10 text-white font-sans font-semibold text-sm hover:bg-white/15 transition-colors"
-            >
-              {t('sendEmail')}
-            </a>
-          </div>
-
+          <a href={emailHref} onClick={onClose} className={LINK_CLASS}>
+            {t('sendEmail')}
+          </a>
+          <a href={smsHref} onClick={onClose} className={LINK_CLASS}>
+            {t('sendMessages')}
+          </a>
           <button
             type="button"
             onClick={() => handleCopy('embed', embedSnippet)}
-            className="w-full h-11 rounded-[10px] bg-white/5 text-white/80 font-sans font-semibold text-sm hover:bg-white/10 hover:text-white transition-colors"
+            className={LINK_CLASS}
           >
             {copied === 'embed' ? t('sendCopied') : t('sendCopyEmbed')}
           </button>
-
-          {canNativeShare && (
-            <button
-              type="button"
-              onClick={handleNativeShare}
-              className="w-full h-11 rounded-[10px] bg-transparent text-white/50 font-sans font-semibold text-sm hover:text-white/80 transition-colors"
-            >
-              {t('sendMore')}
-            </button>
-          )}
         </div>
       </div>
     </div>,

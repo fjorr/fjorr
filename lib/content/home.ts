@@ -119,86 +119,56 @@ function mapHouseFilmRow(row: any) {
 
 const CAROUSEL_SIZE = 10;
 
-async function fetchHouseFilmRows(
-  supabase: ReturnType<typeof createPublicClient>,
-  mode: 'coming' | 'released'
-) {
-  const now = new Date().toISOString();
-  // Same date filter the old home uses. Rich select first, then the proven short select.
-  const dated = supabase.from('film').select('id, release_date').limit(CAROUSEL_SIZE);
-  const idsQuery =
-    mode === 'coming'
-      ? dated.gt('release_date', now).order('release_date', { ascending: true })
-      : dated.lte('release_date', now).order('release_date', { ascending: false });
-
-  const listed = await idsQuery;
-  if (listed.error) {
-    console.error(`House ${mode} films failed:`, listed.error.message);
-    return [];
-  }
-
-  const ids = (listed.data || []).map((row) => row.id).filter(Boolean);
-  if (!ids.length) return [];
-
-  const full = await supabase.from('film').select(HOUSE_FILM_SELECT).in('id', ids);
-  if (full.error || !full.data?.length) {
-    if (full.error) console.error(`House ${mode} detail failed:`, full.error.message);
-    return (listed.data || []).map(mapHouseFilmRow).filter(Boolean);
-  }
-
-  const order = new Map(ids.map((id, i) => [String(id), i]));
-  return full.data
-    .map(mapHouseFilmRow)
-    .filter(Boolean)
-    .sort((a, b) => (order.get(String(a.id)) ?? 0) - (order.get(String(b.id)) ?? 0))
-    .map((film) =>
-      mode === 'coming' ? { ...film, comingSoon: true } : film
-    );
-}
-
 /** Ten films: featured first, then every coming-soon title, then released to fill. */
-export async function getHouseCarouselFilms(locale: AppLocale = defaultLocale) {
-  const supabase = createPublicClient();
-  const now = new Date().toISOString();
+export const getHouseCarouselFilms = unstable_cache(
+  async (locale: AppLocale = defaultLocale) => {
+    const supabase = createPublicClient();
+    const now = new Date().toISOString();
 
-  const [featured, catalog] = await Promise.all([
-    getFeaturedFilms(locale),
-    supabase
-      .from('film')
-      .select(HOUSE_FILM_SELECT)
-      .order('release_date', { ascending: true })
-      .limit(40),
-  ]);
+    const [featured, catalog] = await Promise.all([
+      getFeaturedFilms(locale),
+      supabase
+        .from('film')
+        .select(HOUSE_FILM_SELECT)
+        .order('release_date', { ascending: true })
+        .limit(40),
+    ]);
 
-  if (catalog.error) {
-    console.error('House catalog failed:', catalog.error.message);
-  }
-
-  const rows = (catalog.data || []).map(mapHouseFilmRow).filter(Boolean);
-  const localized = await localizeFilmsWithThemes(supabase, rows, locale);
-  const isFuture = (film: any) =>
-    Boolean(film?.release_date) && new Date(film.release_date).getTime() > Date.parse(now);
-
-  const coming = localized.filter(isFuture).map((film) => ({ ...film, comingSoon: true }));
-  const released = localized.filter((film) => !isFuture(film));
-
-  const seen = new Set<string>();
-  const take = (list: any[], into: any[]) => {
-    for (const film of list) {
-      if (into.length >= CAROUSEL_SIZE) break;
-      const id = film?.id ? String(film.id) : '';
-      if (!id || seen.has(id)) continue;
-      seen.add(id);
-      into.push(film);
+    if (catalog.error) {
+      console.error('House catalog failed:', catalog.error.message);
     }
-  };
 
-  const films: any[] = [];
-  take(featured, films);
-  take(coming, films);
-  take(released, films);
-  return films.slice(0, CAROUSEL_SIZE);
-}
+    const rows = (catalog.data || []).map(mapHouseFilmRow).filter(Boolean);
+    const localized = await localizeFilmsWithThemes(supabase, rows, locale);
+    const isFuture = (film: any) =>
+      Boolean(film?.release_date) &&
+      new Date(film.release_date).getTime() > Date.parse(now);
+
+    const coming = localized
+      .filter(isFuture)
+      .map((film) => ({ ...film, comingSoon: true }));
+    const released = localized.filter((film) => !isFuture(film));
+
+    const seen = new Set<string>();
+    const take = (list: any[], into: any[]) => {
+      for (const film of list) {
+        if (into.length >= CAROUSEL_SIZE) break;
+        const id = film?.id ? String(film.id) : '';
+        if (!id || seen.has(id)) continue;
+        seen.add(id);
+        into.push(film);
+      }
+    };
+
+    const films: any[] = [];
+    take(featured, films);
+    take(coming, films);
+    take(released, films);
+    return films.slice(0, CAROUSEL_SIZE);
+  },
+  ['house-carousel-i18n-v1'],
+  { revalidate: HOME_FILM_REVALIDATE_SECONDS, tags: ['film', 'home'] }
+);
 
 export const getCineHomeArtifacts = unstable_cache(
   async (locale: AppLocale = defaultLocale) => {

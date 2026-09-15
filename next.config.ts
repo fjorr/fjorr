@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: path.join(__dirname),
   },
-  cacheComponents: false,
+  cacheComponents: false, // keep off until locale layout is cookie-free (color scheme)
   images: {
     loader: "custom",
     loaderFile: "./lib/image-loader.ts",
@@ -21,14 +21,36 @@ const nextConfig: NextConfig = {
     ],
   },
   async headers() {
+    const year = "public, max-age=31536000, immutable";
     return [
       {
         // Allow partner sites to iframe /embed/* (omit X-Frame-Options; CSP controls this).
-        source: '/embed/:path*',
+        source: "/embed/:path*",
         headers: [
           {
-            key: 'Content-Security-Policy',
-            value: 'frame-ancestors *',
+            key: "Content-Security-Policy",
+            value: "frame-ancestors *",
+          },
+        ],
+      },
+      {
+        source: "/fonts/:path*",
+        headers: [{ key: "Cache-Control", value: year }],
+      },
+      {
+        source: "/_next/static/:path*",
+        headers: [{ key: "Cache-Control", value: year }],
+      },
+      {
+        source: "/:path*.woff2",
+        headers: [{ key: "Cache-Control", value: year }],
+      },
+      {
+        source: "/:path*.(avif|webp|png|jpg|jpeg|svg|ico)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=86400, stale-while-revalidate=604800",
           },
         ],
       },

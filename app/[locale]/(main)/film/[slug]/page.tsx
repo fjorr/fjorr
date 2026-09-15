@@ -5,6 +5,7 @@ import FilmStageLoading from '@/components/house/FilmStageLoading';
 import FilmSeoCopy from '@/components/house/FilmSeoCopy';
 import type { Metadata } from 'next';
 import { absoluteUrl } from '@/lib/site';
+import { buildAlternates, absoluteLocalizedUrl } from '@/lib/seo/alternates';
 import { resolveSocialOgImage } from '@/lib/og';
 import {
   getFilmMetadata,
@@ -105,12 +106,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!film) return { title: 'Film Not Found' };
   const titleText = film.name;
   const descriptionText = film.teaser || 'Watch this short film on Fjorr.';
-  const canonical = absoluteUrl(`/film/${film.slug}`);
+  const path = `/film/${film.slug}`;
+  const canonical = absoluteLocalizedUrl(locale, path);
   const ogImageUrl = await resolveSocialOgImage(film.blok_ogrf);
   return {
     title: titleText,
     description: descriptionText,
-    alternates: { canonical },
+    alternates: buildAlternates(path, locale),
     openGraph: {
       title: `${titleText} | Fjorr`,
       description: descriptionText,
