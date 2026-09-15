@@ -367,6 +367,7 @@ export default function HouseHome({ films }: { films: HouseFilm[] }) {
           film={
             copyFilm
               ? {
+                  id: copyFilm.id,
                   name: copyFilm.name,
                   slug: copyFilm.slug,
                   teaser: copyFilm.teaser,
@@ -380,6 +381,8 @@ export default function HouseHome({ films }: { films: HouseFilm[] }) {
                   titleArtCode: copyFilm.title_art_code,
                   titleArtHex: copyFilm.title_art_hex,
                   titleArtScale: copyFilm.title_art_scale,
+                  blokTall: copyFilm.blok_tall ?? null,
+                  heroTall: copyFilm.hero_tall ?? null,
                 }
               : null
           }
@@ -412,24 +415,35 @@ export default function HouseHome({ films }: { films: HouseFilm[] }) {
         </div>
       </div>
 
-      <HouseFooter
-        langOpen={isOpen('language')}
-        intelOpen={isOpen('intel')}
-        shortcutsOpen={isOpen('shortcuts')}
-        legalOpen={isOpen('legal')}
-        onLanguage={() => {
-          toggle('language');
-        }}
-        onIntel={() => {
-          toggle('intel');
-        }}
-        onShortcuts={() => {
-          toggle('shortcuts');
-        }}
-        onLegal={() => {
-          toggle('legal');
-        }}
-      />
+      {sheetOpen ? (
+        <div className="h-[54px] w-full shrink-0" aria-hidden />
+      ) : null}
+      <div
+        className={
+          sheetOpen
+            ? 'fixed inset-x-0 bottom-0 z-[60] bg-white'
+            : 'relative z-50 w-full bg-white'
+        }
+      >
+        <HouseFooter
+          langOpen={isOpen('language')}
+          intelOpen={isOpen('intel')}
+          shortcutsOpen={isOpen('shortcuts')}
+          legalOpen={isOpen('legal')}
+          onLanguage={() => {
+            toggle('language');
+          }}
+          onIntel={() => {
+            toggle('intel');
+          }}
+          onShortcuts={() => {
+            toggle('shortcuts');
+          }}
+          onLegal={() => {
+            toggle('legal');
+          }}
+        />
+      </div>
 
       {showTheater && selectedFilm ? (
         <CinemaTheater

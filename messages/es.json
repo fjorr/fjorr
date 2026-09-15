@@ -1,5 +1,5 @@
 {
-  "Nav":   {
+  "Nav": {
     "tagline": "Cortometrajes de las historias más grandes",
     "explore": "Explorar Fjorr",
     "films": "Películas",
@@ -76,7 +76,7 @@
     "scrollEarlier": "Antes",
     "scrollLater": "Después"
   },
-  "Home":   {
+  "Home": {
     "heroLine1": "El mundo",
     "heroLine2": "funciona con átomos.",
     "heroLine3": "Y con historias.",
@@ -92,13 +92,13 @@
     "introAria": "What Fjorr is",
     "introHeadline": "The world's greatest stories as short films."
   },
-  "NotFound":   {
+  "NotFound": {
     "title": "¿PERDIDO?",
     "body": "Mejores historias por aquí.",
     "home": "Inicio",
     "search": "Search"
   },
-  "Search":   {
+  "Search": {
     "placeholder": "Buscar",
     "film": "Película",
     "artifact": "Artefacto",
@@ -110,7 +110,7 @@
     "joinBureauxHelp": "Or join the Bureaux to help.",
     "nothingMatches": "Nothing matches."
   },
-  "Film":   {
+  "Film": {
     "play": "Reproducir {runtime}",
     "playShort": "Reproducir",
     "resume": "Reanudar · {time}",
@@ -227,9 +227,12 @@
     "keysInfoDesc": "Open the film sheet.",
     "keysSearch": "Search",
     "keysSearchDesc": "Find a title or story.",
-    "keysCloseDesc": "Leave the sheet."
+    "keysCloseDesc": "Leave the sheet.",
+    "sendMessages": "Mensajes",
+    "sendEmail": "Correo",
+    "sendEmailSubject": "{title} — Fjorr"
   },
-  "Theater":   {
+  "Theater": {
     "watchOnFjorr": "Ver en Fjorr",
     "closeTheater": "Cerrar sala",
     "close": "Cerrar",
@@ -256,7 +259,7 @@
     "linkCopied": "Enlace copiado al portapapeles",
     "artifacts": "Artifacts"
   },
-  "Artifact":   {
+  "Artifact": {
     "label": "Artefacto de película",
     "relatedFilms": "Películas relacionadas",
     "untitled": "Conexión sin título",
@@ -290,7 +293,7 @@
     "seeFilmMatches": "Hay {count} coincidencias de películas.",
     "seeArtifactMatches": "Hay {count} coincidencias de artefactos."
   },
-  "Account":   {
+  "Account": {
     "modalTitle": "Iniciar sesión o registrarse",
     "close": "Cerrar",
     "signInTitle": "Re-entry.",
@@ -558,7 +561,7 @@
     "bgAlt": "Fondo de alianzas",
     "crowdAlt": "Multitud sintiendo historias"
   },
-  "About":   {
+  "About": {
     "hero": "Matter\nfades.\nMyths don't.",
     "manifesto": "We're building a myth engine.\nTaking the world's greatest stories.\nAnd making them short films.\nBuilding a home.\nFor the stories that shaped what it means to be human.\nFree for anyone in the world.\nUnder twenty minutes, always.\nOne gold standard.\nNot to keep you glued to glass.\nTo send you back into the world with something to carry.",
     "logoLabel": "Logo",
@@ -575,7 +578,7 @@
     "deckHint": "on your keyboard",
     "contactBlurb": "We partner with studios, brands, and artists to fund original short films and put real stories in front of a real audience. No logo dumps, no meaningless placements.",
     "posterEssayTitle": "100 Years of Failure",
-    "posterEssayTagline": "Why short film never found a home.",
+    "posterEssayTagline": "The story of why short films never found a home.",
     "posterMarkTitle": "The Mark",
     "posterMarkTagline": "The cardboard helmet and the name.",
     "posterExploreTitle": "Explore Fjorr",
@@ -594,14 +597,14 @@
     "linkContactDesc": "Write the desk",
     "scrollCue": "Scroll"
   },
-  "EssayFailure":   {
+  "EssayFailure": {
     "title": "100 Years of Failure",
     "description": "The story of why short films never found a home.",
     "lead": "The story of why short films never found a home.",
     "back": "About",
     "exploreFjorr": "Explore Fjorr"
   },
-  "AboutMark":   {
+  "AboutMark": {
     "title": "The mark",
     "description": "The cardboard helmet and the name Fjorr.",
     "back": "About"
@@ -690,7 +693,7 @@
     "s10Title": "Changes and contact",
     "s10Body": "We may update this Terms Sheet; the date at the top will change when we do. Continued use after an update means you accept the revised sheet. Questions: control@fjorr.com. Privacy details are in the Privacy Notice."
   },
-  "Footer":   {
+  "Footer": {
     "blurb": "Fjorr alberga cortometrajes cinematográficos sobre las historias más grandes del mundo.",
     "privacy": "Privacy Notice",
     "terms": "Terms Sheet",
@@ -715,9 +718,11 @@
     "intelYoureIn": "Rolling.",
     "intelRespect": "We never sell your information.",
     "subscribe": "Subscribe",
-    "subscribing": "Subscribing…"
+    "subscribing": "Subscribing…",
+    "rss": "RSS",
+    "rssAria": "Feed RSS de estrenos y actualizaciones del archivo"
   },
-  "Meta":   {
+  "Meta": {
     "aboutTitle": "Acerca de",
     "aboutDescription": "We're building a myth engine. The world's greatest stories as short films. Under 20 minutes, always. Free for anyone in the world. Fjorr.",
     "partnerTitle": "Socios",
@@ -748,7 +753,11 @@
     "accountBureauxTitle": "Bureaux",
     "helpTitle": "The Manual",
     "helpDescription": "Six short entries on watching, joining, nominating, Plus, account, and the desk.",
-    "accountCabinetTitle": "The Cabinet"
+    "accountCabinetTitle": "The Cabinet",
+    "feedTitle": "RSS",
+    "feedDescription": "Subscribe to Fjorr film drops and archive updates with any RSS reader.",
+    "subscribeTitle": "Suscribirse",
+    "subscribeDescription": "Recibe los cortos de Fjorr por correo o RSS — sin redes sociales."
   },
   "Bounties": {
     "title": "Grandes historias.\nHay recompensa.",
@@ -996,9 +1005,9 @@
     "craftInfo": "Info",
     "craftClose": "Close"
   },
-  "Bureaux":   {
+  "Bureaux": {
     "eyebrow": "Join the",
-    "headline": "The Bureaux",
+    "headline": "Únete a los Bureaux",
     "lead": "None of this exists without people who back it before it's obvious. Help build the archive.",
     "lead2": "None of that exists without people who back it before it's obvious. The Bureaux, Fjorr's founding membership, is how you become one of them.",
     "priceLabel": "Subscription",
@@ -1023,7 +1032,7 @@
     "footnote": "Watching never requires a subscription.",
     "checkoutTitle": "Join the Bureaux",
     "checkoutSignIn": "Sign in to manage your Bureaux membership.",
-    "checkoutAlready": "This email already has a Bureaux membership. Sign in.",
+    "checkoutAlready": "Already a member.",
     "checkoutConfig": "Checkout isn't configured yet. Try again shortly.",
     "checkoutError": "Couldn't open checkout. Try again.",
     "dek": "The world's greatest stories as short films.",
@@ -1034,7 +1043,7 @@
     "checkoutPayment": "Payment",
     "checkoutOrCard": "Or card",
     "joinEmailLabel": "Email",
-    "joinEmailPlaceholder": "you@email.com",
+    "joinEmailPlaceholder": "Email",
     "joinEmailRequired": "Enter the email for your Bureaux account.",
     "joinContinue": "Continue to payment",
     "joinChangeEmail": "Use a different email",
@@ -1083,13 +1092,44 @@
     "perkBounties": "Participate in <manual>bounties</manual>.",
     "perkEarly": "Early access to new films and <manual>bounties</manual>.",
     "perkClosing": "Be part of something different.",
-    "joinPaidTitle": "You're in. Finish your account.",
-    "joinPaidBody": "Payment succeeded. We sent a sign-in link to {email}. Open it, continue with Google, or resend the link.",
-    "joinResend": "Resend link",
+    "joinPaidTitle": "Thank you for putting your name and capital behind this mission.",
+    "joinPaidNumberPending": "—",
+    "joinPaidRegistry": "YOUR BUREAUX ID",
+    "joinPaidThanks": "Log in to access logs, raw cuts, director notes, and private premieres. Further Bureaux privileges and tools in active development.",
+    "joinPaidBody": "Log in to access logs, raw cuts, director notes, and private premieres. Further Bureaux privileges and tools in active development.",
+    "joinPaidArchive": "[ Open the Archive -> ]",
+    "joinPaidLogin": "Log in",
+    "joinResend": "Didn't receive it? Resend link.",
     "joinContinueGoogle": "Continue with Google",
     "joinSupport": "Still stuck? Write control@fjorr.com",
-    "subhead": "Founding membership.",
-    "learnMore": "What we're building"
+    "subhead": "The Bureaux funds the work.",
+    "learnMore": "What we're building",
+    "joinHeadline": "Únete a los Bureaux",
+    "joinContinueCue": "Continuar",
+    "aboutEyebrow": "Los Bureaux",
+    "aboutHeadline": "Un círculo fundador para el archivo.",
+    "aboutP1": "The Bureaux is Fjorr’s founding membership — the people who make free films possible before the world is watching.",
+    "aboutP2": "Makers, patrons, and sharp readers. People who care about craft, myth, and stories that outlast a feed.",
+    "aboutP3": "They back the desk’s standards: short films under twenty minutes, built carefully, kept in an archive that improves with time.",
+    "checkoutClose": "Cerrar",
+    "aboutBody": "Imagine a place for short films telling the world's greatest stories, from fallen kings to prizefighters to Prometheus stealing fire, giving them the scale, standard, organization, and permanent home they deserve. Help build this place before the world is watching, and put your name on it before it's obvious.",
+    "linkEssay": "100 Years of Failure",
+    "ctaJoin": "Join",
+    "joinMark": "BUREAUX.",
+    "pledge": "No investors. No ads. No compromise.",
+    "perksTitleColon": "Included:",
+    "ctaJoinNow": "Join Now",
+    "cancelAnytime": "Cancel anytime.",
+    "emailSlideTitle": "Join.",
+    "billedAnnually": "Billed annually",
+    "priceYrSuffix": "per year",
+    "deckNavAria": "Join slides",
+    "deckPrev": "Previous slide",
+    "deckNext": "Next slide",
+    "deckDot": "Slide {n}",
+    "ctaHowMuch": "How much?",
+    "ctaReady": "Join the Bureaux",
+    "priceSlideTitle": "Claim your Bureaux ID."
   },
   "Help": {
     "title": "The Manual",
@@ -1129,5 +1169,28 @@
     "indexBrand": "Manual",
     "indexBrandAria": "Fjorr Manual — home",
     "homeLink": "About this Manual"
+  },
+  "Feed": {
+    "eyebrow": "RSS",
+    "headline": "Suscríbete sin redes sociales.",
+    "lead": "Nuevos cortos y actualizaciones del archivo en cualquier lector RSS — Feedly, NetNewsWire y más.",
+    "copy": "Copiar enlace",
+    "copied": "Copiado",
+    "how": "Pega el enlace en tu lector. Después no volverás a necesitar esta página.",
+    "preferEmail": "¿Prefieres correo?",
+    "intelCue": "Abre Intel desde el pie."
+  },
+  "Subscribe": {
+    "eyebrow": "Suscribirse",
+    "headline": "Quédate cerca, sin redes.",
+    "lead": "Correo o RSS — elige cómo.",
+    "emailEyebrow": "Correo",
+    "emailLead": "Cortos y notas, por correo.",
+    "rssEyebrow": "RSS",
+    "rssLead": "Pégalo en Feedly, NetNewsWire o cualquier lector.",
+    "copy": "Copiar enlace",
+    "copied": "Copiado",
+    "how": "Después no volverás a necesitar esta página.",
+    "allSet": "Listo."
   }
 }

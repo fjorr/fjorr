@@ -58,17 +58,17 @@ export const ESSAY_FAILURE_BODY: EssayBlock[] = [
       {
         year: '1948',
         title: 'The Studio System Collapse',
-        text: 'In the 1930s and 40s, Hollywood forced theaters to buy shorts alongside feature films through "block booking." When the Supreme Court declared the practice illegal in the 1948 Paramount Decrees, theater owners stopped paying for shorts overnight. MGM gutted its short units, and Warner Bros. scaled back its iconic cartoon departments.',
+        text: 'In the 1930s and 40s, Hollywood forced theaters to buy shorts alongside feature films through "block booking." When the Supreme Court declared the practice illegal in the 1948 Paramount Decrees, the financial foundation for short departments was destroyed. Over the following decade, studios systematically dismantled their short units — MGM eventually closed its animation department in 1957, and Warner Bros. scaled back its iconic cartoon production into the 1960s.',
       },
       {
         year: '1953',
         title: 'The Disney Pivot',
-        text: 'By 1953, Walt Disney shut down his studio\'s dedicated short cartoon department. Production costs for hand-drawn animation had surged, but theaters paid only a flat, negligible rental fee. Disney realized shorts lost money on every single release, forcing a complete pivot toward feature-length films and advertiser-funded television.',
+        text: "By 1953, Walt Disney shut down his studio's dedicated short cartoon department. Production costs for hand-drawn animation had surged, but theaters paid only a flat, negligible rental fee. Disney realized shorts lost money on every single release, forcing a complete pivot toward feature-length films and advertiser-funded television.",
       },
       {
-        year: '1995–',
+        year: '1995–Present',
         title: 'The Pixar Paradox',
-        text: 'Even modern animation\'s greatest champion treats short films as an R&D tax write-off and a talent sandbox. Pixar shorts do not generate standalone revenue; they are subsidized entirely by the multi-hundred-million-dollar box office of the feature film that follows them.',
+        text: "Even modern animation's greatest champion treats short films as an R&D tax write-off and a talent sandbox. Pixar shorts do not generate standalone revenue; they are subsidized entirely by the multi-hundred-million-dollar box office of the feature film that follows them.",
       },
       {
         year: '2020',
@@ -92,15 +92,15 @@ export const ESSAY_FAILURE_BODY: EssayBlock[] = [
   { type: 'h2', text: 'Filling a Cultural Void' },
   {
     type: 'p',
-    text: 'The format was never the compromise; it was simply denied a home.',
-  },
-  {
-    type: 'p',
     text: 'Modern media has an obvious void. Hollywood spends $200 million on comic book sequels. Silicon Valley algorithms serve endless, disposable feeds designed to capture idle attention. Nobody is building a gold-standard home for short cinema — making short films of the essential, pivotal stories that shaped what it means to be human.',
   },
   {
     type: 'p',
-    text: "Short cinema doesn't need to compete with TikTok for idle phone time, nor does it need to squeeze into a 1950s theatrical ticket model or a Silicon Valley tech gimmick. It needs the right vehicle.",
+    text: "Imagine a place built solely for short cinema. Stories that carry as much power as feature films, but with no feeds, no algorithms, and no disposable noise. Just the world's greatest stories as short films — from fallen kings to prizefighters to Prometheus stealing fire — given the scale, standard, organization, and permanent home they deserve.",
+  },
+  {
+    type: 'p',
+    text: "This is what was missing. Short cinema doesn't need to compete with TikTok for idle phone time, nor does it need to squeeze into a 1950s theatrical ticket model or a Silicon Valley tech gimmick. It needs the right vehicle.",
   },
   {
     type: 'p',
@@ -108,7 +108,7 @@ export const ESSAY_FAILURE_BODY: EssayBlock[] = [
   },
   {
     type: 'p',
-    text: "Instead of treating short films as appetizers or tech gimmicks, Fjorr treats them as the main event. Instead of hiding them behind transactional paywalls or serving them alongside intrusive ads, Fjorr is funded directly by its patrons — the Bureaux. Together, they're building a permanent, ad-free archive of world-class short films under 20 minutes — free for anyone in the world to watch.",
+    text: 'Instead of treating short films as appetizers or tech gimmicks, Fjorr treats them as the main event. Instead of hiding them behind transactional paywalls or serving them alongside intrusive ads, Fjorr is funded directly by its patrons — the Bureaux. Together, they are building a permanent, ad-free archive of world-class short films under 20 minutes — free for anyone in the world to watch.',
   },
   {
     type: 'p',

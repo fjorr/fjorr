@@ -1,13 +1,19 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { storySettingDisplay } from '@/lib/story-year';
 import { resolveTitleArtColor, sanitizeTitleArtSvg } from '@/lib/sanitize-svg';
 import RatingBadge from '@/components/house/RatingBadge';
 
+const FilmSendSheet = dynamic(() => import('@/components/FilmSendSheet'), {
+  ssr: false,
+});
+
 export type HouseHeroCopyFilm = {
+  id?: string | null;
   name?: string | null;
   slug: string;
   teaser?: string | null;
@@ -20,6 +26,8 @@ export type HouseHeroCopyFilm = {
   titleArtCode?: string | null;
   titleArtHex?: string | null;
   titleArtScale?: number | null;
+  blokTall?: string | null;
+  heroTall?: string | null;
   /** House intro slide — black frame, custom copy + CTA. */
   kind?: 'intro';
 };
@@ -63,6 +71,12 @@ export default function HouseHeroCopy({
   const t = useTranslations('Film');
   const tHome = useTranslations('Home');
   const reduced = usePrefersReducedMotion();
+  const [sendOpen, setSendOpen] = useState(false);
+
+  useEffect(() => {
+    setSendOpen(false);
+  }, [film?.slug]);
+
   if (!film) return null;
 
   const TitleTag = titleAs;
@@ -261,10 +275,34 @@ export default function HouseHeroCopy({
                   {t('info')}
                 </button>
               ) : null}
+              <button
+                type="button"
+                onClick={() => setSendOpen(true)}
+                tabIndex={visible ? 0 : -1}
+                className="inline-flex h-10 items-center rounded-full border border-white/25 bg-white/12 px-5 font-sans text-[14px] font-semibold tracking-tight text-white/90 backdrop-blur-md transition-colors hover:bg-white/18 hover:text-white"
+              >
+                {t('send')}
+              </button>
             </>
           )}
         </div>
       </div>
+
+      {sendOpen && !isIntro ? (
+        <FilmSendSheet
+          open={sendOpen}
+          onClose={() => setSendOpen(false)}
+          film={{
+            id: film.id,
+            name: film.name,
+            slug: film.slug,
+            teaser: film.teaser,
+            runtime: film.runtime,
+            blok_tall: film.blokTall,
+            hero_tall: film.heroTall,
+          }}
+        />
+      ) : null}
     </div>
   );
 }

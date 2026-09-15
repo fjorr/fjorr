@@ -473,6 +473,7 @@ export default function FilmStage({ id, slug, exhibition, rail: railProp }: Film
           film={
             copyFilm
               ? {
+                  id: copyFilm.id,
                   name: copyFilm.name,
                   slug: copyFilm.slug,
                   teaser: copyFilm.teaser,
@@ -485,6 +486,8 @@ export default function FilmStage({ id, slug, exhibition, rail: railProp }: Film
                   titleArtCode: copyFilm.titleArtCode,
                   titleArtHex: copyFilm.titleArtHex,
                   titleArtScale: copyFilm.titleArtScale,
+                  blokTall: copyFilm.blokTall,
+                  heroTall: copyFilm.heroTall,
                 }
               : null
           }
@@ -512,24 +515,37 @@ export default function FilmStage({ id, slug, exhibition, rail: railProp }: Film
       </div>
 
       {!infoOpen ? (
-      <HouseFooter
-        langOpen={isOpen('language')}
-        intelOpen={isOpen('intel')}
-        shortcutsOpen={isOpen('shortcuts')}
-        legalOpen={isOpen('legal')}
-        onLanguage={() => {
-          toggle('language');
-        }}
-        onIntel={() => {
-          toggle('intel');
-        }}
-        onShortcuts={() => {
-          toggle('shortcuts');
-        }}
-        onLegal={() => {
-          toggle('legal');
-        }}
-      />
+        <>
+          {sheetOpen ? (
+            <div className="h-[54px] w-full shrink-0" aria-hidden />
+          ) : null}
+          <div
+            className={
+              sheetOpen
+                ? 'fixed inset-x-0 bottom-0 z-[60] bg-white'
+                : 'relative z-50 w-full bg-white'
+            }
+          >
+            <HouseFooter
+              langOpen={isOpen('language')}
+              intelOpen={isOpen('intel')}
+              shortcutsOpen={isOpen('shortcuts')}
+              legalOpen={isOpen('legal')}
+              onLanguage={() => {
+                toggle('language');
+              }}
+              onIntel={() => {
+                toggle('intel');
+              }}
+              onShortcuts={() => {
+                toggle('shortcuts');
+              }}
+              onLegal={() => {
+                toggle('legal');
+              }}
+            />
+          </div>
+        </>
       ) : null}
 
       {infoOpen && current.slug === entrySlug ? (

@@ -3,6 +3,7 @@
 import React from 'react';
 import { useTranslations } from 'next-intl';
 import { Link, usePathname } from '@/i18n/navigation';
+import SheetEnter from '@/components/house/SheetEnter';
 
 const LEGAL_LINKS = [
   {
@@ -40,28 +41,29 @@ export default function HouseLegalSheet({
           aria-label={t('legalAria')}
           className="grid w-full max-w-[720px] grid-cols-1 gap-5 sm:grid-cols-2 md:gap-6"
         >
-          {LEGAL_LINKS.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={(event) => {
-                event.preventDefault();
-                onNavigate(item.href);
-              }}
-              aria-current={
-                pathname === item.href || pathname.startsWith(`${item.href}/`)
-                  ? 'page'
-                  : undefined
-              }
-              className="flex min-h-[220px] flex-col justify-between rounded-[24px] bg-[#F5F5F7] p-6 text-left transition-transform duration-200 ease-out hover:-translate-y-0.5 md:min-h-[260px] md:p-7"
-            >
-              <span className="font-interTight text-[28px] font-bold leading-none tracking-tight text-[#0B0B0C] md:text-[32px]">
-                {t(item.labelKey)}
-              </span>
-              <span className="font-sans text-[15px] font-medium leading-snug text-black/45 md:text-[16px]">
-                {t(item.descKey)}
-              </span>
-            </Link>
+          {LEGAL_LINKS.map((item, i) => (
+            <SheetEnter key={item.href} delay={i * 80}>
+              <Link
+                href={item.href}
+                onClick={(event) => {
+                  event.preventDefault();
+                  onNavigate(item.href);
+                }}
+                aria-current={
+                  pathname === item.href || pathname.startsWith(`${item.href}/`)
+                    ? 'page'
+                    : undefined
+                }
+                className="flex min-h-[220px] flex-col justify-between rounded-[24px] bg-[#F5F5F7] p-6 text-left transition-transform duration-200 ease-out hover:-translate-y-0.5 md:min-h-[260px] md:p-7"
+              >
+                <span className="font-interTight text-[28px] font-bold leading-none tracking-tight text-[#0B0B0C] md:text-[32px]">
+                  {t(item.labelKey)}
+                </span>
+                <span className="font-sans text-[15px] font-medium leading-snug text-black/45 md:text-[16px]">
+                  {t(item.descKey)}
+                </span>
+              </Link>
+            </SheetEnter>
           ))}
         </nav>
       </div>

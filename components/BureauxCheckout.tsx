@@ -9,7 +9,6 @@ import {
 } from '@stripe/react-stripe-js';
 import { loadStripe, type Appearance, type StripeElementsOptions } from '@stripe/stripe-js';
 import { useLocale, useTranslations } from 'next-intl';
-import { Link } from '@/i18n/navigation';
 import { useColorScheme } from '@/components/ColorSchemeProvider';
 import {
   DARK_PAGE_BG,
@@ -18,10 +17,11 @@ import {
   LIGHT_PAGE_FG,
 } from '@/lib/color-scheme';
 import { routing } from '@/i18n/routing';
-import BureauxJoinClaim from '@/components/BureauxJoinClaim';
 
 const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '';
 const DEFAULT_NEXT = '/account/bureaux';
+/** Same as subscribe / Intel error pills (`bg-red-600`). */
+const ERROR_RED = '#DC2626';
 
 type CheckoutApiResult = {
   ok?: boolean;
@@ -81,7 +81,7 @@ function fjorrAppearance(isLight: boolean): Appearance {
       colorBackground: bg,
       colorText: fg,
       colorTextSecondary: muted,
-      colorDanger: '#C45B4A',
+      colorDanger: ERROR_RED,
       fontFamily:
         'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
       fontSizeBase: '14px',
@@ -108,7 +108,7 @@ function fjorrAppearance(isLight: boolean): Appearance {
         boxShadow: 'none',
       },
       '.Error': {
-        color: '#C45B4A',
+        color: ERROR_RED,
         fontSize: '13px',
       },
     },
@@ -130,12 +130,10 @@ function accountReturnUrl(
 function CheckoutForm({
   email,
   signedIn,
-  onPaidGuest,
   nextPath,
 }: {
   email: string;
   signedIn: boolean;
-  onPaidGuest: (email: string) => void;
   nextPath: string;
 }) {
   const t = useTranslations('Bureaux');
@@ -181,11 +179,7 @@ function CheckoutForm({
       status === 'processing' ||
       status === 'requires_capture'
     ) {
-      if (signedIn) {
-        window.location.assign(returnUrl);
-        return;
-      }
-      onPaidGuest(email);
+      window.location.assign(returnUrl);
       return;
     }
 
@@ -215,21 +209,23 @@ function CheckoutForm({
             terms: { card: 'never' },
           }}
           onReady={() => setReady(true)}
+          onChange={() => {
+            if (message) setMessage(null);
+          }}
         />
       </div>
-
-      {message ? (
-        <p className="font-sans text-[13px] text-[#C45B4A] leading-snug whitespace-pre-wrap">
-          {message}
-        </p>
-      ) : null}
 
       <button
         type="submit"
         disabled={!stripe || !elements || !ready || submitting}
-        className={ctaClassWide}
+        aria-live="polite"
+        className={`w-full max-w-sm h-12 inline-flex items-center justify-center rounded-full font-sans font-bold text-[15px] tracking-tight shadow-2xl transition-all duration-150 disabled:opacity-50 disabled:pointer-events-none ${
+          message
+            ? 'bg-red-600 text-white hover:opacity-85'
+            : 'bg-[var(--page-fg)] text-[var(--page-bg)] hover:opacity-90 active:scale-95'
+        }`}
       >
-        {submitting ? t('ctaPending') : t('ctaSubscribe')}
+        {submitting ? t('ctaPending') : message ? message : t('ctaSubscribe')}
       </button>
     </form>
   );
@@ -244,7 +240,10 @@ export default function BureauxCheckout({
   accountEmail = null,
   price,
   nextPath,
+  autoStart = false,
 }: {
+  /** Skip the outer Join CTA and open at email / payment. */
+  autoStart?: boolean;
   /** Session present (unpaid member finishing join). */
   signedIn?: boolean;
   accountEmail?: string | null;
@@ -256,14 +255,13 @@ export default function BureauxCheckout({
   const t = useTranslations('Bureaux');
   const { isLight } = useColorScheme();
   const claimNext = safeNextPath(nextPath);
-  const [started, setStarted] = useState(false);
+  const [started, setStarted] = useState(autoStart);
   const [email, setEmail] = useState(accountEmail || '');
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [checkoutEmail, setCheckoutEmail] = useState<string | null>(null);
   const [checkoutSignedIn, setCheckoutSignedIn] = useState(signedIn);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [paidEmail, setPaidEmail] = useState<string | null>(null);
   const prefetchRef = useRef<{
     email: string;
     promise: Promise<{ res: Response; result: CheckoutApiResult }>;
@@ -381,10 +379,6 @@ export default function BureauxCheckout({
     );
   }
 
-  if (paidEmail) {
-    return <BureauxJoinClaim email={paidEmail} nextPath={claimNext} />;
-  }
-
   if (clientSecret && checkoutEmail) {
     const options: StripeElementsOptions = {
       clientSecret,
@@ -392,7 +386,10 @@ export default function BureauxCheckout({
     };
 
     return (
-      <div className="w-full max-w-sm flex flex-col gap-5 text-left">
+      <div className="mx-auto flex w-full max-w-sm flex-col gap-5 text-left">
+        <h2 className="m-0 text-center font-interTight text-[clamp(1.65rem,2.8vw,1.75rem)] font-extrabold tracking-tight text-[#0B0B0C] md:text-[28px]">
+          {t('priceSlideTitle')}
+        </h2>
         <div className="flex flex-col gap-1 items-center text-center">
           <p className="m-0 font-sans text-[13px] font-semibold normal-case tracking-normal text-page-muted">
             {t('joinEmailLabel')}
@@ -421,7 +418,6 @@ export default function BureauxCheckout({
             email={checkoutEmail}
             signedIn={checkoutSignedIn}
             nextPath={claimNext}
-            onPaidGuest={(paid) => setPaidEmail(paid)}
           />
         </Elements>
       </div>
@@ -438,17 +434,6 @@ export default function BureauxCheckout({
         >
           {t('ctaJoinPrice', { price })}
         </button>
-        {!signedIn ? (
-          <p className="m-0 font-sans text-[13px] leading-relaxed text-page-faint">
-            {t('joinReturning')}{' '}
-            <Link
-              href={`/signin?next=${encodeURIComponent(claimNext)}`}
-              className="font-semibold text-page-muted underline underline-offset-2 transition-colors hover:text-page"
-            >
-              {t('ctaSignIn')}
-            </Link>
-          </p>
-        ) : null}
       </div>
     );
   }
@@ -456,19 +441,22 @@ export default function BureauxCheckout({
   return (
     <form
       onSubmit={(e) => void startCheckout(e)}
+      noValidate
       className="flex w-full max-w-sm flex-col gap-4 text-left"
     >
+      <h2 className="m-0 text-center font-interTight text-[clamp(1.65rem,2.8vw,1.75rem)] font-extrabold tracking-tight text-[#0B0B0C] md:text-[28px]">
+        {t('priceSlideTitle')}
+      </h2>
       <label className="flex flex-col gap-2">
-        <span className="font-sans text-[13px] font-semibold normal-case tracking-normal text-page-muted">
-          {t('joinEmailLabel')}
-        </span>
+        <span className="sr-only">{t('joinEmailLabel')}</span>
         <input
           type="email"
-          required
           autoComplete="email"
+          autoFocus
           value={email}
           onChange={(e) => {
             setEmail(e.target.value);
+            if (error) setError(null);
             // Invalidate stale prefetch when the address changes.
             const next = e.target.value.trim().toLowerCase();
             if (
@@ -481,45 +469,22 @@ export default function BureauxCheckout({
           onBlur={() => prefetchCheckout(email)}
           placeholder={t('joinEmailPlaceholder')}
           disabled={loading || (signedIn && Boolean(accountEmail))}
-          className="w-full rounded-xl px-5 py-4 bg-page-chip font-sans font-semibold text-[15px] text-page placeholder-page-muted border border-page-faint focus:outline-none focus:border-[color-mix(in_srgb,var(--page-fg)_35%,transparent)] disabled:opacity-50 transition-colors"
+          className="w-full rounded-[10px] border-0 bg-white px-5 py-4 font-sans text-[16px] font-medium text-[#0B0B0C] shadow-[0_1px_0_rgba(0,0,0,0.04)] placeholder:text-black/35 focus:outline-none focus:ring-2 focus:ring-black/10 disabled:opacity-50 transition-shadow"
         />
       </label>
 
-      {error ? (
-        <div className="flex flex-col gap-2 items-start">
-          <p className="font-sans text-[13px] text-[#C45B4A] leading-snug whitespace-pre-wrap">
-            {error}
-          </p>
-          {error === t('checkoutAlready') ? (
-            <Link
-              href={`/signin?next=${encodeURIComponent(claimNext)}`}
-              className="font-sans text-[13px] font-semibold text-page underline underline-offset-2"
-            >
-              {t('joinCheckEmailSignIn')}
-            </Link>
-          ) : null}
-        </div>
-      ) : null}
-
       <button
         type="submit"
-        disabled={loading || !email.trim()}
-        className={ctaClassWide}
+        disabled={loading}
+        aria-live="polite"
+        className={`w-full max-w-sm h-12 inline-flex items-center justify-center rounded-full font-sans font-bold text-[15px] tracking-tight shadow-2xl transition-all duration-150 disabled:opacity-50 disabled:pointer-events-none ${
+          error
+            ? 'bg-red-600 text-white hover:opacity-85'
+            : 'bg-[var(--page-fg)] text-[var(--page-bg)] hover:opacity-90 active:scale-95'
+        }`}
       >
-        {loading ? t('ctaPending') : t('joinContinue')}
+        {loading ? t('ctaPending') : error ? error : t('joinContinue')}
       </button>
-
-      {!signedIn ? (
-        <p className="m-0 text-center font-sans text-[13px] leading-relaxed text-page-faint">
-          {t('joinReturning')}{' '}
-          <Link
-            href={`/signin?next=${encodeURIComponent(claimNext)}`}
-            className="font-semibold text-page-muted underline underline-offset-2 transition-colors hover:text-page"
-          >
-            {t('ctaSignIn')}
-          </Link>
-        </p>
-      ) : null}
     </form>
   );
 }

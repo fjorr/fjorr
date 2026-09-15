@@ -34,6 +34,10 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async rewrites() {
+    // Avoid app/feed.xml/ (dotted folder) — Turbopack breaks on that path.
+    return [{ source: '/feed.xml', destination: '/api/feed' }];
+  },
   async redirects() {
     const localePrefix = "/:locale(es|fr|it|de|pt|sv|hi|ko|ja|zh-tw)";
     const cut = (source: string, destination: string, permanent = true) => [

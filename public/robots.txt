@@ -8,3 +8,7 @@ Disallow: /auth/
 Disallow: /embed/
 
 Sitemap: https://www.fjorr.com/sitemap.xml
+
+# Film drops + archive updates (machine feed)
+# https://www.fjorr.com/feed.xml
+# Human subscribe page: https://www.fjorr.com/subscribe

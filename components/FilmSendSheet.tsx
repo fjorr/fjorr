@@ -118,6 +118,20 @@ export default function FilmSendSheet({
     ? `${stampText}\n${filmUrl}`
     : filmUrl;
 
+  const shareUrl = timeUrl || filmUrl;
+  const shareMessage =
+    momentPayload ||
+    (stampText
+      ? `${stampText}\n${shareUrl}`
+      : film.teaser
+        ? `${film.name || 'Fjorr'}\n${film.teaser}\n${shareUrl}`
+        : `${film.name || 'Fjorr'}\n${shareUrl}`);
+  const emailSubject = t('sendEmailSubject', {
+    title: film.name || 'Fjorr',
+  });
+  const smsHref = `sms:?&body=${encodeURIComponent(shareMessage)}`;
+  const emailHref = `mailto:?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(shareMessage)}`;
+
   const runtimeLabel = film.runtime
     ? `${Math.max(1, Math.ceil(film.runtime / 60))}m`
     : null;
@@ -286,6 +300,23 @@ export default function FilmSendSheet({
           >
             {copied === 'link' ? t('sendCopied') : t('sendCopyLink')}
           </button>
+
+          <div className="grid grid-cols-2 gap-2">
+            <a
+              href={smsHref}
+              onClick={onClose}
+              className="flex h-11 items-center justify-center rounded-[10px] bg-white/10 text-white font-sans font-semibold text-sm hover:bg-white/15 transition-colors"
+            >
+              {t('sendMessages')}
+            </a>
+            <a
+              href={emailHref}
+              onClick={onClose}
+              className="flex h-11 items-center justify-center rounded-[10px] bg-white/10 text-white font-sans font-semibold text-sm hover:bg-white/15 transition-colors"
+            >
+              {t('sendEmail')}
+            </a>
+          </div>
 
           <button
             type="button"

@@ -1,16 +1,15 @@
 import type { Metadata } from 'next';
-import type { CSSProperties } from 'react';
 import { getTranslations } from 'next-intl/server';
-import { Link, redirect } from '@/i18n/navigation';
+import { redirect } from '@/i18n/navigation';
 import { createClient } from '@/lib/supabase/server';
 import BureauxCheckoutLazy from '@/components/BureauxCheckoutLazy';
-import BureauxHero from '@/components/BureauxHero';
-import BureauxHouseFooter from '@/components/HouseScrollFooter';
-import BureauxIncludedList from '@/components/BureauxIncludedList';
+import BureauxJoinStage from '@/components/BureauxJoinStage';
 import BureauxJoinClaim from '@/components/BureauxJoinClaim';
 import BureauxJoinedRefresh from '@/components/BureauxJoinedRefresh';
+import HouseScrollFooter from '@/components/HouseScrollFooter';
 import {
   getBureauxAnnualAmountCents,
+  getBureauxNumberForEmail,
   getOwnBureauxMembership,
   isBureauxMembershipActive,
 } from '@/lib/bureaux';
@@ -67,6 +66,8 @@ export default async function BureauxPage({
     gift?: string;
     session_id?: string;
     next?: string;
+    /** Design preview — claim confirmation without sending OTP. */
+    preview?: string;
   }>;
 }) {
   const { locale } = await params;
@@ -76,13 +77,13 @@ export default async function BureauxPage({
     gift,
     session_id: giftSessionId,
     next: nextRaw,
+    preview,
   } = await searchParams;
   const nextPath = safeNextPath(nextRaw);
   const joinedEmail =
     typeof joinedEmailRaw === 'string' && joinedEmailRaw.includes('@')
       ? joinedEmailRaw.trim().toLowerCase()
       : null;
-  const t = await getTranslations('Bureaux');
   const ta = await getTranslations('Account');
   const price = formatAnnualPrice(getBureauxAnnualAmountCents(), locale);
 
@@ -105,74 +106,75 @@ export default async function BureauxPage({
   const justJoined = joined === '1';
 
   // Members manage billing / gift seat under Account → The Bureaux.
-  if (user && active) {
+  if (user && active && preview !== 'claim') {
     redirect({
       href: justJoined ? '/account/bureaux?joined=1' : '/account/bureaux',
       locale,
     });
   }
 
-  const joinBlock = (
-    <div className="mx-auto flex w-full flex-col items-center">
+  const claimMode = Boolean(
+    preview === 'claim' || (justJoined && !user && joinedEmail)
+  );
+  const startInCheckout = Boolean(
+    claimMode || justJoined || (joinedEmail && !user)
+  );
+
+  const claimEmail =
+    preview === 'claim'
+      ? joinedEmail || 'you@fjorr.com'
+      : justJoined && !user && joinedEmail
+        ? joinedEmail
+        : null;
+  const claimNumber =
+    preview === 'claim'
+      ? 10482
+      : claimEmail
+        ? await getBureauxNumberForEmail(claimEmail)
+        : null;
+
+  const checkout = claimMode ? (
+    <BureauxJoinClaim
+      email={claimEmail || 'you@fjorr.com'}
+      nextPath={nextPath}
+      autoSend={preview !== 'claim'}
+      bureauxNumber={claimNumber}
+    />
+  ) : (
+    <div className="flex w-full flex-col items-stretch">
       {justJoined && user ? (
-        <p className="mb-4 text-center font-sans text-[14px] leading-relaxed text-page-muted">
+        <p className="mb-4 text-left font-sans text-[14px] leading-relaxed text-page-muted">
           {ta('bureauxJoining')}
         </p>
       ) : null}
       {justJoined && user && !active ? <BureauxJoinedRefresh /> : null}
-      {justJoined && !user && joinedEmail ? (
-        <BureauxJoinClaim email={joinedEmail} nextPath={nextPath} />
-      ) : (
-        <BureauxCheckoutLazy
-          signedIn={Boolean(user)}
-          accountEmail={user?.email || null}
-          price={price}
-          nextPath={nextPath}
-        />
-      )}
+      <BureauxCheckoutLazy
+        signedIn={Boolean(user)}
+        accountEmail={user?.email || null}
+        price={price}
+        nextPath={nextPath}
+        autoStart
+      />
     </div>
   );
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-white text-[#0B0B0C]">
-      <BureauxHero title={t('headline')} />
-
-      <div
-        className="flex w-full flex-1 flex-col pb-24 md:pb-28 lg:pb-32"
-        style={
-          {
-            ['--page-bg' as string]: '#ffffff',
-            ['--page-bg-color' as string]: '#ffffff',
-            ['--page-fg' as string]: '#0B0B0C',
-            ['--page-muted' as string]: 'rgba(11, 11, 12, 0.55)',
-          } as CSSProperties
-        }
-      >
-        <section className="mx-auto flex w-full max-w-3xl flex-col items-center px-5 pt-14 text-center md:max-w-4xl md:px-[60px] md:pt-16 lg:px-[100px] lg:pt-20">
-          <h2 className="m-0 max-w-[22ch] font-interTight text-[clamp(2rem,5.5vw,3.25rem)] font-bold leading-[1.05] tracking-tight text-[#0B0B0C] select-none">
-            {t('subhead')}
-          </h2>
-          <p className="mt-5 max-w-xl font-interTight text-[21px] font-semibold leading-normal tracking-tight text-[#0B0B0C]/75 text-pretty select-none sm:mt-6">
-            {t('lead')}
-          </p>
-          <p className="mt-4 m-0">
-            <Link
-              href="/about"
-              className="font-sans text-[14px] font-semibold tracking-tight text-[#0B0B0C]/55 underline underline-offset-[3px] transition-colors hover:text-[#0B0B0C]"
-            >
-              {t('learnMore')}
-            </Link>
-          </p>
-
-          <div className="mt-10 w-full sm:mt-12">
-            <BureauxIncludedList align="center" />
-          </div>
-
-          <div className="mt-10 w-full sm:mt-12">{joinBlock}</div>
-        </section>
-      </div>
-
-      <BureauxHouseFooter />
+    <div
+      className={`flex min-h-dvh w-full flex-col ${
+        claimMode ? 'text-white' : 'text-[#0B0B0C]'
+      }`}
+      style={{ backgroundColor: claimMode ? '#0B0B0C' : '#F5F5F7' }}
+    >
+      <BureauxJoinStage
+        price={price}
+        checkout={checkout}
+        startInCheckout={startInCheckout}
+        claimMode={claimMode}
+      />
+      <HouseScrollFooter
+        variant={claimMode ? 'light' : 'dark'}
+        surfaceClassName={claimMode ? 'bg-[#0B0B0C]' : 'bg-[#F5F5F7]'}
+      />
     </div>
   );
 }

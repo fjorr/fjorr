@@ -91,6 +91,14 @@ export function findActiveCue(
   return null;
 }
 
+/** Plain dialogue for crawlable / indexable film pages. */
+export function vttToPlainText(rawVtt: string | null | undefined): string {
+  return parseVttCues(rawVtt)
+    .map((cue) => cue.dialogue.replace(/\s+/g, ' ').trim())
+    .filter(Boolean)
+    .join('\n');
+}
+
 /** Advancing pointer while playing forward — O(1) amortized. */
 export function advanceActiveCueIndex(
   cues: VttCue[],

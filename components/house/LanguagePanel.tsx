@@ -16,6 +16,7 @@ import {
 } from '@/i18n/config';
 import { LANGUAGE_HELLO } from '@/lib/language-hello-dom';
 import { Icon } from '@/components/ui/Icons';
+import SheetEnter from '@/components/house/SheetEnter';
 
 const CODE_MAX_PX = 140;
 const CODE_MIN_PX = 48;
@@ -225,52 +226,59 @@ export default function LanguagePanel({
       className="absolute inset-0 z-50 flex flex-col bg-white text-[#0B0B0C]"
     >
       <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-8 px-5 md:gap-10 md:px-10">
-        {current.kind === 'intro' ? (
-          <IntroCard
-            eyebrow={t('language')}
-            code={locale.toUpperCase()}
-            label={localeLabels[locale]}
-            changeLabel={t('languagesChange')}
-            onChange={() => go(1)}
-          />
-        ) : (
-          <button
-            type="button"
-            onClick={() => onConfirm(current.code)}
-            className="flex w-full max-w-[min(92vw,720px)] flex-col items-center gap-3 border-0 bg-transparent p-0 text-center transition-opacity duration-200 hover:opacity-55 md:gap-4"
-          >
-            <SpecimenCode text={current.code.toUpperCase()} />
-            <span className="font-sans text-[18px] font-semibold leading-tight tracking-tight text-[#0B0B0C] md:text-[20px]">
-              {localeLabels[current.code]}
-            </span>
-          </button>
-        )}
+        <SheetEnter
+          key={current.kind === 'intro' ? 'intro' : current.code}
+          className="flex w-full flex-col items-center gap-8 md:gap-10"
+        >
+          {current.kind === 'intro' ? (
+            <IntroCard
+              eyebrow={t('language')}
+              code={locale.toUpperCase()}
+              label={localeLabels[locale]}
+              changeLabel={t('languagesChange')}
+              onChange={() => go(1)}
+            />
+          ) : (
+            <button
+              type="button"
+              onClick={() => onConfirm(current.code)}
+              className="flex w-full max-w-[min(92vw,720px)] flex-col items-center gap-3 border-0 bg-transparent p-0 text-center transition-opacity duration-200 hover:opacity-55 md:gap-4"
+            >
+              <SpecimenCode text={current.code.toUpperCase()} />
+              <span className="font-sans text-[18px] font-semibold leading-tight tracking-tight text-[#0B0B0C] md:text-[20px]">
+                {localeLabels[current.code]}
+              </span>
+            </button>
+          )}
+        </SheetEnter>
 
         {slides.length > 1 && current.kind !== 'intro' ? (
-          <div className="flex shrink-0 items-center justify-center gap-2">
-            <button
-              type="button"
-              onClick={() => go(-1)}
-              disabled={!canPrev}
-              aria-label={t('languagesPrevious')}
-              className="flex h-9 w-9 items-center justify-center border-0 bg-transparent p-0 transition-opacity hover:enabled:opacity-80 disabled:cursor-default disabled:opacity-35"
-            >
-              <Icon name="circleNavBack" className="!h-9 !w-9" aria-hidden />
-            </button>
-            <button
-              type="button"
-              onClick={() => go(1)}
-              disabled={!canNext}
-              aria-label={t('languagesNext')}
-              className="flex h-9 w-9 items-center justify-center border-0 bg-transparent p-0 transition-opacity hover:enabled:opacity-80 disabled:cursor-default disabled:opacity-35"
-            >
-              <Icon
-                name="circleNavForward"
-                className="!h-9 !w-9"
-                aria-hidden
-              />
-            </button>
-          </div>
+          <SheetEnter delay={90}>
+            <div className="flex shrink-0 items-center justify-center gap-2">
+              <button
+                type="button"
+                onClick={() => go(-1)}
+                disabled={!canPrev}
+                aria-label={t('languagesPrevious')}
+                className="flex h-9 w-9 items-center justify-center border-0 bg-transparent p-0 transition-opacity hover:enabled:opacity-80 disabled:cursor-default disabled:opacity-35"
+              >
+                <Icon name="circleNavBack" className="!h-9 !w-9" aria-hidden />
+              </button>
+              <button
+                type="button"
+                onClick={() => go(1)}
+                disabled={!canNext}
+                aria-label={t('languagesNext')}
+                className="flex h-9 w-9 items-center justify-center border-0 bg-transparent p-0 transition-opacity hover:enabled:opacity-80 disabled:cursor-default disabled:opacity-35"
+              >
+                <Icon
+                  name="circleNavForward"
+                  className="!h-9 !w-9"
+                  aria-hidden
+                />
+              </button>
+            </div>
+          </SheetEnter>
         ) : null}
       </div>
     </div>

@@ -6,6 +6,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useColorScheme } from '@/components/ColorSchemeProvider';
 import {
+  hasHouseFooterChrome,
   isAboutBlackPath,
   isAboutPath,
   isAboutRootPath,
@@ -35,22 +36,31 @@ export default function MainChrome({ children }: { children: React.ReactNode }) 
     pathname === '/terms' ||
     pathname.startsWith('/privacy/') ||
     pathname.startsWith('/terms/');
+  // Normalize in case a locale prefix ever leaks through.
+  const path =
+    pathname.replace(/^\/(en|es|fr|it|de|pt|sv|hi|ko|ja|zh-tw)(?=\/|$)/, '') ||
+    '/';
+  const isFeedPage = path === '/feed' || path.startsWith('/feed/');
+  const isSubscribePage =
+    path === '/subscribe' || path.startsWith('/subscribe/');
   const isPartnerPage =
-    pathname === '/partner' || pathname.startsWith('/partner/');
+    path === '/partner' || path.startsWith('/partner/');
   const isEssayPage = isEssayFailurePath(pathname);
   const isAboutRoot = isAboutRootPath(pathname);
   const aboutBlackPage = isAboutBlackPath(pathname);
   const aboutPage = isAboutPath(pathname);
   const houseShell = isHome || isFilmPoster;
-  const hideChrome = isWatchPage || houseShell;
+  const hideChrome = isWatchPage || houseShell || isBureauxJoinPage;
   const hideFooter =
     hideChrome ||
     isSignInPage ||
-    isBureauxJoinPage ||
     isLegalPage ||
+    isFeedPage ||
+    isSubscribePage ||
     isPartnerPage ||
     isEssayPage ||
-    aboutPage;
+    aboutPage ||
+    hasHouseFooterChrome(pathname);
   const isArtifactPage = pathname.startsWith('/artifact/');
   const isLocked = isColorSchemeLockedPath(pathname);
   const { isLight } = useColorScheme();
@@ -73,7 +83,11 @@ export default function MainChrome({ children }: { children: React.ReactNode }) 
   // Navbar: white text on dark surfaces, black text on light.
   // About root: white over the black hero, dark once paper takes over.
   const paperPage =
-    isLegalPage || isPartnerPage || isBureauxJoinPage || isEssayPage;
+    isLegalPage ||
+    isFeedPage ||
+    isSubscribePage ||
+    isPartnerPage ||
+    isEssayPage;
   const heroPaperPage = isAboutRoot;
   const overHero = isAboutRoot ? aboutOverHero : false;
   const navVariant = heroPaperPage

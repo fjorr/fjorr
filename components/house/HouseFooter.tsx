@@ -2,9 +2,10 @@
 
 import React, { type ReactNode } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { Link } from '@/i18n/navigation';
+import { Link, usePathname } from '@/i18n/navigation';
 import { localeLabels, type AppLocale } from '@/i18n/config';
 import { Icon } from '@/components/ui/Icons';
+import { useHouseOverlayOptional } from '@/components/HouseOverlayProvider';
 
 type Props = {
   left?: ReactNode;
@@ -32,11 +33,11 @@ export default function HouseFooter({
   left,
   center,
   langOpen = false,
-  intelOpen = false,
+  intelOpen: _intelOpen = false,
   shortcutsOpen = false,
   legalOpen = false,
   onLanguage,
-  onIntel,
+  onIntel: _onIntel,
   onShortcuts,
   onLegal,
   staticLanguage = false,
@@ -46,8 +47,22 @@ export default function HouseFooter({
   const tFilm = useTranslations('Film');
   const tFooter = useTranslations('Footer');
   const locale = useLocale() as AppLocale;
+  const pathname = usePathname();
+  const overlay = useHouseOverlayOptional();
+  const onSubscribe =
+    pathname === '/subscribe' || pathname.startsWith('/subscribe/');
+  const subscribeActive =
+    onSubscribe && !langOpen && !shortcutsOpen && !legalOpen;
   const label = localeLabels[locale];
   const onDark = variant === 'light';
+
+  const handleSubscribeClick = (
+    event: React.MouseEvent<HTMLAnchorElement>
+  ) => {
+    // Same-route Link is a no-op — close the open sheet so the icon works.
+    if (onSubscribe) event.preventDefault();
+    if (overlay?.active) overlay.close();
+  };
 
   const idleText = onDark
     ? 'text-white/40 hover:text-white/70'
@@ -62,7 +77,7 @@ export default function HouseFooter({
 
   const textLinkClass = `inline-flex shrink-0 items-center bg-transparent p-0 font-sans text-[14px] font-medium leading-tight tracking-normal transition-colors ${idleText}`;
 
-  const languageClass = `inline-flex shrink-0 items-center bg-transparent p-0 font-sans text-[14px] font-medium leading-tight tracking-normal transition-colors ${
+  const languageClass = `inline-flex shrink-0 items-center gap-1.5 bg-transparent p-0 font-sans text-[14px] font-medium leading-tight tracking-normal transition-colors ${
     langOpen ? activeText : idleText
   }`;
 
@@ -71,30 +86,29 @@ export default function HouseFooter({
       active ? iconActive : iconIdle
     }`;
 
-  const languageLabel = (
-    <span className="whitespace-nowrap leading-tight">{label}</span>
-  );
+  const languageControl = staticLanguage ? (
+    <span
+      className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap font-sans text-[14px] font-medium leading-tight ${mutedStatic}`}
+      aria-hidden
+    >
+      <Icon name="globe" className="!h-[18px] !w-[18px]" />
+      <span className="leading-tight">{label}</span>
+    </span>
+  ) : onLanguage ? (
+    <button
+      type="button"
+      aria-label={tNav('language')}
+      aria-expanded={langOpen}
+      onClick={onLanguage}
+      className={languageClass}
+    >
+      <Icon name="globe" className="!h-[18px] !w-[18px]" />
+      <span className="whitespace-nowrap leading-tight">{label}</span>
+    </button>
+  ) : null;
 
   const utilities = (
     <div className="flex shrink-0 items-center gap-2.5 sm:gap-3">
-      {staticLanguage ? (
-        <span
-          className={`inline-flex shrink-0 items-center whitespace-nowrap font-sans text-[14px] font-medium leading-tight ${mutedStatic}`}
-          aria-hidden
-        >
-          {languageLabel}
-        </span>
-      ) : onLanguage ? (
-        <button
-          type="button"
-          aria-label={tNav('language')}
-          aria-expanded={langOpen}
-          onClick={onLanguage}
-          className={languageClass}
-        >
-          {languageLabel}
-        </button>
-      ) : null}
       {staticLanguage ? (
         <span
           className={`inline-flex shrink-0 items-center whitespace-nowrap font-sans text-[14px] font-medium leading-tight ${mutedStatic}`}
@@ -113,19 +127,19 @@ export default function HouseFooter({
             className={`flex h-6 w-6 items-center justify-center ${iconStatic}`}
             aria-hidden
           >
-            <Icon name="subscribe" className="!h-[18px] !w-[18px]" />
+            <Icon name="rss" className="!h-3.5 !w-3.5" />
           </span>
-        ) : onIntel ? (
-          <button
-            type="button"
+        ) : (
+          <Link
+            href="/subscribe"
             aria-label={tFooter('subscribeAria')}
-            aria-expanded={intelOpen}
-            onClick={onIntel}
-            className={iconBtn(intelOpen)}
+            aria-current={onSubscribe ? 'page' : undefined}
+            onClick={handleSubscribeClick}
+            className={iconBtn(subscribeActive)}
           >
-            <Icon name="subscribe" className="!h-[18px] !w-[18px]" />
-          </button>
-        ) : null}
+            <Icon name="rss" className="!h-3.5 !w-3.5" />
+          </Link>
+        )}
         {staticLanguage ? (
           <span
             className={`flex h-6 w-6 items-center justify-center ${iconStatic}`}
@@ -163,8 +177,12 @@ export default function HouseFooter({
           </button>
         ) : null}
       </div>
+      {languageControl}
     </div>
   );
+
+  const year = new Date().getFullYear();
+  const whisper = onDark ? 'text-white/[0.18]' : 'text-black/[0.14]';
 
   return (
     <div className="relative z-50 w-full shrink-0">
@@ -180,7 +198,12 @@ export default function HouseFooter({
           ) : null}
           {utilities}
         </div>
-        <div aria-hidden className="justify-self-end" />
+        <p
+          className={`relative z-[1] m-0 justify-self-end whitespace-nowrap font-sans text-[10px] font-medium tracking-tight ${whisper}`}
+          aria-hidden
+        >
+          © {year} Fjorr
+        </p>
       </div>
     </div>
   );

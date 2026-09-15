@@ -21,6 +21,8 @@ type Props = {
   accountEmail: string | null;
   price: string;
   nextPath?: string;
+  /** Skip the outer Join CTA (stage already showed Join). */
+  autoStart?: boolean;
 };
 
 /** Code-split Stripe + checkout; warm the chunk + Stripe.js on idle. */

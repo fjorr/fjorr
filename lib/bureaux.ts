@@ -377,6 +377,23 @@ export async function activateGiftMembership(input: {
   await ensureBureauxNumber(input.userId);
 }
 
+/** Resolve Bureaux No. for a paid seat by email (service role). */
+export async function getBureauxNumberForEmail(
+  email: string
+): Promise<number | null> {
+  const trimmed = email.trim().toLowerCase();
+  if (!trimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) return null;
+  try {
+    const { id } = await ensureAuthUserByEmail(trimmed);
+    const existing = await getBureauxMembershipByUserId(id);
+    if (!existing) return null;
+    if (existing.bureaux_number != null) return existing.bureaux_number;
+    return await ensureBureauxNumber(id);
+  } catch {
+    return null;
+  }
+}
+
 export type BureauxLineage = {
   sponsoredByNumber: number | null;
   broughtInCount: number;

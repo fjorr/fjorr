@@ -30,7 +30,8 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith("/api") ||
     pathname === "/favicon.ico" ||
     pathname === "/robots.txt" ||
-    pathname === "/sitemap.xml"
+    pathname === "/sitemap.xml" ||
+    pathname === "/feed.xml"
   ) {
     return await updateSession(request);
   }

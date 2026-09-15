@@ -19,6 +19,8 @@ export default {
 
         // Headlines: Avenir Next Variable (local). Class kept as font-futura.
         futura: ["var(--font-display)", "sans-serif"],
+        // Adobe Typekit — Futura PT Condensed (medium mark / icon type).
+        futuraCondensed: ['"futura-pt-condensed"', "sans-serif"],
       },
       colors: {
         dark: {

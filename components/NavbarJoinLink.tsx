@@ -13,8 +13,14 @@ import { fetchOwnBureauxActive } from '@/lib/bureaux-client';
  */
 export default function NavbarJoinLink({
   className = '',
+  mutedClassName = '',
+  activeClassName = '',
 }: {
   className?: string;
+  /** Inactive nav label (e.g. white/55). */
+  mutedClassName?: string;
+  /** Current-page label (e.g. white / black). */
+  activeClassName?: string;
 }) {
   const t = useTranslations('Nav');
   const pathname = usePathname() || '';
@@ -48,7 +54,10 @@ export default function NavbarJoinLink({
   if (signedIn === null) return null;
   if (signedIn === true && member !== false) return null;
 
-  const labelClass = `font-sans text-[13px] font-semibold tracking-normal transition-colors ${className}`;
+  const tone = (active: boolean) =>
+    `font-sans text-[13px] font-semibold tracking-normal transition-colors ${
+      active ? activeClassName || mutedClassName : mutedClassName
+    } ${className}`;
 
   // Already signed in — join is the only door.
   if (signedIn === true) {
@@ -59,7 +68,7 @@ export default function NavbarJoinLink({
         onClick={() => {
           if (onBureaux) close();
         }}
-        className={labelClass}
+        className={tone(onBureaux)}
       >
         {t('join')}
       </Link>
@@ -74,7 +83,7 @@ export default function NavbarJoinLink({
         onClick={() => {
           if (onBureaux) close();
         }}
-        className={labelClass}
+        className={tone(onBureaux)}
       >
         {t('join')}
       </Link>
@@ -84,7 +93,7 @@ export default function NavbarJoinLink({
         onClick={() => {
           if (onSignIn) close();
         }}
-        className={labelClass}
+        className={tone(onSignIn)}
       >
         {t('enter')}
       </Link>

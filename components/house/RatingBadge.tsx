@@ -8,10 +8,8 @@ type RatingBadgeProps = {
 };
 
 const TONE = {
-  onDark:
-    'border-white/70 text-white/85',
-  onLight:
-    'border-black/45 text-black/70',
+  onDark: 'border-white/70 text-white/85',
+  onLight: 'border-black/45 text-black/70',
 } as const;
 
 /**

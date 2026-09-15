@@ -2,6 +2,7 @@ import React, { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import FilmStage, { type FilmStageRailItem } from '@/components/house/FilmStage';
 import FilmStageLoading from '@/components/house/FilmStageLoading';
+import FilmSeoCopy from '@/components/house/FilmSeoCopy';
 import type { Metadata } from 'next';
 import { absoluteUrl } from '@/lib/site';
 import { resolveSocialOgImage } from '@/lib/og';
@@ -12,6 +13,8 @@ import {
   getFilmTranscripts,
 } from '@/lib/content/film';
 import { getHouseCarouselFilms } from '@/lib/content/home';
+import { buildFilmVideoObject, muxThumbnailUrl } from '@/lib/seo/video';
+import { vttToPlainText } from '@/lib/vtt';
 import { getLocale } from 'next-intl/server';
 import { parseLocale } from '@/i18n/config';
 
@@ -153,9 +156,7 @@ async function DeferredPageContent({ urlSlug }: { urlSlug: string }) {
 
   const [ogImageUrl, transcripts] = await Promise.all([
     resolveSocialOgImage(filmData.blok_ogrf),
-    subtitleTracks.length > 0
-      ? getFilmTranscripts(filmData.id)
-      : Promise.resolve([]),
+    getFilmTranscripts(filmData.id),
   ]);
 
   const isComingSoon = filmData.release_date
@@ -182,6 +183,26 @@ async function DeferredPageContent({ urlSlug }: { urlSlug: string }) {
     .filter((artifact: { slug: string }) => artifact.slug);
 
   const currentSlug = String(filmData.slug);
+  const directorNote =
+    filmData.director_note ||
+    // Temporary placeholders until CMS notes are filled.
+    (currentSlug === 'shoebox'
+      ? 'We built this the way Bowerman built shoes — on the kitchen floor, cutting what didn’t belong, keeping only what made someone faster. The myth isn’t the waffle iron. It’s the refusal to wait for permission.'
+      : currentSlug === 'moonshot'
+        ? 'Kennedy did not ask for a speech about the moon. He asked for a reason America should try. The film is that reason, cut short — a dare aimed at the horizon, still unfinished in the best way.'
+        : null);
+  const directorName =
+    credits.find((c) => /director/i.test(c.role || ''))?.name || null;
+
+  const transcriptPlain = (() => {
+    const rows = transcripts || [];
+    const preferred =
+      rows.find((r: { language_code?: string | null }) =>
+        /^en/i.test(String(r.language_code || ''))
+      ) || rows[0];
+    return preferred?.content ? vttToPlainText(String(preferred.content)) : '';
+  })();
+
   const currentItem = toRailItem(filmData, isComingSoon);
   const rail: FilmStageRailItem[] = (() => {
     const seen = new Set<string>();
@@ -201,21 +222,37 @@ async function DeferredPageContent({ urlSlug }: { urlSlug: string }) {
     return out;
   })();
 
+  const thumbnailUrl =
+    muxThumbnailUrl(filmData.mux_playback_id) || ogImageUrl;
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'Movie',
-            name: filmData.name,
-            description: filmData.teaser,
-            image: ogImageUrl,
-            datePublished: filmData.release_date,
-            productionCompany: { '@type': 'Organization', name: 'Fjorr' },
-          }),
+          __html: JSON.stringify(
+            buildFilmVideoObject({
+              name: filmData.name || 'Untitled',
+              description: filmData.teaser || filmData.description,
+              slug: currentSlug,
+              thumbnailUrl,
+              uploadDate: filmData.release_date || null,
+              runtimeSeconds: filmData.runtime ?? null,
+              muxPlaybackId: filmData.mux_playback_id || null,
+              credits,
+            })
+          ),
         }}
+      />
+
+      <FilmSeoCopy
+        name={filmData.name || 'Untitled'}
+        teaser={filmData.teaser || null}
+        description={filmData.description || null}
+        note={filmData.note || null}
+        directorNote={directorNote}
+        directorName={directorName}
+        transcriptText={transcriptPlain || null}
       />
 
       <FilmStage
@@ -227,14 +264,7 @@ async function DeferredPageContent({ urlSlug }: { urlSlug: string }) {
           teaser: filmData.teaser || null,
           description: filmData.description || null,
           note: filmData.note || null,
-          directorNote:
-            filmData.director_note ||
-            // Temporary placeholders until CMS notes are filled.
-            (currentSlug === 'shoebox'
-              ? 'We built this the way Bowerman built shoes — on the kitchen floor, cutting what didn’t belong, keeping only what made someone faster. The myth isn’t the waffle iron. It’s the refusal to wait for permission.'
-              : currentSlug === 'moonshot'
-                ? 'Kennedy did not ask for a speech about the moon. He asked for a reason America should try. The film is that reason, cut short — a dare aimed at the horizon, still unfinished in the best way.'
-                : null),
+          directorNote,
           storyDate:
             asText(filmData.story_date) ||
             (typeof filmData.story_date === 'string' ? filmData.story_date : null),

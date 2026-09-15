@@ -11,6 +11,7 @@ import React, {
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Icon } from '@/components/ui/Icons';
+import SheetEnter from '@/components/house/SheetEnter';
 
 export type ShortcutAction =
   | 'browse'
@@ -385,8 +386,13 @@ export default function ShortcutsPanel({ onAction, onClose }: Props) {
     >
       {current.kind === 'intro' ? (
         <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-8">
-          <IntroKeyRow />
-          <div className="flex flex-col items-center gap-8 px-5 text-center md:gap-10 md:px-10">
+          <SheetEnter className="flex flex-col items-center gap-8">
+            <IntroKeyRow />
+          </SheetEnter>
+          <SheetEnter
+            delay={80}
+            className="flex flex-col items-center gap-8 px-5 text-center md:gap-10 md:px-10"
+          >
             <p className="m-0 max-w-[20rem] whitespace-pre-line font-sans text-[18px] font-normal leading-snug tracking-tight text-black/45 md:max-w-[22rem] md:text-[20px]">
               {t('keysLead')}
             </p>
@@ -397,46 +403,50 @@ export default function ShortcutsPanel({ onAction, onClose }: Props) {
             >
               {t('keysStart')}
             </button>
-          </div>
+          </SheetEnter>
         </div>
       ) : (
         <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-8 px-5 md:gap-10 md:px-10">
-          <SlideBody
-            specimen={specimenForCommand(current)}
-            title={t(current.labelKey)}
-            body={t(current.descKey)}
-            onClick={runCurrent}
-          />
+          <SheetEnter key={current.id} className="w-full max-w-[min(92vw,720px)]">
+            <SlideBody
+              specimen={specimenForCommand(current)}
+              title={t(current.labelKey)}
+              body={t(current.descKey)}
+              onClick={runCurrent}
+            />
+          </SheetEnter>
 
           {slides.length > 1 ? (
-            <div className="flex shrink-0 items-center justify-center gap-2">
-              <button
-                type="button"
-                onClick={() => go(-1)}
-                disabled={!canPrev}
-                aria-label={t('keysPrevious')}
-                className="flex h-9 w-9 items-center justify-center border-0 bg-transparent p-0 transition-opacity hover:enabled:opacity-80 disabled:cursor-default disabled:opacity-35"
-              >
-                <Icon
-                  name="circleNavBack"
-                  className="!h-9 !w-9"
-                  aria-hidden
-                />
-              </button>
-              <button
-                type="button"
-                onClick={() => go(1)}
-                disabled={!canNext}
-                aria-label={t('keysNext')}
-                className="flex h-9 w-9 items-center justify-center border-0 bg-transparent p-0 transition-opacity hover:enabled:opacity-80 disabled:cursor-default disabled:opacity-35"
-              >
-                <Icon
-                  name="circleNavForward"
-                  className="!h-9 !w-9"
-                  aria-hidden
-                />
-              </button>
-            </div>
+            <SheetEnter delay={90}>
+              <div className="flex shrink-0 items-center justify-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => go(-1)}
+                  disabled={!canPrev}
+                  aria-label={t('keysPrevious')}
+                  className="flex h-9 w-9 items-center justify-center border-0 bg-transparent p-0 transition-opacity hover:enabled:opacity-80 disabled:cursor-default disabled:opacity-35"
+                >
+                  <Icon
+                    name="circleNavBack"
+                    className="!h-9 !w-9"
+                    aria-hidden
+                  />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => go(1)}
+                  disabled={!canNext}
+                  aria-label={t('keysNext')}
+                  className="flex h-9 w-9 items-center justify-center border-0 bg-transparent p-0 transition-opacity hover:enabled:opacity-80 disabled:cursor-default disabled:opacity-35"
+                >
+                  <Icon
+                    name="circleNavForward"
+                    className="!h-9 !w-9"
+                    aria-hidden
+                  />
+                </button>
+              </div>
+            </SheetEnter>
           ) : null}
         </div>
       )}

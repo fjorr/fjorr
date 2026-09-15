@@ -143,7 +143,11 @@ function Navbar({ variant = 'light' }: NavbarProps) {
 
   const accountSide = (
     <div className="flex items-center gap-3 sm:gap-3.5">
-      <NavbarJoinLink className={`${iconColor} ${controlHover}`} />
+      <NavbarJoinLink
+        className={controlHover}
+        mutedClassName={iconColor}
+        activeClassName={textColor}
+      />
       <NavbarAccountLink className={`${iconColor} ${controlHover}`} />
     </div>
   );
