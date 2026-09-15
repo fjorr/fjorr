@@ -364,20 +364,52 @@ export default function CommandLine({
   );
   const [active, setActive] = useState(0);
   const lastRemoteText = useRef('');
-  const [compactSearch, setCompactSearch] = useState(false);
-  const compactRef = useRef(false);
+  const [chromeHidden, setChromeHidden] = useState(false);
+  const chromeHiddenRef = useRef(false);
+  const lastScrollTop = useRef(0);
 
-  const onResultsScroll = (scrollTop: number) => {
-    const next = scrollTop > 20;
-    if (next === compactRef.current) return;
-    compactRef.current = next;
-    setCompactSearch(next);
+  const onResultsScroll = (scrollTop: number, el?: HTMLElement) => {
+    const canScroll = el
+      ? el.scrollHeight > el.clientHeight + 40
+      : scrollTop > 40;
+    window.dispatchEvent(
+      new CustomEvent('fjorr_search_scroll', {
+        detail: { scrollTop, canScroll },
+      })
+    );
+
+    const prev = lastScrollTop.current;
+    lastScrollTop.current = scrollTop;
+    const delta = scrollTop - prev;
+
+    let nextHidden = chromeHiddenRef.current;
+    if (scrollTop < 12) nextHidden = false;
+    else if (delta > 6) nextHidden = true;
+    else if (delta < -6) nextHidden = false;
+
+    if (nextHidden === chromeHiddenRef.current) return;
+    chromeHiddenRef.current = nextHidden;
+    setChromeHidden(nextHidden);
   };
 
   useEffect(() => {
-    compactRef.current = false;
-    setCompactSearch(false);
+    chromeHiddenRef.current = false;
+    lastScrollTop.current = 0;
+    setChromeHidden(false);
+    window.dispatchEvent(
+      new CustomEvent('fjorr_search_scroll', {
+        detail: { scrollTop: 0, canScroll: false },
+      })
+    );
   }, [query]);
+
+  useEffect(() => {
+    window.dispatchEvent(
+      new CustomEvent('fjorr_search_scroll', {
+        detail: { scrollTop: 0, canScroll: false },
+      })
+    );
+  }, []);
 
   const searching = query.trim().length > 0;
   const localHits = useMemo(() => {
@@ -852,8 +884,10 @@ export default function CommandLine({
       className="relative z-50 flex h-full flex-col bg-white text-[#0B0B0C]"
     >
       <div
-        className={`mx-auto w-full max-w-[44rem] shrink-0 px-0 transition-[padding] duration-200 ease-out ${
-          compactSearch ? 'pt-1' : 'pt-2'
+        className={`mx-auto w-full max-w-[44rem] shrink-0 overflow-hidden px-0 transition-[max-height,opacity,padding] duration-200 ease-out ${
+          chromeHidden
+            ? 'pointer-events-none max-h-0 py-0 opacity-0'
+            : 'max-h-24 pt-2 opacity-100'
         }`}
       >
         <form
@@ -866,19 +900,8 @@ export default function CommandLine({
           <label className="sr-only" htmlFor="fjorr-command">
             Describe a mood, director, or cinematic intent
           </label>
-          <div
-            className={`flex w-full items-center bg-black/[0.05] transition-[padding,gap,border-radius,box-shadow] duration-200 ease-out ${
-              compactSearch
-                ? 'gap-2 rounded-full px-3 py-1.5 shadow-[0_1px_0_rgba(0,0,0,0.04)]'
-                : 'gap-3 rounded-[10px] px-4 py-3 md:py-4'
-            }`}
-          >
-            <span
-              className={`inline-flex shrink-0 text-black/40 transition-transform duration-200 ${
-                compactSearch ? 'scale-[0.85]' : ''
-              }`}
-              aria-hidden
-            >
+          <div className="flex w-full items-center gap-3 rounded-[10px] bg-black/[0.05] px-4 py-3 md:py-4">
+            <span className="inline-flex shrink-0 text-black/40" aria-hidden>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                 <circle
                   cx="11"
@@ -901,15 +924,25 @@ export default function CommandLine({
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               onFocus={() => {
-                compactRef.current = false;
-                setCompactSearch(false);
+                chromeHiddenRef.current = false;
+                setChromeHidden(false);
               }}
-              placeholder={
-                compactSearch ? 'Search' : 'A title, director, or a short phrase'
-              }
-              className={`h-[1.4em] w-full min-w-0 bg-transparent font-sans font-semibold leading-none tracking-tight text-[#0B0B0C] outline-none placeholder:text-black/35 transition-[font-size] duration-200 ${
-                compactSearch ? 'text-[14px]' : 'text-[17px] md:text-[18px]'
-              }`}
+              onBlur={() => {
+                // Unstick iOS Safari focus-zoom without permanently locking pinch-zoom.
+                const meta = document.querySelector('meta[name="viewport"]');
+                if (!meta) return;
+                const prev = meta.getAttribute('content') || 'width=device-width, initial-scale=1';
+                meta.setAttribute(
+                  'content',
+                  'width=device-width, initial-scale=1, maximum-scale=1'
+                );
+                window.setTimeout(() => {
+                  meta.setAttribute('content', prev);
+                }, 120);
+              }}
+              placeholder="A title, director, or a short phrase"
+              // ≥16px is the threshold that stops iOS from auto-zooming inputs.
+              className="h-[1.4em] w-full min-w-0 bg-transparent font-sans text-base font-semibold leading-none tracking-tight text-[#0B0B0C] outline-none placeholder:text-black/35 md:text-[17px]"
             />
             {query ? (
               <button
@@ -931,7 +964,9 @@ export default function CommandLine({
 
       <div
         className="mx-auto min-h-0 w-full max-w-[90rem] flex-1 overflow-y-auto overscroll-contain pb-3 pt-3"
-        onScroll={(event) => onResultsScroll(event.currentTarget.scrollTop)}
+        onScroll={(event) =>
+          onResultsScroll(event.currentTarget.scrollTop, event.currentTarget)
+        }
       >
         {searching ? (
           hits.length === 0 ? (
@@ -946,6 +981,7 @@ export default function CommandLine({
               showControls={false}
               showKindFilter
               scrollable={false}
+              controlsHidden={chromeHidden}
               onPlay={playFromCatalog}
               onHover={(slug) => {
                 const index = hits.findIndex((row) => row.slug === slug);
@@ -957,6 +993,7 @@ export default function CommandLine({
           <CatalogIndex
             items={catalog.map(toIndexItem)}
             scrollable={false}
+            controlsHidden={chromeHidden}
             onPlay={playFromCatalog}
           />
         )}

@@ -8,6 +8,7 @@ import { HouseOverlayProvider } from '@/components/HouseOverlayProvider';
 import { fontVariables } from '@/lib/fonts';
 import { COLOR_SCHEME_COOKIE, parseColorScheme } from '@/lib/color-scheme';
 import { routing } from '@/i18n/routing';
+import type { Viewport } from 'next';
 
 /**
  * Skip server-only / rarely-hydrated namespaces on the client.
@@ -20,6 +21,13 @@ const CLIENT_SKIP_NAMESPACES = new Set([
   'About',
   'Auth',
 ]);
+
+/** Keep iOS from auto-zooming the search field and sticking the scale. */
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+};
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));

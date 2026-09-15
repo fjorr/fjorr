@@ -6,6 +6,9 @@ Disallow: /_next/
 Disallow: /debug-db
 Disallow: /auth/
 Disallow: /embed/
+Disallow: /account/
+Disallow: /signin
+Disallow: /preview/
 
 Sitemap: https://www.fjorr.com/sitemap.xml
 

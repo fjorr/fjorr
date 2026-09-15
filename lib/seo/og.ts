@@ -5,7 +5,7 @@ const DEFAULT_OG = {
   url: absoluteUrl('/opengraph-image.png'),
   width: 1200,
   height: 630,
-  alt: 'Fjorr — short films of the world’s greatest stories',
+  alt: 'Fjorr',
 } as const;
 
 /** Explicit OG/Twitter images for marketing routes (avoid generic fallback). */

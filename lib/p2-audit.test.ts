@@ -45,7 +45,6 @@ describe('P2 audit guards', () => {
       'app/[locale]/(main)/about/the-mark/page.tsx',
       'app/[locale]/(main)/about/100-years-of-failure/page.tsx',
       'app/[locale]/(main)/bureaux/page.tsx',
-      'app/[locale]/(main)/partner/page.tsx',
       'app/[locale]/(main)/subscribe/page.tsx',
       'app/[locale]/(main)/privacy/page.tsx',
       'app/[locale]/(main)/terms/page.tsx',

@@ -48,7 +48,7 @@ function formatLocation(
 }
 
 const LINK_CLASS =
-  'block w-full border-0 bg-transparent p-0 text-center font-sans text-[15px] font-semibold tracking-tight text-white no-underline transition-opacity hover:opacity-55';
+  'block w-full border-0 bg-transparent p-0 text-left font-sans text-[15px] font-semibold tracking-tight text-[#0B0B0C] no-underline transition-opacity hover:opacity-55';
 
 /**
  * Share sheet — language-card shell, identity header, text action list.
@@ -189,18 +189,18 @@ export default function FilmSendSheet({
         aria-modal="true"
         aria-label={t('send')}
         className="relative flex w-[min(72vw,16.5rem)] flex-col rounded-[22px] px-6 pb-10 pt-10 duration-200 animate-in fade-in zoom-in-95 md:w-[18rem] md:rounded-[28px] md:px-7 md:pb-12 md:pt-12"
-        style={{ backgroundColor: '#0B0B0C' }}
+        style={{ backgroundColor: '#FFFFFF' }}
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="flex flex-col items-center text-center">
-          <p className="m-0 font-sans text-[13px] font-medium leading-none tracking-tight text-white/45">
+        <div className="flex flex-col items-start text-left">
+          <p className="m-0 font-sans text-[13px] font-medium leading-none tracking-tight text-black/45">
             {t('send')}
           </p>
-          <p className="m-0 mt-2.5 font-interTight text-[22px] font-bold leading-none tracking-tight text-white md:text-[24px]">
+          <p className="m-0 mt-2.5 font-interTight text-[22px] font-bold leading-none tracking-tight text-[#0B0B0C] md:text-[24px]">
             {film.name}
           </p>
           {metaLine || timeLabel ? (
-            <p className="m-0 mt-2 max-w-[14rem] font-sans text-[12px] font-medium leading-snug text-white/40">
+            <p className="m-0 mt-2 max-w-[14rem] font-sans text-[12px] font-medium leading-snug text-black/40">
               {timeLabel
                 ? [metaLine, t('sendMomentMeta', { time: timeLabel })]
                     .filter(Boolean)
@@ -223,7 +223,7 @@ export default function FilmSendSheet({
         ) : null}
 
         <div
-          className={`flex flex-col items-center gap-4 ${momentPayload && timeLabel ? 'mt-4' : 'mt-8'}`}
+          className={`flex flex-col items-start gap-4 ${momentPayload && timeLabel ? 'mt-4' : 'mt-8'}`}
         >
           <button
             type="button"

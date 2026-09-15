@@ -59,13 +59,13 @@ function entry(
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  // Live public surfaces only — no account, auth, preview, or deferred cuts.
   const staticPaths = [
     '/',
     '/about',
     '/about/the-mark',
     '/about/100-years-of-failure',
     '/bureaux',
-    '/partner',
     '/subscribe',
     '/terms',
     '/privacy',

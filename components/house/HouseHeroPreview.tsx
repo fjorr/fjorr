@@ -285,7 +285,7 @@ export default function HouseHeroPreview({
           loading={eager ? 'eager' : 'lazy'}
           decoding="async"
           draggable={false}
-          className="absolute inset-0 h-full w-full object-cover object-center"
+          className="absolute inset-0 h-full w-full object-cover object-top"
         />
       ) : null}
       <video
@@ -294,7 +294,7 @@ export default function HouseHeroPreview({
         playsInline
         preload="none"
         aria-hidden
-        className={`pointer-events-none absolute inset-0 h-full w-full object-cover object-center transition-opacity ease-out ${
+        className={`pointer-events-none absolute inset-0 h-full w-full object-cover object-top transition-opacity ease-out ${
           videoOn ? 'opacity-100' : 'opacity-0'
         }`}
         style={{ transitionDuration: `${FADE_MS}ms` }}

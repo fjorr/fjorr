@@ -213,7 +213,7 @@ export default function BureauxJoinStage({
             fill
             priority
             sizes="100vw"
-            className="object-cover object-[30%_40%] sm:object-[40%_42%] md:object-[55%_45%] lg:object-[60%_center]"
+            className="object-cover object-[78%_40%] sm:object-[68%_42%] md:object-[58%_45%] lg:object-[55%_center]"
           />
           <div
             aria-hidden

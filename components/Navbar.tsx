@@ -56,7 +56,9 @@ function Navbar({ variant = 'light' }: NavbarProps) {
   const glassAnimClass =
     chromeVariant === 'light' ? 'animate-nav-glass' : 'animate-nav-glass-light';
 
-  const showGlass = !sheetOpen && canScroll && scrolledPast;
+  const showGlass = searchOpen
+    ? scrolledPast
+    : !sheetOpen && canScroll && scrolledPast;
 
   useEffect(() => {
     setPortalReady(true);
@@ -70,6 +72,25 @@ function Navbar({ variant = 'light' }: NavbarProps) {
   }, [pathname, active]);
 
   useEffect(() => {
+    if (searchOpen) {
+      setScrolledPast(false);
+      setCanScroll(false);
+      const onSearchScroll = (event: Event) => {
+        const detail = (
+          event as CustomEvent<{ scrollTop: number; canScroll: boolean }>
+        ).detail;
+        setCanScroll(Boolean(detail?.canScroll));
+        setScrolledPast(
+          Boolean(detail?.canScroll) &&
+            (detail?.scrollTop ?? 0) > SCROLL_GLASS_PX
+        );
+      };
+      window.addEventListener('fjorr_search_scroll', onSearchScroll);
+      return () => {
+        window.removeEventListener('fjorr_search_scroll', onSearchScroll);
+      };
+    }
+
     if (sheetOpen) {
       setScrolledPast(false);
       setCanScroll(false);
@@ -89,7 +110,7 @@ function Navbar({ variant = 'light' }: NavbarProps) {
       window.removeEventListener('scroll', measure);
       window.removeEventListener('resize', measure);
     };
-  }, [pathname, sheetOpen]);
+  }, [pathname, sheetOpen, searchOpen]);
 
   useEffect(() => {
     const handleHide = () => {
@@ -166,7 +187,7 @@ function Navbar({ variant = 'light' }: NavbarProps) {
     >
       <div
         className={`pointer-events-auto inline-flex h-[44px] max-w-[calc(100vw-2rem)] items-center gap-3.5 rounded-[10px] border px-4 sm:gap-5 sm:px-5 ${
-          sheetOpen
+          sheetOpen && !searchOpen
             ? 'border-transparent bg-white'
             : showGlass
               ? `${glassAnimClass} nav-glass-scrolled`

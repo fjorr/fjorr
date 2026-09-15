@@ -35,13 +35,14 @@ type Props = {
   /** Open film / artifact. */
   onPlay: (slug: string) => void;
   onHover?: (slug: string) => void;
-  /** Results scroller offset — used to compact the search field on mobile. */
+  /** Results scroller offset — parent uses for chrome hide / nav glass. */
   onResultsScroll?: (scrollTop: number) => void;
   /**
-   * When false, filters stay put and the parent owns scrolling
-   * (CommandLine compact-on-scroll).
+   * When false, filters stay put and the parent owns scrolling.
    */
   scrollable?: boolean;
+  /** Collapse the filter / view bar (search chrome hide-on-scroll). */
+  controlsHidden?: boolean;
 };
 
 type SortKey = 'catalog' | 'title' | 'year' | 'runtime';
@@ -95,6 +96,7 @@ export default function CatalogIndex({
   onHover,
   onResultsScroll,
   scrollable = true,
+  controlsHidden = false,
 }: Props) {
   const t = useTranslations('Film');
   const tSearch = useTranslations('Search');
@@ -187,7 +189,7 @@ export default function CatalogIndex({
   );
 
   const gridCols =
-    'md:grid-cols-[minmax(0,1fr)_5.5rem_3.25rem]';
+    'grid-cols-[minmax(0,1fr)_4.5rem_2.75rem] md:grid-cols-[minmax(0,1fr)_5.5rem_3.25rem]';
 
   const kindChips = (
     <div className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
@@ -250,8 +252,16 @@ export default function CatalogIndex({
           : 'flex w-full flex-col'
       }
     >
-      {/* Filters + view mode stay under the search input width. */}
-      <div className="mx-auto w-full max-w-[44rem] shrink-0">{controlBar}</div>
+      {/* Filters stick under the search field; hide with chrome on scroll-down. */}
+      <div
+        className={`sticky top-0 z-[1] bg-white transition-transform duration-200 ease-out ${
+          controlsHidden
+            ? 'pointer-events-none -translate-y-[120%]'
+            : 'translate-y-0'
+        }`}
+      >
+        <div className="mx-auto w-full max-w-[44rem]">{controlBar}</div>
+      </div>
 
       {viewMode === 'grid' ? (
         displayItems.length === 0 && showKindFilter ? (
@@ -322,7 +332,7 @@ export default function CatalogIndex({
                     onMouseEnter={() => onHover?.(item.slug)}
                   >
                     <div
-                      className={`flex items-center gap-3 bg-transparent py-2.5 md:grid md:gap-3 ${gridCols}`}
+                      className={`grid items-center gap-2 bg-transparent py-2.5 md:gap-3 ${gridCols}`}
                     >
                       <button
                         type="button"
@@ -330,7 +340,7 @@ export default function CatalogIndex({
                           onPlay(item.slug);
                         }}
                         aria-current={active ? 'true' : undefined}
-                        className="min-w-0 flex-1 border-0 bg-transparent p-0 text-left hover:bg-transparent focus:bg-transparent active:bg-transparent md:flex-none"
+                        className="min-w-0 border-0 bg-transparent p-0 text-left hover:bg-transparent focus:bg-transparent active:bg-transparent"
                       >
                         <span className="flex min-w-0 items-baseline gap-x-1.5">
                           <span className="min-w-0 truncate font-interTight text-[15px] font-bold leading-tight tracking-tight text-[#0B0B0C] md:text-[16px]">
@@ -351,10 +361,10 @@ export default function CatalogIndex({
                         ) : null}
                       </button>
 
-                      <span className="hidden truncate font-sans text-[12px] font-medium text-black/40 md:block">
+                      <span className="truncate font-sans text-[12px] font-medium text-black/40">
                         {setting || '—'}
                       </span>
-                      <span className="hidden font-sans text-[12px] font-medium tabular-nums text-black/40 md:block">
+                      <span className="font-sans text-[12px] font-medium tabular-nums text-black/40">
                         {metaRight}
                       </span>
                     </div>

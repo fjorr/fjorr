@@ -73,7 +73,7 @@ export default function CatalogPosterGrid({
                   <img
                     src={item.thumb}
                     alt=""
-                    className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02]"
+                    className="h-full w-full object-cover object-top transition-transform duration-500 ease-out group-hover:scale-[1.02]"
                     draggable={false}
                   />
                 ) : (

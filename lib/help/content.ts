@@ -155,7 +155,7 @@ article({
     ],
     actions: {
       guest: [{ href: '/bureaux', label: 'Join to nominate' }],
-      member: [{ href: '/account/nominations', label: 'Nominations' }],
+      member: [{ href: '/account/voyages', label: 'Voyages' }],
     },
     plates: [{ src: '/manual/nominate.svg', label: 'Nominate' }],
   }),

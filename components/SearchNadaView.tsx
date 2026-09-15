@@ -12,17 +12,13 @@ import { mixIdsForType } from '@/lib/home-mix';
  */
 export default function SearchNadaView({
   category,
-  showNominate,
 }: {
   category?: 'film' | 'artifact';
-  /** Defaults to true for films, false for artifacts. */
-  showNominate?: boolean;
 } = {}) {
   const t = useTranslations('Search');
   const tf = useTranslations('MinimalList');
   const filter = useMinimalFilterOptional();
   const type = category ?? filter?.contentType ?? 'film';
-  const nominate = showNominate ?? type === 'film';
 
   const otherHits = useMemo(() => {
     if (!filter) return 0;
@@ -60,22 +56,12 @@ export default function SearchNadaView({
             : tf('seeArtifactMatches', { count: otherHits })}
         </button>
       ) : (
-        <>
-          {nominate ? (
-            <Link
-              href="/account/nominations"
-              className="font-sans text-[13px] font-semibold tracking-tight text-page-faint hover:text-page transition-colors"
-            >
-              {t('nominateStory')}
-            </Link>
-          ) : null}
-          <Link
-            href="/bureaux"
-            className="font-sans text-[13px] font-medium tracking-tight text-page-faint hover:text-page-muted transition-colors"
-          >
-            {t('joinBureauxHelp')}
-          </Link>
-        </>
+        <Link
+          href="/bureaux"
+          className="font-sans text-[13px] font-medium tracking-tight text-page-faint hover:text-page-muted transition-colors"
+        >
+          {t('joinBureauxHelp')}
+        </Link>
       )}
     </div>
   );

@@ -89,10 +89,18 @@ const nextConfig: NextConfig = {
       ...cut("/help/principles", "/about"),
       ...cut("/account/plus", "/account/voyages"),
       ...cut("/account/cabinet", "/account/voyages"),
+      ...cut("/account/nominations", "/account/voyages"),
       ...cut("/account/profile", "/account/bureaux"),
       ...cut("/account/privacy", "/account/voyages"),
       ...cut("/account/logs", "/account/voyages"),
       ...cut("/account/recut", "/account/voyages"),
+      ...cut("/partner", "/about"),
+      ...cut("/auth/login", "/signin"),
+      ...cut("/auth/sign-up", "/signin"),
+      ...cut("/auth/sign-up-success", "/signin"),
+      ...cut("/auth/forgot-password", "/signin"),
+      ...cut("/auth/update-password", "/signin"),
+      ...cut("/auth/protected", "/signin"),
       ...cut("/bureaux/gift/:token", "/bureaux"),
       // Legacy account profile URLs → public Bureaux profile paths
       {

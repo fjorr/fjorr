@@ -102,7 +102,7 @@ export default async function AccountVoyagesPage({
   const t = await getTranslations('Account');
 
   return (
-    <AccountShell profile={profile} wide>
+    <AccountShell profile={profile} wide hideFooter>
       <VoyagesBoard
         logs={logs}
         title={t('filmLogsTitle')}
