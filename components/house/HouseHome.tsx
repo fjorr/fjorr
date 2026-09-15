@@ -128,6 +128,8 @@ export default function HouseHome({
   const { active, setShortcutHandler, isOpen, toggle } =
     useHouseOverlay();
   const sheetOpen = active != null;
+  const searchOpen = isOpen('search');
+  const pinFooter = sheetOpen && !searchOpen;
   const [index, setIndex] = useState(0);
   const [dir, setDir] = useState(1);
   const [phase, setPhase] = useState<'idle' | 'from' | 'to'>('idle');
@@ -311,7 +313,7 @@ export default function HouseHome({
 
   return (
     <div className="fixed inset-0 z-40 flex flex-col overflow-hidden bg-white text-[#0B0B0C]">
-      <Navbar variant="dark" />
+      <Navbar variant="light" />
 
       <div className={`relative min-h-0 flex-1 ${HOUSE_STAGE_SIDE_CLASS}`}>
         <div className="relative h-full w-full overflow-hidden rounded-[8px]">
@@ -447,12 +449,13 @@ export default function HouseHome({
         </div>
       </div>
 
-      {sheetOpen ? (
+      {pinFooter ? (
         <div className="h-[54px] w-full shrink-0" aria-hidden />
       ) : null}
+      {!searchOpen ? (
       <div
         className={
-          sheetOpen
+          pinFooter
             ? 'fixed inset-x-0 bottom-0 z-[60] bg-white'
             : 'relative z-50 w-full bg-white'
         }
@@ -472,6 +475,7 @@ export default function HouseHome({
           }}
         />
       </div>
+      ) : null}
 
       {showTheater && selectedFilm ? (
         <CinemaTheater

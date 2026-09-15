@@ -50,7 +50,7 @@ export default function BureauxHero({ title }: { title: string }) {
           fill
           priority
           sizes="(max-width: 768px) 100vw, calc(100vw - 108px)"
-          className="object-cover object-[78%_40%] sm:object-[68%_42%] md:object-[58%_45%] lg:object-[55%_center]"
+          className="object-cover object-[28%_72%] sm:object-[38%_58%] md:object-[48%_48%] lg:object-[52%_center]"
         />
         <div className="absolute inset-0 flex items-center justify-center px-4 sm:px-6 md:px-8">
           <h1

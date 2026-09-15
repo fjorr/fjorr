@@ -79,7 +79,6 @@ export function isHousePath(pathname?: string | null): boolean {
   if (path === '/account' || path.startsWith('/account/')) return true;
   if (path === '/bureaux' || path.startsWith('/bureaux/')) return true;
   if (path === '/partner' || path.startsWith('/partner/')) return true;
-  if (path === '/feed' || path.startsWith('/feed/')) return true;
   if (path === '/subscribe' || path.startsWith('/subscribe/')) return true;
   if (isEssayFailurePath(path)) return true;
   if (isAboutRootPath(path)) return true;
@@ -98,7 +97,6 @@ export function hasHouseFooterChrome(pathname?: string | null): boolean {
   if (path === '/film' || path.startsWith('/film/')) return true;
   if (path === '/bureaux' || path.startsWith('/bureaux/')) return true;
   if (path === '/partner' || path.startsWith('/partner/')) return true;
-  if (path === '/feed' || path.startsWith('/feed/')) return true;
   if (path === '/subscribe' || path.startsWith('/subscribe/')) return true;
   if (isEssayFailurePath(path)) return true;
   if (isAboutPath(path)) return true;

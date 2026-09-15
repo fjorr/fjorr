@@ -2,6 +2,7 @@
 
 import React, {
   createContext,
+  Suspense,
   useCallback,
   useContext,
   useEffect,
@@ -12,6 +13,7 @@ import React, {
 } from 'react';
 import { createPortal } from 'react-dom';
 import { useLocale } from 'next-intl';
+import { useSearchParams } from 'next/navigation';
 import { usePathname, useRouter } from '@/i18n/navigation';
 import { hasHouseFooterChrome } from '@/lib/color-scheme';
 import { clearBrowseReturn } from '@/lib/house-browse';
@@ -33,6 +35,10 @@ import {
   clearSearchReturn,
   queueSearchReopen,
 } from '@/lib/house-search-return';
+import {
+  pathWithSearchQuery,
+  readSearchQueryParam,
+} from '@/lib/house-search-query';
 
 const CommandLine = dynamic(() => import('@/components/house/CommandLine'), {
   ssr: false,
@@ -103,8 +109,17 @@ export function useHouseOverlayOptional() {
 }
 
 export function HouseOverlayProvider({ children }: { children: ReactNode }) {
+  return (
+    <Suspense fallback={children}>
+      <HouseOverlayProviderInner>{children}</HouseOverlayProviderInner>
+    </Suspense>
+  );
+}
+
+function HouseOverlayProviderInner({ children }: { children: ReactNode }) {
   const pathname = usePathname() || '';
   const router = useRouter();
+  const searchParams = useSearchParams();
   const locale = useLocale() as AppLocale;
   const [active, setActive] = useState<HouseSheetId | null>(null);
   const [mounted, setMounted] = useState(false);
@@ -114,8 +129,22 @@ export function HouseOverlayProvider({ children }: { children: ReactNode }) {
   /** True while an imperative Hello cover is owning the beat. */
   const [langHelloLock, setLangHelloLock] = useState(false);
   const [searchSeed, setSearchSeed] = useState<string | null>(null);
+  const urlSearchQuery = readSearchQueryParam(searchParams);
+  const prevActiveRef = React.useRef<HouseSheetId | null>(null);
+  const dismissSearchRef = React.useRef(false);
 
   const footerChrome = hasHouseFooterChrome(pathname);
+  const searchOpen = active === 'search';
+  /** Search scrolls its own footer — sheet goes edge-to-edge. */
+  const sheetBottom =
+    footerChrome && active != null && !searchOpen ? HOUSE_CHROME_PX : 0;
+
+  const clearSearchQueryParam = useCallback(() => {
+    if (!searchParams.has('q')) return;
+    router.replace(pathWithSearchQuery(pathname, searchParams, null), {
+      scroll: false,
+    });
+  }, [pathname, router, searchParams]);
 
   const close = useCallback(() => setActive(null), []);
   const open = useCallback((id: HouseSheetId) => setActive(id), []);
@@ -231,6 +260,7 @@ export function HouseOverlayProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     setActive(null);
     setBrowseOpenState(false);
+    dismissSearchRef.current = false;
     const onHouse =
       pathname === '/' ||
       pathname === '/film' ||
@@ -312,15 +342,34 @@ export function HouseOverlayProvider({ children }: { children: ReactNode }) {
     setActive('search');
   }, [pathname]);
 
+  /** Deep-link: `/?q=apollo` (or any path) opens search with that query. */
+  useEffect(() => {
+    if (!mounted || !urlSearchQuery) {
+      if (!urlSearchQuery) dismissSearchRef.current = false;
+      return;
+    }
+    if (active === 'search') return;
+    if (dismissSearchRef.current) return;
+    setSearchSeed(urlSearchQuery);
+    setActive('search');
+  }, [urlSearchQuery, pathname, mounted, active]);
+
   useEffect(() => {
     if (active === 'search') {
+      dismissSearchRef.current = false;
       window.dispatchEvent(new Event('fjorr_command_open'));
       const query = takeSearchReopen();
       if (query != null) setSearchSeed(query);
+      else if (urlSearchQuery) setSearchSeed(urlSearchQuery);
+    } else if (prevActiveRef.current === 'search') {
+      dismissSearchRef.current = true;
+      clearSearchQueryParam();
+      setSearchSeed(null);
     } else {
       setSearchSeed(null);
     }
-  }, [active]);
+    prevActiveRef.current = active;
+  }, [active, clearSearchQueryParam, urlSearchQuery]);
 
   const runShortcut = useCallback(
     (action: ShortcutAction) => {
@@ -329,7 +378,7 @@ export function HouseOverlayProvider({ children }: { children: ReactNode }) {
         return;
       }
       if (action === 'close') {
-        setActive(null);
+        close();
         return;
       }
       shortcutHandler?.(action);
@@ -342,7 +391,7 @@ export function HouseOverlayProvider({ children }: { children: ReactNode }) {
         setActive(null);
       }
     },
-    [shortcutHandler]
+    [shortcutHandler, close]
   );
 
   const value = useMemo(
@@ -373,13 +422,13 @@ export function HouseOverlayProvider({ children }: { children: ReactNode }) {
   const sheet =
     active && mounted ? (
       <div
-        className="fixed inset-x-0 top-0 z-[55] bg-white text-[#0B0B0C]"
-        style={{ bottom: footerChrome ? HOUSE_CHROME_PX : 0 }}
+        className="fixed inset-x-0 top-0 z-[55] text-[#0B0B0C]"
+        style={{ bottom: sheetBottom }}
         role="dialog"
         aria-modal="true"
       >
-        {/* Content below nav; parent white fills under chrome so page ground never shows. */}
-        <div className="absolute inset-x-0 bottom-0 top-[56px] overflow-hidden">
+        {/* White stage starts under the floating glass pill — sides stay clear. */}
+        <div className="absolute inset-x-0 bottom-0 top-[56px] overflow-hidden bg-white">
           {active === 'language' ? (
             <LanguagePanel onConfirm={confirmLanguage} />
           ) : active === 'shortcuts' ? (

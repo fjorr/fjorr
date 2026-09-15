@@ -254,13 +254,15 @@ export default function CatalogIndex({
     >
       {/* Filters stick under the search field; hide with chrome on scroll-down. */}
       <div
-        className={`sticky top-0 z-[1] bg-white transition-transform duration-200 ease-out ${
+        className={`sticky top-0 z-[1] transition-transform duration-200 ease-out ${
           controlsHidden
             ? 'pointer-events-none -translate-y-[120%]'
             : 'translate-y-0'
         }`}
       >
-        <div className="mx-auto w-full max-w-[44rem]">{controlBar}</div>
+        <div className="mx-auto w-full max-w-[44rem] bg-white/90 backdrop-blur-md">
+          {controlBar}
+        </div>
       </div>
 
       {viewMode === 'grid' ? (

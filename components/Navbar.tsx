@@ -26,12 +26,9 @@ function pageNeedsScroll() {
 }
 
 /**
- * Floating glass chip — same position on every page.
- * Glass only when the page can scroll and the user has scrolled;
- * never while a footer sheet is open.
- *
- * While a sheet is open the chip portals to document.body so it can sit
- * above the sheet (house/film shells are z-40 and would otherwise trap it).
+ * Floating glass chip — same on every page.
+ * Glass when scrolled, on house shells, or while any sheet is open
+ * (never a full-bleed bar; never a solid white chip that fuses into one).
  */
 function Navbar({ variant = 'light' }: NavbarProps) {
   const t = useTranslations('Nav');
@@ -45,6 +42,11 @@ function Navbar({ variant = 'light' }: NavbarProps) {
   const sheetOpen = active != null;
   const searchOpen = isOpen('search');
   const showBackToIndex = hasSearchReturn && !searchOpen;
+  const onHouseShell =
+    pathname === '/' ||
+    pathname.startsWith('/film/') ||
+    pathname === '/bureaux' ||
+    pathname.startsWith('/account/early');
 
   // Sheets are a white stage — use dark (black) type over them.
   const chromeVariant = sheetOpen ? 'dark' : variant;
@@ -56,9 +58,10 @@ function Navbar({ variant = 'light' }: NavbarProps) {
   const glassAnimClass =
     chromeVariant === 'light' ? 'animate-nav-glass' : 'animate-nav-glass-light';
 
-  const showGlass = searchOpen
-    ? scrolledPast
-    : !sheetOpen && canScroll && scrolledPast;
+  const showGlass =
+    sheetOpen ||
+    onHouseShell ||
+    (canScroll && scrolledPast);
 
   useEffect(() => {
     setPortalReady(true);
@@ -91,7 +94,7 @@ function Navbar({ variant = 'light' }: NavbarProps) {
       };
     }
 
-    if (sheetOpen) {
+    if (sheetOpen || onHouseShell) {
       setScrolledPast(false);
       setCanScroll(false);
       return;
@@ -110,7 +113,7 @@ function Navbar({ variant = 'light' }: NavbarProps) {
       window.removeEventListener('scroll', measure);
       window.removeEventListener('resize', measure);
     };
-  }, [pathname, sheetOpen, searchOpen]);
+  }, [pathname, sheetOpen, searchOpen, onHouseShell]);
 
   useEffect(() => {
     const handleHide = () => {
@@ -180,18 +183,16 @@ function Navbar({ variant = 'light' }: NavbarProps) {
   const header = (
     <header
       className={`pointer-events-none flex h-[56px] w-full items-center justify-center overflow-visible px-4 ${
-        sheetOpen
+        sheetOpen || onHouseShell
           ? 'fixed inset-x-0 top-0 z-[60]'
           : 'sticky top-0 z-50'
       }`}
     >
       <div
-        className={`pointer-events-auto inline-flex h-[44px] max-w-[calc(100vw-2rem)] items-center gap-3.5 rounded-[10px] border px-4 sm:gap-5 sm:px-5 ${
-          sheetOpen && !searchOpen
-            ? 'border-transparent bg-white'
-            : showGlass
-              ? `${glassAnimClass} nav-glass-scrolled`
-              : 'border-transparent bg-transparent'
+        className={`pointer-events-auto inline-flex h-[44px] w-max max-w-[calc(100vw-2rem)] shrink-0 items-center gap-3.5 rounded-[10px] border px-4 sm:gap-5 sm:px-5 ${
+          showGlass
+            ? `${glassAnimClass} nav-glass-scrolled`
+            : 'border-transparent bg-transparent'
         }`}
       >
         {searchBtn}
@@ -223,7 +224,16 @@ function Navbar({ variant = 'light' }: NavbarProps) {
   );
 
   // Escape house/film z-40 shells so the chip stacks above the sheet portal.
-  if (sheetOpen && portalReady) {
+  // House shells: portal only (no spacer) so the stage runs under the floating pill.
+  if (sheetOpen || onHouseShell) {
+    if (!portalReady) {
+      return onHouseShell && !sheetOpen ? null : (
+        <div className="h-[56px] w-full shrink-0" aria-hidden />
+      );
+    }
+    if (onHouseShell && !sheetOpen) {
+      return createPortal(header, document.body);
+    }
     return (
       <>
         <div className="h-[56px] w-full shrink-0" aria-hidden />

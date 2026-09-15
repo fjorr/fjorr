@@ -7,7 +7,8 @@ import { useHouseOverlay } from '@/components/HouseOverlayProvider';
 /**
  * House footer for scroll pages (e.g. join, about, contact).
  * - Default: in document flow — long pages push it below the fold.
- * - Sheet open: pins to the viewport bottom so controls stay above the overlay.
+ * - Sheet open (except search): pins to the viewport bottom so controls stay above the overlay.
+ * - Search: footer stays in document flow / inside the sheet scroll (below the fold).
  * Hero home/film keep their own framed HouseFooter inside the fixed shell.
  * Subscribe → /subscribe (email + RSS), not an overlay sheet.
  */
@@ -20,7 +21,9 @@ export default function HouseScrollFooter({
   surfaceClassName?: string;
 }) {
   const { active, isOpen, toggle } = useHouseOverlay();
-  const pinned = active != null;
+  const searchOpen = isOpen('search');
+  // Search owns its own in-flow footer below results — don't pin over the sheet.
+  const pinned = active != null && !searchOpen;
   const tone = pinned ? 'dark' : variant;
   const surface = pinned ? 'bg-white' : surfaceClassName;
 

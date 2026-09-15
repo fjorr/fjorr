@@ -2,18 +2,22 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
+import { useSearchParams } from 'next/navigation';
 import { X } from 'lucide-react';
 import { parseLocale } from '@/i18n/config';
-import { usePathname } from '@/i18n/navigation';
+import { usePathname, useRouter } from '@/i18n/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { storySettingDisplay } from '@/lib/story-year';
 import { setSearchReturn } from '@/lib/house-search-return';
+import { pathWithSearchQuery } from '@/lib/house-search-query';
 import { scoreSearchFields } from '@/lib/search-match';
 import {
   hitSnippet,
   snippetContainsQuery,
 } from '@/lib/intelligence';
 import CatalogIndex from '@/components/house/CatalogIndex';
+import HouseFooter from '@/components/house/HouseFooter';
+import { useHouseOverlay } from '@/components/HouseOverlayProvider';
 
 type SeedFilm = {
   id: string;
@@ -329,6 +333,9 @@ export default function CommandLine({
   const locale = parseLocale(useLocale());
   const t = useTranslations('Search');
   const pathname = usePathname() || '/';
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { isOpen, toggle } = useHouseOverlay();
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState(initialQuery);
   const seedFilms = useMemo(
@@ -402,6 +409,18 @@ export default function CommandLine({
       })
     );
   }, [query]);
+
+  /** Keep `?q=` in sync so results are shareable / reloadable. */
+  useEffect(() => {
+    const trimmed = query.trim();
+    const current = (searchParams.get('q') || '').trim();
+    if (trimmed === current) return;
+    const href = pathWithSearchQuery(pathname, searchParams, trimmed || null);
+    const timer = window.setTimeout(() => {
+      router.replace(href, { scroll: false });
+    }, 180);
+    return () => window.clearTimeout(timer);
+  }, [query, pathname, router, searchParams]);
 
   useEffect(() => {
     window.dispatchEvent(
@@ -834,7 +853,11 @@ export default function CommandLine({
   };
 
   const leaveToPlay = (film: CommandFilm) => {
-    setSearchReturn({ path: pathname, query: query.trim() });
+    const trimmed = query.trim();
+    setSearchReturn({
+      path: pathWithSearchQuery(pathname, searchParams, trimmed || null),
+      query: trimmed,
+    });
     // Keep the sheet up until the route changes — avoids a flash of the page under.
     onPlay(film);
   };
@@ -963,7 +986,7 @@ export default function CommandLine({
       </div>
 
       <div
-        className="mx-auto min-h-0 w-full max-w-[90rem] flex-1 overflow-y-auto overscroll-contain pb-3 pt-3"
+        className="mx-auto min-h-0 w-full max-w-[90rem] flex-1 overflow-y-auto overscroll-contain pt-3"
         onScroll={(event) =>
           onResultsScroll(event.currentTarget.scrollTop, event.currentTarget)
         }
@@ -997,6 +1020,17 @@ export default function CommandLine({
             onPlay={playFromCatalog}
           />
         )}
+        <div className="w-full shrink-0 bg-white pt-8">
+          <HouseFooter
+            variant="dark"
+            langOpen={isOpen('language')}
+            shortcutsOpen={isOpen('shortcuts')}
+            legalOpen={isOpen('legal')}
+            onLanguage={() => toggle('language')}
+            onShortcuts={() => toggle('shortcuts')}
+            onLegal={() => toggle('legal')}
+          />
+        </div>
       </div>
     </div>
   );

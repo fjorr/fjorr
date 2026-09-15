@@ -13,7 +13,7 @@ import Navbar from '@/components/Navbar';
 export default function FilmStageLoading() {
   return (
     <div className="fixed inset-0 z-40 flex flex-col overflow-hidden bg-white text-[#0B0B0C]">
-      <Navbar variant="dark" />
+      <Navbar variant="light" />
 
       <div className={`relative min-h-0 flex-1 overflow-hidden ${HOUSE_STAGE_SIDE_CLASS}`}>
         <ServerSafeSkeleton

@@ -95,6 +95,7 @@ const nextConfig: NextConfig = {
       ...cut("/account/logs", "/account/voyages"),
       ...cut("/account/recut", "/account/voyages"),
       ...cut("/partner", "/about"),
+      ...cut("/feed", "/subscribe"),
       ...cut("/auth/login", "/signin"),
       ...cut("/auth/sign-up", "/signin"),
       ...cut("/auth/sign-up-success", "/signin"),

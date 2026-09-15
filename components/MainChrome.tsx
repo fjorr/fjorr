@@ -32,7 +32,6 @@ export default function MainChrome({ children }: { children: React.ReactNode }) 
   const path =
     pathname.replace(/^\/(en|es|fr|it|de|pt|sv|hi|ko|ja|zh-tw)(?=\/|$)/, '') ||
     '/';
-  const isFeedPage = path === '/feed' || path.startsWith('/feed/');
   const isSubscribePage =
     path === '/subscribe' || path.startsWith('/subscribe/');
   const isPartnerPage =
@@ -67,7 +66,6 @@ export default function MainChrome({ children }: { children: React.ReactNode }) 
 
   const paperPage =
     isLegalPage ||
-    isFeedPage ||
     isSubscribePage ||
     isPartnerPage ||
     (isAccountPage && !isEarlyReleasePage) ||
