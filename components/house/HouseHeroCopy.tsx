@@ -4,9 +4,11 @@ import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
+import { useAuthPresence } from '@/components/AuthPresenceProvider';
 import { storySettingDisplay } from '@/lib/story-year';
 import { resolveTitleArtColor, sanitizeTitleArtSvg } from '@/lib/sanitize-svg';
 import RatingBadge from '@/components/house/RatingBadge';
+import { getOwnVoyageurStampForFilm } from '@/lib/film-record-actions';
 
 const FilmSendSheet = dynamic(() => import('@/components/FilmSendSheet'), {
   ssr: false,
@@ -19,7 +21,7 @@ export type HouseHeroCopyFilm = {
   teaser?: string | null;
   sponsor?: string | null;
   rating?: string | null;
-  location?: string | null;
+  location?: string | string[] | { name?: string } | null;
   storyDate?: string | null;
   runtime?: number | null;
   comingSoon?: boolean;
@@ -57,6 +59,10 @@ type Props = {
   /** Film stage: button opens sheet. Home: omit and pass infoHref. */
   onInfo?: () => void;
   infoHref?: string;
+  /** Hide returning-viewer Voyageur chip (e.g. early release owns that corner). */
+  showVoyageurChip?: boolean;
+  /** Share / send CTA — off for early release (not public yet). */
+  showSend?: boolean;
 };
 
 /** Hero title / meta / CTAs — fixed in place; parent fades visibility on slide. */
@@ -67,22 +73,53 @@ export default function HouseHeroCopy({
   onWatch,
   onInfo,
   infoHref,
+  showVoyageurChip = true,
+  showSend = true,
 }: Props) {
   const t = useTranslations('Film');
   const tHome = useTranslations('Home');
+  const { signedIn } = useAuthPresence();
   const reduced = usePrefersReducedMotion();
   const [sendOpen, setSendOpen] = useState(false);
+  const [voyageurNumber, setVoyageurNumber] = useState<number | null>(null);
 
   useEffect(() => {
     setSendOpen(false);
   }, [film?.slug]);
+
+  useEffect(() => {
+    setVoyageurNumber(null);
+    const filmId = film?.id ? String(film.id) : '';
+    if (!filmId || film?.kind === 'intro' || signedIn !== true || !showVoyageurChip)
+      return;
+
+    let cancelled = false;
+    void getOwnVoyageurStampForFilm(filmId).then((row) => {
+      if (!cancelled) setVoyageurNumber(row?.voyageurNumber ?? null);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [film?.id, film?.kind, signedIn, showVoyageurChip]);
 
   if (!film) return null;
 
   const TitleTag = titleAs;
   const isIntro = film.kind === 'intro';
   const setting = storySettingDisplay(film.storyDate);
-  const place = film.location?.trim() || null;
+  const place = (() => {
+    const raw = film.location as unknown;
+    if (!raw) return null;
+    if (typeof raw === 'string') return raw.trim() || null;
+    if (Array.isArray(raw)) {
+      const parts = raw.map((v) => String(v).trim()).filter(Boolean);
+      return parts.length ? parts.join(', ') : null;
+    }
+    if (typeof raw === 'object' && raw !== null && 'name' in raw) {
+      return String((raw as { name?: string }).name || '').trim() || null;
+    }
+    return null;
+  })();
   const title = isIntro ? null : film.name;
   const body = isIntro ? null : film.teaser;
   const titleArtSvg = !isIntro ? sanitizeTitleArtSvg(film.titleArtCode) : null;
@@ -123,6 +160,14 @@ export default function HouseHeroCopy({
               'linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0) 100%)',
           }}
         />
+      ) : null}
+      {!isIntro && voyageurNumber != null ? (
+        <div
+          aria-hidden={!visible}
+          className="pointer-events-none absolute left-8 top-4 z-10 rounded-[6px] bg-black/40 px-2.5 py-1 font-sans text-[12px] font-semibold tracking-normal text-white/85 backdrop-blur-sm md:left-12 md:top-5"
+        >
+          {t('voyageurBadgeTitle', { number: voyageurNumber })}
+        </div>
       ) : null}
       <div
         className={
@@ -275,20 +320,22 @@ export default function HouseHeroCopy({
                   {t('info')}
                 </button>
               ) : null}
-              <button
-                type="button"
-                onClick={() => setSendOpen(true)}
-                tabIndex={visible ? 0 : -1}
-                className="inline-flex h-10 items-center rounded-full border border-white/25 bg-white/12 px-5 font-sans text-[14px] font-semibold tracking-tight text-white/90 backdrop-blur-md transition-colors hover:bg-white/18 hover:text-white"
-              >
-                {t('send')}
-              </button>
+              {showSend ? (
+                <button
+                  type="button"
+                  onClick={() => setSendOpen(true)}
+                  tabIndex={visible ? 0 : -1}
+                  className="inline-flex h-10 items-center rounded-full border border-white/25 bg-white/12 px-5 font-sans text-[14px] font-semibold tracking-tight text-white/90 backdrop-blur-md transition-colors hover:bg-white/18 hover:text-white"
+                >
+                  {t('send')}
+                </button>
+              ) : null}
             </>
           )}
         </div>
       </div>
 
-      {sendOpen && !isIntro ? (
+      {showSend && sendOpen && !isIntro ? (
         <FilmSendSheet
           open={sendOpen}
           onClose={() => setSendOpen(false)}

@@ -32,13 +32,13 @@ export default function AccountDeleteAccount() {
   };
 
   return (
-    <div className="flex flex-col gap-2 items-start">
+    <div className="flex flex-col items-center gap-2 text-center">
       {confirmDelete ? (
-        <div className="flex flex-col gap-2 items-start">
-          <p className="font-sans text-[13px] text-page-muted leading-snug">
+        <div className="flex flex-col items-center gap-2">
+          <p className="font-sans text-[13px] leading-snug text-page-muted">
             {t('deleteAccountConfirm')}
           </p>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
             <button
               type="button"
               disabled={deleting}
@@ -70,16 +70,16 @@ export default function AccountDeleteAccount() {
             setDeleteError(null);
             setConfirmDelete(true);
           }}
-          className="self-start font-sans text-[13px] font-medium text-page-muted underline underline-offset-2 decoration-[color-mix(in_srgb,var(--page-fg)_25%,transparent)] hover:text-page hover:decoration-[color-mix(in_srgb,var(--page-fg)_45%,transparent)] disabled:opacity-40 transition-colors"
+          className="font-sans text-[13px] font-medium text-page-muted underline underline-offset-2 decoration-[color-mix(in_srgb,var(--page-fg)_25%,transparent)] hover:text-page hover:decoration-[color-mix(in_srgb,var(--page-fg)_45%,transparent)] disabled:opacity-40 transition-colors"
         >
           {t('deleteAccount')}
         </button>
       )}
-      <p className="font-sans text-[12px] text-page-faint leading-snug max-w-md">
+      <p className="max-w-md font-sans text-[12px] leading-snug text-page-faint">
         {t('deleteAccountHint')}
       </p>
       {deleteError ? (
-        <p className="font-sans text-[13px] text-red-400/90 text-left">
+        <p className="font-sans text-[13px] text-red-400/90">
           {deleteError}
         </p>
       ) : null}

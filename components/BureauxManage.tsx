@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Elements,
   PaymentElement,
@@ -131,11 +131,14 @@ export default function BureauxManage({
   returnPath = '/account/bureaux',
   onOpen,
   onClose,
+  embedded = false,
 }: {
   /** Stripe SetupIntent return path (locale prefix added by the browser origin). */
   returnPath?: string;
   onOpen?: () => void;
   onClose?: () => void;
+  /** Parent owns the trigger (e.g. segmented control) — start card flow on mount. */
+  embedded?: boolean;
 }) {
   const t = useTranslations('Account');
   const router = useRouter();
@@ -145,6 +148,7 @@ export default function BureauxManage({
   const [setupSecret, setSetupSecret] = useState<string | null>(null);
   const [email, setEmail] = useState<string | null>(null);
   const [cardLoading, setCardLoading] = useState(false);
+  const startedRef = useRef(false);
 
   const stripePromise = useMemo(() => {
     if (!publishableKey) return null;
@@ -159,7 +163,7 @@ export default function BureauxManage({
     onClose?.();
   };
 
-  const startCardUpdate = async () => {
+  const startCardUpdate = useCallback(async () => {
     setMessage(null);
     setCardLoading(true);
     onOpen?.();
@@ -173,17 +177,23 @@ export default function BureauxManage({
     setEmail(result.email);
     setSetupSecret(result.clientSecret);
     setUpdatingCard(true);
-  };
+  }, [onClose, onOpen]);
+
+  useEffect(() => {
+    if (!embedded || startedRef.current) return;
+    startedRef.current = true;
+    void startCardUpdate();
+  }, [embedded, startCardUpdate]);
 
   return (
     <div
-      className={`flex flex-col gap-4 items-start${
-        updatingCard ? ' basis-full w-full max-w-md' : ''
+      className={`flex flex-col items-center gap-4 text-center${
+        updatingCard || embedded ? ' mx-auto w-full max-w-md' : ''
       }`}
     >
       {updatingCard && setupSecret && stripePromise ? (
-        <div className="w-full flex flex-col gap-3">
-          <p className="font-sans text-[13px] text-page-muted leading-snug">
+        <div className="flex w-full flex-col gap-3 text-left">
+          <p className="font-sans text-[13px] leading-snug text-page-muted">
             {t('bureauxCardBody')}
           </p>
           <Elements
@@ -206,19 +216,23 @@ export default function BureauxManage({
             />
           </Elements>
         </div>
+      ) : embedded ? (
+        <p className="font-sans text-[13px] text-page-muted">
+          {cardLoading ? t('bureauxPending') : message}
+        </p>
       ) : (
         <button
           type="button"
           disabled={cardLoading}
           onClick={() => void startCardUpdate()}
-          className="self-start h-11 px-5 rounded-full bg-white text-black font-sans text-[13px] font-semibold hover:bg-white/90 disabled:opacity-40 transition-colors"
+          className="font-sans text-[13px] font-medium text-page-muted underline underline-offset-2 decoration-[color-mix(in_srgb,var(--page-fg)_25%,transparent)] transition-colors hover:text-page hover:decoration-[color-mix(in_srgb,var(--page-fg)_45%,transparent)] disabled:opacity-40"
         >
           {cardLoading ? t('bureauxPending') : t('bureauxUpdateCard')}
         </button>
       )}
 
-      {message ? (
-        <p className="font-sans text-[13px] text-page-muted leading-snug">
+      {message && !updatingCard ? (
+        <p className="font-sans text-[13px] leading-snug text-page-muted">
           {message}
         </p>
       ) : null}

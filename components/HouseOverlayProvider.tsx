@@ -22,6 +22,7 @@ import IntelPanel from '@/components/house/IntelPanel';
 import ShortcutsPanel, { type ShortcutAction } from '@/components/house/ShortcutsPanel';
 import HouseLegalSheet from '@/components/HouseLegalSheet';
 import HouseBureauxSheet from '@/components/HouseBureauxSheet';
+import HouseAccountSheet from '@/components/HouseAccountSheet';
 import { stripLocalePrefix, type AppLocale } from '@/i18n/config';
 import {
   clearLanguageHello,
@@ -43,7 +44,7 @@ import {
  * 2. Full white between navbar and footer (viewport), on house and scroll pages.
  * 3. Only nav + footer stay visible beside the sheet.
  * 4. Same control toggles closed; Escape closes; theater clears.
- * 5. Sheets: search · language · intel · shortcuts · legal · bureaux.
+ * 5. Sheets: search · language · intel · shortcuts · legal · bureaux · account.
  */
 export type HouseSheetId =
   | 'search'
@@ -51,7 +52,8 @@ export type HouseSheetId =
   | 'intel'
   | 'shortcuts'
   | 'legal'
-  | 'bureaux';
+  | 'bureaux'
+  | 'account';
 
 type ShortcutHandler = (action: ShortcutAction) => void;
 
@@ -368,6 +370,8 @@ export function HouseOverlayProvider({ children }: { children: ReactNode }) {
             <HouseLegalSheet onNavigate={leaveTo} />
           ) : active === 'bureaux' ? (
             <HouseBureauxSheet onNavigate={leaveTo} />
+          ) : active === 'account' ? (
+            <HouseAccountSheet onNavigate={leaveTo} />
           ) : (
             <div className={`${HOUSE_CHROME_COLUMN} h-full`}>
               {active === 'search' ? (

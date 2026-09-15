@@ -29,9 +29,9 @@ function formatDate(iso: string | null, locale: string) {
 
 function SpecRow({ label, value }: { label: string; value: ReactNode }) {
   return (
-    <div className="grid grid-cols-[7.5rem_1fr] sm:grid-cols-[8.5rem_1fr] gap-x-3 items-baseline text-sm">
-      <span className="text-page-faint font-medium">{label}</span>
-      <span className="text-page font-medium">{value}</span>
+    <div className="grid grid-cols-[7.5rem_1fr] items-baseline gap-x-3 text-sm sm:grid-cols-[8.5rem_1fr]">
+      <span className="text-left font-medium text-page-faint">{label}</span>
+      <span className="min-w-0 text-left font-medium text-page">{value}</span>
     </div>
   );
 }
@@ -76,18 +76,18 @@ export default async function AccountBureauxPage({
       profile={profile}
       title={t('bureauxTitle')}
       description={t('bureauxBody')}
-      manualSlug="join"
       narrow
       introNarrow
+      centered
     >
-      <div className="flex flex-col gap-10">
+      <div className="mx-auto flex w-full max-w-sm flex-col items-center gap-10 text-center">
         {justJoined ? (
           <p className="font-sans text-[14px] text-page-muted leading-relaxed">
             {t('bureauxJoined')}
           </p>
         ) : null}
 
-        <section className="flex flex-col gap-2.5">
+        <section className="mx-auto flex w-fit max-w-full flex-col gap-2.5 text-left">
           <SpecRow
             label={t('displayName')}
             value={
@@ -172,7 +172,7 @@ export default async function AccountBureauxPage({
           returnPath="/account/bureaux"
         />
 
-        <div className="flex flex-col gap-6">
+        <div className="flex w-full flex-col items-center gap-2">
           {!membership?.comp_lifetime ? (
             <BureauxCancelMembership
               cancelAtPeriodEnd={Boolean(membership?.cancel_at_period_end)}

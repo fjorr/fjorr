@@ -45,11 +45,15 @@ export default function MainChrome({ children }: { children: React.ReactNode }) 
     path === '/subscribe' || path.startsWith('/subscribe/');
   const isPartnerPage =
     path === '/partner' || path.startsWith('/partner/');
+  const isAccountPage =
+    path === '/account' || path.startsWith('/account/');
+  const isEarlyReleasePage =
+    path === '/account/early' || path.startsWith('/account/early/');
   const isEssayPage = isEssayFailurePath(pathname);
   const isAboutRoot = isAboutRootPath(pathname);
   const aboutBlackPage = isAboutBlackPath(pathname);
   const aboutPage = isAboutPath(pathname);
-  const houseShell = isHome || isFilmPoster;
+  const houseShell = isHome || isFilmPoster || isEarlyReleasePage;
   const hideChrome = isWatchPage || houseShell || isBureauxJoinPage;
   const hideFooter =
     hideChrome ||
@@ -87,6 +91,7 @@ export default function MainChrome({ children }: { children: React.ReactNode }) 
     isFeedPage ||
     isSubscribePage ||
     isPartnerPage ||
+    (isAccountPage && !isEarlyReleasePage) ||
     isEssayPage;
   const heroPaperPage = isAboutRoot;
   const overHero = isAboutRoot ? aboutOverHero : false;

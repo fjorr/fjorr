@@ -50,22 +50,22 @@ export default function BureauxCancelMembership({
   };
 
   return (
-    <div className="flex flex-col gap-2 items-start">
+    <div className="flex flex-col items-center gap-2 text-center">
       {cancelAtPeriodEnd ? (
         <button
           type="button"
           disabled={pending}
           onClick={onResume}
-          className="self-start font-sans text-[13px] font-medium text-page-muted underline underline-offset-2 decoration-[color-mix(in_srgb,var(--page-fg)_25%,transparent)] hover:text-page hover:decoration-[color-mix(in_srgb,var(--page-fg)_45%,transparent)] disabled:opacity-40 transition-colors"
+          className="font-sans text-[13px] font-medium text-page-muted underline underline-offset-2 decoration-[color-mix(in_srgb,var(--page-fg)_25%,transparent)] hover:text-page hover:decoration-[color-mix(in_srgb,var(--page-fg)_45%,transparent)] disabled:opacity-40 transition-colors"
         >
           {pending ? t('bureauxPending') : t('bureauxResume')}
         </button>
       ) : confirmCancel ? (
-        <div className="flex flex-col gap-2 items-start">
+        <div className="flex flex-col items-center gap-2">
           <p className="font-sans text-[13px] text-page-muted leading-snug">
             {t('bureauxCancelConfirm')}
           </p>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
             <button
               type="button"
               disabled={pending}
@@ -92,20 +92,20 @@ export default function BureauxCancelMembership({
             setMessage(null);
             setConfirmCancel(true);
           }}
-          className="self-start font-sans text-[13px] font-medium text-page-muted underline underline-offset-2 decoration-[color-mix(in_srgb,var(--page-fg)_25%,transparent)] hover:text-page hover:decoration-[color-mix(in_srgb,var(--page-fg)_45%,transparent)] disabled:opacity-40 transition-colors"
+          className="font-sans text-[13px] font-medium text-page-muted underline underline-offset-2 decoration-[color-mix(in_srgb,var(--page-fg)_25%,transparent)] hover:text-page hover:decoration-[color-mix(in_srgb,var(--page-fg)_45%,transparent)] disabled:opacity-40 transition-colors"
         >
           {t('bureauxCancel')}
         </button>
       )}
 
       {cancelAtPeriodEnd ? (
-        <p className="font-sans text-[12px] text-page-faint leading-relaxed max-w-md">
+        <p className="max-w-md font-sans text-[12px] leading-relaxed text-page-faint">
           {t('bureauxCancelHint')}
         </p>
       ) : null}
 
       {message ? (
-        <p className="font-sans text-[13px] text-page-muted leading-snug">
+        <p className="font-sans text-[13px] leading-snug text-page-muted">
           {message}
         </p>
       ) : null}

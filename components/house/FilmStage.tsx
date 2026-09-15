@@ -335,7 +335,8 @@ export default function FilmStage({ id, slug, exhibition, rail: railProp }: Film
         typing ||
         sheetOpen ||
         infoOpen ||
-        showTheater
+        showTheater ||
+        document.body.dataset.fjorrOverlay
       )
         return;
       if (event.key === 'ArrowLeft') {

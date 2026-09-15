@@ -1,11 +1,10 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useTranslations } from 'next-intl';
 import { Link, usePathname } from '@/i18n/navigation';
 import { useAuthPresence } from '@/components/AuthPresenceProvider';
 import { useHouseOverlay } from '@/components/HouseOverlayProvider';
-import { fetchOwnBureauxActive } from '@/lib/bureaux-client';
 
 /**
  * Guest nav: Join + Enter. Signed-in non-members: Join only.
@@ -25,34 +24,16 @@ export default function NavbarJoinLink({
   const t = useTranslations('Nav');
   const pathname = usePathname() || '';
   const { close } = useHouseOverlay();
-  const { signedIn } = useAuthPresence();
-  const [member, setMember] = useState<boolean | null>(null);
+  const { signedIn, bureauxMember } = useAuthPresence();
 
   const onBureaux =
     pathname === '/bureaux' || pathname.startsWith('/bureaux/');
   const onSignIn =
     pathname === '/signin' || pathname.startsWith('/signin/');
 
-  useEffect(() => {
-    if (signedIn === false) {
-      setMember(false);
-      return;
-    }
-    if (signedIn !== true) {
-      setMember(null);
-      return;
-    }
-    let cancelled = false;
-    fetchOwnBureauxActive().then((active) => {
-      if (!cancelled) setMember(active);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [signedIn]);
-
   if (signedIn === null) return null;
-  if (signedIn === true && member !== false) return null;
+  // Members (or membership still resolving) — Account link owns this slot.
+  if (signedIn === true && bureauxMember !== false) return null;
 
   const tone = (active: boolean) =>
     `font-sans text-[13px] font-semibold tracking-normal transition-colors ${

@@ -110,7 +110,17 @@ function heroSrc(item: HouseFilm, frame: HeroFrame) {
   return item.hero_tall || item.hero_clsx || item.hero_wide || null;
 }
 
-export default function HouseHome({ films }: { films: HouseFilm[] }) {
+export default function HouseHome({
+  films,
+  cornerChip = null,
+  includeIntro = true,
+}: {
+  films: HouseFilm[];
+  /** Quiet label upper-left on the poster (e.g. early release). */
+  cornerChip?: string | null;
+  /** Home keeps the brand intro card; other stages can omit it. */
+  includeIntro?: boolean;
+}) {
   const router = useRouter();
   const { active, setShortcutHandler, isOpen, toggle } =
     useHouseOverlay();
@@ -124,7 +134,7 @@ export default function HouseHome({ films }: { films: HouseFilm[] }) {
   const leavingRef = useRef<number | null>(null);
   const frame = useHeroFrame();
   /** Permanent brand title card while the library grows. */
-  const stageFilms = [HOUSE_INTRO_FILM, ...films];
+  const stageFilms = includeIntro ? [HOUSE_INTRO_FILM, ...films] : films;
   const previewPaused = sheetOpen || showTheater;
   const { displayIndex: copyIndex, visible: copyVisible } = useHeroCopyFade(
     phase,
@@ -388,6 +398,8 @@ export default function HouseHome({ films }: { films: HouseFilm[] }) {
           }
           visible={copyVisible}
           titleAs="h2"
+          showVoyageurChip={!cornerChip}
+          showSend={!cornerChip}
           onWatch={() => {
             if (!copyFilm) return;
             if (copyFilm.kind === 'intro') {
@@ -402,6 +414,11 @@ export default function HouseHome({ films }: { films: HouseFilm[] }) {
               : `/film/${copyFilm.slug}#info`
           }
         />
+        {cornerChip ? (
+          <div className="pointer-events-none absolute left-8 top-4 z-20 rounded-[6px] bg-black/40 px-2.5 py-1 font-sans text-[12px] font-semibold tracking-normal text-white/85 backdrop-blur-sm md:left-12 md:top-5">
+            {cornerChip}
+          </div>
+        ) : null}
         {stageFilms.length > 1 && !sheetOpen ? (
           <div className="pointer-events-none absolute inset-x-0 bottom-4 z-30 flex justify-center md:inset-x-auto md:bottom-5 md:right-5 md:justify-end">
             <HousePosterDots

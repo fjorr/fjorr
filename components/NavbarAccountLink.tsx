@@ -1,61 +1,66 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useTranslations } from 'next-intl';
-import { Link, usePathname } from '@/i18n/navigation';
+import { usePathname } from '@/i18n/navigation';
 import { useAuthPresence } from '@/components/AuthPresenceProvider';
 import { useHouseOverlay } from '@/components/HouseOverlayProvider';
-import { fetchOwnBureauxActive } from '@/lib/bureaux-client';
 
 /**
  * “Account” in the nav lump — active Bureaux members only.
- * Guests / non-members use Join instead.
+ * Opens the account poster sheet (same frame as house heroes).
  */
 export default function NavbarAccountLink({
   className = '',
+  mutedClassName = '',
+  activeClassName = '',
 }: {
   className?: string;
+  mutedClassName?: string;
+  activeClassName?: string;
 }) {
   const t = useTranslations('Nav');
   const pathname = usePathname() || '';
-  const { close } = useHouseOverlay();
-  const { signedIn } = useAuthPresence();
-  const [member, setMember] = useState<boolean | null>(null);
+  const { toggle, isOpen, close } = useHouseOverlay();
+  const { signedIn, bureauxMember } = useAuthPresence();
 
   const onAccount =
     pathname === '/account' || pathname.startsWith('/account/');
+  const accountOpen = isOpen('account');
+  const active = accountOpen || onAccount;
 
-  useEffect(() => {
-    if (signedIn === false) {
-      setMember(false);
-      return;
-    }
-    if (signedIn !== true) {
-      setMember(null);
-      return;
-    }
-    let cancelled = false;
-    fetchOwnBureauxActive().then((active) => {
-      if (!cancelled) setMember(active);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [signedIn]);
+  // Reserve width while membership resolves so the chip doesn’t jump.
+  if (signedIn === true && bureauxMember === null) {
+    return (
+      <span
+        aria-hidden
+        className={`pointer-events-none invisible font-sans text-[13px] font-semibold tracking-normal ${mutedClassName} ${className}`}
+      >
+        {t('accountShort')}
+      </span>
+    );
+  }
 
-  if (signedIn !== true || member !== true) return null;
+  if (signedIn !== true || bureauxMember !== true) return null;
 
   return (
-    <Link
-      href="/account/voyages"
+    <button
+      type="button"
       aria-label={t('account')}
-      aria-current={onAccount ? 'page' : undefined}
+      aria-expanded={accountOpen}
+      aria-current={onAccount && !accountOpen ? 'page' : undefined}
       onClick={() => {
-        if (onAccount) close();
+        if (accountOpen) {
+          close();
+          return;
+        }
+        toggle('account');
       }}
-      className={`font-sans text-[13px] font-semibold tracking-normal transition-colors ${className}`}
+      className={`border-0 bg-transparent p-0 font-sans text-[13px] font-semibold tracking-normal transition-colors ${
+        active ? activeClassName || mutedClassName : mutedClassName
+      } ${className}`}
     >
       {t('accountShort')}
-    </Link>
+    </button>
   );
 }

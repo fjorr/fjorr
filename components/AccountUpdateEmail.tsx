@@ -7,20 +7,23 @@ import { updateOwnEmail } from '@/lib/profile-actions';
 const FIELD_LABEL =
   'font-sans text-[13px] font-semibold normal-case tracking-normal text-page-muted';
 
-const PILL =
-  'self-start h-11 px-5 rounded-full bg-white text-black font-sans text-[13px] font-semibold hover:bg-white/90 disabled:opacity-40 transition-colors';
+const TRIGGER =
+  'border-0 bg-transparent p-0 font-sans text-[13px] font-medium text-page-muted underline underline-offset-2 decoration-[color-mix(in_srgb,var(--page-fg)_25%,transparent)] transition-colors hover:text-page hover:decoration-[color-mix(in_srgb,var(--page-fg)_45%,transparent)]';
 
 export default function AccountUpdateEmail({
   currentEmail,
   onOpen,
   onClose,
+  embedded = false,
 }: {
   currentEmail: string;
   onOpen?: () => void;
   onClose?: () => void;
+  /** Parent owns the trigger (e.g. segmented control). */
+  embedded?: boolean;
 }) {
   const t = useTranslations('Account');
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(embedded);
   const [email, setEmail] = useState('');
   const [pending, setPending] = useState(false);
   const [sentTo, setSentTo] = useState<string | null>(null);
@@ -28,13 +31,14 @@ export default function AccountUpdateEmail({
 
   if (sentTo) {
     return (
-      <p className="font-sans text-[13px] text-page-muted leading-snug max-w-md">
+      <p className="mx-auto max-w-md text-center font-sans text-[13px] leading-snug text-page-muted">
         {t('updateEmailSent', { email: sentTo })}
       </p>
     );
   }
 
   if (!open) {
+    if (embedded) return null;
     return (
       <button
         type="button"
@@ -44,7 +48,7 @@ export default function AccountUpdateEmail({
           setOpen(true);
           onOpen?.();
         }}
-        className={PILL}
+        className={TRIGGER}
       >
         {t('updateEmail')}
       </button>
@@ -53,7 +57,7 @@ export default function AccountUpdateEmail({
 
   return (
     <form
-      className="basis-full w-full max-w-md flex flex-col gap-3 items-start"
+      className="mx-auto flex w-full max-w-md flex-col items-stretch gap-3 text-left"
       onSubmit={(e) => {
         e.preventDefault();
         setError(null);

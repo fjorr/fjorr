@@ -148,7 +148,11 @@ function Navbar({ variant = 'light' }: NavbarProps) {
         mutedClassName={iconColor}
         activeClassName={textColor}
       />
-      <NavbarAccountLink className={`${iconColor} ${controlHover}`} />
+      <NavbarAccountLink
+        className={controlHover}
+        mutedClassName={iconColor}
+        activeClassName={textColor}
+      />
     </div>
   );
 

@@ -24,7 +24,6 @@ export default async function AccountNominationsPage() {
       title={t('nominationsTitle')}
       description={t('nominationsBody')}
       headerLinks={[]}
-      manualSlug="nominate"
       wide
       introNarrow
     >

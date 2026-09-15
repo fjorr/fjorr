@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { absoluteUrl } from '@/lib/site';
@@ -149,15 +150,22 @@ export default function FilmSendSheet({
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        onClose();
+      }
     };
     const onPointer = (e: MouseEvent) => {
       if (panelRef.current && !panelRef.current.contains(e.target as Node))
         onClose();
     };
+    document.body.dataset.fjorrOverlay = 'send';
     document.addEventListener('keydown', onKey);
     document.addEventListener('mousedown', onPointer);
     return () => {
+      if (document.body.dataset.fjorrOverlay === 'send') {
+        delete document.body.dataset.fjorrOverlay;
+      }
       document.removeEventListener('keydown', onKey);
       document.removeEventListener('mousedown', onPointer);
     };
@@ -170,7 +178,12 @@ export default function FilmSendSheet({
     }
   }, [open]);
 
-  if (!open) return null;
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!open || !mounted) return null;
 
   const markCopied = (key: string) => {
     setCopied(key);
@@ -199,8 +212,12 @@ export default function FilmSendSheet({
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-[100050] flex items-end sm:items-center justify-center p-0 sm:p-6">
+  return createPortal(
+    <div
+      className="pointer-events-auto fixed inset-0 z-[100050] flex items-end justify-center p-0 sm:items-center sm:p-6"
+      onClick={(event) => event.stopPropagation()}
+      onMouseDown={(event) => event.stopPropagation()}
+    >
       <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]" aria-hidden />
 
       <div
@@ -208,7 +225,7 @@ export default function FilmSendSheet({
         role="dialog"
         aria-modal="true"
         aria-label={t('send')}
-        className="relative w-full sm:max-w-[400px] rounded-t-[16px] sm:rounded-[16px] border border-white/10 bg-[#1F1F1F] shadow-[0_24px_80px_rgba(0,0,0,0.55)] p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] animate-in fade-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200"
+        className="relative w-full sm:max-w-[400px] rounded-t-[16px] border border-white/10 bg-[#1F1F1F] p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-[0_24px_80px_rgba(0,0,0,0.55)] duration-200 animate-in fade-in slide-in-from-bottom-4 sm:rounded-[16px] sm:zoom-in-95"
       >
         <div className="flex items-start gap-3 mb-5">
           {stamp ? (
@@ -337,6 +354,7 @@ export default function FilmSendSheet({
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

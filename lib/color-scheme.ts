@@ -76,6 +76,7 @@ export function isHousePath(pathname?: string | null): boolean {
   if (path === '/') return true;
   if (path === '/film' || path.startsWith('/film/')) return true;
   if (path === '/signin' || path.startsWith('/signin/')) return true;
+  if (path === '/account' || path.startsWith('/account/')) return true;
   if (path === '/bureaux' || path.startsWith('/bureaux/')) return true;
   if (path === '/partner' || path.startsWith('/partner/')) return true;
   if (path === '/feed' || path.startsWith('/feed/')) return true;
@@ -104,5 +105,6 @@ export function hasHouseFooterChrome(pathname?: string | null): boolean {
   if (path.startsWith('/artifact/')) return true;
   if (path === '/privacy' || path.startsWith('/privacy/')) return true;
   if (path === '/terms' || path.startsWith('/terms/')) return true;
+  if (path === '/account' || path.startsWith('/account/')) return true;
   return false;
 }

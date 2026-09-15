@@ -6,8 +6,8 @@ import { Link, usePathname, useRouter } from '@/i18n/navigation';
 import { createClient } from '@/lib/supabase/client';
 
 type NavItem = {
-  href: '/account/voyages' | '/account/bureaux';
-  labelKey: 'navLogs' | 'navBureaux';
+  href: '/account/voyages' | '/account/bureaux' | '/account/early';
+  labelKey: 'navLogs' | 'navBureaux' | 'navEarlyRelease';
 };
 
 function isActive(pathname: string, item: NavItem) {
@@ -17,6 +17,7 @@ function isActive(pathname: string, item: NavItem) {
 function buildItems(): NavItem[] {
   return [
     { href: '/account/voyages', labelKey: 'navLogs' },
+    { href: '/account/early', labelKey: 'navEarlyRelease' },
     { href: '/account/bureaux', labelKey: 'navBureaux' },
   ];
 }
