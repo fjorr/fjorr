@@ -17,6 +17,7 @@ import {
 import { LANGUAGE_HELLO } from '@/lib/language-hello-dom';
 import { Icon } from '@/components/ui/Icons';
 import SheetEnter from '@/components/house/SheetEnter';
+import { useSwipeNav } from '@/lib/use-swipe-nav';
 
 const CODE_MAX_PX = 140;
 const CODE_MIN_PX = 48;
@@ -217,13 +218,20 @@ export default function LanguagePanel({
     return () => window.removeEventListener('keydown', onKey);
   }, [go, runCurrent]);
 
+  const swipe = useSwipeNav({
+    onPrev: () => go(-1),
+    onNext: () => go(1),
+    enabled: slides.length > 1,
+  });
+
   if (!current) return null;
 
   return (
     <div
       role="dialog"
       aria-label={t('languages')}
-      className="absolute inset-0 z-50 flex flex-col bg-white text-[#0B0B0C]"
+      className="absolute inset-0 z-50 flex touch-pan-y flex-col bg-white text-[#0B0B0C]"
+      {...swipe}
     >
       <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-8 px-5 md:gap-10 md:px-10">
         <SheetEnter

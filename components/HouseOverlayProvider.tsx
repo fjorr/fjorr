@@ -17,7 +17,7 @@ import { useSearchParams } from 'next/navigation';
 import { usePathname, useRouter } from '@/i18n/navigation';
 import { hasHouseFooterChrome } from '@/lib/color-scheme';
 import { clearBrowseReturn } from '@/lib/house-browse';
-import { HOUSE_CHROME_COLUMN, HOUSE_CHROME_PX } from '@/lib/house-chrome';
+import { HOUSE_CHROME_COLUMN, HOUSE_CHROME_PX, NAV_BAND_PX } from '@/lib/house-chrome';
 import dynamic from 'next/dynamic';
 import type { CommandFilm } from '@/components/house/CommandLine';
 import type { ShortcutAction } from '@/components/house/ShortcutsPanel';
@@ -428,7 +428,10 @@ function HouseOverlayProviderInner({ children }: { children: ReactNode }) {
         aria-modal="true"
       >
         {/* White stage starts under the floating glass pill — sides stay clear. */}
-        <div className="absolute inset-x-0 bottom-0 top-[56px] overflow-hidden bg-white">
+        <div
+          className="absolute inset-x-0 bottom-0 overflow-hidden bg-white"
+          style={{ top: NAV_BAND_PX }}
+        >
           {active === 'language' ? (
             <LanguagePanel onConfirm={confirmLanguage} />
           ) : active === 'shortcuts' ? (

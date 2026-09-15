@@ -11,6 +11,7 @@ import NavbarJoinLink from '@/components/NavbarJoinLink';
 import { useHouseOverlay } from '@/components/HouseOverlayProvider';
 import { Icon } from '@/components/ui/Icons';
 import { peekSearchReturn } from '@/lib/house-search-return';
+import { NAV_BAND_PX } from '@/lib/house-chrome';
 
 interface NavbarProps {
   variant?: 'light' | 'dark';
@@ -26,9 +27,11 @@ function pageNeedsScroll() {
 }
 
 /**
- * Floating glass chip — same on every page.
- * Glass when scrolled, on house shells, or while any sheet is open
- * (never a full-bleed bar; never a solid white chip that fuses into one).
+ * Mobile chrome:
+ * 1. At rest — 54px white top margin with the compact pill centered in it.
+ * 2. On scroll — white margin scrolls away; sticky glass pill remains.
+ *
+ * Sheets portal the header above house z-40 shells.
  */
 function Navbar({ variant = 'light' }: NavbarProps) {
   const t = useTranslations('Nav');
@@ -42,11 +45,6 @@ function Navbar({ variant = 'light' }: NavbarProps) {
   const sheetOpen = active != null;
   const searchOpen = isOpen('search');
   const showBackToIndex = hasSearchReturn && !searchOpen;
-  const onHouseShell =
-    pathname === '/' ||
-    pathname.startsWith('/film/') ||
-    pathname === '/bureaux' ||
-    pathname.startsWith('/account/early');
 
   // Sheets are a white stage — use dark (black) type over them.
   const chromeVariant = sheetOpen ? 'dark' : variant;
@@ -58,10 +56,12 @@ function Navbar({ variant = 'light' }: NavbarProps) {
   const glassAnimClass =
     chromeVariant === 'light' ? 'animate-nav-glass' : 'animate-nav-glass-light';
 
-  const showGlass =
-    sheetOpen ||
-    onHouseShell ||
-    (canScroll && scrolledPast);
+  /** Glass only after scroll — never a full-bleed bar. */
+  const showGlass = searchOpen
+    ? scrolledPast
+    : sheetOpen
+      ? false
+      : canScroll && scrolledPast;
 
   useEffect(() => {
     setPortalReady(true);
@@ -94,7 +94,7 @@ function Navbar({ variant = 'light' }: NavbarProps) {
       };
     }
 
-    if (sheetOpen || onHouseShell) {
+    if (sheetOpen) {
       setScrolledPast(false);
       setCanScroll(false);
       return;
@@ -113,7 +113,7 @@ function Navbar({ variant = 'light' }: NavbarProps) {
       window.removeEventListener('scroll', measure);
       window.removeEventListener('resize', measure);
     };
-  }, [pathname, sheetOpen, searchOpen, onHouseShell]);
+  }, [pathname, sheetOpen, searchOpen]);
 
   useEffect(() => {
     const handleHide = () => {
@@ -155,7 +155,6 @@ function Navbar({ variant = 'light' }: NavbarProps) {
     <Link
       href="/"
       onClick={() => {
-        // Pathname effect closes the sheet after navigation; same-route needs a tap-close.
         if (pathname === '/') close();
       }}
       className={`flex shrink-0 items-center ${textColor}`}
@@ -180,29 +179,24 @@ function Navbar({ variant = 'light' }: NavbarProps) {
     </div>
   );
 
-  const header = (
-    <header
-      className={`pointer-events-none flex h-[56px] w-full items-center justify-center overflow-visible px-4 ${
-        sheetOpen || onHouseShell
-          ? 'fixed inset-x-0 top-0 z-[60]'
-          : 'sticky top-0 z-50'
+  const pill = (
+    <div
+      className={`pointer-events-auto inline-flex h-[44px] w-max max-w-[calc(100vw-2rem)] shrink-0 items-center gap-3.5 rounded-[10px] border px-4 sm:gap-5 sm:px-5 ${
+        showGlass
+          ? `${glassAnimClass} nav-glass-scrolled`
+          : 'border-transparent bg-transparent'
       }`}
     >
-      <div
-        className={`pointer-events-auto inline-flex h-[44px] w-max max-w-[calc(100vw-2rem)] shrink-0 items-center gap-3.5 rounded-[10px] border px-4 sm:gap-5 sm:px-5 ${
-          showGlass
-            ? `${glassAnimClass} nav-glass-scrolled`
-            : 'border-transparent bg-transparent'
-        }`}
-      >
-        {searchBtn}
-        {wordmark}
-        {accountSide}
-      </div>
-      {showGlass ? (
-        <style
-          dangerouslySetInnerHTML={{
-            __html: `
+      {searchBtn}
+      {wordmark}
+      {accountSide}
+    </div>
+  );
+
+  const glassStyle = showGlass ? (
+    <style
+      dangerouslySetInnerHTML={{
+        __html: `
         .animate-nav-glass.nav-glass-scrolled {
           background-color: color-mix(in srgb, var(--page-bg-color, #1F1F1F) 72%, transparent);
           border-color: rgba(255, 255, 255, 0.1);
@@ -217,32 +211,68 @@ function Navbar({ variant = 'light' }: NavbarProps) {
           backdrop-filter: blur(24px) saturate(1.4);
         }
       `,
-          }}
-        />
-      ) : null}
-    </header>
-  );
+      }}
+    />
+  ) : null;
 
-  // Escape house/film z-40 shells so the chip stacks above the sheet portal.
-  // House shells: portal only (no spacer) so the stage runs under the floating pill.
-  if (sheetOpen || onHouseShell) {
+  // Sheet: fixed white band + pill (search gains glass after its own scroll).
+  if (sheetOpen) {
+    const sheetHeader = (
+      <header className="pointer-events-none fixed inset-x-0 top-0 z-[60] w-full">
+        <div
+          className={`pointer-events-none flex w-full items-center justify-center px-4 ${
+            showGlass ? 'bg-transparent' : 'bg-white'
+          }`}
+          style={{ height: NAV_BAND_PX }}
+        >
+          {pill}
+        </div>
+        {glassStyle}
+      </header>
+    );
     if (!portalReady) {
-      return onHouseShell && !sheetOpen ? null : (
-        <div className="h-[56px] w-full shrink-0" aria-hidden />
+      return (
+        <div
+          className="w-full shrink-0 bg-white"
+          style={{ height: NAV_BAND_PX }}
+          aria-hidden
+        />
       );
-    }
-    if (onHouseShell && !sheetOpen) {
-      return createPortal(header, document.body);
     }
     return (
       <>
-        <div className="h-[56px] w-full shrink-0" aria-hidden />
-        {createPortal(header, document.body)}
+        <div
+          className="w-full shrink-0 bg-white"
+          style={{ height: NAV_BAND_PX }}
+          aria-hidden
+        />
+        {createPortal(sheetHeader, document.body)}
       </>
     );
   }
 
-  return header;
+  // Page: in-flow white margin (scrolls away) + sticky pill pulled up into it.
+  return (
+    <>
+      <div
+        className="w-full shrink-0 bg-white"
+        style={{ height: NAV_BAND_PX }}
+        aria-hidden
+      />
+      <header
+        className="pointer-events-none sticky top-0 z-50 w-full"
+        style={{ marginTop: -NAV_BAND_PX }}
+      >
+        <div
+          className="pointer-events-none flex w-full items-center justify-center bg-transparent px-4"
+          style={{ height: NAV_BAND_PX }}
+        >
+          {pill}
+        </div>
+        {glassStyle}
+      </header>
+    </>
+  );
 }
 
 export default Navbar;

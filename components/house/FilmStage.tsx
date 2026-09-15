@@ -15,6 +15,7 @@ import {
 import HouseFooter from '@/components/house/HouseFooter';
 import { type ShortcutAction } from '@/components/house/ShortcutsPanel';
 import HouseFrameNav from '@/components/house/HouseFrameNav';
+import { useSwipeNav } from '@/lib/use-swipe-nav';
 import HousePosterDots from '@/components/house/HousePosterDots';
 import HouseHeroPreview from '@/components/house/HouseHeroPreview';
 import HouseHeroCopy from '@/components/house/HouseHeroCopy';
@@ -184,6 +185,12 @@ export default function FilmStage({ id, slug, exhibition, rail: railProp }: Film
   );
 
   const goRail = useCallback((delta: number) => goTo(index + delta), [goTo, index]);
+
+  const swipe = useSwipeNav({
+    onPrev: () => goRail(-1),
+    onNext: () => goRail(1),
+    enabled: rail.length > 1 && !sheetOpen && !infoOpen && !showTheater,
+  });
 
   useEffect(() => {
     if (phase !== 'from') return;
@@ -403,10 +410,13 @@ export default function FilmStage({ id, slug, exhibition, rail: railProp }: Film
 
   return (
     <div className="fixed inset-0 z-40 flex flex-col overflow-hidden bg-white text-[#0B0B0C]">
-      <Navbar variant="light" />
+      <Navbar variant="dark" />
 
       <div className={`relative min-h-0 flex-1 ${HOUSE_STAGE_SIDE_CLASS}`}>
-        <div className="relative h-full w-full overflow-hidden rounded-[8px]">
+        <div
+          className="relative h-full w-full touch-pan-y overflow-hidden rounded-[8px]"
+          {...swipe}
+        >
         <HouseFrameNav
           onPrev={() => goRail(-1)}
           onNext={() => goRail(1)}

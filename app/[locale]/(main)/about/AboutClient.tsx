@@ -7,6 +7,7 @@ import { Link } from '@/i18n/navigation';
 import HouseScrollFooter from '@/components/HouseScrollFooter';
 import { ContactPill } from '@/components/ui/contact-pill';
 import { Icon } from '@/components/ui/Icons';
+import { useSwipeNav } from '@/lib/use-swipe-nav';
 
 export type AboutPoster = {
   href: string;
@@ -381,13 +382,20 @@ export default function AboutClient({ copy }: { copy: AboutCopy }) {
     return () => window.removeEventListener('keydown', onKey);
   }, [go]);
 
+  const swipe = useSwipeNav({
+    onPrev: () => go(-1),
+    onNext: () => go(1),
+    enabled: beats.length > 1,
+  });
+
   return (
     <div className="relative flex min-h-screen w-full flex-col overflow-x-clip bg-white text-[#0B0B0C] select-none">
       <section
         ref={stageRef}
-        className="relative -mt-[44px] flex h-[calc(100dvh+44px)] w-full flex-col overflow-hidden bg-black px-6 text-white md:-mt-[60px] md:h-[calc(100dvh+60px)] lg:-mt-[100px] lg:h-[calc(100dvh+100px)]"
+        className="relative -mt-[44px] flex h-[calc(100dvh+44px)] w-full touch-pan-y flex-col overflow-hidden bg-black px-6 text-white md:-mt-[60px] md:h-[calc(100dvh+60px)] lg:-mt-[100px] lg:h-[calc(100dvh+100px)]"
         aria-roledescription="carousel"
         aria-label="About Fjorr"
+        {...swipe}
       >
         {/* Beat — stays centered; length doesn’t shove the controls */}
         <div className="relative flex min-h-0 flex-1 items-center justify-center px-2 pb-28 pt-16 md:pb-32">

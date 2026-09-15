@@ -12,6 +12,7 @@ import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Icon } from '@/components/ui/Icons';
 import SheetEnter from '@/components/house/SheetEnter';
+import { useSwipeNav } from '@/lib/use-swipe-nav';
 
 export type ShortcutAction =
   | 'browse'
@@ -376,13 +377,20 @@ export default function ShortcutsPanel({ onAction, onClose }: Props) {
     return () => window.removeEventListener('keydown', onKey);
   }, [go, runCurrent]);
 
+  const swipe = useSwipeNav({
+    onPrev: () => go(-1),
+    onNext: () => go(1),
+    enabled: slides.length > 1,
+  });
+
   if (!current) return null;
 
   return (
     <div
       role="dialog"
       aria-label={t('keysHint')}
-      className="absolute inset-0 z-50 flex flex-col overflow-hidden bg-white text-[#0B0B0C]"
+      className="absolute inset-0 z-50 flex touch-pan-y flex-col overflow-hidden bg-white text-[#0B0B0C]"
+      {...swipe}
     >
       {current.kind === 'intro' ? (
         <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-8">

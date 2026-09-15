@@ -6,6 +6,7 @@ import { useRouter } from '@/i18n/navigation';
 import HouseFooter from '@/components/house/HouseFooter';
 import { type ShortcutAction } from '@/components/house/ShortcutsPanel';
 import HouseFrameNav from '@/components/house/HouseFrameNav';
+import { useSwipeNav } from '@/lib/use-swipe-nav';
 import HousePosterDots from '@/components/house/HousePosterDots';
 import HouseHeroPreview from '@/components/house/HouseHeroPreview';
 import HouseHeroCopy from '@/components/house/HouseHeroCopy';
@@ -164,6 +165,12 @@ export default function HouseHome({
     [stageFilms.length, index]
   );
 
+  const swipe = useSwipeNav({
+    onPrev: () => goTo(index - 1),
+    onNext: () => goTo(index + 1),
+    enabled: stageFilms.length > 1 && !sheetOpen && !showTheater,
+  });
+
   const enterFromIntro = useCallback(() => {
     if (stageFilms.length > 1) goTo(1);
   }, [goTo, stageFilms.length]);
@@ -313,10 +320,13 @@ export default function HouseHome({
 
   return (
     <div className="fixed inset-0 z-40 flex flex-col overflow-hidden bg-white text-[#0B0B0C]">
-      <Navbar variant="light" />
+      <Navbar variant="dark" />
 
       <div className={`relative min-h-0 flex-1 ${HOUSE_STAGE_SIDE_CLASS}`}>
-        <div className="relative h-full w-full overflow-hidden rounded-[8px]">
+        <div
+          className="relative h-full w-full touch-pan-y overflow-hidden rounded-[8px]"
+          {...swipe}
+        >
         {isEmptyStage ? (
           <div className="flex h-full w-full items-center justify-center bg-[#0B0B0C] px-8">
             <p className="m-0 max-w-[32ch] text-center font-sans text-[16px] font-medium leading-relaxed text-white/55">

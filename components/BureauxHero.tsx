@@ -42,8 +42,8 @@ export default function BureauxHero({ title }: { title: string }) {
           `,
         }}
       />
-      {/* Nav 56 + footer chrome 54 — same stage window as film house. */}
-      <div className="relative h-[calc(100dvh-56px-54px)] w-full overflow-hidden rounded-[8px] bg-black">
+      {/* Nav band 54 + footer chrome 54 — same stage window as film house. */}
+      <div className="relative h-[calc(100dvh-54px-54px)] w-full overflow-hidden rounded-[8px] bg-black">
         <Image
           src={BUREAUX_IMAGE}
           alt=""

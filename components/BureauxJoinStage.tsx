@@ -8,6 +8,7 @@ import Navbar from '@/components/Navbar';
 import BureauxIncludedList from '@/components/BureauxIncludedList';
 import SheetEnter from '@/components/house/SheetEnter';
 import { LIGHT_PAGE_BG } from '@/lib/color-scheme';
+import { useSwipeNav } from '@/lib/use-swipe-nav';
 
 const BUREAUX_IMAGE =
   'https://media.fjorr.com/app-assets/fjorr-home-bureaux-breakdancing.avif';
@@ -105,6 +106,12 @@ export default function BureauxJoinStage({
     };
   }, [phase, goPrev, goNext]);
 
+  const swipe = useSwipeNav({
+    onPrev: goPrev,
+    onNext: goNext,
+    enabled: canPrev || canNext,
+  });
+
   const stageVars = {
     ['--page-bg' as string]: SITE_BG,
     ['--page-bg-color' as string]: SITE_BG,
@@ -146,9 +153,10 @@ export default function BureauxJoinStage({
 
   return (
     <section
-      className="relative flex h-dvh w-full flex-col overflow-hidden"
+      className="relative flex h-dvh w-full touch-pan-y flex-col overflow-hidden"
       style={{ backgroundColor: SITE_BG }}
       aria-label={t('joinHeadline')}
+      {...swipe}
     >
       <style
         dangerouslySetInnerHTML={{
