@@ -72,7 +72,19 @@ const nextConfig: NextConfig = {
     ];
     return [
       ...cut("/contact", "/about"),
-      ...cut("/search", "/"),
+      // Legacy sheet deep-link → real search page (keep ?q=)
+      {
+        source: "/",
+        has: [{ type: "query", key: "q" }],
+        destination: "/search",
+        permanent: false,
+      },
+      {
+        source: `${localePrefix}`,
+        has: [{ type: "query", key: "q" }],
+        destination: "/:locale/search",
+        permanent: false,
+      },
       // Launch cut — archived / deleted surfaces
       ...cut("/nominate", "/"),
       ...cut("/plus", "/"),

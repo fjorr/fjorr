@@ -4,17 +4,31 @@ import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslations } from 'next-intl';
 import { ArrowLeft } from 'lucide-react';
-import { Link, usePathname } from '@/i18n/navigation';
+import { Link, usePathname, useRouter } from '@/i18n/navigation';
 import { FjorrWordmark } from '@/components/brand/FjorrMarks';
 import NavbarAccountLink from '@/components/NavbarAccountLink';
 import NavbarJoinLink from '@/components/NavbarJoinLink';
 import { useHouseOverlay } from '@/components/HouseOverlayProvider';
 import { Icon } from '@/components/ui/Icons';
-import { peekSearchReturn } from '@/lib/house-search-return';
+import {
+  clearSearchReturn,
+  peekSearchReturn,
+} from '@/lib/house-search-return';
+import { pathWithSearchQuery } from '@/lib/house-search-query';
 import { NAV_BAND_PX } from '@/lib/house-chrome';
 
 interface NavbarProps {
   variant?: 'light' | 'dark';
+  /**
+   * Join / full-bleed heroes: chip floats over the surface — text + wordmark only.
+   * No white band, no glass.
+   */
+  overlay?: boolean;
+  /**
+   * Film info (ExhibitionSheet) is open — chip glasses over that sheet’s scroll
+   * instead of the window. Band stays transparent so white info shows through.
+   */
+  surfaceScroll?: boolean;
 }
 
 const SCROLL_GLASS_PX = 40;
@@ -33,21 +47,28 @@ function pageNeedsScroll() {
  *
  * Sheets portal the header above house z-40 shells.
  */
-function Navbar({ variant = 'light' }: NavbarProps) {
+function Navbar({
+  variant = 'light',
+  overlay = false,
+  surfaceScroll = false,
+}: NavbarProps) {
   const t = useTranslations('Nav');
   const pathname = usePathname() || '';
-  const { active, close, toggle, isOpen } = useHouseOverlay();
+  const router = useRouter();
+  const { active, close } = useHouseOverlay();
   const [isTheaterOpen, setIsTheaterOpen] = useState(false);
   const [scrolledPast, setScrolledPast] = useState(false);
   const [canScroll, setCanScroll] = useState(false);
   const [portalReady, setPortalReady] = useState(false);
   const [hasSearchReturn, setHasSearchReturn] = useState(false);
   const sheetOpen = active != null;
-  const searchOpen = isOpen('search');
-  const showBackToIndex = hasSearchReturn && !searchOpen;
+  const onSearchPage =
+    pathname === '/search' || pathname.startsWith('/search/');
+  const showBackToIndex = hasSearchReturn && !onSearchPage;
 
-  // Sheets are a white stage — use dark (black) type over them.
-  const chromeVariant = sheetOpen ? 'dark' : variant;
+  // Sheets + film info are white stages — dark (black) type.
+  const chromeVariant =
+    sheetOpen || surfaceScroll ? 'dark' : variant;
   const textColor = chromeVariant === 'light' ? 'text-white' : 'text-black';
   const iconColor = chromeVariant === 'light' ? 'text-white/55' : 'text-black/55';
   const controlHover =
@@ -56,9 +77,9 @@ function Navbar({ variant = 'light' }: NavbarProps) {
   const glassAnimClass =
     chromeVariant === 'light' ? 'animate-nav-glass' : 'animate-nav-glass-light';
 
-  /** Glass only after scroll — never a full-bleed bar. */
-  const showGlass = searchOpen
-    ? scrolledPast
+  /** Glass after scroll — film info uses its own scroll; overlay heroes never. */
+  const showGlass = overlay
+    ? false
     : sheetOpen
       ? false
       : canScroll && scrolledPast;
@@ -75,10 +96,22 @@ function Navbar({ variant = 'light' }: NavbarProps) {
   }, [pathname, active]);
 
   useEffect(() => {
-    if (searchOpen) {
+    if (overlay) {
       setScrolledPast(false);
       setCanScroll(false);
-      const onSearchScroll = (event: Event) => {
+      return;
+    }
+
+    if (sheetOpen) {
+      setScrolledPast(false);
+      setCanScroll(false);
+      return;
+    }
+
+    if (surfaceScroll) {
+      setScrolledPast(false);
+      setCanScroll(false);
+      const onInfoScroll = (event: Event) => {
         const detail = (
           event as CustomEvent<{ scrollTop: number; canScroll: boolean }>
         ).detail;
@@ -88,16 +121,10 @@ function Navbar({ variant = 'light' }: NavbarProps) {
             (detail?.scrollTop ?? 0) > SCROLL_GLASS_PX
         );
       };
-      window.addEventListener('fjorr_search_scroll', onSearchScroll);
+      window.addEventListener('fjorr_info_scroll', onInfoScroll);
       return () => {
-        window.removeEventListener('fjorr_search_scroll', onSearchScroll);
+        window.removeEventListener('fjorr_info_scroll', onInfoScroll);
       };
-    }
-
-    if (sheetOpen) {
-      setScrolledPast(false);
-      setCanScroll(false);
-      return;
     }
 
     const measure = () => {
@@ -113,7 +140,7 @@ function Navbar({ variant = 'light' }: NavbarProps) {
       window.removeEventListener('scroll', measure);
       window.removeEventListener('resize', measure);
     };
-  }, [pathname, sheetOpen, searchOpen]);
+  }, [pathname, sheetOpen, overlay, surfaceScroll]);
 
   useEffect(() => {
     const handleHide = () => {
@@ -132,12 +159,29 @@ function Navbar({ variant = 'light' }: NavbarProps) {
 
   if (isTheaterOpen) return null;
 
+  const openSearch = () => {
+    if (onSearchPage) {
+      window.dispatchEvent(new Event('fjorr_command_open'));
+      return;
+    }
+    const ret = peekSearchReturn();
+    if (ret) {
+      clearSearchReturn();
+      const href = ret.path.startsWith('/search')
+        ? ret.path
+        : pathWithSearchQuery('/search', '', ret.query);
+      router.push(href);
+      return;
+    }
+    router.push('/search');
+  };
+
   const searchBtn = (
     <button
       type="button"
-      onClick={() => toggle('search')}
+      onClick={openSearch}
       aria-keyshortcuts="Meta+K"
-      aria-expanded={searchOpen}
+      aria-current={onSearchPage ? 'page' : undefined}
       aria-label={showBackToIndex ? t('backToIndexAria') : t('openCommand')}
       className={`inline-flex h-8 items-center gap-1.5 bg-transparent p-0 font-sans text-[12px] font-medium transition-colors ${iconColor} ${controlHover}`}
     >
@@ -215,6 +259,18 @@ function Navbar({ variant = 'light' }: NavbarProps) {
     />
   ) : null;
 
+  // Overlay heroes (Join): transparent chip only — no band, no glass.
+  if (overlay && !sheetOpen) {
+    return (
+      <header
+        className="pointer-events-none flex w-full items-center justify-center bg-transparent px-4"
+        style={{ height: NAV_BAND_PX }}
+      >
+        {pill}
+      </header>
+    );
+  }
+
   // Sheet: fixed white band + pill (search gains glass after its own scroll).
   if (sheetOpen) {
     const sheetHeader = (
@@ -251,16 +307,20 @@ function Navbar({ variant = 'light' }: NavbarProps) {
     );
   }
 
-  // Page: in-flow white margin (scrolls away) + sticky pill pulled up into it.
+  // Page: in-flow top margin (scrolls away) + sticky pill pulled up into it.
+  // Band follows --page-bg-color; film info keeps white so it fuses with the sheet.
+  const bandStyle = {
+    height: NAV_BAND_PX,
+    backgroundColor: surfaceScroll
+      ? '#ffffff'
+      : 'var(--page-bg-color, #ffffff)',
+  } as React.CSSProperties;
+
   return (
     <>
-      <div
-        className="w-full shrink-0 bg-white"
-        style={{ height: NAV_BAND_PX }}
-        aria-hidden
-      />
+      <div className="w-full shrink-0" style={bandStyle} aria-hidden />
       <header
-        className="pointer-events-none sticky top-0 z-50 w-full"
+        className="pointer-events-none sticky top-0 z-[60] w-full"
         style={{ marginTop: -NAV_BAND_PX }}
       >
         <div

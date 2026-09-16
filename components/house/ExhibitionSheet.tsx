@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { parseLocale } from '@/i18n/config';
@@ -10,6 +10,7 @@ import ProcessLightbox, {
 } from '@/components/house/ProcessLightbox';
 import { storySettingDisplay } from '@/lib/story-year';
 import RatingBadge from '@/components/house/RatingBadge';
+import { NAV_BAND_PX } from '@/lib/house-chrome';
 
 export type SheetCredit = {
   name: string;
@@ -183,6 +184,7 @@ export default function ExhibitionSheet({
 }) {
   const t = useTranslations('Film');
   const locale = parseLocale(useLocale());
+  const scrollRef = useRef<HTMLDivElement>(null);
   const [cues, setCues] = useState<VttCue[]>([]);
   const [transcriptQuery, setTranscriptQuery] = useState('');
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
@@ -263,6 +265,29 @@ export default function ExhibitionSheet({
     return () => window.removeEventListener('keydown', onKey);
   }, [lightboxIndex, onClose]);
 
+  const emitInfoScroll = (el: HTMLElement) => {
+    window.dispatchEvent(
+      new CustomEvent('fjorr_info_scroll', {
+        detail: {
+          scrollTop: el.scrollTop,
+          canScroll: el.scrollHeight > el.clientHeight + 40,
+        },
+      })
+    );
+  };
+
+  useEffect(() => {
+    const root = scrollRef.current;
+    if (root) emitInfoScroll(root);
+    return () => {
+      window.dispatchEvent(
+        new CustomEvent('fjorr_info_scroll', {
+          detail: { scrollTop: 0, canScroll: false },
+        })
+      );
+    };
+  }, []);
+
   const setting = storySettingDisplay(film.storyDate);
   const duration = runtimeLabel(film.runtime);
   const place = formatLocation(film.location);
@@ -327,8 +352,13 @@ export default function ExhibitionSheet({
   if (year) specRows.push({ label: t('releasedLabel'), value: year });
 
   return (
-    <div className="fixed inset-x-0 bottom-0 top-[56px] z-20 animate-[sheetIn_280ms_ease-out] overflow-y-auto bg-white text-[#0B0B0C]">
-      <div className="pointer-events-none sticky top-0 z-10 flex justify-end px-5 pt-3 md:px-8 md:pt-4">
+    <div
+      ref={scrollRef}
+      className="fixed inset-x-0 bottom-0 z-20 animate-[sheetIn_280ms_ease-out] overflow-y-auto bg-white text-[#0B0B0C]"
+      style={{ top: NAV_BAND_PX - 1 }}
+      onScroll={(event) => emitInfoScroll(event.currentTarget)}
+    >
+      <div className="pointer-events-none sticky top-0 z-10 flex justify-end bg-gradient-to-b from-white from-70% to-transparent px-5 pb-2 pt-5 md:px-8 md:pt-6">
         <button
           type="button"
           onClick={onClose}
@@ -341,7 +371,7 @@ export default function ExhibitionSheet({
         </button>
       </div>
 
-      <div className="mx-auto w-full max-w-[720px] px-6 pt-0 md:px-10">
+      <div className="mx-auto w-full max-w-[720px] px-6 pt-4 md:px-10 md:pt-5">
         <header className="mx-auto max-w-[28rem] text-center md:max-w-[32rem]">
           <p className={type.eyebrow}>{t('sheetLabel')}</p>
           <h1 className="mt-3 text-balance font-interTight text-[clamp(2.5rem,7vw,3.75rem)] font-bold leading-[0.92] tracking-[-0.03em] text-[#0B0B0C]">

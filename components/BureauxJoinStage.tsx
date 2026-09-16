@@ -139,7 +139,7 @@ export default function BureauxJoinStage({
       >
         <div className="pointer-events-none fixed inset-x-0 top-0 z-50">
           <div className="pointer-events-auto">
-            <Navbar variant="light" />
+            <Navbar variant="light" overlay />
           </div>
         </div>
         <div className="flex min-h-0 w-full flex-1 items-center justify-center overflow-y-auto overscroll-contain px-6 py-28 sm:px-10">
@@ -177,7 +177,8 @@ export default function BureauxJoinStage({
 
       <div className="pointer-events-none fixed inset-x-0 top-0 z-50">
         <div className="pointer-events-auto">
-          <Navbar variant={chromeVariant} />
+          {/* Poster: white type over hero. Pitch/email: black type on white. No glass. */}
+          <Navbar variant={chromeVariant} overlay />
         </div>
         <div className="pointer-events-auto flex justify-center pt-0.5">
           <div

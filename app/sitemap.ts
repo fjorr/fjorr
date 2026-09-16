@@ -66,6 +66,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/about/the-mark',
     '/about/100-years-of-failure',
     '/bureaux',
+    '/search',
     '/subscribe',
     '/terms',
     '/privacy',

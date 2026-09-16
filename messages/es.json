@@ -772,7 +772,9 @@
     "feedTitle": "RSS",
     "feedDescription": "Subscribe to Fjorr film drops and archive updates with any RSS reader.",
     "subscribeTitle": "Suscribirse",
-    "subscribeDescription": "Recibe los cortos de Fjorr por correo o RSS — sin redes sociales."
+    "subscribeDescription": "Recibe los cortos de Fjorr por correo o RSS — sin redes sociales.",
+    "searchTitle": "Search",
+    "searchDescription": "Find a film, director, or short phrase in the Fjorr catalog."
   },
   "Bounties": {
     "title": "Grandes historias.\nHay recompensa.",

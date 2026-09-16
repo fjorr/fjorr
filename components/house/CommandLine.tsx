@@ -16,8 +16,6 @@ import {
   snippetContainsQuery,
 } from '@/lib/intelligence';
 import CatalogIndex from '@/components/house/CatalogIndex';
-import HouseFooter from '@/components/house/HouseFooter';
-import { useHouseOverlay } from '@/components/HouseOverlayProvider';
 
 type SeedFilm = {
   id: string;
@@ -320,14 +318,12 @@ function whyForHit(
 
 export default function CommandLine({
   films,
-  onClose: _onClose,
   onPlay,
   initialQuery = '',
 }: {
   films: SeedFilm[];
-  onClose: () => void;
   onPlay: (hit: CommandFilm) => void;
-  /** Restore query when reopening after watch. */
+  /** Restore query when landing with `?q=` or returning from watch. */
   initialQuery?: string;
 }) {
   const locale = parseLocale(useLocale());
@@ -335,7 +331,6 @@ export default function CommandLine({
   const pathname = usePathname() || '/';
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { isOpen, toggle } = useHouseOverlay();
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState(initialQuery);
   const seedFilms = useMemo(
@@ -375,16 +370,7 @@ export default function CommandLine({
   const chromeHiddenRef = useRef(false);
   const lastScrollTop = useRef(0);
 
-  const onResultsScroll = (scrollTop: number, el?: HTMLElement) => {
-    const canScroll = el
-      ? el.scrollHeight > el.clientHeight + 40
-      : scrollTop > 40;
-    window.dispatchEvent(
-      new CustomEvent('fjorr_search_scroll', {
-        detail: { scrollTop, canScroll },
-      })
-    );
-
+  const onResultsScroll = (scrollTop: number) => {
     const prev = lastScrollTop.current;
     lastScrollTop.current = scrollTop;
     const delta = scrollTop - prev;
@@ -403,12 +389,14 @@ export default function CommandLine({
     chromeHiddenRef.current = false;
     lastScrollTop.current = 0;
     setChromeHidden(false);
-    window.dispatchEvent(
-      new CustomEvent('fjorr_search_scroll', {
-        detail: { scrollTop: 0, canScroll: false },
-      })
-    );
   }, [query]);
+
+  useEffect(() => {
+    const onScroll = () => onResultsScroll(window.scrollY);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   /** Keep `?q=` in sync so results are shareable / reloadable. */
   useEffect(() => {
@@ -423,11 +411,10 @@ export default function CommandLine({
   }, [query, pathname, router, searchParams]);
 
   useEffect(() => {
-    window.dispatchEvent(
-      new CustomEvent('fjorr_search_scroll', {
-        detail: { scrollTop: 0, canScroll: false },
-      })
-    );
+    inputRef.current?.focus();
+    const onOpen = () => inputRef.current?.focus();
+    window.addEventListener('fjorr_command_open', onOpen);
+    return () => window.removeEventListener('fjorr_command_open', onOpen);
   }, []);
 
   const searching = query.trim().length > 0;
@@ -457,10 +444,6 @@ export default function CommandLine({
     });
   }, [remoteHits, localHits, intelWhy, query, catalog]);
   const rowCount = searching ? hits.length : 0;
-
-  useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
 
   useEffect(() => {
     setActive(0);
@@ -855,10 +838,9 @@ export default function CommandLine({
   const leaveToPlay = (film: CommandFilm) => {
     const trimmed = query.trim();
     setSearchReturn({
-      path: pathWithSearchQuery(pathname, searchParams, trimmed || null),
+      path: pathWithSearchQuery('/search', '', trimmed || null),
       query: trimmed,
     });
-    // Keep the sheet up until the route changes — avoids a flash of the page under.
     onPlay(film);
   };
 
@@ -902,9 +884,8 @@ export default function CommandLine({
 
   return (
     <div
-      role="dialog"
-      aria-label="Command"
-      className="relative z-50 flex h-full flex-col bg-white text-[#0B0B0C]"
+      className="relative flex w-full flex-1 flex-col bg-white px-5 text-[#0B0B0C] md:px-10"
+      aria-label="Search"
     >
       <div
         className={`mx-auto w-full max-w-[44rem] shrink-0 overflow-hidden px-0 transition-[max-height,opacity,padding] duration-200 ease-out ${
@@ -985,12 +966,7 @@ export default function CommandLine({
         </form>
       </div>
 
-      <div
-        className="mx-auto min-h-0 w-full max-w-[90rem] flex-1 overflow-y-auto overscroll-contain pt-3"
-        onScroll={(event) =>
-          onResultsScroll(event.currentTarget.scrollTop, event.currentTarget)
-        }
-      >
+      <div className="mx-auto w-full max-w-[90rem] flex-1 pt-3 pb-4">
         {searching ? (
           hits.length === 0 ? (
             catalogReady && !remotePending ? (
@@ -1020,17 +996,6 @@ export default function CommandLine({
             onPlay={playFromCatalog}
           />
         )}
-        <div className="w-full shrink-0 bg-white pt-8">
-          <HouseFooter
-            variant="dark"
-            langOpen={isOpen('language')}
-            shortcutsOpen={isOpen('shortcuts')}
-            legalOpen={isOpen('legal')}
-            onLanguage={() => toggle('language')}
-            onShortcuts={() => toggle('shortcuts')}
-            onLegal={() => toggle('legal')}
-          />
-        </div>
       </div>
     </div>
   );

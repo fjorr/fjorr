@@ -100,8 +100,7 @@ export default function FilmStage({ id, slug, exhibition, rail: railProp }: Film
   const { active, setShortcutHandler, isOpen, toggle } =
     useHouseOverlay();
   const sheetOpen = active != null;
-  const searchOpen = isOpen('search');
-  const pinFooter = sheetOpen && !searchOpen;
+  const pinFooter = sheetOpen;
 
   const rail = railProp.length ? railProp : [];
   const initialIndex = Math.max(
@@ -410,7 +409,7 @@ export default function FilmStage({ id, slug, exhibition, rail: railProp }: Film
 
   return (
     <div className="fixed inset-0 z-40 flex flex-col overflow-hidden bg-white text-[#0B0B0C]">
-      <Navbar variant="dark" />
+      <Navbar variant="dark" surfaceScroll={infoOpen} />
 
       <div className={`relative min-h-0 flex-1 ${HOUSE_STAGE_SIDE_CLASS}`}>
         <div
@@ -522,7 +521,7 @@ export default function FilmStage({ id, slug, exhibition, rail: railProp }: Film
         </div>
       </div>
 
-      {!infoOpen && !searchOpen ? (
+      {!infoOpen ? (
         <>
           {pinFooter ? (
             <div className="h-[54px] w-full shrink-0" aria-hidden />

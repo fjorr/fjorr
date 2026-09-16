@@ -772,7 +772,9 @@
     "feedTitle": "RSS",
     "feedDescription": "Subscribe to Fjorr film drops and archive updates with any RSS reader.",
     "subscribeTitle": "Subscribe",
-    "subscribeDescription": "Get Fjorr film drops by email or RSS — no social media required."
+    "subscribeDescription": "Get Fjorr film drops by email or RSS — no social media required.",
+    "searchTitle": "Search",
+    "searchDescription": "Find a film, director, or short phrase in the Fjorr catalog."
   },
   "Help": {
     "title": "The Manual",

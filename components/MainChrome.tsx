@@ -34,6 +34,7 @@ export default function MainChrome({ children }: { children: React.ReactNode }) 
     '/';
   const isSubscribePage =
     path === '/subscribe' || path.startsWith('/subscribe/');
+  const isSearchPage = path === '/search' || path.startsWith('/search/');
   const isPartnerPage =
     path === '/partner' || path.startsWith('/partner/');
   const isAccountPage =
@@ -67,6 +68,7 @@ export default function MainChrome({ children }: { children: React.ReactNode }) 
   const paperPage =
     isLegalPage ||
     isSubscribePage ||
+    isSearchPage ||
     isPartnerPage ||
     (isAccountPage && !isEarlyReleasePage) ||
     isEssayPage;

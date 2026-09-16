@@ -129,8 +129,7 @@ export default function HouseHome({
   const { active, setShortcutHandler, isOpen, toggle } =
     useHouseOverlay();
   const sheetOpen = active != null;
-  const searchOpen = isOpen('search');
-  const pinFooter = sheetOpen && !searchOpen;
+  const pinFooter = sheetOpen;
   const [index, setIndex] = useState(0);
   const [dir, setDir] = useState(1);
   const [phase, setPhase] = useState<'idle' | 'from' | 'to'>('idle');
@@ -462,7 +461,6 @@ export default function HouseHome({
       {pinFooter ? (
         <div className="h-[54px] w-full shrink-0" aria-hidden />
       ) : null}
-      {!searchOpen ? (
       <div
         className={
           pinFooter
@@ -485,7 +483,6 @@ export default function HouseHome({
           }}
         />
       </div>
-      ) : null}
 
       {showTheater && selectedFilm ? (
         <CinemaTheater

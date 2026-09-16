@@ -772,7 +772,9 @@
     "feedTitle": "RSS",
     "feedDescription": "Subscribe to Fjorr film drops and archive updates with any RSS reader.",
     "subscribeTitle": "Prenumerera",
-    "subscribeDescription": "Få Fjorr-filmer via mejl eller RSS — utan sociala medier."
+    "subscribeDescription": "Få Fjorr-filmer via mejl eller RSS — utan sociala medier.",
+    "searchTitle": "Search",
+    "searchDescription": "Find a film, director, or short phrase in the Fjorr catalog."
   },
   "Bounties": {
     "title": "Stora berättelser.\nNu med belöning.",

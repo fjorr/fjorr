@@ -13,13 +13,11 @@ import React, {
 } from 'react';
 import { createPortal } from 'react-dom';
 import { useLocale } from 'next-intl';
-import { useSearchParams } from 'next/navigation';
 import { usePathname, useRouter } from '@/i18n/navigation';
 import { hasHouseFooterChrome } from '@/lib/color-scheme';
 import { clearBrowseReturn } from '@/lib/house-browse';
-import { HOUSE_CHROME_COLUMN, HOUSE_CHROME_PX, NAV_BAND_PX } from '@/lib/house-chrome';
+import { HOUSE_CHROME_PX, NAV_BAND_PX } from '@/lib/house-chrome';
 import dynamic from 'next/dynamic';
-import type { CommandFilm } from '@/components/house/CommandLine';
 import type { ShortcutAction } from '@/components/house/ShortcutsPanel';
 import { stripLocalePrefix, type AppLocale } from '@/i18n/config';
 import {
@@ -33,16 +31,9 @@ import {
   takeSearchReopen,
   peekSearchReturn,
   clearSearchReturn,
-  queueSearchReopen,
 } from '@/lib/house-search-return';
-import {
-  pathWithSearchQuery,
-  readSearchQueryParam,
-} from '@/lib/house-search-query';
+import { pathWithSearchQuery as buildSearchHref } from '@/lib/house-search-query';
 
-const CommandLine = dynamic(() => import('@/components/house/CommandLine'), {
-  ssr: false,
-});
 const LanguagePanel = dynamic(() => import('@/components/house/LanguagePanel'), {
   ssr: false,
 });
@@ -68,11 +59,10 @@ const HouseAccountSheet = dynamic(
  * 2. Full white between navbar and footer (viewport), on house and scroll pages.
  * 3. Only nav + footer stay visible beside the sheet.
  * 4. Same control toggles closed; Escape closes; theater clears.
- * 5. Sheets: search · language · shortcuts · legal · bureaux · account.
- *    Subscribe lives on /subscribe (no intel overlay).
+ * 5. Sheets: language · shortcuts · legal · bureaux · account.
+ *    Search lives on /search. Subscribe lives on /subscribe.
  */
 export type HouseSheetId =
-  | 'search'
   | 'language'
   | 'shortcuts'
   | 'legal'
@@ -108,6 +98,20 @@ export function useHouseOverlayOptional() {
   return useContext(HouseOverlayContext);
 }
 
+function goSearch(router: ReturnType<typeof useRouter>, query?: string) {
+  const ret = peekSearchReturn();
+  if (ret) {
+    clearSearchReturn();
+    const href =
+      ret.path.startsWith('/search')
+        ? ret.path
+        : buildSearchHref('/search', '', ret.query || query || '');
+    router.push(href);
+    return;
+  }
+  router.push(buildSearchHref('/search', '', query || null));
+}
+
 export function HouseOverlayProvider({ children }: { children: ReactNode }) {
   return (
     <Suspense fallback={children}>
@@ -119,7 +123,6 @@ export function HouseOverlayProvider({ children }: { children: ReactNode }) {
 function HouseOverlayProviderInner({ children }: { children: ReactNode }) {
   const pathname = usePathname() || '';
   const router = useRouter();
-  const searchParams = useSearchParams();
   const locale = useLocale() as AppLocale;
   const [active, setActive] = useState<HouseSheetId | null>(null);
   const [mounted, setMounted] = useState(false);
@@ -128,38 +131,16 @@ function HouseOverlayProviderInner({ children }: { children: ReactNode }) {
   const [browseOpen, setBrowseOpenState] = useState(false);
   /** True while an imperative Hello cover is owning the beat. */
   const [langHelloLock, setLangHelloLock] = useState(false);
-  const [searchSeed, setSearchSeed] = useState<string | null>(null);
-  const urlSearchQuery = readSearchQueryParam(searchParams);
-  const prevActiveRef = React.useRef<HouseSheetId | null>(null);
-  const dismissSearchRef = React.useRef(false);
 
   const footerChrome = hasHouseFooterChrome(pathname);
-  const searchOpen = active === 'search';
-  /** Search scrolls its own footer — sheet goes edge-to-edge. */
-  const sheetBottom =
-    footerChrome && active != null && !searchOpen ? HOUSE_CHROME_PX : 0;
-
-  const clearSearchQueryParam = useCallback(() => {
-    if (!searchParams.has('q')) return;
-    router.replace(pathWithSearchQuery(pathname, searchParams, null), {
-      scroll: false,
-    });
-  }, [pathname, router, searchParams]);
+  const sheetBottom = footerChrome && active != null ? HOUSE_CHROME_PX : 0;
+  const onSearchPage =
+    pathname === '/search' || pathname.startsWith('/search/');
 
   const close = useCallback(() => setActive(null), []);
   const open = useCallback((id: HouseSheetId) => setActive(id), []);
   const toggle = useCallback((id: HouseSheetId) => {
-    setActive((current) => {
-      if (current === id) return null;
-      if (id === 'search') {
-        const ret = peekSearchReturn();
-        if (ret) {
-          clearSearchReturn();
-          queueSearchReopen(ret.query);
-        }
-      }
-      return id;
-    });
+    setActive((current) => (current === id ? null : id));
   }, []);
   const isOpen = useCallback(
     (id: HouseSheetId) => active === id,
@@ -260,7 +241,6 @@ function HouseOverlayProviderInner({ children }: { children: ReactNode }) {
   useEffect(() => {
     setActive(null);
     setBrowseOpenState(false);
-    dismissSearchRef.current = false;
     const onHouse =
       pathname === '/' ||
       pathname === '/film' ||
@@ -303,78 +283,54 @@ function HouseOverlayProviderInner({ children }: { children: ReactNode }) {
         return;
       }
       event.preventDefault();
-      setActive((current) => {
-        if (current === 'search') return null;
-        const ret = peekSearchReturn();
-        if (ret) {
-          clearSearchReturn();
-          queueSearchReopen(ret.query);
-        }
-        return 'search';
-      });
+      if (onSearchPage) {
+        window.dispatchEvent(new Event('fjorr_command_open'));
+        return;
+      }
+      goSearch(router);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, []);
+  }, [onSearchPage, router]);
 
   useEffect(() => {
-    const onOpenSearch = () => setActive('search');
+    const onOpenSearch = () => {
+      if (onSearchPage) {
+        window.dispatchEvent(new Event('fjorr_command_open'));
+        return;
+      }
+      goSearch(router);
+    };
     window.addEventListener('fjorr_open_command', onOpenSearch);
     return () => window.removeEventListener('fjorr_open_command', onOpenSearch);
-  }, []);
+  }, [onSearchPage, router]);
 
-  /** Theater close (or same-page return) → reopen ⌘K with prior query. */
+  /** Theater close (or same-page return) → reopen search with prior query. */
   useEffect(() => {
     const reopen = () => {
       const query = takeSearchReopen();
       if (query == null) return;
-      setSearchSeed(query);
-      setActive('search');
+      router.push(buildSearchHref('/search', '', query || null));
     };
     window.addEventListener('fjorr_search_reopen', reopen);
     return () => window.removeEventListener('fjorr_search_reopen', reopen);
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     const query = takeSearchReopen();
     if (query == null) return;
-    setSearchSeed(query);
-    setActive('search');
-  }, [pathname]);
-
-  /** Deep-link: `/?q=apollo` (or any path) opens search with that query. */
-  useEffect(() => {
-    if (!mounted || !urlSearchQuery) {
-      if (!urlSearchQuery) dismissSearchRef.current = false;
+    if (onSearchPage) {
+      window.dispatchEvent(new Event('fjorr_command_open'));
       return;
     }
-    if (active === 'search') return;
-    if (dismissSearchRef.current) return;
-    setSearchSeed(urlSearchQuery);
-    setActive('search');
-  }, [urlSearchQuery, pathname, mounted, active]);
-
-  useEffect(() => {
-    if (active === 'search') {
-      dismissSearchRef.current = false;
-      window.dispatchEvent(new Event('fjorr_command_open'));
-      const query = takeSearchReopen();
-      if (query != null) setSearchSeed(query);
-      else if (urlSearchQuery) setSearchSeed(urlSearchQuery);
-    } else if (prevActiveRef.current === 'search') {
-      dismissSearchRef.current = true;
-      clearSearchQueryParam();
-      setSearchSeed(null);
-    } else {
-      setSearchSeed(null);
-    }
-    prevActiveRef.current = active;
-  }, [active, clearSearchQueryParam, urlSearchQuery]);
+    router.push(buildSearchHref('/search', '', query || null));
+  }, [pathname, onSearchPage, router]);
 
   const runShortcut = useCallback(
     (action: ShortcutAction) => {
       if (action === 'search') {
-        setActive('search');
+        setActive(null);
+        goSearch(router);
         return;
       }
       if (action === 'close') {
@@ -391,7 +347,7 @@ function HouseOverlayProviderInner({ children }: { children: ReactNode }) {
         setActive(null);
       }
     },
-    [shortcutHandler, close]
+    [shortcutHandler, close, router]
   );
 
   const value = useMemo(
@@ -440,26 +396,8 @@ function HouseOverlayProviderInner({ children }: { children: ReactNode }) {
             <HouseLegalSheet onNavigate={leaveTo} />
           ) : active === 'bureaux' ? (
             <HouseBureauxSheet onNavigate={leaveTo} />
-          ) : active === 'account' ? (
-            <HouseAccountSheet onNavigate={leaveTo} />
           ) : (
-            <div className={`${HOUSE_CHROME_COLUMN} h-full`}>
-              {active === 'search' ? (
-                <CommandLine
-                  key={searchSeed ?? 'search'}
-                  films={[]}
-                  initialQuery={searchSeed ?? ''}
-                  onClose={close}
-                  onPlay={(hit: CommandFilm) => {
-                    if (hit.kind === 'artifact') {
-                      leaveTo(`/artifact/${hit.slug}`);
-                      return;
-                    }
-                    leaveTo(`/film/${hit.slug}`);
-                  }}
-                />
-              ) : null}
-            </div>
+            <HouseAccountSheet onNavigate={leaveTo} />
           )}
         </div>
       </div>

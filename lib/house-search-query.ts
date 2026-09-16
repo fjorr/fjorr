@@ -1,4 +1,4 @@
-/** Shareable ⌘K query lives in `?q=` on the current path (usually `/`). */
+/** Shareable search query lives in `?q=` on `/search`. */
 
 export const SEARCH_QUERY_PARAM = 'q';
 
