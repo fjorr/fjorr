@@ -79,8 +79,11 @@ function paintHello(locale: AppLocale) {
 
   root.innerHTML = '';
   const word = document.createElement('span');
+  // Match language specimen energy — big futura confirmation beat.
   word.className =
-    'px-6 text-center font-interTight text-[clamp(3.25rem,12vw,8rem)] font-bold leading-none tracking-[-0.03em]';
+    'px-6 text-center font-futura leading-none tracking-tighter text-[#0B0B0C]';
+  word.style.fontSize = 'clamp(5rem, 22vw, 12rem)';
+  word.style.fontWeight = '700';
   word.textContent = LANGUAGE_HELLO[locale];
   root.appendChild(word);
 }
