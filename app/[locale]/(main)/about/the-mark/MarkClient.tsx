@@ -66,7 +66,7 @@ function preloadFrames(urls: string[]): Promise<HTMLImageElement[]> {
 
 /**
  * The mark — pinned stage: scroll scrubs 2D→3D frames, holds, then wordmark
- * outline draws and fills (restored from main AboutClient).
+ * outline draws and fills. Mark + wordmark share one vertically centered slot.
  */
 export default function MarkClient({
   backLabel,
@@ -92,7 +92,7 @@ export default function MarkClient({
       const img = frames[index];
       if (!canvas || !img || !img.complete) return;
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      const css = canvas.clientWidth || 340;
+      const css = canvas.clientWidth || 300;
       const size = Math.round(css * dpr);
       if (canvas.width !== size || canvas.height !== size) {
         canvas.width = size;
@@ -130,10 +130,10 @@ export default function MarkClient({
       const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
       ctx = gsap.context(() => {
-        // Initial state before reveal — also mirrored in CSS to prevent flash.
-        gsap.set('.mark-beat-logo', { opacity: 1, y: 0 });
-        gsap.set('.mark-beat-name', { opacity: 0, y: 18, visibility: 'hidden' });
-        gsap.set('.mark-copy-logo', { opacity: 0, y: 12 });
+        gsap.set('.mark-visual-logo', { opacity: 1 });
+        gsap.set('.mark-visual-name', { opacity: 0, visibility: 'hidden' });
+        gsap.set('.mark-copy-logo', { opacity: 0, y: 10 });
+        gsap.set('.mark-copy-name', { opacity: 0, y: 10, visibility: 'hidden' });
         gsap.set('.wordmark-path', {
           strokeDasharray: 800,
           strokeDashoffset: reduced ? 0 : 800,
@@ -142,8 +142,10 @@ export default function MarkClient({
 
         if (reduced) {
           drawFrame(FRAME_COUNT - 1);
-          gsap.set('.mark-beat-logo', { opacity: 0, visibility: 'hidden' });
-          gsap.set('.mark-beat-name', { opacity: 1, y: 0, visibility: 'visible' });
+          gsap.set('.mark-visual-logo', { opacity: 0, visibility: 'hidden' });
+          gsap.set('.mark-copy-logo', { opacity: 0, visibility: 'hidden' });
+          gsap.set('.mark-visual-name', { opacity: 1, visibility: 'visible' });
+          gsap.set('.mark-copy-name', { opacity: 1, y: 0, visibility: 'visible' });
           gsap.set('.wordmark-path', {
             strokeDashoffset: 0,
             fill: 'rgba(255,255,255,1)',
@@ -162,7 +164,6 @@ export default function MarkClient({
           ease: 'power2.out',
         });
 
-        // Scrub frames → hold final → logo out → wordmark draw/fill → name copy.
         const morph = gsap.timeline({
           scrollTrigger: {
             trigger: trackRef.current,
@@ -190,20 +191,24 @@ export default function MarkClient({
           0
         );
 
-        // Hold final frame ~0.55–0.78, then crossfade into name beat.
+        // Hold final frame ~0.55–0.78, then swap in the same centered slot.
         morph
           .to(
-            '.mark-beat-logo',
-            { opacity: 0, y: -16, duration: 0.12, ease: 'power1.in' },
+            '.mark-visual-logo',
+            { opacity: 0, duration: 0.1, ease: 'power1.in' },
             0.78
           )
-          .set('.mark-beat-name', { visibility: 'visible' }, 0.78)
           .to(
-            '.mark-beat-name',
-            { opacity: 1, y: 0, duration: 0.1, ease: 'power2.out' },
+            '.mark-copy-logo',
+            { opacity: 0, y: -8, duration: 0.1, ease: 'power1.in' },
             0.78
           )
-          // Outline draw (same 800→0 technique as main AboutClient).
+          .set('.mark-visual-name', { visibility: 'visible' }, 0.78)
+          .to(
+            '.mark-visual-name',
+            { opacity: 1, duration: 0.08, ease: 'power2.out' },
+            0.78
+          )
           .fromTo(
             '.wordmark-path',
             {
@@ -217,15 +222,15 @@ export default function MarkClient({
             },
             0.8
           )
-          // Fill in as the stroke finishes.
           .to(
             '.wordmark-path',
             { fill: 'rgba(255,255,255,1)', duration: 0.06, ease: 'power1.out' },
             0.9
           )
+          .set('.mark-copy-name', { visibility: 'visible' }, 0.88)
           .fromTo(
             '.mark-copy-name',
-            { opacity: 0, y: 10 },
+            { opacity: 0, y: 8 },
             { opacity: 1, y: 0, duration: 0.08, ease: 'power2.out' },
             0.9
           );
@@ -253,60 +258,40 @@ export default function MarkClient({
         </Link>
       </p>
 
-      {/* Tall track drives the pin; stage stays sticky in the viewport */}
-      <div ref={trackRef} className="relative h-[320vh] w-full">
-        <div
-          ref={stageRef}
-          className="relative flex h-[100dvh] w-full flex-col items-center justify-center px-6"
-        >
+      <div ref={trackRef} className="relative h-[280vh] w-full">
+        <div ref={stageRef} className="relative h-[100dvh] w-full overflow-hidden px-6">
           {/*
-            Hide the whole stage until frames are preloaded and GSAP has set
-            initial opacities — prevents wordmark/name flash before JS runs.
+            Mark + wordmark share one slot pinned to the viewport center.
+            Copy sits below that center so it does not pull the visual off-axis.
           */}
           <div
-            className="absolute inset-0"
+            className="pointer-events-none absolute inset-0"
             style={{
               opacity: ready ? 1 : 0,
               visibility: ready ? 'visible' : 'hidden',
             }}
             aria-hidden={!ready}
           >
-            {/* Beat A — 2D→3D mark scrub */}
-            <div className="mark-beat-logo absolute inset-x-6 flex flex-col items-center justify-center text-center">
-              <div className="relative mb-10 h-[220px] w-[220px] sm:mb-12 sm:h-[300px] sm:w-[300px] md:h-[340px] md:w-[340px]">
-                <canvas
-                  ref={canvasRef}
-                  className="absolute inset-0 h-full w-full"
-                  aria-hidden
-                />
-              </div>
-              <div className="mark-copy-logo max-w-[22rem] opacity-0">
-                <p className="m-0 mb-2 font-interTight text-[20px] font-bold tracking-tight text-white sm:text-[22px]">
-                  {logoTitle}
-                </p>
-                <p className="m-0 font-sans text-[15px] font-medium leading-snug tracking-tight text-white/50 sm:text-[16px]">
-                  {logoBody}
-                </p>
-              </div>
-            </div>
-
-            {/* Beat B — wordmark draw/fill + name (hidden until ready + scroll) */}
-            <div
-              className="mark-beat-name absolute inset-x-6 flex flex-col items-center justify-center text-center opacity-0"
-              style={{ visibility: 'hidden' }}
-            >
+            {/* Vertically + horizontally centered visual slot */}
+            <div className="absolute left-1/2 top-1/2 h-[200px] w-[200px] -translate-x-1/2 -translate-y-1/2 sm:h-[260px] sm:w-[260px] md:h-[300px] md:w-[300px]">
+              <canvas
+                ref={canvasRef}
+                className="mark-visual-logo absolute inset-0 h-full w-full"
+                aria-hidden
+              />
               <div
-                className="fjorr-mark-wordmark mb-10 h-[88px] w-[144px] sm:mb-12 sm:h-[120px] sm:w-[196px]"
+                className="mark-visual-name absolute inset-0 flex items-center justify-center opacity-0"
+                style={{ visibility: 'hidden' }}
                 role="img"
                 aria-label="Fjorr"
               >
                 <svg
-                  width="100%"
-                  height="100%"
+                  width="143"
+                  height="81"
                   viewBox="0 0 143 81"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
-                  className="overflow-visible"
+                  className="h-[56px] w-[100px] overflow-visible sm:h-[72px] sm:w-[128px] md:h-[81px] md:w-[143px]"
                   aria-hidden
                 >
                   <style>{`
@@ -329,13 +314,30 @@ export default function MarkClient({
                   ))}
                 </svg>
               </div>
-              <div className="mark-copy-name max-w-[22rem] opacity-0">
-                <p className="m-0 mb-2 font-interTight text-[20px] font-bold tracking-tight text-white sm:text-[22px]">
-                  {nameTitle}
-                </p>
-                <p className="m-0 font-sans text-[15px] font-medium leading-snug tracking-tight text-white/50 sm:text-[16px]">
-                  {nameBody}
-                </p>
+            </div>
+
+            {/* Copy anchored under the centered visual (same place both beats) */}
+            <div className="absolute left-1/2 top-[calc(50%+100px+1.5rem)] w-full max-w-[20rem] -translate-x-1/2 text-center sm:top-[calc(50%+130px+1.75rem)] sm:max-w-[22rem] md:top-[calc(50%+150px+2rem)]">
+              <div className="relative min-h-[4.75rem] w-full sm:min-h-[5rem]">
+                <div className="mark-copy-logo w-full opacity-0">
+                  <p className="m-0 mb-1.5 font-interTight text-[18px] font-bold tracking-tight text-white sm:mb-2 sm:text-[20px] md:text-[22px]">
+                    {logoTitle}
+                  </p>
+                  <p className="m-0 font-sans text-[14px] font-medium leading-snug tracking-tight text-white/50 sm:text-[15px] md:text-[16px]">
+                    {logoBody}
+                  </p>
+                </div>
+                <div
+                  className="mark-copy-name absolute inset-x-0 top-0 w-full opacity-0"
+                  style={{ visibility: 'hidden' }}
+                >
+                  <p className="m-0 mb-1.5 font-interTight text-[18px] font-bold tracking-tight text-white sm:mb-2 sm:text-[20px] md:text-[22px]">
+                    {nameTitle}
+                  </p>
+                  <p className="m-0 font-sans text-[14px] font-medium leading-snug tracking-tight text-white/50 sm:text-[15px] md:text-[16px]">
+                    {nameBody}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
