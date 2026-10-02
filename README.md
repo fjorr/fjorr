@@ -174,7 +174,7 @@ https://stream.mux.com/{playback_id}.m3u8   (or /high.mp4 fallback)
 
 Behavior:
 
-1. Plays a Fjorr studio logo bumper first (`media.fjorr.com/assets/studio-logo/...`)
+1. Plays a Fjorr studio indent bumper first (`media.fjorr.com/app-assets/studio-indent/fjorr-indent-master-original.mp4`)
 2. Then streams the film
 3. Custom subtitle rendering — fetches VTT files from `language_subtitle` and parses cues in JS (not native `<track>`)
 4. Dispatches `fjorr_hide_main_navbar` / `fjorr_show_main_navbar` events so the Navbar hides during playback
