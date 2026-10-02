@@ -6,7 +6,7 @@ import { Link } from '@/i18n/navigation';
 import { FjorrWordmark } from '@/components/brand/FjorrMarks';
 import HouseScrollFooter from '@/components/HouseScrollFooter';
 
-const FRAME_COUNT = 48;
+const FRAME_COUNT = 52;
 const FRAME_BASE =
   'https://media.fjorr.com/app-assets/animation/mark/fjorr-mark-2d3d-';
 
@@ -128,7 +128,7 @@ export default function MarkClient({
           ease: 'power2.out',
         });
 
-        // Scrub frames across most of the pin, then crossfade to the name beat.
+        // Scrub frames, hold the final 3D beat, then crossfade to the name.
         const morph = gsap.timeline({
           scrollTrigger: {
             trigger: trackRef.current,
@@ -142,11 +142,12 @@ export default function MarkClient({
         });
 
         const frameProxy = { i: 0 };
+        // Reach the last frame by ~55% of the pin, then hold through ~80%.
         morph.to(
           frameProxy,
           {
             i: FRAME_COUNT - 1,
-            duration: 0.72,
+            duration: 0.55,
             ease: 'none',
             onUpdate: () => {
               const next = Math.round(frameProxy.i);
@@ -159,18 +160,18 @@ export default function MarkClient({
         morph
           .to(
             '.mark-beat-logo',
-            { opacity: 0, y: -16, duration: 0.28, ease: 'power1.in' },
-            0.62
+            { opacity: 0, y: -16, duration: 0.22, ease: 'power1.in' },
+            0.8
           )
           .to(
             '.fjorr-mark-wordmark',
-            { opacity: 1, duration: 0.28, ease: 'power2.out' },
-            0.72
+            { opacity: 1, duration: 0.22, ease: 'power2.out' },
+            0.86
           )
           .to(
             '.mark-beat-name',
-            { opacity: 1, y: 0, duration: 0.28, ease: 'power2.out' },
-            0.74
+            { opacity: 1, y: 0, duration: 0.22, ease: 'power2.out' },
+            0.88
           );
       }, trackRef);
     };
@@ -197,7 +198,7 @@ export default function MarkClient({
       </p>
 
       {/* Tall track drives the pin; stage stays sticky in the viewport */}
-      <div ref={trackRef} className="relative h-[280vh] w-full">
+      <div ref={trackRef} className="relative h-[320vh] w-full">
         <div
           ref={stageRef}
           className="relative flex h-[100dvh] w-full flex-col items-center justify-center px-6"
