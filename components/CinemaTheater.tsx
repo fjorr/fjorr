@@ -167,7 +167,7 @@ function CinemaTheater({
       })());
   const [isPlayingLogo, setIsPlayingLogo] = useState(!skipBumper);
   const LOGO_SOURCE =
-    'https://media.fjorr.com/app-assets/studio-logo/fjorr-studio-logo-04.mp4';
+    'https://media.fjorr.com/app-assets/studio-indent/fjorr-indent-master-original.mp4';
   const didApplyStartAtRef = useRef(false);
 
   const watchOnFjorrUrl = `${absoluteUrl(`/film/${film?.slug}`)}?utm_source=embed&utm_medium=iframe&utm_campaign=${encodeURIComponent(String(film?.slug || ''))}`;

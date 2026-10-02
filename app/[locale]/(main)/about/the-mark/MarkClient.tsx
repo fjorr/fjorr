@@ -46,24 +46,39 @@ type Props = {
   nameBody: React.ReactNode;
 };
 
-function preloadFrames(urls: string[]): Promise<HTMLImageElement[]> {
+/** Load one frame; never hang on decode() (AVIF decode can stall in some browsers). */
+function loadFrame(src: string, timeoutMs = 10000): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.decoding = 'async';
+    let settled = false;
+    const finish = (fn: () => void) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      fn();
+    };
+    const timer = setTimeout(
+      () => finish(() => reject(new Error(`Timed out loading ${src}`))),
+      timeoutMs
+    );
+    img.onload = () => finish(() => resolve(img));
+    img.onerror = () => finish(() => reject(new Error(`Failed to load ${src}`)));
+    img.src = src;
+  });
+}
+
+async function preloadFrames(urls: string[]): Promise<HTMLImageElement[]> {
   return Promise.all(
-    urls.map(
-      (src) =>
-        new Promise<HTMLImageElement>((resolve, reject) => {
-          const img = new Image();
-          img.decoding = 'async';
-          img.onload = () => {
-            if (typeof img.decode === 'function') {
-              img.decode().then(() => resolve(img)).catch(() => resolve(img));
-            } else {
-              resolve(img);
-            }
-          };
-          img.onerror = () => reject(new Error(`Failed to load ${src}`));
-          img.src = src;
-        })
-    )
+    urls.map(async (src) => {
+      try {
+        return await loadFrame(src);
+      } catch {
+        const img = new Image();
+        img.src = src;
+        return img;
+      }
+    })
   );
 }
 
@@ -115,18 +130,19 @@ export default function MarkClient({
     window.addEventListener('resize', onResize);
 
     const run = async () => {
-      try {
-        frames = await preloadFrames(MARK_FRAMES);
-      } catch {
-        frames = MARK_FRAMES.map((src) => {
-          const img = new Image();
-          img.src = src;
-          return img;
-        });
-      }
-      if (cancelled) return;
-
-      drawFrame(0);
+      // Kick off frame loads immediately (non-blocking). AVIF decode must not
+      // gate the stage — that left the page blank when decode stalled.
+      frames = MARK_FRAMES.map((src) => {
+        const img = new Image();
+        img.decoding = 'async';
+        img.src = src;
+        return img;
+      });
+      void preloadFrames(MARK_FRAMES).then((loaded) => {
+        if (cancelled) return;
+        frames = loaded;
+        drawFrame(frameIndexRef.current);
+      });
 
       const { gsap } = await import('gsap');
       const { ScrollTrigger } = await import('gsap/ScrollTrigger');
@@ -134,9 +150,11 @@ export default function MarkClient({
       gsap.registerPlugin(ScrollTrigger);
 
       const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const q = gsap.utils.selector(trackRef.current);
 
       const resetWordmark = () => {
-        gsap.set('.wordmark-path', {
+        gsap.set(q('.wordmark-path'), {
+          attr: { 'stroke-dasharray': 800, 'stroke-dashoffset': 800 },
           strokeDasharray: 800,
           strokeDashoffset: 800,
           fill: 'rgba(255,255,255,0)',
@@ -147,10 +165,10 @@ export default function MarkClient({
         nameTl?.kill();
         nameTl = null;
         namePlayed = false;
-        gsap.set('.mark-visual-logo', { opacity: 1, visibility: 'visible' });
-        gsap.set('.mark-copy-logo', { opacity: 1, y: 0, visibility: 'visible' });
-        gsap.set('.mark-visual-name', { opacity: 0, visibility: 'hidden' });
-        gsap.set('.mark-copy-name', { opacity: 0, y: 10, visibility: 'hidden' });
+        gsap.set(q('.mark-visual-logo'), { opacity: 1, visibility: 'visible' });
+        gsap.set(q('.mark-copy-logo'), { opacity: 1, y: 0, visibility: 'visible' });
+        gsap.set(q('.mark-visual-name'), { opacity: 0, visibility: 'hidden' });
+        gsap.set(q('.mark-copy-name'), { opacity: 0, y: 10, visibility: 'hidden' });
         resetWordmark();
       };
 
@@ -159,23 +177,23 @@ export default function MarkClient({
         namePlayed = true;
         nameTl?.kill();
 
-        gsap.to('.mark-visual-logo', {
+        gsap.to(q('.mark-visual-logo'), {
           opacity: 0,
           duration: 0.35,
           ease: 'power1.in',
           onComplete: () => {
-            gsap.set('.mark-visual-logo', { visibility: 'hidden' });
+            gsap.set(q('.mark-visual-logo'), { visibility: 'hidden' });
           },
         });
-        gsap.to('.mark-copy-logo', {
+        gsap.to(q('.mark-copy-logo'), {
           opacity: 0,
           y: -8,
           duration: 0.35,
           ease: 'power1.in',
         });
 
-        gsap.set('.mark-visual-name', { visibility: 'visible' });
-        gsap.to('.mark-visual-name', {
+        gsap.set(q('.mark-visual-name'), { visibility: 'visible' });
+        gsap.to(q('.mark-visual-name'), {
           opacity: 1,
           duration: 0.2,
           ease: 'power2.out',
@@ -183,46 +201,49 @@ export default function MarkClient({
 
         resetWordmark();
         nameTl = gsap.timeline();
-        // Same outline→fill timing as main AboutClient (play-once, not scrubbed).
+        // Outline→fill play-once (not scrubbed). Attr + CSS for SVG reliability.
         nameTl.fromTo(
-          '.wordmark-path',
+          q('.wordmark-path'),
           {
+            attr: { 'stroke-dashoffset': 800 },
             strokeDashoffset: 800,
             fill: 'rgba(255,255,255,0)',
           },
           {
+            attr: { 'stroke-dashoffset': 0 },
             strokeDashoffset: 0,
             duration: 1.15,
             ease: 'power2.inOut',
           }
         );
         nameTl.to(
-          '.wordmark-path',
+          q('.wordmark-path'),
           { fill: 'rgba(255,255,255,1)', duration: 0.4, ease: 'power1.out' },
           '-=0.28'
         );
-        nameTl.set('.mark-copy-name', { visibility: 'visible' }, '-=0.35');
+        nameTl.set(q('.mark-copy-name'), { visibility: 'visible' }, '-=0.35');
         nameTl.to(
-          '.mark-copy-name',
+          q('.mark-copy-name'),
           { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' },
           '-=0.3'
         );
       };
 
       ctx = gsap.context(() => {
-        gsap.set('.mark-visual-logo', { opacity: 1, visibility: 'visible' });
-        gsap.set('.mark-visual-name', { opacity: 0, visibility: 'hidden' });
-        gsap.set('.mark-copy-logo', { opacity: 0, y: 10 });
-        gsap.set('.mark-copy-name', { opacity: 0, y: 10, visibility: 'hidden' });
+        gsap.set(q('.mark-visual-logo'), { opacity: 1, visibility: 'visible' });
+        gsap.set(q('.mark-visual-name'), { opacity: 0, visibility: 'hidden' });
+        gsap.set(q('.mark-copy-logo'), { opacity: 0, y: 10 });
+        gsap.set(q('.mark-copy-name'), { opacity: 0, y: 10, visibility: 'hidden' });
         resetWordmark();
 
         if (reduced) {
           drawFrame(FRAME_COUNT - 1);
-          gsap.set('.mark-visual-logo', { opacity: 0, visibility: 'hidden' });
-          gsap.set('.mark-copy-logo', { opacity: 0, visibility: 'hidden' });
-          gsap.set('.mark-visual-name', { opacity: 1, visibility: 'visible' });
-          gsap.set('.mark-copy-name', { opacity: 1, y: 0, visibility: 'visible' });
-          gsap.set('.wordmark-path', {
+          gsap.set(q('.mark-visual-logo'), { opacity: 0, visibility: 'hidden' });
+          gsap.set(q('.mark-copy-logo'), { opacity: 0, visibility: 'hidden' });
+          gsap.set(q('.mark-visual-name'), { opacity: 1, visibility: 'visible' });
+          gsap.set(q('.mark-copy-name'), { opacity: 1, y: 0, visibility: 'visible' });
+          gsap.set(q('.wordmark-path'), {
+            attr: { 'stroke-dashoffset': 0 },
             strokeDashoffset: 0,
             fill: 'rgba(255,255,255,1)',
           });
@@ -232,7 +253,7 @@ export default function MarkClient({
 
         if (!cancelled) setReady(true);
 
-        gsap.to('.mark-copy-logo', {
+        gsap.to(q('.mark-copy-logo'), {
           opacity: 1,
           y: 0,
           duration: 0.45,
@@ -261,6 +282,11 @@ export default function MarkClient({
               resetNameBeat();
             }
           },
+        });
+
+        // Ready gate toggles visibility after create — refresh pin metrics.
+        requestAnimationFrame(() => {
+          if (!cancelled) ScrollTrigger.refresh();
         });
       }, trackRef);
     };
@@ -323,6 +349,8 @@ export default function MarkClient({
                     .wordmark-path {
                       stroke: #ffffff;
                       stroke-width: 1.5px;
+                      stroke-dasharray: 800;
+                      stroke-dashoffset: 800;
                       fill: rgba(255, 255, 255, 0);
                     }
                   `}</style>
@@ -333,6 +361,8 @@ export default function MarkClient({
                       d={p.d}
                       fillRule={p.fillRule}
                       clipRule={p.clipRule}
+                      strokeDasharray={800}
+                      strokeDashoffset={800}
                     />
                   ))}
                 </svg>
