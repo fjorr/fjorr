@@ -86,6 +86,19 @@ type HouseOverlayContextValue = {
 
 const HouseOverlayContext = createContext<HouseOverlayContextValue | null>(null);
 
+/** Stub context for Suspense fallback — Inner may suspend (pathname/search). */
+const HOUSE_OVERLAY_FALLBACK: HouseOverlayContextValue = {
+  active: null,
+  open: () => {},
+  close: () => {},
+  toggle: () => {},
+  isOpen: () => false,
+  setShortcutHandler: () => {},
+  browseOpen: false,
+  setBrowseOpen: () => {},
+  toggleBrowse: () => {},
+};
+
 export function useHouseOverlay() {
   const ctx = useContext(HouseOverlayContext);
   if (!ctx) {
@@ -114,7 +127,13 @@ function goSearch(router: ReturnType<typeof useRouter>, query?: string) {
 
 export function HouseOverlayProvider({ children }: { children: ReactNode }) {
   return (
-    <Suspense fallback={children}>
+    <Suspense
+      fallback={
+        <HouseOverlayContext.Provider value={HOUSE_OVERLAY_FALLBACK}>
+          {children}
+        </HouseOverlayContext.Provider>
+      }
+    >
       <HouseOverlayProviderInner>{children}</HouseOverlayProviderInner>
     </Suspense>
   );

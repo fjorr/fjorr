@@ -1,18 +1,42 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
-import { FjorrWordmark } from '@/components/brand/FjorrMarks';
 import HouseScrollFooter from '@/components/HouseScrollFooter';
 
-const HELMET_FRAMES = [
-  'https://media.fjorr.com/app-assets/animation/icon/fjorr-production-logo-frame-01.avif',
-  'https://media.fjorr.com/app-assets/animation/icon/fjorr-production-logo-frame-02.avif',
-  'https://media.fjorr.com/app-assets/animation/icon/fjorr-production-logo-frame-03.avif',
-  'https://media.fjorr.com/app-assets/animation/icon/fjorr-production-logo-frame-04.avif',
-  'https://media.fjorr.com/app-assets/animation/icon/fjorr-production-logo-frame-05.avif',
-] as const;
+const FRAME_COUNT = 52;
+const FRAME_BASE =
+  'https://media.fjorr.com/app-assets/animation/mark/fjorr-mark-2d3d-';
+
+const MARK_FRAMES = Array.from({ length: FRAME_COUNT }, (_, i) => {
+  const n = String(i + 1).padStart(2, '0');
+  return `${FRAME_BASE}${n}.avif`;
+});
+
+/** Same letter paths as main AboutClient wordmark draw (viewBox 0 0 143 81). */
+const WORDMARK_PATHS = [
+  {
+    d: 'M0 0.908003V48.498C0 49.0001 0.405462 49.406 0.906954 49.406H11.9931C12.4946 49.406 12.9001 49.0001 12.9001 48.498V35.1397C12.9001 34.6376 13.3055 34.2317 13.807 34.2317H26.0616C26.5631 34.2317 26.9685 33.8258 26.9685 33.3237V23.6615C26.9685 23.1594 26.5631 22.7535 26.0616 22.7535H13.807C13.3055 22.7535 12.9001 22.3476 12.9001 21.8455V12.3755C12.9001 11.8735 13.3055 11.4675 13.807 11.4675H27.4967C27.9982 11.4675 28.4037 11.0616 28.4037 10.5595V0.908003C28.4037 0.405931 27.9982 0 27.4967 0H0.906954C0.405462 0 0 0.405931 0 0.908003Z',
+  },
+  {
+    d: 'M35.9047 15.0355C35.4032 15.0355 34.9978 15.4414 34.9978 15.9435V60.9377C34.9978 65.4136 31.5887 69.0883 27.23 69.505C26.7605 69.5477 26.403 69.9322 26.403 70.4023V80.0912C26.403 80.6146 26.8405 81.0206 27.3633 80.9992C37.996 80.4971 46.4627 71.7109 46.4627 60.9377V15.9435C46.4627 15.4414 46.0573 15.0355 45.5558 15.0355H35.9047Z',
+  },
+  {
+    d: 'M71.3559 13.2942C60.8993 13.2942 52.4273 21.7814 52.4273 32.2448C52.4273 42.7082 60.9046 51.1953 71.3559 51.1953C81.8073 51.1953 90.2846 42.7082 90.2846 32.2448C90.2846 21.7814 81.8073 13.2942 71.3559 13.2942ZM71.3559 24.7725C67.232 24.7725 63.8869 28.1214 63.8869 32.2501C63.8869 36.3789 67.232 39.7278 71.3559 39.7278C75.4799 39.7278 78.825 36.3789 78.825 32.2501C78.825 28.1214 75.4799 24.7725 71.3559 24.7725Z',
+    fillRule: 'evenodd' as const,
+    clipRule: 'evenodd' as const,
+  },
+  {
+    d: 'M116.309 15.9435V22.7375C116.309 23.2395 115.903 23.6455 115.402 23.6455H108.509C108.066 23.6455 107.709 24.0033 107.709 24.4466V48.5568C107.709 49.0589 107.303 49.4648 106.802 49.4648H97.1508C96.6493 49.4648 96.2438 49.0589 96.2438 48.5568V15.9435C96.2438 15.4414 96.6493 15.0355 97.1508 15.0355H115.402C115.903 15.0355 116.309 15.4414 116.309 15.9435Z',
+  },
+  {
+    d: 'M143 15.9435V22.7375C143 23.2395 142.595 23.6455 142.093 23.6455H135.2C134.757 23.6455 134.4 24.0033 134.4 24.4466V48.5568C134.4 49.0589 133.994 49.4648 133.493 49.4648H123.842C123.34 49.4648 122.935 49.0589 122.935 48.5568V15.9435C122.935 15.4414 123.34 15.0355 123.842 15.0355H142.093C142.595 15.0355 143 15.4414 143 15.9435Z',
+  },
+];
+
+/** Pin progress where sequence/hold ends and the name beat plays. */
+const NAME_BEAT_AT = 0.72;
 
 type Props = {
   backLabel: string;
@@ -22,8 +46,45 @@ type Props = {
   nameBody: React.ReactNode;
 };
 
+/** Load one frame; never hang on decode() (AVIF decode can stall in some browsers). */
+function loadFrame(src: string, timeoutMs = 10000): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.decoding = 'async';
+    let settled = false;
+    const finish = (fn: () => void) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      fn();
+    };
+    const timer = setTimeout(
+      () => finish(() => reject(new Error(`Timed out loading ${src}`))),
+      timeoutMs
+    );
+    img.onload = () => finish(() => resolve(img));
+    img.onerror = () => finish(() => reject(new Error(`Failed to load ${src}`)));
+    img.src = src;
+  });
+}
+
+async function preloadFrames(urls: string[]): Promise<HTMLImageElement[]> {
+  return Promise.all(
+    urls.map(async (src) => {
+      try {
+        return await loadFrame(src);
+      } catch {
+        const img = new Image();
+        img.src = src;
+        return img;
+      }
+    })
+  );
+}
+
 /**
- * The mark — pinned stage: helmet fades out on scroll, name fades in.
+ * The mark — pinned stage: scroll scrubs 2D→3D frames + hold, then a
+ * play-once wordmark outline→fill (same technique as main AboutClient).
  */
 export default function MarkClient({
   backLabel,
@@ -34,93 +95,208 @@ export default function MarkClient({
 }: Props) {
   const trackRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const frameIndexRef = useRef(0);
+  /** Gate: keep stage invisible until preload + GSAP initial state are applied. */
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     let ctx: { revert: () => void } | null = null;
+    let frames: HTMLImageElement[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let nameTl: any = null;
+    let namePlayed = false;
+
+    const drawFrame = (index: number) => {
+      const canvas = canvasRef.current;
+      const img = frames[index];
+      if (!canvas || !img || !img.complete) return;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const css = canvas.clientWidth || 300;
+      const size = Math.round(css * dpr);
+      if (canvas.width !== size || canvas.height !== size) {
+        canvas.width = size;
+        canvas.height = size;
+      }
+      const c = canvas.getContext('2d');
+      if (!c) return;
+      c.clearRect(0, 0, size, size);
+      c.drawImage(img, 0, 0, size, size);
+      frameIndexRef.current = index;
+    };
+
+    const onResize = () => drawFrame(frameIndexRef.current);
+    window.addEventListener('resize', onResize);
 
     const run = async () => {
+      // Kick off frame loads immediately (non-blocking). AVIF decode must not
+      // gate the stage — that left the page blank when decode stalled.
+      frames = MARK_FRAMES.map((src) => {
+        const img = new Image();
+        img.decoding = 'async';
+        img.src = src;
+        return img;
+      });
+      void preloadFrames(MARK_FRAMES).then((loaded) => {
+        if (cancelled) return;
+        frames = loaded;
+        drawFrame(frameIndexRef.current);
+      });
+
       const { gsap } = await import('gsap');
       const { ScrollTrigger } = await import('gsap/ScrollTrigger');
       if (cancelled || !trackRef.current || !stageRef.current) return;
       gsap.registerPlugin(ScrollTrigger);
 
       const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const q = gsap.utils.selector(trackRef.current);
+
+      const resetWordmark = () => {
+        gsap.set(q('.wordmark-path'), {
+          attr: { 'stroke-dasharray': 800, 'stroke-dashoffset': 800 },
+          strokeDasharray: 800,
+          strokeDashoffset: 800,
+          fill: 'rgba(255,255,255,0)',
+        });
+      };
+
+      const resetNameBeat = () => {
+        nameTl?.kill();
+        nameTl = null;
+        namePlayed = false;
+        gsap.set(q('.mark-visual-logo'), { opacity: 1, visibility: 'visible' });
+        gsap.set(q('.mark-copy-logo'), { opacity: 1, y: 0, visibility: 'visible' });
+        gsap.set(q('.mark-visual-name'), { opacity: 0, visibility: 'hidden' });
+        gsap.set(q('.mark-copy-name'), { opacity: 0, y: 10, visibility: 'hidden' });
+        resetWordmark();
+      };
+
+      const playNameBeat = () => {
+        if (namePlayed) return;
+        namePlayed = true;
+        nameTl?.kill();
+
+        gsap.to(q('.mark-visual-logo'), {
+          opacity: 0,
+          duration: 0.35,
+          ease: 'power1.in',
+          onComplete: () => {
+            gsap.set(q('.mark-visual-logo'), { visibility: 'hidden' });
+          },
+        });
+        gsap.to(q('.mark-copy-logo'), {
+          opacity: 0,
+          y: -8,
+          duration: 0.35,
+          ease: 'power1.in',
+        });
+
+        gsap.set(q('.mark-visual-name'), { visibility: 'visible' });
+        gsap.to(q('.mark-visual-name'), {
+          opacity: 1,
+          duration: 0.2,
+          ease: 'power2.out',
+        });
+
+        resetWordmark();
+        nameTl = gsap.timeline();
+        // Outline→fill play-once (not scrubbed). Attr + CSS for SVG reliability.
+        nameTl.fromTo(
+          q('.wordmark-path'),
+          {
+            attr: { 'stroke-dashoffset': 800 },
+            strokeDashoffset: 800,
+            fill: 'rgba(255,255,255,0)',
+          },
+          {
+            attr: { 'stroke-dashoffset': 0 },
+            strokeDashoffset: 0,
+            duration: 1.15,
+            ease: 'power2.inOut',
+          }
+        );
+        nameTl.to(
+          q('.wordmark-path'),
+          { fill: 'rgba(255,255,255,1)', duration: 0.4, ease: 'power1.out' },
+          '-=0.28'
+        );
+        nameTl.set(q('.mark-copy-name'), { visibility: 'visible' }, '-=0.35');
+        nameTl.to(
+          q('.mark-copy-name'),
+          { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' },
+          '-=0.3'
+        );
+      };
 
       ctx = gsap.context(() => {
-        gsap.set('.helmet-frame', { opacity: 0, visibility: 'hidden' });
-        gsap.set('.helmet-frame-1', {
-          opacity: 1,
-          visibility: 'visible',
-        });
-        gsap.set('.mark-beat-logo', { opacity: 1, y: 0 });
-        gsap.set('.mark-beat-name', { opacity: 0, y: 18 });
-        gsap.set('.fjorr-mark-wordmark', { opacity: 0 });
+        gsap.set(q('.mark-visual-logo'), { opacity: 1, visibility: 'visible' });
+        gsap.set(q('.mark-visual-name'), { opacity: 0, visibility: 'hidden' });
+        gsap.set(q('.mark-copy-logo'), { opacity: 0, y: 10 });
+        gsap.set(q('.mark-copy-name'), { opacity: 0, y: 10, visibility: 'hidden' });
+        resetWordmark();
 
         if (reduced) {
-          gsap.set('.helmet-frame-1', { opacity: 0, visibility: 'hidden' });
-          gsap.set('.mark-beat-logo', { opacity: 0 });
-          gsap.set('.mark-beat-name', { opacity: 1, y: 0 });
-          gsap.set('.fjorr-mark-wordmark', { opacity: 1 });
+          drawFrame(FRAME_COUNT - 1);
+          gsap.set(q('.mark-visual-logo'), { opacity: 0, visibility: 'hidden' });
+          gsap.set(q('.mark-copy-logo'), { opacity: 0, visibility: 'hidden' });
+          gsap.set(q('.mark-visual-name'), { opacity: 1, visibility: 'visible' });
+          gsap.set(q('.mark-copy-name'), { opacity: 1, y: 0, visibility: 'visible' });
+          gsap.set(q('.wordmark-path'), {
+            attr: { 'stroke-dashoffset': 0 },
+            strokeDashoffset: 0,
+            fill: 'rgba(255,255,255,1)',
+          });
+          if (!cancelled) setReady(true);
           return;
         }
 
-        // Intro flip once the stage is ready.
-        const intro = gsap.timeline({ delay: 0.12 });
-        for (let i = 2; i <= 5; i++) {
-          intro.to(`.helmet-frame-${i}`, {
-            opacity: 1,
-            visibility: 'visible',
-            duration: 0.08,
-            ease: 'steps(1)',
-          });
-          intro.set(`.helmet-frame-${i - 1}`, {
-            opacity: 0,
-            visibility: 'hidden',
-          });
-        }
-        intro.fromTo(
-          '.mark-copy-logo',
-          { opacity: 0, y: 12 },
-          { opacity: 1, y: 0, duration: 0.4 },
-          '+=0.05'
-        );
+        if (!cancelled) setReady(true);
 
-        // Pinned crossfade: helmet out → name in.
-        const morph = gsap.timeline({
-          scrollTrigger: {
-            trigger: trackRef.current,
-            start: 'top top',
-            end: 'bottom bottom',
-            scrub: 0.45,
-            pin: stageRef.current,
-            anticipatePin: 1,
-            invalidateOnRefresh: true,
+        gsap.to(q('.mark-copy-logo'), {
+          opacity: 1,
+          y: 0,
+          duration: 0.45,
+          delay: 0.15,
+          ease: 'power2.out',
+        });
+
+        // Pin + map scroll→frames. Wordmark outline→fill is play-once (not
+        // scrubbed) so the stroke reads clearly — same as main AboutClient.
+        ScrollTrigger.create({
+          trigger: trackRef.current,
+          start: 'top top',
+          end: 'bottom bottom',
+          pin: stageRef.current,
+          anticipatePin: 1,
+          invalidateOnRefresh: true,
+          onUpdate: (self) => {
+            // Finish frames before the name beat so the last frame holds.
+            const frameProgress = Math.min(1, self.progress / NAME_BEAT_AT);
+            const next = Math.round(frameProgress * (FRAME_COUNT - 1));
+            if (next !== frameIndexRef.current) drawFrame(next);
+
+            if (self.progress >= NAME_BEAT_AT) {
+              playNameBeat();
+            } else if (self.progress < NAME_BEAT_AT - 0.04 && namePlayed) {
+              resetNameBeat();
+            }
           },
         });
 
-        morph
-          .to(
-            '.mark-beat-logo',
-            { opacity: 0, y: -16, duration: 0.45, ease: 'power1.in' },
-            0.15
-          )
-          .to(
-            '.fjorr-mark-wordmark',
-            { opacity: 1, duration: 0.4, ease: 'power2.out' },
-            0.42
-          )
-          .to(
-            '.mark-beat-name',
-            { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' },
-            0.48
-          );
+        // Ready gate toggles visibility after create — refresh pin metrics.
+        requestAnimationFrame(() => {
+          if (!cancelled) ScrollTrigger.refresh();
+        });
       }, trackRef);
     };
 
     void run();
+
     return () => {
       cancelled = true;
+      window.removeEventListener('resize', onResize);
+      nameTl?.kill();
       ctx?.revert();
     };
   }, []);
@@ -137,45 +313,85 @@ export default function MarkClient({
         </Link>
       </p>
 
-      {/* Tall track drives the pin; stage stays sticky in the viewport */}
-      <div ref={trackRef} className="relative h-[220vh] w-full">
-        <div
-          ref={stageRef}
-          className="relative flex h-[100dvh] w-full flex-col items-center justify-center px-6"
-        >
-          {/* Beat A — helmet */}
-          <div className="mark-beat-logo absolute inset-x-6 flex flex-col items-center justify-center text-center">
-            <div className="relative mb-10 h-[220px] w-[220px] sm:mb-12 sm:h-[300px] sm:w-[300px] md:h-[340px] md:w-[340px]">
-              {HELMET_FRAMES.map((src, i) => (
-                <img
-                  key={src}
-                  src={src}
-                  alt=""
-                  className={`helmet-frame helmet-frame-${i + 1} absolute inset-0 h-full w-full object-contain`}
-                  draggable={false}
-                />
-              ))}
+      <div ref={trackRef} className="relative h-[300vh] w-full">
+        <div ref={stageRef} className="relative h-[100dvh] w-full overflow-hidden px-6">
+          <div
+            className="pointer-events-none absolute inset-0"
+            style={{
+              opacity: ready ? 1 : 0,
+              visibility: ready ? 'visible' : 'hidden',
+            }}
+            aria-hidden={!ready}
+          >
+            {/* Vertically + horizontally centered visual slot */}
+            <div className="absolute left-1/2 top-1/2 h-[200px] w-[200px] -translate-x-1/2 -translate-y-1/2 sm:h-[260px] sm:w-[260px] md:h-[300px] md:w-[300px]">
+              <canvas
+                ref={canvasRef}
+                className="mark-visual-logo absolute inset-0 h-full w-full"
+                aria-hidden
+              />
+              <div
+                className="mark-visual-name absolute inset-0 z-[1] flex items-center justify-center opacity-0"
+                style={{ visibility: 'hidden' }}
+                role="img"
+                aria-label="Fjorr"
+              >
+                <svg
+                  width="143"
+                  height="81"
+                  viewBox="0 0 143 81"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-[56px] w-[100px] overflow-visible sm:h-[72px] sm:w-[128px] md:h-[81px] md:w-[143px]"
+                  aria-hidden
+                >
+                  <style>{`
+                    .wordmark-path {
+                      stroke: #ffffff;
+                      stroke-width: 1.5px;
+                      stroke-dasharray: 800;
+                      stroke-dashoffset: 800;
+                      fill: rgba(255, 255, 255, 0);
+                    }
+                  `}</style>
+                  {WORDMARK_PATHS.map((p) => (
+                    <path
+                      key={p.d.slice(0, 24)}
+                      className="wordmark-path"
+                      d={p.d}
+                      fillRule={p.fillRule}
+                      clipRule={p.clipRule}
+                      strokeDasharray={800}
+                      strokeDashoffset={800}
+                    />
+                  ))}
+                </svg>
+              </div>
             </div>
-            <div className="mark-copy-logo max-w-[22rem]">
-              <p className="m-0 mb-2 font-interTight text-[20px] font-bold tracking-tight text-white sm:text-[22px]">
-                {logoTitle}
-              </p>
-              <p className="m-0 font-sans text-[15px] font-medium leading-snug tracking-tight text-white/50 sm:text-[16px]">
-                {logoBody}
-              </p>
-            </div>
-          </div>
 
-          {/* Beat B — name (stacked in same frame) */}
-          <div className="mark-beat-name absolute inset-x-6 flex flex-col items-center justify-center text-center">
-            <FjorrWordmark className="fjorr-mark-wordmark mb-10 h-[88px] w-[144px] text-white sm:mb-12 sm:h-[120px] sm:w-[196px]" />
-            <div className="max-w-[22rem]">
-              <p className="m-0 mb-2 font-interTight text-[20px] font-bold tracking-tight text-white sm:text-[22px]">
-                {nameTitle}
-              </p>
-              <p className="m-0 font-sans text-[15px] font-medium leading-snug tracking-tight text-white/50 sm:text-[16px]">
-                {nameBody}
-              </p>
+            {/* Copy anchored under the centered visual */}
+            <div className="absolute left-1/2 top-[calc(50%+100px+1.5rem)] w-full max-w-[20rem] -translate-x-1/2 text-center sm:top-[calc(50%+130px+1.75rem)] sm:max-w-[22rem] md:top-[calc(50%+150px+2rem)]">
+              <div className="relative min-h-[4.75rem] w-full sm:min-h-[5rem]">
+                <div className="mark-copy-logo w-full opacity-0">
+                  <p className="m-0 mb-1.5 font-interTight text-[18px] font-bold tracking-tight text-white sm:mb-2 sm:text-[20px] md:text-[22px]">
+                    {logoTitle}
+                  </p>
+                  <p className="m-0 font-sans text-[14px] font-medium leading-snug tracking-tight text-white/50 sm:text-[15px] md:text-[16px]">
+                    {logoBody}
+                  </p>
+                </div>
+                <div
+                  className="mark-copy-name absolute inset-x-0 top-0 w-full opacity-0"
+                  style={{ visibility: 'hidden' }}
+                >
+                  <p className="m-0 mb-1.5 font-interTight text-[18px] font-bold tracking-tight text-white sm:mb-2 sm:text-[20px] md:text-[22px]">
+                    {nameTitle}
+                  </p>
+                  <p className="m-0 font-sans text-[14px] font-medium leading-snug tracking-tight text-white/50 sm:text-[15px] md:text-[16px]">
+                    {nameBody}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>

@@ -151,7 +151,6 @@ function CinemaTheater({
 
   const skipBumper =
     isEmbed ||
-    (typeof startAt === 'number' && startAt > 0) ||
     (typeof navigator !== 'undefined' &&
       (() => {
         const conn = (
@@ -167,7 +166,7 @@ function CinemaTheater({
       })());
   const [isPlayingLogo, setIsPlayingLogo] = useState(!skipBumper);
   const LOGO_SOURCE =
-    'https://media.fjorr.com/app-assets/studio-logo/fjorr-studio-logo-04.mp4';
+    'https://media.fjorr.com/app-assets/studio-indent/fjorr-indent-master-original.mp4';
   const didApplyStartAtRef = useRef(false);
 
   const watchOnFjorrUrl = `${absoluteUrl(`/film/${film?.slug}`)}?utm_source=embed&utm_medium=iframe&utm_campaign=${encodeURIComponent(String(film?.slug || ''))}`;
@@ -682,30 +681,42 @@ function CinemaTheater({
     if (!isPlayingLogo || !logoMediaEl) return;
 
     let cancelled = false;
+    const begin = () => {
+      if (cancelled) return;
+      setIsPlaying(true);
+      setIsLoading(false);
+    };
+    const playMuted = () => {
+      logoMediaEl.muted = true;
+      setIsMuted(true);
+      return logoMediaEl.play().then(begin);
+    };
+
     logoMediaEl
       .play()
-      .then(() => {
-        if (cancelled) return;
-        setIsPlaying(true);
-        setIsLoading(false);
-      })
+      .then(begin)
       .catch(() => {
         if (cancelled) return;
-        logoMediaEl.muted = true;
-        setIsMuted(true);
-        logoMediaEl
-          .play()
-          .then(() => {
+        playMuted().catch(() => {
+          if (cancelled || logoMediaEl.error) {
+            if (!cancelled) {
+              setIsPlayingLogo(false);
+              setIsLoading(true);
+            }
+            return;
+          }
+          const retry = () => {
             if (cancelled) return;
-            setIsPlaying(true);
-            setIsLoading(false);
-          })
-          .catch(() => {
-            // Bumper blocked or missing — go straight to the film.
-            if (cancelled) return;
-            setIsPlayingLogo(false);
-            setIsLoading(true);
-          });
+            playMuted().catch(() => {
+              if (!cancelled && logoMediaEl.error) {
+                setIsPlayingLogo(false);
+                setIsLoading(true);
+              }
+            });
+          };
+          if (logoMediaEl.readyState >= 2) retry();
+          else logoMediaEl.addEventListener('canplay', retry, { once: true });
+        });
       });
 
     return () => {
@@ -1131,11 +1142,8 @@ function CinemaTheater({
         <video
           ref={bindLogoPlayer}
           src={LOGO_SOURCE}
-          preload="metadata"
+          preload="auto"
           playsInline
-          onCanPlay={(e) => {
-            e.currentTarget.muted = isMuted;
-          }}
           onVolumeChange={(e) => setIsMuted(e.currentTarget.muted)}
           className="w-full h-full object-contain absolute inset-0 z-20"
           onEnded={handleVideoEnded}

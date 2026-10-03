@@ -45,7 +45,7 @@ const jsonLd = {
 };
 
 const MARK_IMAGE =
-  'https://media.fjorr.com/app-assets/animation/icon/fjorr-production-logo-frame-05.avif';
+  'https://media.fjorr.com/app-assets/animation/mark/fjorr-mark-2d3d-52.avif';
 
 /** One manifesto line = one slide (keeps “Fjorr. The myth engine.” together). */
 function buildManifestoBeats(manifesto: string): { text: string }[] {

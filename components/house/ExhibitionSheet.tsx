@@ -11,6 +11,7 @@ import ProcessLightbox, {
 import { storySettingDisplay } from '@/lib/story-year';
 import RatingBadge from '@/components/house/RatingBadge';
 import { NAV_BAND_PX } from '@/lib/house-chrome';
+import FilmCopy from '@/components/house/FilmCopy';
 
 export type SheetCredit = {
   name: string;
@@ -26,7 +27,6 @@ export type ExhibitionFilm = {
   name: string;
   teaser: string | null;
   description: string | null;
-  note: string | null;
   directorNote: string | null;
   storyDate: string | null;
   rating: string | null;
@@ -194,8 +194,6 @@ export default function ExhibitionSheet({
   );
   /** Overview = long copy; teaser fills in when description is empty. */
   const overview = film.description?.trim() || film.teaser?.trim() || '';
-  /** Attribution / source line — footnote under overview, never a headline. */
-  const footnote = film.note?.trim() || '';
   const directorNote = film.directorNote?.trim() || '';
   const directorCredit = film.credits.find((credit) =>
     /director/i.test(credit.role || '')
@@ -396,14 +394,13 @@ export default function ExhibitionSheet({
           ) : null}
         </header>
 
-        {overview || footnote ? (
+        {film.description?.trim() ? (
           <section className={`${col} ${sectionGap}`}>
-            {overview ? <p className={type.body}>{overview}</p> : null}
-            {footnote ? (
-              <p className={`${type.caption} ${overview ? 'mt-4' : ''}`}>
-                {footnote}
-              </p>
-            ) : null}
+            <FilmCopy text={film.description} className={type.body} />
+          </section>
+        ) : overview ? (
+          <section className={`${col} ${sectionGap}`}>
+            <p className={type.body}>{overview}</p>
           </section>
         ) : null}
 
@@ -436,7 +433,7 @@ export default function ExhibitionSheet({
       </div>
 
       {hasProcess || creditCards.length > 0 ? (
-        <div className={`${sectionGap} w-full bg-[#F5F5F7]`}>
+        <div className={`${sectionGap} w-full`}>
           <div
             className={`mx-auto w-full max-w-[720px] px-6 md:px-10 ${bandPad}`}
           >
@@ -496,9 +493,7 @@ export default function ExhibitionSheet({
                 ) : null}
                 {directorNote ? (
                   <div>
-                    <p className={`whitespace-pre-line ${type.body}`}>
-                      {directorNote}
-                    </p>
+                    <FilmCopy text={directorNote} className={type.body} />
                     {directorCredit?.name ? (
                       <p className={`mt-3 ${type.caption}`}>
                         {t('directorNoteAttribution', {
