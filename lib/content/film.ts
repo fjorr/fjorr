@@ -30,7 +30,6 @@ const FILM_PAGE_SELECT = `
   slug,
   teaser,
   description,
-  note,
   director_note,
   mux_playback_id,
   last_line,

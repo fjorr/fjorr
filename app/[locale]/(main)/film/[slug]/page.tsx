@@ -187,12 +187,10 @@ async function DeferredPageContent({ urlSlug }: { urlSlug: string }) {
   const currentSlug = String(filmData.slug);
   const directorNote =
     filmData.director_note ||
-    // Temporary placeholders until CMS notes are filled.
-    (currentSlug === 'shoebox'
-      ? 'We built this the way Bowerman built shoes — on the kitchen floor, cutting what didn’t belong, keeping only what made someone faster. The myth isn’t the waffle iron. It’s the refusal to wait for permission.'
-      : currentSlug === 'moonshot'
-        ? 'Kennedy did not ask for a speech about the moon. He asked for a reason America should try. The film is that reason, cut short — a dare aimed at the horizon, still unfinished in the best way.'
-        : null);
+    // Temporary placeholder until the CMS note is filled.
+    (currentSlug === 'moonshot'
+      ? 'Kennedy did not ask for a speech about the moon. He asked for a reason America should try. The film is that reason, cut short — a dare aimed at the horizon, still unfinished in the best way.'
+      : null);
   const directorName =
     credits.find((c) => /director/i.test(c.role || ''))?.name || null;
 
@@ -251,7 +249,6 @@ async function DeferredPageContent({ urlSlug }: { urlSlug: string }) {
         name={filmData.name || 'Untitled'}
         teaser={filmData.teaser || null}
         description={filmData.description || null}
-        note={filmData.note || null}
         directorNote={directorNote}
         directorName={directorName}
         transcriptText={transcriptPlain || null}
@@ -265,7 +262,6 @@ async function DeferredPageContent({ urlSlug }: { urlSlug: string }) {
           name: filmData.name || 'Untitled',
           teaser: filmData.teaser || null,
           description: filmData.description || null,
-          note: filmData.note || null,
           directorNote,
           storyDate:
             asText(filmData.story_date) ||
@@ -278,39 +274,7 @@ async function DeferredPageContent({ urlSlug }: { urlSlug: string }) {
           audioLanguages: ['English'],
           credits,
           artifacts,
-          processImages:
-            processImages?.length
-              ? processImages
-              : currentSlug === 'moonshot'
-                ? [
-                    {
-                      id: 'moonshot-process-1',
-                      url: String(filmData.hero_wide || ''),
-                      thumbUrl: null,
-                      caption: 'Temp — horizon study',
-                    },
-                    {
-                      id: 'moonshot-process-2',
-                      url: String(filmData.hero_clsx || ''),
-                      thumbUrl: null,
-                      caption: 'Temp — frame language',
-                    },
-                    {
-                      id: 'moonshot-process-3',
-                      url: String(filmData.blok_wide || ''),
-                      thumbUrl: null,
-                      caption: 'Temp — title board',
-                    },
-                    {
-                      id: 'moonshot-process-4',
-                      url: String(
-                        filmData.blok_tall || filmData.hero_tall || ''
-                      ),
-                      thumbUrl: null,
-                      caption: 'Temp — vertical cut',
-                    },
-                  ].filter((row) => row.url)
-                : processImages || [],
+          processImages: processImages || [],
           transcripts,
           tracks: subtitleTracks,
         }}
