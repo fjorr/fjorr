@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import dynamic from 'next/dynamic';
-import { useRouter } from '@/i18n/navigation';
+import { getPathname, usePathname, useRouter } from '@/i18n/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { parseLocale, localeLabels, locales, type AppLocale } from '@/i18n/config';
 import { absoluteUrl } from '@/lib/site';
@@ -121,6 +121,7 @@ function CinemaTheater({
   initialTheaterMode = 'watch',
 }: CinemaTheaterProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const locale = parseLocale(useLocale());
   const t = useTranslations('Theater');
   const tPlus = useTranslations('Plus');
@@ -324,15 +325,32 @@ function CinemaTheater({
       );
     }
     onClose();
-    if (slug) router.push(`/film/${slug}#info`);
+    if (!slug || typeof window === 'undefined') return;
+
+    const browserSlug = window.location.pathname.match(/\/film\/([^/]+)/)?.[1];
+    // Already on this film's Next route. A hash-only router.push is ignored,
+    // so the exhibition sheet never opens.
+    if (pathname === `/film/${slug}` && browserSlug === slug) {
+      if (window.location.hash === '#info') {
+        window.dispatchEvent(new HashChangeEvent('hashchange'));
+      } else {
+        window.location.hash = 'info';
+      }
+      return;
+    }
+
+    window.location.assign(
+      `${getPathname({ href: `/film/${slug}`, locale })}#info`
+    );
   }, [
     isEmbed,
     watchOnFjorrUrl,
     film?.id,
     film?.slug,
     film?.runtime,
+    locale,
     onClose,
-    router,
+    pathname,
   ]);
 
   /** Escape: dismiss info → leave Plus → close theater. */

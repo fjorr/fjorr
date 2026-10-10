@@ -1,5 +1,6 @@
 import type { AppLocale } from '@/i18n/config';
 import { defaultLocale } from '@/i18n/config';
+import { houseQuotes } from '@/lib/house-quotes';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 export type ArtifactTranslationRow = {
@@ -39,6 +40,9 @@ export function mergeArtifactTranslation<T extends Record<string, unknown>>(
   assign('description');
   assign('label');
   assign('quote');
+  if (typeof next.quote === 'string') {
+    next.quote = houseQuotes(next.quote);
+  }
   assign('link_cta');
 
   return next as T;

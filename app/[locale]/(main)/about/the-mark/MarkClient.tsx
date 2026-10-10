@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import HouseScrollFooter from '@/components/HouseScrollFooter';
@@ -38,15 +38,15 @@ const WORDMARK_PATHS = [
   },
 ];
 
-/** Pin progress where sequence/hold ends and the name beat plays. */
-const NAME_BEAT_AT = 0.72;
+/** Pin progress where the icon sequence reaches its last frame. */
+const FRAME_END_AT = 0.55;
+/** Wordmark begins after a hold on that frame, so the texture can be read. */
+const NAME_BEAT_AT = 0.78;
 
 type Props = {
   backLabel: string;
-  logoTitle: string;
   logoBody: string;
-  nameTitle: string;
-  nameBody: React.ReactNode;
+  nameBody: string;
 };
 
 /** Load one frame; never hang on decode() (AVIF decode can stall in some browsers). */
@@ -91,61 +91,48 @@ async function preloadFrames(urls: string[]): Promise<HTMLImageElement[]> {
  */
 export default function MarkClient({
   backLabel,
-  logoTitle,
   logoBody,
-  nameTitle,
   nameBody,
 }: Props) {
   const trackRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const frameRef = useRef<HTMLImageElement>(null);
   const frameIndexRef = useRef(0);
-  /** Gate: keep stage invisible until preload + GSAP initial state are applied. */
-  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     let ctx: { revert: () => void } | null = null;
-    let frames: HTMLImageElement[] = [];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let nameTl: any = null;
     let namePlayed = false;
 
-    const drawFrame = (index: number) => {
-      const canvas = canvasRef.current;
-      const img = frames[index];
-      if (!canvas || !img || !img.complete) return;
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      const css = canvas.clientWidth || 300;
-      const size = Math.round(css * dpr);
-      if (canvas.width !== size || canvas.height !== size) {
-        canvas.width = size;
-        canvas.height = size;
-      }
-      const c = canvas.getContext('2d');
-      if (!c) return;
-      c.clearRect(0, 0, size, size);
-      c.drawImage(img, 0, 0, size, size);
-      frameIndexRef.current = index;
+    const showFrame = (index: number) => {
+      const next = Math.max(0, Math.min(FRAME_COUNT - 1, index));
+      const el = frameRef.current;
+      if (!el || next === frameIndexRef.current) return;
+      frameIndexRef.current = next;
+      el.src = MARK_FRAMES[next];
     };
 
-    const onResize = () => drawFrame(frameIndexRef.current);
-    window.addEventListener('resize', onResize);
+    const frameForProgress = (progress: number) => {
+      const frameProgress = Math.min(1, progress / FRAME_END_AT);
+      return Math.round(frameProgress * (FRAME_COUNT - 1));
+    };
+
+    const onScroll = () => {
+      const track = trackRef.current;
+      if (!track) return;
+      const distance = track.offsetHeight - window.innerHeight;
+      if (distance <= 0) return;
+      const progress = Math.min(1, Math.max(0, -track.getBoundingClientRect().top / distance));
+      showFrame(frameForProgress(progress));
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
 
     const run = async () => {
-      // Kick off frame loads immediately (non-blocking). AVIF decode must not
-      // gate the stage — that left the page blank when decode stalled.
-      frames = MARK_FRAMES.map((src) => {
-        const img = new Image();
-        img.decoding = 'async';
-        img.src = src;
-        return img;
-      });
-      void preloadFrames(MARK_FRAMES).then((loaded) => {
-        if (cancelled) return;
-        frames = loaded;
-        drawFrame(frameIndexRef.current);
-      });
+      // Warm the frame cache so each scroll step swaps without a blank frame.
+      void preloadFrames(MARK_FRAMES);
 
       const { gsap } = await import('gsap');
       const { ScrollTrigger } = await import('gsap/ScrollTrigger');
@@ -235,12 +222,12 @@ export default function MarkClient({
       ctx = gsap.context(() => {
         gsap.set(q('.mark-visual-logo'), { opacity: 1, visibility: 'visible' });
         gsap.set(q('.mark-visual-name'), { opacity: 0, visibility: 'hidden' });
-        gsap.set(q('.mark-copy-logo'), { opacity: 0, y: 10 });
+        gsap.set(q('.mark-copy-logo'), { opacity: 1, y: 0, visibility: 'visible' });
         gsap.set(q('.mark-copy-name'), { opacity: 0, y: 10, visibility: 'hidden' });
         resetWordmark();
 
         if (reduced) {
-          drawFrame(FRAME_COUNT - 1);
+          showFrame(FRAME_COUNT - 1);
           gsap.set(q('.mark-visual-logo'), { opacity: 0, visibility: 'hidden' });
           gsap.set(q('.mark-copy-logo'), { opacity: 0, visibility: 'hidden' });
           gsap.set(q('.mark-visual-name'), { opacity: 1, visibility: 'visible' });
@@ -250,19 +237,8 @@ export default function MarkClient({
             strokeDashoffset: 0,
             fill: 'rgba(255,255,255,1)',
           });
-          if (!cancelled) setReady(true);
           return;
         }
-
-        if (!cancelled) setReady(true);
-
-        gsap.to(q('.mark-copy-logo'), {
-          opacity: 1,
-          y: 0,
-          duration: 0.45,
-          delay: 0.15,
-          ease: 'power2.out',
-        });
 
         // Pin + map scroll→frames. Wordmark outline→fill is play-once (not
         // scrubbed) so the stroke reads clearly — same as main AboutClient.
@@ -274,10 +250,8 @@ export default function MarkClient({
           anticipatePin: 1,
           invalidateOnRefresh: true,
           onUpdate: (self) => {
-            // Finish frames before the name beat so the last frame holds.
-            const frameProgress = Math.min(1, self.progress / NAME_BEAT_AT);
-            const next = Math.round(frameProgress * (FRAME_COUNT - 1));
-            if (next !== frameIndexRef.current) drawFrame(next);
+            // Scrub frames with the scroll, then hold the last one until the name beat.
+            showFrame(frameForProgress(self.progress));
 
             if (self.progress >= NAME_BEAT_AT) {
               playNameBeat();
@@ -287,7 +261,6 @@ export default function MarkClient({
           },
         });
 
-        // Ready gate toggles visibility after create — refresh pin metrics.
         requestAnimationFrame(() => {
           if (!cancelled) ScrollTrigger.refresh();
         });
@@ -298,7 +271,7 @@ export default function MarkClient({
 
     return () => {
       cancelled = true;
-      window.removeEventListener('resize', onResize);
+      window.removeEventListener('scroll', onScroll);
       nameTl?.kill();
       ctx?.revert();
     };
@@ -316,22 +289,22 @@ export default function MarkClient({
         </Link>
       </p>
 
-      <div ref={trackRef} className="relative h-[300vh] w-full">
+      <div ref={trackRef} className="relative h-[360vh] w-full">
         <div ref={stageRef} className="relative h-[100dvh] w-full overflow-hidden px-6">
-          <div
-            className="pointer-events-none absolute inset-0"
-            style={{
-              opacity: ready ? 1 : 0,
-              visibility: ready ? 'visible' : 'hidden',
-            }}
-            aria-hidden={!ready}
-          >
+          <div className="pointer-events-none absolute inset-0">
             {/* Vertically + horizontally centered visual slot */}
-            <div className="absolute left-1/2 top-1/2 h-[200px] w-[200px] -translate-x-1/2 -translate-y-1/2 sm:h-[260px] sm:w-[260px] md:h-[300px] md:w-[300px]">
-              <canvas
-                ref={canvasRef}
-                className="mark-visual-logo absolute inset-0 h-full w-full"
-                aria-hidden
+            <div
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+              style={{
+                width: 'min(440px, 72vw, calc(100dvh - 240px))',
+                height: 'min(440px, 72vw, calc(100dvh - 240px))',
+              }}
+            >
+              <img
+                ref={frameRef}
+                src={MARK_FRAMES[0]}
+                alt=""
+                className="mark-visual-logo absolute inset-0 h-full w-full object-contain"
               />
               <div
                 className="mark-visual-name absolute inset-0 z-[1] flex items-center justify-center opacity-0"
@@ -345,8 +318,11 @@ export default function MarkClient({
                   viewBox="0 0 399 245"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
-                  className="h-[56px] w-auto max-w-none shrink-0 overflow-visible sm:h-[72px] md:h-[81px]"
-                  style={{ aspectRatio: '399 / 245' }}
+                  className="w-auto max-w-none shrink-0 overflow-visible"
+                  style={{
+                    height: 'min(210px, 38vw, calc(50dvh - 80px))',
+                    aspectRatio: '399 / 245',
+                  }}
                   aria-hidden
                 >
                   <style>{`
@@ -374,12 +350,14 @@ export default function MarkClient({
             </div>
 
             {/* Copy anchored under the centered visual */}
-            <div className="absolute left-1/2 top-[calc(50%+100px+1.5rem)] w-full max-w-[20rem] -translate-x-1/2 text-center sm:top-[calc(50%+130px+1.75rem)] sm:max-w-[22rem] md:top-[calc(50%+150px+2rem)]">
+            <div
+              className="absolute left-1/2 w-full max-w-[28rem] -translate-x-1/2 px-6 text-center"
+              style={{
+                top: 'calc(50% + min(220px, 36vw, calc(50dvh - 120px)) + 1.5rem)',
+              }}
+            >
               <div className="relative min-h-[4.75rem] w-full sm:min-h-[5rem]">
-                <div className="mark-copy-logo w-full opacity-0">
-                  <p className="m-0 mb-1.5 font-interTight text-[18px] font-bold tracking-tight text-white sm:mb-2 sm:text-[20px] md:text-[22px]">
-                    {logoTitle}
-                  </p>
+                <div className="mark-copy-logo w-full">
                   <p className="m-0 font-sans text-[14px] font-medium leading-snug tracking-tight text-white/50 sm:text-[15px] md:text-[16px]">
                     {logoBody}
                   </p>
@@ -388,9 +366,6 @@ export default function MarkClient({
                   className="mark-copy-name absolute inset-x-0 top-0 w-full opacity-0"
                   style={{ visibility: 'hidden' }}
                 >
-                  <p className="m-0 mb-1.5 font-interTight text-[18px] font-bold tracking-tight text-white sm:mb-2 sm:text-[20px] md:text-[22px]">
-                    {nameTitle}
-                  </p>
                   <p className="m-0 font-sans text-[14px] font-medium leading-snug tracking-tight text-white/50 sm:text-[15px] md:text-[16px]">
                     {nameBody}
                   </p>

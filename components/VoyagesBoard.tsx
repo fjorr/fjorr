@@ -238,7 +238,7 @@ export default function VoyagesBoard({
             : 'text-black/30 hover:text-black/50'
         }`}
       >
-        <Icon name="heroView" className="h-[14px] w-[14px]" />
+        <Icon name="heroView" className="h-[8px] w-[16px]" />
       </button>
       <button
         type="button"

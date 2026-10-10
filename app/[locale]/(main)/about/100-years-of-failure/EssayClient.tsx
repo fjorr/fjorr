@@ -6,10 +6,7 @@ import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import HouseScrollFooter from '@/components/HouseScrollFooter';
 import { HOUSE_STAGE_SIDE_CLASS } from '@/components/house/house-stage-margins';
-import {
-  ESSAY_FAILURE_BODY,
-  type EssayBlock,
-} from '@/lib/content/essay-failure';
+import { type EssayBlock } from '@/lib/content/essay-failure';
 
 /** Méliès reel — same-origin public copy (R2 mirror at media.fjorr.com/app-assets/). */
 export const ESSAY_HERO_VIDEO_SRC = '/about/fjorr-le-voyage-dans-la-lune-bg.mp4';
@@ -22,6 +19,7 @@ type Props = {
   lead: string;
   backLabel: string;
   exploreLabel: string;
+  body: EssayBlock[];
   /** Optional override; defaults to ESSAY_HERO_VIDEO_SRC. */
   heroVideoSrc?: string;
 };
@@ -252,6 +250,7 @@ export default function EssayClient({
   lead,
   backLabel,
   exploreLabel,
+  body,
   heroVideoSrc = ESSAY_HERO_VIDEO_SRC,
 }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -345,7 +344,7 @@ export default function EssayClient({
           </Link>
         </p>
 
-        <div className="flex flex-col">{renderBody(ESSAY_FAILURE_BODY)}</div>
+        <div className="flex flex-col">{renderBody(body)}</div>
 
         <p className="m-0 mt-10 sm:mt-12">
           <Link
