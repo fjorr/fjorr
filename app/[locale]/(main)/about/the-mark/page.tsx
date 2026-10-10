@@ -37,12 +37,8 @@ export default async function AboutMarkPage() {
   return (
     <MarkClient
       backLabel={t('back')}
-      logoTitle={about('logoTitle')}
       logoBody={about('logoBody')}
-      nameTitle={about('nameTitle')}
-      nameBody={about.rich('nameBody', {
-        i: (chunks) => <em className="italic">{chunks}</em>,
-      })}
+      nameBody={about('nameBody')}
     />
   );
 }

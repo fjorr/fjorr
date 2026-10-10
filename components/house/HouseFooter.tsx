@@ -73,7 +73,7 @@ export default function HouseFooter({
 
   const textLinkClass = `inline-flex shrink-0 items-center bg-transparent p-0 font-sans text-[14px] font-medium leading-tight tracking-normal transition-colors ${idleText}`;
 
-  const languageClass = `inline-flex shrink-0 items-center gap-1.5 bg-transparent p-0 font-sans text-[14px] font-medium leading-tight tracking-normal transition-colors ${
+  const languageClass = `inline-flex shrink-0 items-center bg-transparent p-0 font-sans text-[14px] font-medium leading-tight tracking-normal transition-colors ${
     langOpen ? activeText : idleText
   }`;
 
@@ -84,11 +84,10 @@ export default function HouseFooter({
 
   const languageControl = staticLanguage ? (
     <span
-      className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap font-sans text-[14px] font-medium leading-tight ${mutedStatic}`}
+      className={`inline-flex shrink-0 items-center whitespace-nowrap font-sans text-[14px] font-medium leading-tight ${mutedStatic}`}
       aria-hidden
     >
-      <Icon name="globe" className="!h-[18px] !w-[18px]" />
-      <span className="leading-tight">{label}</span>
+      {label}
     </span>
   ) : onLanguage ? (
     <button
@@ -98,7 +97,6 @@ export default function HouseFooter({
       onClick={onLanguage}
       className={languageClass}
     >
-      <Icon name="globe" className="!h-[18px] !w-[18px]" />
       <span className="whitespace-nowrap leading-tight">{label}</span>
     </button>
   ) : null;
@@ -141,7 +139,7 @@ export default function HouseFooter({
             className={`flex h-6 w-6 items-center justify-center ${iconStatic}`}
             aria-hidden
           >
-            <Icon name="bolt" className="h-4 w-4" />
+            <Icon name="command" className="!h-3.5 !w-3.5" />
           </span>
         ) : onShortcuts ? (
           <button
@@ -151,7 +149,7 @@ export default function HouseFooter({
             onClick={onShortcuts}
             className={iconBtn(shortcutsOpen)}
           >
-            <Icon name="bolt" className="h-4 w-4" />
+            <Icon name="command" className="!h-3.5 !w-3.5" />
           </button>
         ) : null}
         {staticLanguage ? (
@@ -178,7 +176,7 @@ export default function HouseFooter({
   );
 
   const year = new Date().getFullYear();
-  const whisper = onDark ? 'text-white/[0.18]' : 'text-black/[0.14]';
+  const whisper = onDark ? 'text-white/70' : 'text-black/65';
 
   return (
     <div className="relative z-50 w-full shrink-0">

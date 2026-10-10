@@ -10,11 +10,7 @@ import { createClient } from '@/lib/supabase/client';
 import { storySettingDisplay } from '@/lib/story-year';
 import { setSearchReturn } from '@/lib/house-search-return';
 import { pathWithSearchQuery } from '@/lib/house-search-query';
-import { scoreSearchFields } from '@/lib/search-match';
-import {
-  hitSnippet,
-  snippetContainsQuery,
-} from '@/lib/intelligence';
+import { hitSnippet, scoreSearchFields } from '@/lib/search-match';
 import CatalogIndex from '@/components/house/CatalogIndex';
 
 type SeedFilm = {
@@ -62,7 +58,7 @@ export type CommandFilm = {
   /** Artifact exhibit ground color. */
   pageBg?: string | null;
   isDarkBg?: boolean;
-  /** Quiet match line from Engine Intelligence (never the full dump). */
+  /** Match line under the title, from teaser, creator, or theme. */
   why?: string | null;
 };
 
@@ -77,7 +73,6 @@ type CatalogBundle = {
 
 type SearchBundle = {
   hits: CommandFilm[];
-  why: Record<string, string>;
   at: number;
 };
 
@@ -106,15 +101,9 @@ function readSearchCache(locale: string, text: string): SearchBundle | null {
   return entry;
 }
 
-function writeSearchCache(
-  locale: string,
-  text: string,
-  hits: CommandFilm[],
-  why: Record<string, string>
-) {
+function writeSearchCache(locale: string, text: string, hits: CommandFilm[]) {
   searchCache.set(searchCacheKey(locale, text), {
     hits,
-    why,
     at: Date.now(),
   });
 }
@@ -293,20 +282,11 @@ function rankFilms(catalog: CommandFilm[], query: string) {
 
 /**
  * Hit line under the title — only when we can show the matched word.
- * Prefer Intelligence notes snippet, then teaser / creator / theme.
- * Skip when the only match is the title itself (already visible).
+ * Uses teaser, creator, or theme. Skips a title-only match (already visible).
  */
-function whyForHit(
-  film: CommandFilm,
-  queryText: string,
-  intelWhy?: string | null
-): string | null {
+function whyForHit(film: CommandFilm, queryText: string): string | null {
   const text = queryText.trim();
   if (!text) return null;
-
-  if (intelWhy && snippetContainsQuery(intelWhy, text)) {
-    return hitSnippet(intelWhy, text) || intelWhy;
-  }
 
   for (const field of [film.teaser, film.creator, film.theme]) {
     const snip = hitSnippet(field, text);
@@ -361,9 +341,6 @@ export default function CommandLine({
     () => restoredSearch?.hits ?? null
   );
   const [remotePending, setRemotePending] = useState(false);
-  const [intelWhy, setIntelWhy] = useState<Record<string, string>>(
-    () => restoredSearch?.why ?? {}
-  );
   const [active, setActive] = useState(0);
   const lastRemoteText = useRef('');
   const [chromeHidden, setChromeHidden] = useState(false);
@@ -437,12 +414,10 @@ export default function CommandLine({
       FILM_LIMIT
     );
     return base.map((film) => {
-      const why = text
-        ? whyForHit(film, text, intelWhy[film.slug] || film.why)
-        : null;
+      const why = text ? whyForHit(film, text) : null;
       return { ...film, why };
     });
-  }, [remoteHits, localHits, intelWhy, query, catalog]);
+  }, [remoteHits, localHits, query, catalog]);
   const rowCount = searching ? hits.length : 0;
 
   useEffect(() => {
@@ -744,14 +719,12 @@ export default function CommandLine({
     const term = query.trim();
     if (!term) {
       setRemoteHits(null);
-      setIntelWhy({});
       setRemotePending(false);
       return;
     }
     const intent = parseIntent(term, catalog);
     if (!intent.text) {
       setRemoteHits(null);
-      setIntelWhy({});
       setRemotePending(false);
       return;
     }
@@ -759,11 +732,9 @@ export default function CommandLine({
     const cached = readSearchCache(locale, intent.text);
     if (cached) {
       setRemoteHits(cached.hits);
-      setIntelWhy(cached.why);
     } else if (lastRemoteText.current !== intent.text) {
       // New query: fall back to local hits immediately (don't keep stale remote).
       setRemoteHits(null);
-      setIntelWhy({});
     }
     lastRemoteText.current = intent.text;
 
@@ -809,13 +780,11 @@ export default function CommandLine({
         });
 
         setRemoteHits(merged);
-        setIntelWhy({});
-        writeSearchCache(locale, intent.text, merged, {});
+        writeSearchCache(locale, intent.text, merged);
         setRemotePending(false);
       } catch {
         if (!cancelled && !cached) {
           setRemoteHits(null);
-          setIntelWhy({});
         }
       } finally {
         if (!cancelled) setRemotePending(false);
@@ -864,6 +833,7 @@ export default function CommandLine({
     setting: film.year,
     storyDate: film.storyDate,
     why: film.why,
+    teaser: film.teaser,
     thumb: film.thumb || film.poster,
     pageBg: film.pageBg ?? null,
   });

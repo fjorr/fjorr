@@ -1,5 +1,6 @@
 import type { AppLocale } from '@/i18n/config';
 import { defaultLocale } from '@/i18n/config';
+import { houseQuotes } from '@/lib/house-quotes';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 export type FilmTranslationRow = {
@@ -7,7 +8,6 @@ export type FilmTranslationRow = {
   name: string | null;
   teaser: string | null;
   description: string | null;
-  note: string | null;
   director_note: string | null;
   last_line: string | null;
   last_line_attribution: string | null;
@@ -18,7 +18,7 @@ export type FilmTranslationRow = {
 };
 
 const FILM_TRANSLATION_SELECT =
-  'film_id, name, teaser, description, note, director_note, last_line, last_line_attribution, location, alt_text, title_art_code, blok_ogrf';
+  'film_id, name, teaser, description, director_note, last_line, last_line_attribution, location, alt_text, title_art_code, blok_ogrf';
 
 function nonempty(value: string | null | undefined): string | null {
   if (typeof value !== 'string') return null;
@@ -42,9 +42,11 @@ export function mergeFilmTranslation<T extends Record<string, unknown>>(
   assign('name');
   assign('teaser');
   assign('description');
-  assign('note');
   assign('director_note');
   assign('last_line');
+  if (typeof next.last_line === 'string') {
+    next.last_line = houseQuotes(next.last_line);
+  }
   assign('last_line_attribution');
   assign('alt_text');
   assign('title_art_code');

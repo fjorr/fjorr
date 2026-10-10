@@ -227,6 +227,7 @@ async function translateCopy(
     'Return ONLY valid JSON with keys: name, teaser, description, label, quote, link_cta.',
     'Keep proper nouns (Fjorr, person names, place names, brand names) unchanged unless a well-known localized form exists.',
     'Do not add marketing fluff. Match tone: concise, editorial, cultural.',
+    'In quote, keep straight double quotes ("). Do not use guillemets, German quotes, or corner brackets.',
     'Empty string input → empty string output.',
   ].join(' ');
 

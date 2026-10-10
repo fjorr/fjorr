@@ -1,10 +1,10 @@
 import React from 'react';
+import FilmCopy from '@/components/house/FilmCopy';
 
 type FilmSeoCopyProps = {
   name: string;
   teaser?: string | null;
   description?: string | null;
-  note?: string | null;
   directorNote?: string | null;
   transcriptText?: string | null;
   directorName?: string | null;
@@ -18,12 +18,11 @@ export default function FilmSeoCopy({
   name,
   teaser,
   description,
-  note,
   directorNote,
   transcriptText,
   directorName,
 }: FilmSeoCopyProps) {
-  const body = description || note || null;
+  const body = description || null;
   const hasTranscript = Boolean(transcriptText?.trim());
 
   return (
@@ -33,13 +32,13 @@ export default function FilmSeoCopy({
       {body ? (
         <section>
           <h2>About</h2>
-          <p>{body}</p>
+          <FilmCopy text={body} />
         </section>
       ) : null}
       {directorNote ? (
         <section>
-          <h2>Director notes{directorName ? ` — ${directorName}` : ''}</h2>
-          <p>{directorNote}</p>
+          <h2>Director’s note{directorName ? ` — ${directorName}` : ''}</h2>
+          <FilmCopy text={directorNote} />
         </section>
       ) : null}
       {hasTranscript ? (

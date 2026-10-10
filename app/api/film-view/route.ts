@@ -35,6 +35,16 @@ type MembershipClient = {
   };
 };
 
+type FilmViewClient = MembershipClient & {
+  rpc: (
+    fn: string,
+    args: { p_film_id: string; p_referred_by_member_number?: number }
+  ) => Promise<{
+    data: unknown;
+    error: { message: string } | null;
+  }>;
+};
+
 async function isBureauxActiveForUser(
   supabase: MembershipClient,
   userId: string
@@ -136,57 +146,33 @@ export async function POST(request: Request) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const key = supabaseAnonKey();
 
+  // A stale bearer must not block the cookie session, which can still refresh.
+  let supabase: FilmViewClient | null = null;
+  let user: { id: string } | null = null;
+
   if (bearer) {
-    const supabase = createSupabaseJsClient(url, key, {
+    const bearerClient = createSupabaseJsClient(url, key, {
       global: { headers: { Authorization: `Bearer ${bearer}` } },
       auth: { persistSession: false, autoRefreshToken: false },
     });
-
-    const { data: userData } = await supabase.auth.getUser(bearer);
-    const user = userData.user;
-
-    // Unpaid signed-in: no Voyageur stamp (don't burn anonymous counter either).
-    if (user && !(await isBureauxActiveForUser(supabase as any, user.id))) {
-      return NextResponse.json({
-        viewer_number: null,
-        recorded: false,
-        user_id: user.id,
-        film_version: 1,
-        film_version_id: null,
-        referred_by_user_id: null,
-        member_number: null,
-        signed_in: true,
-        bureaux_required: true,
-      });
+    const { data: userData } = await bearerClient.auth.getUser(bearer);
+    if (userData.user) {
+      supabase = bearerClient as unknown as FilmViewClient;
+      user = userData.user;
     }
-
-    const { data, error } = await supabase.rpc('record_film_view', rpcArgs);
-
-    if (error) {
-      console.error('POST /api/film-view (bearer) failed:', error.message);
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    const row = Array.isArray(data) ? data[0] : data;
-    if (!row) {
-      return NextResponse.json({ error: 'No result' }, { status: 500 });
-    }
-
-    const memberNumber = user
-      ? await shareViaMemberNumberForUser(supabase as any, user.id)
-      : null;
-
-    return NextResponse.json(
-      mapResult(row as Record<string, unknown>, Boolean(user), memberNumber)
-    );
   }
 
-  const supabase = await createCookieClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  if (!supabase) {
+    const cookieClient = await createCookieClient();
+    const {
+      data: { user: cookieUser },
+    } = await cookieClient.auth.getUser();
+    supabase = cookieClient as unknown as FilmViewClient;
+    user = cookieUser;
+  }
 
-  if (user && !(await isBureauxActiveForUser(supabase as any, user.id))) {
+  // Unpaid signed-in: no Voyageur stamp (don't burn anonymous counter either).
+  if (user && !(await isBureauxActiveForUser(supabase as MembershipClient, user.id))) {
     return NextResponse.json({
       viewer_number: null,
       recorded: false,
@@ -203,17 +189,17 @@ export async function POST(request: Request) {
   const { data, error } = await supabase.rpc('record_film_view', rpcArgs);
 
   if (error) {
-    console.error('POST /api/film-view (cookie) failed:', error.message);
+    console.error('POST /api/film-view failed:', error.message);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
   const row = Array.isArray(data) ? data[0] : data;
-  if (!row) {
+  if (!row || typeof row !== 'object') {
     return NextResponse.json({ error: 'No result' }, { status: 500 });
   }
 
   const memberNumber = user
-    ? await shareViaMemberNumberForUser(supabase as any, user.id)
+    ? await shareViaMemberNumberForUser(supabase as MembershipClient, user.id)
     : null;
 
   return NextResponse.json(

@@ -36,6 +36,15 @@ export async function proxy(request: NextRequest) {
   const gateEnabled = process.env.SITE_GATE_ENABLED === "true";
   const ua = request.headers.get("user-agent");
 
+  // Dev HMR websocket must not pass through session/gate logic — wrapping the
+  // upgrade breaks Next hydration (ERR_INVALID_HTTP_RESPONSE on webpack-hmr).
+  if (
+    pathname.startsWith("/_next/webpack-hmr") ||
+    pathname.startsWith("/__nextjs")
+  ) {
+    return NextResponse.next();
+  }
+
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api") ||
@@ -112,6 +121,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|mp4|webm|mov|m4v|woff2|woff|ttf|otf|ttc)$).*)",
+    "/((?!_next/static|_next/image|_next/webpack-hmr|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|mp4|webm|mov|m4v|woff2|woff|ttf|otf|ttc)$).*)",
   ],
 };

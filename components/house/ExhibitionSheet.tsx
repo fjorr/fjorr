@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { parseLocale } from '@/i18n/config';
@@ -11,6 +11,7 @@ import ProcessLightbox, {
 import { storySettingDisplay } from '@/lib/story-year';
 import RatingBadge from '@/components/house/RatingBadge';
 import { NAV_BAND_PX } from '@/lib/house-chrome';
+import FilmCopy from '@/components/house/FilmCopy';
 
 export type SheetCredit = {
   name: string;
@@ -26,7 +27,6 @@ export type ExhibitionFilm = {
   name: string;
   teaser: string | null;
   description: string | null;
-  note: string | null;
   directorNote: string | null;
   storyDate: string | null;
   rating: string | null;
@@ -185,6 +185,8 @@ export default function ExhibitionSheet({
   const t = useTranslations('Film');
   const locale = parseLocale(useLocale());
   const scrollRef = useRef<HTMLDivElement>(null);
+  const artifactTitleRef = useRef<HTMLHeadingElement>(null);
+  const artifactRailRef = useRef<HTMLDivElement>(null);
   const [cues, setCues] = useState<VttCue[]>([]);
   const [transcriptQuery, setTranscriptQuery] = useState('');
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
@@ -194,8 +196,6 @@ export default function ExhibitionSheet({
   );
   /** Overview = long copy; teaser fills in when description is empty. */
   const overview = film.description?.trim() || film.teaser?.trim() || '';
-  /** Attribution / source line — footnote under overview, never a headline. */
-  const footnote = film.note?.trim() || '';
   const directorNote = film.directorNote?.trim() || '';
   const directorCredit = film.credits.find((credit) =>
     /director/i.test(credit.role || '')
@@ -288,6 +288,36 @@ export default function ExhibitionSheet({
     };
   }, []);
 
+  /** Artifacts rail starts under the heading and runs to the right edge of the sheet. */
+  useLayoutEffect(() => {
+    const syncArtifactRail = () => {
+      const title = artifactTitleRef.current;
+      const rail = artifactRailRef.current;
+      const sheet = scrollRef.current;
+      const parent = rail?.parentElement;
+      if (!title || !rail || !sheet || !parent) return;
+      const titleBox = title.getBoundingClientRect();
+      const sheetBox = sheet.getBoundingClientRect();
+      const parentBox = parent.getBoundingClientRect();
+      const marginLeft = Math.max(0, Math.round(titleBox.left - parentBox.left));
+      const width = Math.max(
+        0,
+        Math.floor(sheet.clientWidth - (titleBox.left - sheetBox.left))
+      );
+      rail.style.marginLeft = `${marginLeft}px`;
+      rail.style.width = `${width}px`;
+    };
+
+    syncArtifactRail();
+    window.addEventListener('resize', syncArtifactRail);
+    const observer = new ResizeObserver(syncArtifactRail);
+    if (scrollRef.current) observer.observe(scrollRef.current);
+    return () => {
+      window.removeEventListener('resize', syncArtifactRail);
+      observer.disconnect();
+    };
+  }, [film.artifacts.length]);
+
   const setting = storySettingDisplay(film.storyDate);
   const duration = runtimeLabel(film.runtime);
   const place = formatLocation(film.location);
@@ -308,8 +338,6 @@ export default function ExhibitionSheet({
   const sectionGap = 'mt-10 md:mt-12';
   const bandPad = 'py-12 md:py-14';
   const col = 'mx-auto w-full max-w-[34rem]';
-  const rail =
-    '-mx-6 flex justify-start gap-4 overflow-x-auto px-6 pb-1 md:-mx-10 md:gap-5 md:px-10';
 
   const metaNodes: React.ReactNode[] = [];
   if (setting) {
@@ -354,7 +382,7 @@ export default function ExhibitionSheet({
   return (
     <div
       ref={scrollRef}
-      className="fixed inset-x-0 bottom-0 z-20 animate-[sheetIn_280ms_ease-out] overflow-y-auto bg-white text-[#0B0B0C]"
+      className="fixed inset-x-0 bottom-0 z-20 animate-[sheetIn_280ms_ease-out] overflow-x-hidden overflow-y-auto bg-white text-[#0B0B0C]"
       style={{ top: NAV_BAND_PX - 1 }}
       onScroll={(event) => emitInfoScroll(event.currentTarget)}
     >
@@ -396,21 +424,25 @@ export default function ExhibitionSheet({
           ) : null}
         </header>
 
-        {overview || footnote ? (
+        {film.description?.trim() ? (
           <section className={`${col} ${sectionGap}`}>
-            {overview ? <p className={type.body}>{overview}</p> : null}
-            {footnote ? (
-              <p className={`${type.caption} ${overview ? 'mt-4' : ''}`}>
-                {footnote}
-              </p>
-            ) : null}
+            <FilmCopy text={film.description} className={type.body} />
+          </section>
+        ) : overview ? (
+          <section className={`${col} ${sectionGap}`}>
+            <p className={type.body}>{overview}</p>
           </section>
         ) : null}
 
         {film.artifacts.length > 0 ? (
-          <section className={`${col} ${sectionGap}`}>
-            <h2 className={`mb-5 ${type.section}`}>Artifacts</h2>
-            <div className={rail}>
+          <section className={sectionGap}>
+            <h2 ref={artifactTitleRef} className={`mb-5 ${col} ${type.section}`}>
+              Artifacts
+            </h2>
+            <div
+              ref={artifactRailRef}
+              className="flex justify-start gap-4 overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] md:gap-5 [&::-webkit-scrollbar]:hidden"
+            >
               {film.artifacts.map((artifact) => (
                 <Link
                   key={artifact.slug}
@@ -430,13 +462,14 @@ export default function ExhibitionSheet({
                   </div>
                 </Link>
               ))}
+              <div className="w-6 shrink-0 md:w-10" aria-hidden />
             </div>
           </section>
         ) : null}
       </div>
 
       {hasProcess || creditCards.length > 0 ? (
-        <div className={`${sectionGap} w-full bg-[#F5F5F7]`}>
+        <div className={`${sectionGap} w-full`}>
           <div
             className={`mx-auto w-full max-w-[720px] px-6 md:px-10 ${bandPad}`}
           >
@@ -496,9 +529,8 @@ export default function ExhibitionSheet({
                 ) : null}
                 {directorNote ? (
                   <div>
-                    <p className={`whitespace-pre-line ${type.body}`}>
-                      {directorNote}
-                    </p>
+                    <h3 className={`mb-3 ${type.eyebrow}`}>{t('directorNote')}</h3>
+                    <FilmCopy text={directorNote} className={type.body} />
                     {directorCredit?.name ? (
                       <p className={`mt-3 ${type.caption}`}>
                         {t('directorNoteAttribution', {

@@ -39,7 +39,7 @@ type FilmRow = {
   name: string | null;
   teaser: string | null;
   description: string | null;
-  note: string | null;
+  director_note: string | null;
   last_line: string | null;
   last_line_attribution: string | null;
   alt_text: string | null;
@@ -50,7 +50,7 @@ type FilmCopy = {
   name: string;
   teaser: string;
   description: string;
-  note: string;
+  director_note: string;
   last_line: string;
   last_line_attribution: string;
   alt_text: string;
@@ -61,7 +61,7 @@ const COPY_KEYS: (keyof FilmCopy)[] = [
   'name',
   'teaser',
   'description',
-  'note',
+  'director_note',
   'last_line',
   'last_line_attribution',
   'alt_text',
@@ -87,7 +87,7 @@ Deno.serve(async (req) => {
     const { data: film, error: filmError } = await supabase
       .from('film')
       .select(
-        'id, name, teaser, description, note, last_line, last_line_attribution, alt_text, location'
+        'id, name, teaser, description, director_note, last_line, last_line_attribution, alt_text, location'
       )
       .eq('id', filmId)
       .maybeSingle();
@@ -183,7 +183,7 @@ function pickCopy(film: FilmRow): FilmCopy {
     name: film.name ?? '',
     teaser: film.teaser ?? '',
     description: film.description ?? '',
-    note: film.note ?? '',
+    director_note: film.director_note ?? '',
     last_line: film.last_line ?? '',
     last_line_attribution: film.last_line_attribution ?? '',
     alt_text: film.alt_text ?? '',
@@ -199,9 +199,11 @@ async function translateCopy(source: FilmCopy, locale: AppLocale): Promise<FilmC
 
   const system = [
     `You translate Fjorr short-film metadata into ${LOCALE_LABEL[locale]} (${locale}).`,
-    'Return ONLY valid JSON with keys: name, teaser, description, note, last_line, last_line_attribution, alt_text, location.',
+    'Return ONLY valid JSON with keys: name, teaser, description, director_note, last_line, last_line_attribution, alt_text, location.',
     'Keep proper nouns (Fjorr, person names, brand names) unchanged unless a well-known localized form exists.',
     'Do not add marketing fluff. Match tone: concise, cinematic.',
+    'In description and director_note, keep Markdown: blank lines between paragraphs, *italics*, and **bold**.',
+    'In last_line, keep straight double quotes ("). Do not use guillemets, German quotes, or corner brackets.',
     'Empty string input → empty string output.',
   ].join(' ');
 
@@ -234,7 +236,7 @@ async function translateCopy(source: FilmCopy, locale: AppLocale): Promise<FilmC
     name: String(parsed.name ?? source.name),
     teaser: String(parsed.teaser ?? source.teaser),
     description: String(parsed.description ?? source.description),
-    note: String(parsed.note ?? source.note),
+    director_note: String(parsed.director_note ?? source.director_note),
     last_line: String(parsed.last_line ?? source.last_line),
     last_line_attribution: String(
       parsed.last_line_attribution ?? source.last_line_attribution

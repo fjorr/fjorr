@@ -122,13 +122,9 @@ export default function FilmSpecs({
           {film.description}
         </p>
 
-        {(placeLine || film.note) && (
-          <p className="mt-3 text-sm font-medium text-page-faint">
-            {placeLine}
-            {placeLine && film.note ? ' · ' : null}
-            {film.note ? <span className="font-normal">{film.note}</span> : null}
-          </p>
-        )}
+        {placeLine ? (
+          <p className="mt-3 text-sm font-medium text-page-faint">{placeLine}</p>
+        ) : null}
 
         {film?.id && film?.slug ? (
           <VoyageurBadgeLoader

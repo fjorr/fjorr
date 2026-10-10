@@ -27,6 +27,7 @@ import {
   HOUSE_STAGE_SIDE_CLASS,
   houseStageSidePx,
 } from '@/components/house/house-stage-margins';
+import { useHouseStageBleed } from '@/components/house/use-house-stage-bleed';
 
 const CinemaTheater = dynamic(() => import('@/components/CinemaTheater'), {
   ssr: false,
@@ -132,6 +133,7 @@ export default function HouseHome({
   const pinFooter = sheetOpen;
   const [index, setIndex] = useState(0);
   const [dir, setDir] = useState(1);
+  const stageBleed = useHouseStageBleed();
   const [phase, setPhase] = useState<'idle' | 'from' | 'to'>('idle');
   const [showTheater, setShowTheater] = useState(false);
   const [selectedFilm, setSelectedFilm] = useState<TheaterFilmPayload | null>(null);
@@ -318,12 +320,12 @@ export default function HouseHome({
   );
 
   return (
-    <div className="fixed inset-0 z-40 flex flex-col overflow-hidden bg-white text-[#0B0B0C]">
+    <div className="fixed inset-0 z-40 flex flex-col overflow-clip bg-white text-[#0B0B0C]">
       <Navbar variant="dark" />
 
       <div className={`relative min-h-0 flex-1 ${HOUSE_STAGE_SIDE_CLASS}`}>
         <div
-          className="relative h-full w-full touch-pan-y overflow-hidden rounded-[8px]"
+          className="relative h-full w-full touch-pan-y overflow-clip rounded-[8px]"
           {...swipe}
         >
         {isEmptyStage ? (
@@ -344,7 +346,7 @@ export default function HouseHome({
         {stageFilms.map((item, slide) => {
           const active = slide === index;
           const leaving = leavingRef.current === slide && !active;
-          const shift = dir * 72;
+          const shift = dir * stageBleed;
           const x = phase === 'idle' || (!active && !leaving)
             ? 0
             : active
@@ -368,8 +370,8 @@ export default function HouseHome({
                 active && (isIntro || !item.comingSoon) ? 'cursor-pointer' : ''
               }`}
               style={{
-                left: -72,
-                right: -72,
+                left: -stageBleed,
+                right: -stageBleed,
                 opacity: visible ? 1 : 0,
                 transform: `translateX(${x}px)`,
                 zIndex: active ? 10 : leaving ? 9 : 0,

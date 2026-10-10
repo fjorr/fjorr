@@ -87,15 +87,12 @@ export default function SubscribeClient({ feedUrl }: Props) {
 
   return (
     <div className="mx-auto flex w-full max-w-[920px] flex-col items-center px-6 md:px-[54px]">
-      <SheetEnter className="flex w-full max-w-[36rem] flex-col items-center text-center">
+      <SheetEnter className="flex w-full max-w-[600px] flex-col items-center text-center">
         <header className="flex w-full flex-col items-center text-center">
-          <p className="m-0 font-sans text-[12px] font-semibold uppercase tracking-[0.14em] text-black/40">
-            {t('eyebrow')}
-          </p>
-          <h1 className="m-0 mt-4 text-balance font-futura text-[clamp(2.5rem,7vw,3.75rem)] leading-[0.92] tracking-tighter text-[#0B0B0C]">
+          <h1 className="m-0 max-w-[36rem] text-balance font-futura text-[clamp(2.5rem,7vw,3.75rem)] leading-[0.92] tracking-tighter text-[#0B0B0C]">
             {t('headline')}
           </h1>
-          <p className="m-0 mt-5 max-w-[28ch] font-sans text-[16px] font-medium leading-relaxed text-black/55 md:text-[17px]">
+          <p className="m-0 mt-5 max-w-[600px] font-sans text-[16px] font-medium leading-relaxed text-black/55 md:text-[17px]">
             {t('lead')}
           </p>
         </header>

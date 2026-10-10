@@ -11,8 +11,10 @@ export const VIEW_COUNT_RATIO = 0.5;
 const LOCAL_KEY = 'fjorr:view-counted';
 export const FILM_RECORDED_EVENT = 'fjorr-film-recorded';
 
-const doneIds = new Set<string>();
+/** Personal voyage saved this page load. */
 const loggedIds = new Set<string>();
+/** Anonymous count already sent this page load. A later sign-in can still record. */
+const anonDoneIds = new Set<string>();
 const pendingIds = new Set<string>();
 
 /** Playhead seconds required — half the runtime when duration is known. */
@@ -96,7 +98,6 @@ export function maybeRecordFilmView(
   if (!id || id === 'undefined' || id === 'null') return;
   if (typeof window === 'undefined') return;
   if (pendingIds.has(id) || loggedIds.has(id)) return;
-  if (!force && doneIds.has(id)) return;
   if (!shouldCount(seconds, duration, force)) return;
 
   pendingIds.add(id);
@@ -111,8 +112,10 @@ export function maybeRecordFilmView(
       const signedIn = Boolean(session?.user);
       const hadLocalStamp = id in readLocalCounted();
 
-      if (!signedIn && hadLocalStamp) {
-        doneIds.add(id);
+      // An earlier anonymous count must not block a signed-in voyage.
+      // Don't lock the rest of this playback if the session is still hydrating.
+      if (!signedIn && (hadLocalStamp || anonDoneIds.has(id))) {
+        anonDoneIds.add(id);
         return;
       }
 
@@ -158,16 +161,16 @@ export function maybeRecordFilmView(
       const firstStamp =
         !hadLocalStamp && Number.isFinite(viewerNumber) && viewerNumber >= 1;
 
-      if (Number.isFinite(viewerNumber) && viewerNumber >= 1) {
+      if (recorded && Number.isFinite(viewerNumber) && viewerNumber >= 1) {
         markLocalCounted(id, viewerNumber);
       }
 
       if (recorded) {
         loggedIds.add(id);
-        doneIds.add(id);
+        anonDoneIds.delete(id);
         clearViaCookie(id);
       } else if (!signedIn && !row.signed_in) {
-        doneIds.add(id);
+        anonDoneIds.add(id);
       } else {
         console.error('[fjorr] expected Voyage but recorded=false', id, row);
       }
@@ -193,7 +196,7 @@ export function maybeRecordFilmView(
 export function rememberRecordedFilm(filmId: string) {
   const id = String(filmId || '').trim();
   if (id) {
-    doneIds.add(id);
     loggedIds.add(id);
+    anonDoneIds.delete(id);
   }
 }
