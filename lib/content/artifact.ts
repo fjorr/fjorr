@@ -133,6 +133,6 @@ export const getArtifactPageData = unstable_cache(
 
     return { artifact: localizedArtifact, creatorName };
   },
-  ['artifact-page-i18n-v3'],
+  ['artifact-page-i18n-v4'],
   { revalidate: ARTIFACT_REVALIDATE_SECONDS, tags: ['artifact'] }
 );

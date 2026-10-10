@@ -70,7 +70,7 @@ export default async function AboutPage() {
       {
         href: '/about/100-years-of-failure',
         title: t('posterEssayTitle'),
-        titleLines: ['100 Years', 'of Failure'],
+        titleLines: t('posterEssayTitle').split('\n'),
         tagline: t('posterEssayTagline'),
         image: null,
         video: '/about/fjorr-le-voyage-dans-la-lune-bg.mp4',

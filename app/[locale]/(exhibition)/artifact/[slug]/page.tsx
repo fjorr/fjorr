@@ -132,7 +132,9 @@ async function DeferredArtifactContent({
   if (!pageData) notFound();
 
   const { artifact, creatorName } = pageData;
-  const releaseYear = artifact.release_date ? new Date(artifact.release_date).getFullYear() : null;
+  const releaseYear = artifact.release_date
+    ? new Date(artifact.release_date).getUTCFullYear()
+    : null;
   const filmConnections = artifact.film || [];
 
   return (

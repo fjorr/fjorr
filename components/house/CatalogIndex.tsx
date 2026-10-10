@@ -3,7 +3,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Icon } from '@/components/ui/Icons';
-import CatalogPosterGrid from '@/components/house/CatalogPosterGrid';
+import CatalogPosterGrid, {
+  catalogKindPillClass,
+} from '@/components/house/CatalogPosterGrid';
 import { parseStoryYear, storySettingDisplay } from '@/lib/story-year';
 
 export type CatalogIndexItem = {
@@ -20,6 +22,8 @@ export type CatalogIndexItem = {
   setting?: string | null;
   /** Match snippet that contains the query term. */
   why?: string | null;
+  /** Catalog line under the title when there is no match snippet. */
+  teaser?: string | null;
   /** Portrait poster for grid view. */
   thumb?: string | null;
   pageBg?: string | null;
@@ -55,6 +59,18 @@ const VIEW_KEY = 'fjorr-catalog-view';
 function runtimeLabel(seconds?: number | null) {
   const minutes = Math.ceil((seconds || 0) / 60);
   return minutes === 0 ? '1m' : `${minutes}m`;
+}
+
+function storyYear(item: CatalogIndexItem) {
+  return item.setting?.trim() || storySettingDisplay(item.storyDate) || null;
+}
+
+/** Poster chip for the active Year / Runtime sort. */
+function posterOverlay(item: CatalogIndexItem, sortKey: SortKey) {
+  if (sortKey === 'year') return storyYear(item) || '—';
+  if (sortKey !== 'runtime' || item.kind === 'artifact') return null;
+  if (item.comingSoon) return '—';
+  return runtimeLabel(item.runtime);
 }
 
 function sortItems(items: CatalogIndexItem[], key: SortKey) {
@@ -172,7 +188,7 @@ export default function CatalogIndex({
           viewMode === 'index' ? 'text-[#0B0B0C]' : 'text-black/30 hover:text-black/50'
         }`}
       >
-        <Icon name="heroView" className="h-[14px] w-[14px]" />
+        <Icon name="heroView" className="h-[8px] w-[16px]" />
       </button>
       <button
         type="button"
@@ -189,7 +205,7 @@ export default function CatalogIndex({
   );
 
   const gridCols =
-    'grid-cols-[minmax(0,1fr)_4.5rem_2.75rem] md:grid-cols-[minmax(0,1fr)_5.5rem_3.25rem]';
+    'grid-cols-[minmax(0,1fr)_4.5rem_4.5rem] md:grid-cols-[minmax(0,1fr)_5.5rem_4.75rem]';
 
   const kindChips = (
     <div className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
@@ -280,6 +296,7 @@ export default function CatalogIndex({
               comingSoon: item.comingSoon,
               kind: item.kind,
               pageBg: item.pageBg ?? null,
+              overlay: posterOverlay(item, sortKey),
             }))}
             onPlay={onPlay}
             onScrollOffset={scrollable ? onResultsScroll : undefined}
@@ -325,7 +342,10 @@ export default function CatalogIndex({
                 const metaRight = isArtifact
                   ? t('browseArtifact')
                   : duration || '—';
-                const why = item.why?.trim() || '';
+                const why =
+                  item.why?.trim() ||
+                  (!showKindFilter ? item.teaser?.trim() : '') ||
+                  '';
 
                 return (
                   <li
@@ -366,8 +386,14 @@ export default function CatalogIndex({
                       <span className="truncate font-sans text-[12px] font-medium text-black/40">
                         {setting || '—'}
                       </span>
-                      <span className="font-sans text-[12px] font-medium tabular-nums text-black/40">
-                        {metaRight}
+                      <span className="flex justify-end font-sans text-[12px] font-medium tabular-nums text-black/40">
+                        {isArtifact ? (
+                          <span className={catalogKindPillClass}>
+                            {t('browseArtifact')}
+                          </span>
+                        ) : (
+                          metaRight
+                        )}
                       </span>
                     </div>
                   </li>

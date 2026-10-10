@@ -1,7 +1,11 @@
 /**
  * 100 Years of Failure — founding essay (from The Dossier, FJR-DOS-002).
- * English source of truth; chrome strings live in messages (EssayFailure).
+ * English is the source. Other locales live in essay-failure-locales.ts.
+ * Page chrome (title, lead, back) lives in messages (EssayFailure).
  */
+
+import type { AppLocale } from '@/i18n/config';
+import { ESSAY_FAILURE_LOCALES } from './essay-failure-locales';
 
 export type EssayBlock =
   | { type: 'p'; text: string }
@@ -115,3 +119,9 @@ export const ESSAY_FAILURE_BODY: EssayBlock[] = [
     text: 'Short was never a compromise. It just never had anywhere to live — and now it does.',
   },
 ];
+
+/** Localized essay body. English is the fallback. */
+export function essayFailureBody(locale: string): EssayBlock[] {
+  const localized = ESSAY_FAILURE_LOCALES[locale as AppLocale];
+  return localized ?? ESSAY_FAILURE_BODY;
+}

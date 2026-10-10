@@ -122,6 +122,7 @@ export default function HouseHeroCopy({
   const titleArtSvg = !isIntro ? sanitizeTitleArtSvg(film.titleArtCode) : null;
   const titleArtWidth = `${300 * (film.titleArtScale || 1)}px`;
   const introMotion = isIntro && visible && !reduced;
+  const introLines = isIntro ? tHome('introHeadline').split('\n') : [];
 
   return (
     <div
@@ -194,7 +195,13 @@ export default function HouseHeroCopy({
                 : undefined
             }
           >
-            {tHome('introHeadline')}
+            {introLines.length > 1
+              ? introLines.map((line, i) => (
+                  <span key={i} className="block">
+                    {line}
+                  </span>
+                ))
+              : introLines[0]}
           </h2>
         ) : titleArtSvg ? (
           <>
@@ -327,7 +334,7 @@ export default function HouseHeroCopy({
                 >
                   <Icon
                     name="share"
-                    className="!h-[15px] !w-[12px]"
+                    className="!h-[16px] !w-[12px]"
                     aria-hidden
                   />
                 </button>

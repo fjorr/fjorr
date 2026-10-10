@@ -1,5 +1,6 @@
 import type { AppLocale } from '@/i18n/config';
 import { defaultLocale } from '@/i18n/config';
+import { houseQuotes } from '@/lib/house-quotes';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 export type FilmTranslationRow = {
@@ -43,6 +44,9 @@ export function mergeFilmTranslation<T extends Record<string, unknown>>(
   assign('description');
   assign('director_note');
   assign('last_line');
+  if (typeof next.last_line === 'string') {
+    next.last_line = houseQuotes(next.last_line);
+  }
   assign('last_line_attribution');
   assign('alt_text');
   assign('title_art_code');

@@ -37,7 +37,7 @@ export default function FilmSeoCopy({
       ) : null}
       {directorNote ? (
         <section>
-          <h2>Director notes{directorName ? ` — ${directorName}` : ''}</h2>
+          <h2>Director’s note{directorName ? ` — ${directorName}` : ''}</h2>
           <FilmCopy text={directorNote} />
         </section>
       ) : null}

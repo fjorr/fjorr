@@ -3,7 +3,7 @@ import { getLocale, getTranslations } from 'next-intl/server';
 import type { AppLocale } from '@/i18n/config';
 import { buildAlternates } from '@/lib/seo/alternates';
 import { marketingShareImages } from '@/lib/seo/og';
-import { ESSAY_FAILURE_DEK } from '@/lib/content/essay-failure';
+import { ESSAY_FAILURE_DEK, essayFailureBody } from '@/lib/content/essay-failure';
 import EssayClient from './EssayClient';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -33,6 +33,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function EssayFailurePage() {
+  const locale = (await getLocale()) as AppLocale;
   const t = await getTranslations('EssayFailure');
   return (
     <EssayClient
@@ -40,6 +41,7 @@ export default async function EssayFailurePage() {
       lead={t('lead') || ESSAY_FAILURE_DEK}
       backLabel={t('back')}
       exploreLabel={t('exploreFjorr')}
+      body={essayFailureBody(locale)}
     />
   );
 }

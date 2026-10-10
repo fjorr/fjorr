@@ -175,7 +175,7 @@ export default function FilmHero({
               >
                 <Icon
                   name="share"
-                  className="!h-[15px] !w-[12px]"
+                  className="!h-[16px] !w-[12px]"
                   aria-hidden
                 />
               </button>

@@ -38,10 +38,6 @@ const nextConfig: NextConfig = {
         headers: [{ key: "Cache-Control", value: year }],
       },
       {
-        source: "/_next/static/:path*",
-        headers: [{ key: "Cache-Control", value: year }],
-      },
-      {
         source: "/:path*.woff2",
         headers: [{ key: "Cache-Control", value: year }],
       },

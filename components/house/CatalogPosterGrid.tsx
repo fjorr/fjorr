@@ -12,7 +12,13 @@ export type CatalogPosterItem = {
   kind?: 'film' | 'artifact';
   /** Artifact exhibit ground when no poster crop. */
   pageBg?: string | null;
+  /** Year or runtime, shown when that sort is active. */
+  overlay?: string | null;
 };
+
+/** Shared with the search list so Artifact and Coming Soon read as the same chip. */
+export const catalogKindPillClass =
+  'inline-block max-w-full truncate rounded-[5px] bg-black/55 px-1.5 py-1 font-sans text-[10px] font-semibold leading-none tracking-tight text-white/90 backdrop-blur-md';
 
 /**
  * Poster-only catalog / search grid — tap plays / opens.
@@ -81,9 +87,18 @@ export default function CatalogPosterGrid({
                     {item.name}
                   </span>
                 )}
-                {item.comingSoon ? (
-                  <span className="absolute bottom-2 left-2 max-w-[calc(100%-1rem)] truncate rounded-[6px] bg-black/55 px-2 py-1 font-sans text-[10px] font-semibold tracking-tight text-white/90 backdrop-blur-md">
-                    {t('comingSoon')}
+                {isArtifact || item.comingSoon ? (
+                  <span
+                    className={`absolute bottom-2 left-2 max-w-[calc(100%-1rem)] ${catalogKindPillClass}`}
+                  >
+                    {isArtifact ? t('browseArtifact') : t('comingSoon')}
+                  </span>
+                ) : null}
+                {item.overlay ? (
+                  <span
+                    className={`absolute left-2 top-2 max-w-[calc(100%-1rem)] ${catalogKindPillClass}`}
+                  >
+                    {item.overlay}
                   </span>
                 ) : null}
               </button>
