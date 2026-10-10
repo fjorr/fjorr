@@ -35,6 +35,16 @@ type MembershipClient = {
   };
 };
 
+type FilmViewClient = MembershipClient & {
+  rpc: (
+    fn: string,
+    args: { p_film_id: string; p_referred_by_member_number?: number }
+  ) => Promise<{
+    data: unknown;
+    error: { message: string } | null;
+  }>;
+};
+
 async function isBureauxActiveForUser(
   supabase: MembershipClient,
   userId: string
@@ -137,13 +147,7 @@ export async function POST(request: Request) {
   const key = supabaseAnonKey();
 
   // A stale bearer must not block the cookie session, which can still refresh.
-  let supabase: {
-    rpc: (fn: string, args: typeof rpcArgs) => Promise<{
-      data: unknown;
-      error: { message: string } | null;
-    }>;
-    from: MembershipClient['from'];
-  } | null = null;
+  let supabase: FilmViewClient | null = null;
   let user: { id: string } | null = null;
 
   if (bearer) {
@@ -153,7 +157,7 @@ export async function POST(request: Request) {
     });
     const { data: userData } = await bearerClient.auth.getUser(bearer);
     if (userData.user) {
-      supabase = bearerClient as typeof supabase;
+      supabase = bearerClient as unknown as FilmViewClient;
       user = userData.user;
     }
   }
@@ -163,7 +167,7 @@ export async function POST(request: Request) {
     const {
       data: { user: cookieUser },
     } = await cookieClient.auth.getUser();
-    supabase = cookieClient as typeof supabase;
+    supabase = cookieClient as unknown as FilmViewClient;
     user = cookieUser;
   }
 
