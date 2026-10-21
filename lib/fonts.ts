@@ -34,4 +34,26 @@ const avenirNextVariable = localFont({
   display: "swap",
 });
 
-export const fontVariables = `${inter.variable} ${interTight.variable} ${jetbrainsMono.variable} ${avenirNextVariable.variable}`;
+/**
+ * Display seats that use Circular locally. The trial files cannot ship in the
+ * public repo, so staging uses Fjorr Pro.
+ */
+const circularXXBold = localFont({
+  src: "../public/fonts/fjorr-pro/FjorrPro-Bold.woff2",
+  weight: "700",
+  style: "normal",
+  variable: "--font-circular",
+  display: "swap",
+  preload: false,
+});
+
+const circularXXBlack = localFont({
+  src: "../public/fonts/fjorr-pro/FjorrPro-ExtraBold.woff2",
+  weight: "800",
+  style: "normal",
+  variable: "--font-circular-black",
+  display: "swap",
+  preload: false,
+});
+
+export const fontVariables = `${inter.variable} ${interTight.variable} ${jetbrainsMono.variable} ${avenirNextVariable.variable} ${circularXXBold.variable} ${circularXXBlack.variable}`;

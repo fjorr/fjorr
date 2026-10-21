@@ -68,6 +68,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/bureaux',
     '/search',
     '/subscribe',
+    '/legal',
     '/terms',
     '/privacy',
   ];

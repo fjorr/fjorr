@@ -75,9 +75,6 @@ export default function AccountDeleteAccount() {
           {t('deleteAccount')}
         </button>
       )}
-      <p className="max-w-md font-sans text-[12px] leading-snug text-page-faint">
-        {t('deleteAccountHint')}
-      </p>
       {deleteError ? (
         <p className="font-sans text-[13px] text-red-400/90">
           {deleteError}

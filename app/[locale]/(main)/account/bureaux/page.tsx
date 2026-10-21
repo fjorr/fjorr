@@ -5,6 +5,7 @@ import AccountDeleteAccount from '@/components/AccountDeleteAccount';
 import AccountShell from '@/components/AccountShell';
 import BureauxAccountActions from '@/components/BureauxAccountActions';
 import BureauxCancelMembership from '@/components/BureauxCancelMembership';
+import BureauxCardPill from '@/components/BureauxCardPill';
 import { requireOwnAccount } from '@/lib/account-session';
 import {
   ensureBureauxNumber,
@@ -27,11 +28,27 @@ function formatDate(iso: string | null, locale: string) {
   }
 }
 
-function SpecRow({ label, value }: { label: string; value: ReactNode }) {
+function InfoPill({
+  label,
+  value,
+  numeric = false,
+}: {
+  label: string;
+  value: ReactNode;
+  numeric?: boolean;
+}) {
   return (
-    <div className="grid grid-cols-[7.5rem_1fr] items-baseline gap-x-3 text-sm sm:grid-cols-[8.5rem_1fr]">
-      <span className="text-left font-medium text-page-faint">{label}</span>
-      <span className="min-w-0 text-left font-medium text-page">{value}</span>
+    <div className="flex h-12 w-full items-center justify-between gap-3 rounded-full bg-[#F5F5F7] pl-8 pr-8">
+      <span className="shrink-0 font-sans text-[16px] font-medium text-black/35">
+        {label}
+      </span>
+      <span
+        className={`min-w-0 truncate text-right font-sans text-[16px] font-medium text-[#0B0B0C] ${
+          numeric ? 'tabular-nums' : ''
+        }`}
+      >
+        {value}
+      </span>
     </div>
   );
 }
@@ -72,14 +89,7 @@ export default async function AccountBureauxPage({
   const renews = formatDate(membership?.current_period_end || null, locale);
 
   return (
-    <AccountShell
-      profile={profile}
-      title={t('bureauxTitle')}
-      description={t('bureauxBody')}
-      narrow
-      introNarrow
-      centered
-    >
+    <AccountShell profile={profile} narrow centered>
       <div className="mx-auto flex w-full max-w-sm flex-col items-center gap-10 text-center">
         {justJoined ? (
           <p className="font-sans text-[14px] text-page-muted leading-relaxed">
@@ -87,90 +97,68 @@ export default async function AccountBureauxPage({
           </p>
         ) : null}
 
-        <section className="mx-auto flex w-fit max-w-full flex-col gap-2.5 text-left">
-          <SpecRow
-            label={t('displayName')}
-            value={
-              <span className="truncate">
-                {profile.display_name?.trim() || '—'}
-              </span>
-            }
+        <h1 className="m-0 select-none font-interTight text-3xl font-bold tracking-tight text-[#0B0B0C] sm:text-4xl">
+          {t('bureauxTitle')}
+        </h1>
+
+        <div className="flex w-full flex-col gap-3">
+          <BureauxAccountActions
+            currentName={profile.display_name?.trim() || ''}
+            currentEmail={user.email || ''}
           />
-          <SpecRow
-            label={t('email')}
-            value={
-              <span className="truncate">{user.email || '—'}</span>
-            }
-          />
-          <SpecRow label={t('bureauxStatus')} value={t('bureauxStatusActive')} />
+          <InfoPill label={t('bureauxStatus')} value={t('bureauxStatusActive')} />
           {membership?.bureaux_number != null ? (
-            <SpecRow
+            <InfoPill
               label={t('bureauxNo')}
-              value={
-                <span className="font-sans tabular-nums">
-                  {membership.bureaux_number}
-                </span>
-              }
+              value={membership.bureaux_number}
+              numeric
             />
           ) : null}
           {membership?.comp_lifetime ? (
-            <SpecRow
+            <InfoPill
               label={t('bureauxLifetime')}
               value={t('bureauxLifetimeYes')}
             />
           ) : renews ? (
-            <SpecRow
+            <InfoPill
               label={
                 membership?.cancel_at_period_end
                   ? t('bureauxEnds')
                   : t('bureauxRenews')
               }
-              value={
-                <span className="font-sans tabular-nums">{renews}</span>
-              }
+              value={renews}
+              numeric
             />
           ) : null}
-          {card ? (
-            <SpecRow
+          {!membership?.comp_lifetime ? (
+            <BureauxCardPill
               label={t('bureauxCard')}
               value={
-                <span className="font-sans tabular-nums">
-                  {t('bureauxCardValue', {
-                    brand: card.brand,
-                    last4: card.last4,
-                  })}
-                </span>
+                card
+                  ? t('bureauxCardValue', {
+                      brand: card.brand,
+                      last4: card.last4,
+                    })
+                  : '—'
               }
+              returnPath="/account/bureaux"
             />
           ) : null}
           {lineage?.sponsoredByNumber != null ? (
-            <SpecRow
+            <InfoPill
               label={t('bureauxBroughtBy')}
-              value={
-                <span className="font-sans tabular-nums">
-                  № {lineage.sponsoredByNumber}
-                </span>
-              }
+              value={`№ ${lineage.sponsoredByNumber}`}
+              numeric
             />
           ) : null}
           {lineage && lineage.broughtInCount > 0 ? (
-            <SpecRow
+            <InfoPill
               label={t('bureauxBroughtIn')}
-              value={
-                <span className="font-sans tabular-nums">
-                  {lineage.broughtInCount}
-                </span>
-              }
+              value={lineage.broughtInCount}
+              numeric
             />
           ) : null}
-        </section>
-
-        <BureauxAccountActions
-          currentName={profile.display_name?.trim() || ''}
-          currentEmail={user.email || ''}
-          showCardUpdate={!membership?.comp_lifetime}
-          returnPath="/account/bureaux"
-        />
+        </div>
 
         <div className="flex w-full flex-col items-center gap-2">
           {!membership?.comp_lifetime ? (

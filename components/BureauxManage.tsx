@@ -31,12 +31,10 @@ function UpdateCardForm({
   email,
   returnPath,
   onDone,
-  onCancel,
 }: {
   email: string | null;
   returnPath: string;
   onDone: () => void;
-  onCancel: () => void;
 }) {
   const t = useTranslations('Account');
   const locale = useLocale();
@@ -106,23 +104,13 @@ function UpdateCardForm({
           {message}
         </p>
       ) : null}
-      <div className="flex flex-wrap gap-3">
-        <button
-          type="submit"
-          disabled={!stripe || !elements || !ready || pending}
-          className="h-11 px-5 rounded-full bg-[var(--page-fg)] text-[var(--page-bg)] font-sans text-[13px] font-bold hover:opacity-90 disabled:opacity-40 transition-opacity"
-        >
-          {pending ? t('bureauxPending') : t('bureauxCardSave')}
-        </button>
-        <button
-          type="button"
-          onClick={onCancel}
-          disabled={pending}
-          className="h-11 px-5 rounded-full border border-page-faint font-sans text-[13px] font-semibold text-page-muted hover:text-page disabled:opacity-40 transition-colors"
-        >
-          {t('bureauxCardCancel')}
-        </button>
-      </div>
+      <button
+        type="submit"
+        disabled={!stripe || !elements || !ready || pending}
+        className="h-11 w-fit px-5 rounded-full bg-[var(--page-fg)] text-[var(--page-bg)] font-sans text-[13px] font-bold hover:opacity-90 disabled:opacity-40 transition-opacity"
+      >
+        {pending ? t('bureauxPending') : t('bureauxCardSave')}
+      </button>
     </form>
   );
 }
@@ -130,7 +118,6 @@ function UpdateCardForm({
 export default function BureauxManage({
   returnPath = '/account/bureaux',
   onOpen,
-  onClose,
   embedded = false,
 }: {
   /** Stripe SetupIntent return path (locale prefix added by the browser origin). */
@@ -157,12 +144,6 @@ export default function BureauxManage({
 
   const refresh = () => router.refresh();
 
-  const closeCard = () => {
-    setUpdatingCard(false);
-    setSetupSecret(null);
-    onClose?.();
-  };
-
   const startCardUpdate = useCallback(async () => {
     setMessage(null);
     setCardLoading(true);
@@ -171,13 +152,12 @@ export default function BureauxManage({
     setCardLoading(false);
     if (!result.ok) {
       setMessage(result.error);
-      onClose?.();
       return;
     }
     setEmail(result.email);
     setSetupSecret(result.clientSecret);
     setUpdatingCard(true);
-  }, [onClose, onOpen]);
+  }, [onOpen]);
 
   useEffect(() => {
     if (!embedded || startedRef.current) return;
@@ -208,11 +188,11 @@ export default function BureauxManage({
               email={email}
               returnPath={returnPath}
               onDone={() => {
-                closeCard();
+                setUpdatingCard(false);
+                setSetupSecret(null);
                 setMessage(t('bureauxCardDone'));
                 refresh();
               }}
-              onCancel={closeCard}
             />
           </Elements>
         </div>
@@ -231,7 +211,7 @@ export default function BureauxManage({
         </button>
       )}
 
-      {message && !updatingCard ? (
+      {message && !updatingCard && !embedded ? (
         <p className="font-sans text-[13px] leading-snug text-page-muted">
           {message}
         </p>

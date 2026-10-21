@@ -23,10 +23,11 @@ export default function MainChrome({ children }: { children: React.ReactNode }) 
   const isWatchPage = pathname.startsWith('/watch');
   const isHome = pathname === '/';
   const isFilmPoster = pathname.startsWith('/film/');
-  const isBureauxJoinPage = pathname === '/bureaux';
   const isLegalPage =
+    pathname === '/legal' ||
     pathname === '/privacy' ||
     pathname === '/terms' ||
+    pathname.startsWith('/legal/') ||
     pathname.startsWith('/privacy/') ||
     pathname.startsWith('/terms/');
   const path =
@@ -34,6 +35,7 @@ export default function MainChrome({ children }: { children: React.ReactNode }) 
     '/';
   const isSubscribePage =
     path === '/subscribe' || path.startsWith('/subscribe/');
+  const isBureauxPage = path === '/bureaux' || path.startsWith('/bureaux/');
   const isSearchPage = path === '/search' || path.startsWith('/search/');
   const isPartnerPage =
     path === '/partner' || path.startsWith('/partner/');
@@ -45,7 +47,7 @@ export default function MainChrome({ children }: { children: React.ReactNode }) 
   const isAboutRoot = isAboutRootPath(pathname);
   const aboutBlackPage = isAboutBlackPath(pathname);
   const houseShell = isHome || isFilmPoster || isEarlyReleasePage;
-  const hideChrome = isWatchPage || houseShell || isBureauxJoinPage;
+  const hideChrome = isWatchPage || houseShell;
   const isArtifactPage = pathname.startsWith('/artifact/');
   const isLocked = isColorSchemeLockedPath(pathname);
   const { isLight } = useColorScheme();
@@ -67,6 +69,7 @@ export default function MainChrome({ children }: { children: React.ReactNode }) 
 
   const paperPage =
     isLegalPage ||
+    isBureauxPage ||
     isSubscribePage ||
     isSearchPage ||
     isPartnerPage ||

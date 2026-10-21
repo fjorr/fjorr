@@ -1,39 +1,31 @@
 'use client';
 
 import React, { useState } from 'react';
+import { LogOut } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Link, usePathname, useRouter } from '@/i18n/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthPresence } from '@/components/AuthPresenceProvider';
-import { HOUSE_STAGE_SIDE_CLASS } from '@/components/house/house-stage-margins';
 import SheetEnter from '@/components/house/SheetEnter';
 
 type NavItem = {
   href: '/account/voyages' | '/account/bureaux' | '/account/early';
   labelKey: 'navLogs' | 'navBureaux' | 'navEarlyRelease';
-  hintKey?: 'navLogsHint' | 'navEarlyReleaseHint' | 'navBureauxHint';
   membersOnly?: boolean;
 };
 
 const ITEMS: NavItem[] = [
-  { href: '/account/voyages', labelKey: 'navLogs', hintKey: 'navLogsHint' },
-  {
-    href: '/account/early',
-    labelKey: 'navEarlyRelease',
-    hintKey: 'navEarlyReleaseHint',
-    membersOnly: true,
-  },
-  {
-    href: '/account/bureaux',
-    labelKey: 'navBureaux',
-    hintKey: 'navBureauxHint',
-  },
+  { href: '/account/voyages', labelKey: 'navLogs' },
+  { href: '/account/early', labelKey: 'navEarlyRelease', membersOnly: true },
+  { href: '/account/bureaux', labelKey: 'navBureaux' },
 ];
 
+const ACCOUNT_HEAD =
+  "m-0 mb-8 text-center text-balance font-[family-name:var(--font-display)] text-[clamp(2.25rem,5.5vw,3rem)] font-[640] leading-[1.05] tracking-[-0.045em] text-[#0B0B0C] [font-stretch:90%] [font-variation-settings:'wght'_640,'wdth'_90]";
+
 /**
- * Account doorway — framed like the house hero poster.
+ * Account doorway — same centered white sheet as Languages and Shortcuts.
  * Identity comes from AuthPresence (prefetched) so open doesn’t jump.
- * Unpaid signed-in: soft join CTA instead of member-only doors.
  */
 export default function HouseAccountSheet({
   onNavigate,
@@ -70,88 +62,66 @@ export default function HouseAccountSheet({
     <div
       role="dialog"
       aria-label={tNav('account')}
-      className={`absolute inset-0 ${HOUSE_STAGE_SIDE_CLASS}`}
+      className="absolute inset-0 z-50 flex flex-col bg-white text-[#0B0B0C]"
     >
-      <SheetEnter className="relative flex h-full w-full flex-col overflow-hidden rounded-[8px] bg-[#F5F5F7] text-[#0B0B0C]">
-        <div className="flex min-h-0 flex-1 flex-col px-8 py-9 md:px-12 md:py-12">
-          <div className="flex flex-col gap-8 md:gap-10">
-            <div className="flex flex-col gap-2">
-              <p className="m-0 font-sans text-[11px] font-semibold uppercase tracking-[0.14em] text-black/35">
-                {tNav('account')}
-              </p>
-              <p className="m-0 min-h-[clamp(2rem,5vw,2.75rem)] font-interTight text-[clamp(2rem,5vw,2.75rem)] font-extrabold leading-none tracking-tight text-[#0B0B0C]">
-                {displayName || '\u00a0'}
-              </p>
-              <p className="m-0 min-h-[1.25rem] font-sans text-[14px] font-semibold tabular-nums tracking-tight text-black/45">
-                {isMember && bureauxNumber != null
-                  ? `${t('bureauxNo')} ${bureauxNumber}`
-                  : unpaid
-                    ? t('unpaidStatus')
-                    : '\u00a0'}
-              </p>
-            </div>
+      <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-6">
+        <SheetEnter className="flex w-full max-w-[36rem] flex-col items-center">
+          <h1 className={ACCOUNT_HEAD}>{displayName?.trim() || '\u00a0'}</h1>
 
-            {unpaid ? (
-              <div className="flex flex-col gap-4">
-                <p className="m-0 max-w-[36ch] font-sans text-[15px] font-medium leading-snug tracking-tight text-black/50">
-                  {t('unpaidJoinBody')}
-                </p>
-                <Link
-                  href="/bureaux"
-                  onClick={(event) => {
-                    event.preventDefault();
-                    onNavigate('/bureaux');
-                  }}
-                  className="inline-flex h-11 w-fit items-center justify-center rounded-full bg-[#0B0B0C] px-7 font-sans text-[15px] font-semibold tracking-tight text-white transition-opacity hover:opacity-85"
-                >
-                  {t('unpaidJoinCta')}
-                </Link>
-              </div>
-            ) : null}
+          {isMember && bureauxNumber != null ? (
+            <p className="m-0 inline-flex h-12 items-center gap-3.5 rounded-full bg-[#F5F5F7] pl-6 pr-5">
+              <span className="font-sans text-[15px] font-semibold tracking-tight text-[#0B0B0C]">
+                {t('bureauxNo')}
+              </span>
+              <span className="font-sans text-[13px] font-medium tabular-nums tracking-[0.08em] text-black/35">
+                {bureauxNumber}
+              </span>
+            </p>
+          ) : unpaid ? (
+            <p className="m-0 inline-flex h-12 items-center rounded-full bg-[#F5F5F7] px-6 font-sans text-[15px] font-semibold tracking-tight text-[#0B0B0C]">
+              {t('unpaidStatus')}
+            </p>
+          ) : (
+            <p className="m-0 h-12" aria-hidden />
+          )}
 
-            <nav
-              aria-label={tNav('account')}
-              className="flex flex-col gap-4 md:gap-5"
-            >
+          <nav aria-label={tNav('account')} className="mt-8">
+            <ul className="m-0 flex max-w-[26rem] list-none flex-wrap items-center justify-center gap-x-5 gap-y-3 p-0">
               {visibleItems.map((item) => {
                 const active =
-                  pathname === item.href ||
-                  pathname.startsWith(`${item.href}/`);
+                  pathname === item.href || pathname.startsWith(`${item.href}/`);
                 return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    aria-current={active ? 'page' : undefined}
-                    onClick={(event) => {
-                      event.preventDefault();
-                      onNavigate(item.href);
-                    }}
-                    className="group flex flex-col gap-0.5 text-left"
-                  >
-                    <span className="font-sans text-[17px] font-bold tracking-tight text-[#0B0B0C] transition-opacity group-hover:opacity-70 md:text-[18px]">
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      aria-current={active ? 'page' : undefined}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        onNavigate(item.href);
+                      }}
+                      className={`bg-transparent p-0 font-sans text-[15px] font-medium tracking-tight transition-colors hover:text-[#0B0B0C] ${
+                        active ? 'text-[#0B0B0C]' : 'text-black/45'
+                      }`}
+                    >
                       {t(item.labelKey)}
-                    </span>
-                    {item.hintKey ? (
-                      <span className="font-sans text-[13px] font-medium text-black/40 md:text-[14px]">
-                        {t(item.hintKey)}
-                      </span>
-                    ) : null}
-                  </Link>
+                    </Link>
+                  </li>
                 );
               })}
-            </nav>
-          </div>
+            </ul>
+          </nav>
 
           <button
             type="button"
             disabled={signingOut}
             onClick={() => void handleSignOut()}
-            className="mt-auto self-start border-0 bg-transparent p-0 pt-8 font-sans text-[14px] font-semibold text-black/40 transition-colors hover:text-[#0B0B0C] disabled:opacity-40"
+            className="mt-8 inline-flex items-center gap-1.5 border-0 bg-transparent p-0 font-sans text-[15px] font-medium tracking-tight text-black/30 transition-colors hover:text-[#0B0B0C] disabled:opacity-40"
           >
+            <LogOut className="h-3.5 w-3.5" strokeWidth={2.25} aria-hidden />
             {t('signOut')}
           </button>
-        </div>
-      </SheetEnter>
+        </SheetEnter>
+      </div>
     </div>
   );
 }

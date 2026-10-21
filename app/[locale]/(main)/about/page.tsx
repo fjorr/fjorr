@@ -45,7 +45,7 @@ const jsonLd = {
 };
 
 const MARK_IMAGE =
-  'https://media.fjorr.com/app-assets/animation/mark/fjorr-mark-2d3d-52.avif';
+  'https://media.fjorr.com/app-assets/animation/mark/fjorr-mark-2d3d-01.avif';
 
 /** One manifesto line = one slide (keeps “Fjorr. The myth engine.” together). */
 function buildManifestoBeats(manifesto: string): { text: string }[] {
@@ -64,6 +64,9 @@ export default async function AboutPage() {
     scrollLabel: t('scrollCue'),
     deckHintLead: t('deckHintLead'),
     deckHint: t('deckHint'),
+    readAsParagraph: t('readAsParagraph'),
+    readAsSentences: t('readAsSentences'),
+    posterRead: t('posterRead'),
     contactHeadlineLines: [partner('headlineLine1'), partner('headlineLine2')],
     contactBlurb: t('contactBlurb'),
     posters: [

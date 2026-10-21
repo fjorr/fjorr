@@ -12,10 +12,8 @@ export default function HeroHome() {
     <section className="w-full pt-[40px] pb-[30px] text-center px-[10%]">
       
       {/* 🎬 STEP 1: THE REVEALING HEADLINE */}
-      <h1 className="font-futura font-extrabold text-5xl md:text-6xl lg:text-7xl uppercase tracking-tight mb-4 max-w-3xl mx-auto block
-        leading-[0.85] 
-        md:leading-[0.85] 
-        lg:leading-[0.8]
+      <h1 className="font-futura text-5xl md:text-6xl lg:text-7xl mb-4 max-w-3xl mx-auto block
+        leading-[1.05]
         animate-in fade-in slide-in-from-bottom-4 duration-1000 ease-out"
       >
         {t('heroLine1')} {' '}

@@ -24,7 +24,7 @@ export default async function BureauxHomePoster({
       >
         <div className="flex min-w-0 flex-1 flex-col items-start text-left gap-3">
           <div className="min-w-0">
-            <h2 className="font-futura font-extrabold uppercase tracking-tighter leading-[1.05] text-[clamp(1.5rem,4vw,2rem)]">
+            <h2 className="font-futura leading-[1.05] text-[clamp(1.5rem,4vw,2rem)]">
               {t('homePosterHeadline')}
             </h2>
             <p className="mt-1.5 font-sans font-medium leading-snug text-[#F3EDE6]/70 dark:text-black/60 tracking-tight text-[14px] sm:text-[15px]">
@@ -56,7 +56,7 @@ export default async function BureauxHomePoster({
     >
       <div className="absolute inset-0 flex flex-col sm:flex-row sm:items-stretch gap-8 sm:gap-6 md:gap-7 p-7 sm:p-9 md:p-10 lg:p-12">
         <div className="flex flex-col justify-end sm:justify-center items-start text-left shrink-0 sm:w-[38%] sm:max-w-md min-w-0">
-          <h2 className="font-futura font-extrabold uppercase tracking-tighter leading-[1.05] mb-2 sm:mb-2.5 text-[clamp(2.25rem,8vw,3.25rem)]">
+          <h2 className="font-futura leading-[1.05] mb-2 sm:mb-2.5 text-[clamp(2.25rem,8vw,3.25rem)]">
             {t('homePosterHeadline')}
           </h2>
           <p className="font-sans font-medium leading-relaxed text-[#F3EDE6]/70 dark:text-black/60 tracking-tight text-[16px] sm:text-[18px] mb-5 sm:mb-6 max-w-md">

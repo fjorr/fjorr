@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import Image from 'next/image';
+import { ArrowRight, X } from 'lucide-react';
 import {
   Elements,
   PaymentElement,
@@ -9,14 +11,18 @@ import {
 } from '@stripe/react-stripe-js';
 import { loadStripe, type Appearance, type StripeElementsOptions } from '@stripe/stripe-js';
 import { useLocale, useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
+import SheetEnter from '@/components/house/SheetEnter';
 import { useColorScheme } from '@/components/ColorSchemeProvider';
 import {
   DARK_PAGE_BG,
   DARK_PAGE_FG,
-  LIGHT_PAGE_BG,
   LIGHT_PAGE_FG,
 } from '@/lib/color-scheme';
 import { routing } from '@/i18n/routing';
+
+const BUREAUX_CARD =
+  'https://media.fjorr.com/app-assets/fjorr-home-bureaux-breakdancing.avif';
 
 const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '';
 const DEFAULT_NEXT = '/account/bureaux';
@@ -68,11 +74,11 @@ function safeNextPath(raw?: string | null) {
 }
 
 function fjorrAppearance(isLight: boolean): Appearance {
-  const bg = isLight ? LIGHT_PAGE_BG : DARK_PAGE_BG;
+  const bg = isLight ? '#ffffff' : DARK_PAGE_BG;
   const fg = isLight ? LIGHT_PAGE_FG : DARK_PAGE_FG;
   const muted = isLight ? 'rgba(11,11,12,0.45)' : 'rgba(245,245,247,0.45)';
   const faint = isLight ? 'rgba(11,11,12,0.14)' : 'rgba(245,245,247,0.14)';
-  const fieldBg = isLight ? 'rgba(11,11,12,0.03)' : 'rgba(245,245,247,0.04)';
+  const fieldBg = isLight ? '#F5F5F7' : 'rgba(245,245,247,0.04)';
 
   return {
     theme: isLight ? 'stripe' : 'night',
@@ -131,10 +137,12 @@ function CheckoutForm({
   email,
   signedIn,
   nextPath,
+  price,
 }: {
   email: string;
   signedIn: boolean;
   nextPath: string;
+  price: string;
 }) {
   const t = useTranslations('Bureaux');
   const locale = useLocale();
@@ -188,11 +196,8 @@ function CheckoutForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full flex flex-col gap-5">
-      <div className="flex flex-col gap-2.5">
-        <p className="font-sans text-[13px] font-semibold normal-case tracking-normal text-page-muted">
-          {t('checkoutPayment')}
-        </p>
+    <form onSubmit={handleSubmit} className="flex w-full flex-col gap-4">
+      <div className="w-full text-left">
         <PaymentElement
           options={{
             layout: 'tabs',
@@ -219,30 +224,30 @@ function CheckoutForm({
         type="submit"
         disabled={!stripe || !elements || !ready || submitting}
         aria-live="polite"
-        className={`mx-auto w-full max-w-sm h-12 inline-flex items-center justify-center rounded-full font-sans font-bold text-[15px] tracking-tight shadow-2xl transition-all duration-150 disabled:opacity-50 disabled:pointer-events-none ${
+        className={`inline-flex h-12 w-full items-center justify-center rounded-full font-sans text-[15px] font-bold tracking-tight transition-opacity disabled:pointer-events-none disabled:opacity-50 ${
           message
-            ? 'bg-red-600 text-white hover:opacity-85'
-            : 'bg-[var(--page-fg)] text-[var(--page-bg)] hover:opacity-90 active:scale-95'
+            ? 'bg-red-600 text-white'
+            : 'bg-[#0B0B0C] text-white hover:opacity-90'
         }`}
       >
-        {submitting ? t('ctaPending') : message ? message : t('ctaSubscribe')}
+        {submitting ? t('ctaPending') : message ? message : t('ctaJoinPrice', { price })}
       </button>
     </form>
   );
 }
 
-const ctaClass =
-  'w-auto px-8 h-12 inline-flex items-center justify-center bg-[var(--page-fg)] text-[var(--page-bg)] font-sans font-bold text-[15px] tracking-tight rounded-full shadow-2xl hover:opacity-90 active:scale-95 transition-all duration-150 disabled:opacity-50 disabled:pointer-events-none';
-const ctaClassWide = `${ctaClass} w-full max-w-sm`;
+const HEAD =
+  "m-0 text-balance font-[family-name:var(--font-circular)] text-[clamp(2.25rem,5.5vw,3rem)] font-[700] leading-[1.05] tracking-[-0.03em] text-[#0B0B0C]";
+const LEAD =
+  'm-0 mt-4 max-w-[26rem] font-sans text-[16px] font-medium leading-relaxed text-black/55 md:text-[17px]';
 
 export default function BureauxCheckout({
   signedIn = false,
   accountEmail = null,
   price,
   nextPath,
-  autoStart = false,
 }: {
-  /** Skip the outer Join CTA and open at email / payment. */
+  /** Accepted from the page; the form opens immediately. */
   autoStart?: boolean;
   /** Session present (unpaid member finishing join). */
   signedIn?: boolean;
@@ -253,9 +258,14 @@ export default function BureauxCheckout({
   nextPath?: string;
 }) {
   const t = useTranslations('Bureaux');
+  const tNav = useTranslations('Nav');
   const { isLight } = useColorScheme();
   const claimNext = safeNextPath(nextPath);
-  const [started, setStarted] = useState(autoStart);
+  const emailKnown = Boolean(signedIn && accountEmail);
+  const [fieldOpen, setFieldOpen] = useState(emailKnown);
+  const [reduced, setReduced] = useState(false);
+  const shellRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const [email, setEmail] = useState(accountEmail || '');
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [checkoutEmail, setCheckoutEmail] = useState<string | null>(null);
@@ -266,11 +276,37 @@ export default function BureauxCheckout({
     email: string;
     promise: Promise<{ res: Response; result: CheckoutApiResult }>;
   } | null>(null);
+  const inflightEmail = useRef<string | null>(null);
+  const blockedEmail = useRef<string | null>(null);
 
   const stripePromise = useMemo(() => {
     if (!publishableKey) return null;
     return loadStripe(publishableKey);
   }, []);
+
+  useEffect(() => {
+    setReduced(
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    );
+  }, []);
+
+  const openField = () => {
+    if (fieldOpen) return;
+    const el = shellRef.current;
+    if (!el || reduced) {
+      setFieldOpen(true);
+      window.setTimeout(() => inputRef.current?.focus(), 0);
+      return;
+    }
+    el.style.height = `${el.getBoundingClientRect().height}px`;
+    setFieldOpen(true);
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        if (shellRef.current) shellRef.current.style.height = '48px';
+      });
+    });
+    window.setTimeout(() => inputRef.current?.focus(), 460);
+  };
 
   // Warm Stripe.js + DNS as soon as the join chrome mounts.
   useEffect(() => {
@@ -303,24 +339,16 @@ export default function BureauxCheckout({
     };
   };
 
-  // Signed-in members: start preparing the Payment Element while they tap Continue.
-  useEffect(() => {
-    if (!started || !signedIn) return;
-    const nextEmail = (accountEmail || email).trim().toLowerCase();
-    if (isValidEmail(nextEmail)) prefetchCheckout(nextEmail);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- prefetch once when join starts
-  }, [started, signedIn, accountEmail]);
-
-  const startCheckout = async (event?: React.FormEvent) => {
-    event?.preventDefault();
-    const nextEmail = (signedIn ? accountEmail || email : email)
+  const startCheckout = async (rawEmail?: string) => {
+    const nextEmail = (rawEmail ?? (signedIn ? accountEmail || email : email))
       .trim()
       .toLowerCase();
-    if (!isValidEmail(nextEmail)) {
-      setError(t('joinEmailRequired'));
-      return;
-    }
+    if (!isValidEmail(nextEmail)) return;
+    if (blockedEmail.current === nextEmail) return;
+    if (clientSecret && checkoutEmail === nextEmail) return;
+    if (inflightEmail.current === nextEmail) return;
 
+    inflightEmail.current = nextEmail;
     setLoading(true);
     setError(null);
     try {
@@ -336,10 +364,13 @@ export default function BureauxCheckout({
         ({ res, result } = await requestCheckoutSecret(nextEmail));
       }
 
+      if (inflightEmail.current !== nextEmail) return;
+
       if (!result || Object.keys(result).length === 0) {
+        blockedEmail.current = nextEmail;
         setError(t('checkoutError'));
         setClientSecret(null);
-        setLoading(false);
+        setCheckoutEmail(null);
         return;
       }
 
@@ -352,141 +383,245 @@ export default function BureauxCheckout({
               : result.error === 'config'
                 ? t('checkoutConfig')
                 : t('checkoutError');
+        blockedEmail.current = nextEmail;
         setError(message);
         setClientSecret(null);
-        setLoading(false);
+        setCheckoutEmail(null);
         prefetchRef.current = null;
         return;
       }
 
+      blockedEmail.current = null;
       setClientSecret(result.clientSecret);
       setCheckoutEmail(result.email || nextEmail);
       setCheckoutSignedIn(Boolean(result.signedIn));
-      setLoading(false);
     } catch {
+      if (inflightEmail.current !== nextEmail) return;
+      blockedEmail.current = nextEmail;
       setError(t('checkoutError'));
       setClientSecret(null);
-      setLoading(false);
+      setCheckoutEmail(null);
       prefetchRef.current = null;
+    } finally {
+      if (inflightEmail.current === nextEmail) {
+        inflightEmail.current = null;
+        setLoading(false);
+      }
     }
   };
 
+  useEffect(() => {
+    const nextEmail = (signedIn ? accountEmail || email : email)
+      .trim()
+      .toLowerCase();
+    if (!isValidEmail(nextEmail)) return;
+    if (blockedEmail.current === nextEmail) return;
+    if (clientSecret && checkoutEmail === nextEmail) return;
+    const delay = signedIn ? 0 : 400;
+    const id = window.setTimeout(() => {
+      prefetchCheckout(nextEmail);
+      void startCheckout(nextEmail);
+    }, delay);
+    return () => window.clearTimeout(id);
+    // startCheckout closes over the latest secret; listed via checkoutEmail.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [email, accountEmail, signedIn, clientSecret, checkoutEmail]);
+
+  const emailInvalid = error === t('joinEmailRequired');
+  const options: StripeElementsOptions | null =
+    clientSecret && checkoutEmail
+      ? { clientSecret, appearance: fjorrAppearance(isLight) }
+      : null;
+
   if (!publishableKey || !stripePromise) {
     return (
-      <p className="font-sans text-[14px] text-page-faint leading-relaxed">
+      <p className="m-0 max-w-[22rem] text-center font-sans text-[16px] font-medium leading-relaxed text-black/55">
         {t('checkoutConfig')}
       </p>
     );
   }
 
-  if (clientSecret && checkoutEmail) {
-    const options: StripeElementsOptions = {
-      clientSecret,
-      appearance: fjorrAppearance(isLight),
-    };
-
-    return (
-      <div className="mx-auto flex w-full max-w-sm flex-col items-center gap-5 text-center">
-        <h2 className="m-0 font-interTight text-[clamp(1.65rem,2.8vw,1.75rem)] font-extrabold tracking-tight text-[#0B0B0C] md:text-[28px]">
-          {t('priceSlideTitle')}
-        </h2>
-        <div className="flex w-full flex-col gap-1 items-center text-center">
-          <p className="m-0 font-sans text-[13px] font-semibold normal-case tracking-normal text-page-muted">
-            {t('joinEmailLabel')}
-          </p>
-          <p className="m-0 font-sans text-[15px] font-semibold text-page">
-            {checkoutEmail}
-          </p>
-          <button
-            type="button"
-            onClick={() => {
-              setClientSecret(null);
-              setCheckoutEmail(null);
-              setError(null);
-            }}
-            className="font-sans text-[12px] font-semibold text-page-faint hover:text-page underline underline-offset-2 bg-transparent border-0 p-0 cursor-pointer"
-          >
-            {t('joinChangeEmail')}
-          </button>
-        </div>
-        <div className="w-full text-left">
-          <Elements
-            key={`${clientSecret}-${isLight ? 'light' : 'dark'}`}
-            stripe={stripePromise}
-            options={options}
-          >
-            <CheckoutForm
-              email={checkoutEmail}
-              signedIn={checkoutSignedIn}
-              nextPath={claimNext}
-            />
-          </Elements>
-        </div>
-      </div>
-    );
-  }
-
-  if (!started) {
-    return (
-      <div className="flex w-full max-w-sm flex-col items-center gap-4 text-center">
-        <button
-          type="button"
-          onClick={() => setStarted(true)}
-          className={ctaClass}
-        >
-          {t('ctaJoinPrice', { price })}
-        </button>
-      </div>
-    );
-  }
-
   return (
-    <form
-      onSubmit={(e) => void startCheckout(e)}
-      noValidate
-      className="mx-auto flex w-full max-w-sm flex-col items-center gap-4 text-center"
-    >
-      <h2 className="m-0 font-interTight text-[clamp(1.65rem,2.8vw,1.75rem)] font-extrabold tracking-tight text-[#0B0B0C] md:text-[28px]">
-        {t('priceSlideTitle')}
-      </h2>
-      <label className="flex w-full flex-col gap-2 text-left">
-        <span className="sr-only">{t('joinEmailLabel')}</span>
-        <input
-          type="email"
-          autoComplete="email"
-          autoFocus
-          value={email}
-          onChange={(e) => {
-            setEmail(e.target.value);
-            if (error) setError(null);
-            // Invalidate stale prefetch when the address changes.
-            const next = e.target.value.trim().toLowerCase();
-            if (
-              prefetchRef.current &&
-              prefetchRef.current.email !== next
-            ) {
-              prefetchRef.current = null;
-            }
-          }}
-          onBlur={() => prefetchCheckout(email)}
-          placeholder={t('joinEmailPlaceholder')}
-          disabled={loading || (signedIn && Boolean(accountEmail))}
-          className="w-full rounded-[10px] border-0 bg-white px-5 py-4 font-sans text-[16px] font-medium text-[#0B0B0C] shadow-[0_1px_0_rgba(0,0,0,0.04)] placeholder:text-black/35 focus:outline-none focus:ring-2 focus:ring-black/10 disabled:opacity-50 transition-shadow"
-        />
-      </label>
+    <div className="flex w-full max-w-[22rem] flex-col items-center text-center">
+      <SheetEnter>
+        <h1 className={HEAD}>{t('joinHeadline')}</h1>
+      </SheetEnter>
+      <SheetEnter delay={100}>
+        <p className={LEAD}>{t('joinPayLead', { price })}</p>
+      </SheetEnter>
 
-      <button
-        type="submit"
-        disabled={loading}
-        aria-live="polite"
-        className={`w-full h-12 inline-flex items-center justify-center rounded-full font-sans font-bold text-[15px] tracking-tight shadow-2xl transition-all duration-150 disabled:opacity-50 disabled:pointer-events-none ${
-          error
-            ? 'bg-red-600 text-white hover:opacity-85'
-            : 'bg-[var(--page-fg)] text-[var(--page-bg)] hover:opacity-90 active:scale-95'
+      <SheetEnter delay={200} className="w-full">
+      <div
+        ref={shellRef}
+        className={`relative mt-6 w-full overflow-hidden motion-reduce:transition-none ${
+          fieldOpen
+            ? emailInvalid
+              ? 'h-12 rounded-full bg-red-600'
+              : 'h-12 rounded-full bg-[#F5F5F7]'
+            : 'aspect-[3/4] rounded-[22px] bg-black'
+        } ${
+          reduced
+            ? ''
+            : 'transition-[height,border-radius] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]'
         }`}
       >
-        {loading ? t('ctaPending') : error ? error : t('joinContinue')}
-      </button>
-    </form>
+        <button
+          type="button"
+          onClick={openField}
+          aria-label={t('joinEmailPlaceholder')}
+          tabIndex={fieldOpen ? -1 : 0}
+          className={`absolute inset-0 border-0 p-0 transition-opacity duration-500 ${
+            fieldOpen ? 'pointer-events-none opacity-0' : 'cursor-pointer opacity-100'
+          }`}
+        >
+          <Image
+            src={BUREAUX_CARD}
+            alt=""
+            fill
+            priority
+            sizes="352px"
+            className="object-cover object-[center_30%]"
+          />
+          <span
+            aria-hidden
+            className="pointer-events-none absolute bottom-3.5 right-3.5 z-[1] inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-[#0B0B0C]"
+          >
+            <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.25} />
+          </span>
+        </button>
+      <form
+        className={`absolute inset-0 flex items-center pl-8 pr-1.5 transition-opacity duration-300 ${
+          fieldOpen ? 'opacity-100 delay-200' : 'pointer-events-none opacity-0'
+        }`}
+        noValidate
+        onSubmit={(event) => {
+          event.preventDefault();
+          const nextEmail = (signedIn ? accountEmail || email : email)
+            .trim()
+            .toLowerCase();
+          if (!isValidEmail(nextEmail)) {
+            setError(t('joinEmailRequired'));
+            return;
+          }
+          blockedEmail.current = null;
+          void startCheckout(nextEmail);
+        }}
+      >
+        <div className="flex h-12 w-full items-center">
+          <label className="sr-only" htmlFor="bureaux-join-email">
+            {t('joinEmailLabel')}
+          </label>
+          <input
+            ref={inputRef}
+            id="bureaux-join-email"
+            type="email"
+            autoComplete="email"
+            value={email}
+            onChange={(e) => {
+              const next = e.target.value;
+              setEmail(next);
+              blockedEmail.current = null;
+              if (error) setError(null);
+              const normalized = next.trim().toLowerCase();
+              if (
+                prefetchRef.current &&
+                prefetchRef.current.email !== normalized
+              ) {
+                prefetchRef.current = null;
+              }
+              if (checkoutEmail && checkoutEmail !== normalized) {
+                setClientSecret(null);
+                setCheckoutEmail(null);
+              }
+            }}
+            onBlur={() => prefetchCheckout(email)}
+            placeholder={emailInvalid ? '' : t('joinEmailPlaceholder')}
+            disabled={signedIn && Boolean(accountEmail)}
+            aria-invalid={emailInvalid ? true : undefined}
+            className={`min-w-0 flex-1 border-0 bg-transparent font-sans text-[16px] font-medium outline-none disabled:opacity-60 ${
+              emailInvalid
+                ? 'text-transparent caret-transparent'
+                : 'text-[#0B0B0C] placeholder:text-black/35'
+            }`}
+          />
+          {emailInvalid ? (
+            <span className="pointer-events-none absolute inset-y-0 left-8 right-12 flex items-center truncate font-sans text-[16px] font-medium text-white">
+              {error}
+            </span>
+          ) : null}
+          <button
+            type="submit"
+            disabled={loading || !email.trim() || emailInvalid}
+            aria-label={
+              emailInvalid
+                ? error || t('joinEmailRequired')
+                : loading
+                  ? t('ctaPending')
+                  : t('joinContinue')
+            }
+            className={`relative z-[1] inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white ${
+              emailInvalid
+                ? 'cursor-default bg-white/25'
+                : 'bg-[#0B0B0C] transition-opacity hover:opacity-90 disabled:opacity-40'
+            }`}
+          >
+            {emailInvalid ? (
+              <X className="h-3.5 w-3.5" strokeWidth={2.25} aria-hidden />
+            ) : (
+              <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.25} aria-hidden />
+            )}
+          </button>
+        </div>
+      </form>
+      </div>
+      </SheetEnter>
+
+      {(options && checkoutEmail) || loading || (error && !emailInvalid) ? (
+      <div className="mt-4 flex w-full flex-col gap-4">
+        {options && checkoutEmail ? (
+          <div className="w-full text-left">
+            <Elements
+              key={`${clientSecret}-${isLight ? 'light' : 'dark'}`}
+              stripe={stripePromise}
+              options={options}
+            >
+              <CheckoutForm
+                email={checkoutEmail}
+                signedIn={checkoutSignedIn}
+                nextPath={claimNext}
+                price={price}
+              />
+            </Elements>
+          </div>
+        ) : loading ? (
+          <p className="m-0 font-sans text-[15px] font-medium text-black/45">
+            {t('ctaPending')}
+          </p>
+        ) : error && !emailInvalid ? (
+          <p className="m-0 font-sans text-[15px] font-medium text-red-600">
+            {error}
+          </p>
+        ) : null}
+      </div>
+      ) : null}
+
+      <SheetEnter delay={320}>
+        <p className="m-0 mt-8 font-sans text-[15px] font-medium text-black/45">
+          {t('joinReturning')}{' '}
+          <Link
+            href={`/signin?next=${encodeURIComponent(claimNext)}`}
+            className="text-[#0B0B0C] transition-opacity hover:opacity-70"
+          >
+            {t('ctaSignIn')}
+          </Link>
+          <span aria-hidden className="px-2 text-black/25">
+            ·
+          </span>
+          <Link href="/about" className="text-[#0B0B0C] transition-opacity hover:opacity-70">
+            {tNav('about')}
+          </Link>
+        </p>
+      </SheetEnter>
+    </div>
   );
 }

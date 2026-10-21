@@ -145,8 +145,7 @@ function HouseOverlayProviderInner({ children }: { children: ReactNode }) {
   const locale = useLocale() as AppLocale;
   const [active, setActive] = useState<HouseSheetId | null>(null);
   const [mounted, setMounted] = useState(false);
-  const [shortcutHandler, setShortcutHandlerState] =
-    useState<ShortcutHandler | null>(null);
+  const [, setShortcutHandlerState] = useState<ShortcutHandler | null>(null);
   const [browseOpen, setBrowseOpenState] = useState(false);
   /** True while an imperative Hello cover is owning the beat. */
   const [langHelloLock, setLangHelloLock] = useState(false);
@@ -345,30 +344,6 @@ function HouseOverlayProviderInner({ children }: { children: ReactNode }) {
     router.push(buildSearchHref('/search', '', query || null));
   }, [pathname, onSearchPage, router]);
 
-  const runShortcut = useCallback(
-    (action: ShortcutAction) => {
-      if (action === 'search') {
-        setActive(null);
-        goSearch(router);
-        return;
-      }
-      if (action === 'close') {
-        close();
-        return;
-      }
-      shortcutHandler?.(action);
-      if (
-        action === 'play' ||
-        action === 'info' ||
-        action === 'browse' ||
-        action === 'shuffle'
-      ) {
-        setActive(null);
-      }
-    },
-    [shortcutHandler, close, router]
-  );
-
   const value = useMemo(
     () => ({
       active,
@@ -410,7 +385,7 @@ function HouseOverlayProviderInner({ children }: { children: ReactNode }) {
           {active === 'language' ? (
             <LanguagePanel onConfirm={confirmLanguage} />
           ) : active === 'shortcuts' ? (
-            <ShortcutsPanel onClose={close} onAction={runShortcut} />
+            <ShortcutsPanel />
           ) : active === 'legal' ? (
             <HouseLegalSheet onNavigate={leaveTo} />
           ) : active === 'bureaux' ? (

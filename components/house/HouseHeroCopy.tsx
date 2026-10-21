@@ -182,9 +182,10 @@ export default function HouseHeroCopy({
         ) : null}
 
         {isIntro ? (
+          // Saved set: weight 800, width 75%, leading 0.85, tracking -0.05em, size clamp(2.5rem, 5.2vw, 3.75rem)
           <h2
             key={visible ? 'intro-in' : 'intro-out'}
-            className="m-0 mb-8 max-w-4xl font-futura text-[clamp(3.25rem,10vw,5.5rem)] leading-[0.9] tracking-tighter text-balance text-[#f5f5f7] will-change-[transform,opacity] md:mb-10"
+            className="m-0 mb-8 max-w-5xl font-[family-name:var(--font-circular)] text-[clamp(2rem,5.8vw,4.75rem)] font-[700] normal-case leading-[0.96] tracking-[-0.05em] text-[#f5f5f7] will-change-[transform,opacity] md:mb-10"
             style={
               introMotion
                 ? {

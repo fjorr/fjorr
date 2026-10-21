@@ -34,7 +34,7 @@ export default function PromoSplit() {
                 {t('eyebrow')}
               </span>
 
-              <h2 className="font-futura font-extrabold uppercase tracking-[-0.05em] mb-[0.45em] w-full max-w-full text-center text-white text-[clamp(1.65rem,9.5vw,3.75rem)] leading-[0.78]">
+              <h2 className="font-futura mb-[0.45em] w-full max-w-full text-center text-white text-[clamp(1.65rem,9.5vw,3.75rem)] leading-[1.05]">
                 <span className="block mb-[0.12em]">{t('headlineLine1')}</span>
                 <span className="block">
                   &apos;em {t('headlineFeel')}

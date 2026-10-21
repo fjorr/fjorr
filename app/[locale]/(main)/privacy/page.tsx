@@ -34,6 +34,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function PrivacyPage() {
   const t = await getTranslations('Privacy');
+  const tFooter = await getTranslations('Footer');
 
   const sections: LegalSection[] = [
     {
@@ -123,7 +124,7 @@ export default async function PrivacyPage() {
     <div className="flex min-h-screen w-full flex-col bg-white text-[#0B0B0C]">
       <div className="flex w-full flex-1 flex-col">
         <LegalDoc
-          title={t('title')}
+          title={tFooter('privacyShort')}
           lastUpdatedLabel={t('lastUpdated')}
           date={t('date')}
           sections={sections}

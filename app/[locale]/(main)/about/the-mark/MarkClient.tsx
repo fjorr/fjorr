@@ -38,16 +38,45 @@ const WORDMARK_PATHS = [
   },
 ];
 
-/** Pin progress where the icon sequence reaches its last frame. */
-const FRAME_END_AT = 0.55;
-/** Wordmark begins after a hold on that frame, so the texture can be read. */
-const NAME_BEAT_AT = 0.78;
+/**
+ * Four exclusive beats on one pinned scroll.
+ * Text, helmet scrub, text, wordmark draw. Each holds alone.
+ */
+const BEAT = {
+  logoFade: [0.16, 0.21],
+  helmetScrub: [0.21, 0.48],
+  helmetHold: 0.52,
+  nameFadeIn: [0.52, 0.58],
+  nameFadeOut: [0.72, 0.78],
+  wordmarkDraw: [0.78, 0.94],
+} as const;
 
 type Props = {
   backLabel: string;
+  logoTitle: string;
   logoBody: string;
+  nameTitle: string;
   nameBody: string;
 };
+
+const MARK_HEAD =
+  "m-0 text-balance font-[family-name:var(--font-circular-black)] text-[clamp(2.25rem,5.5vw,3rem)] font-[900] leading-[1.05] tracking-[-0.03em] text-white";
+
+/** Trial Circular draws accented letters as the plain letter, so those marks stay in the UI face. */
+function MarkHeadlineText({ text }: { text: string }) {
+  return text.split(/([^\u0000-\u007F]+)/).map((part, i) =>
+    /[^\u0000-\u007F]/.test(part) ? (
+      <span key={i} className="font-sans font-extrabold">
+        {part}
+      </span>
+    ) : (
+      part
+    )
+  );
+}
+
+const MARK_SUB =
+  'm-0 mx-auto mt-6 max-w-[34rem] text-balance font-interTight text-[20px] font-semibold leading-[1.45] tracking-tight text-white/70 sm:mt-8 sm:text-[22px]';
 
 /** Load one frame; never hang on decode() (AVIF decode can stall in some browsers). */
 function loadFrame(src: string, timeoutMs = 10000): Promise<HTMLImageElement> {
@@ -85,13 +114,22 @@ async function preloadFrames(urls: string[]): Promise<HTMLImageElement[]> {
   );
 }
 
+/** 0 before `a`, 1 after `b`. */
+function unitRange(progress: number, start: number, end: number) {
+  if (progress <= start) return 0;
+  if (progress >= end) return 1;
+  return (progress - start) / (end - start);
+}
+
 /**
- * The mark — pinned stage: scroll scrubs 2D→3D frames + hold, then a
- * play-once wordmark outline→fill (same technique as main AboutClient).
+ * The mark — four pinned beats, one thing on screen:
+ * helmet copy, helmet scrub, name copy, wordmark draw.
  */
 export default function MarkClient({
   backLabel,
+  logoTitle,
   logoBody,
+  nameTitle,
   nameBody,
 }: Props) {
   const trackRef = useRef<HTMLDivElement>(null);
@@ -102,9 +140,6 @@ export default function MarkClient({
   useEffect(() => {
     let cancelled = false;
     let ctx: { revert: () => void } | null = null;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let nameTl: any = null;
-    let namePlayed = false;
 
     const showFrame = (index: number) => {
       const next = Math.max(0, Math.min(FRAME_COUNT - 1, index));
@@ -114,24 +149,7 @@ export default function MarkClient({
       el.src = MARK_FRAMES[next];
     };
 
-    const frameForProgress = (progress: number) => {
-      const frameProgress = Math.min(1, progress / FRAME_END_AT);
-      return Math.round(frameProgress * (FRAME_COUNT - 1));
-    };
-
-    const onScroll = () => {
-      const track = trackRef.current;
-      if (!track) return;
-      const distance = track.offsetHeight - window.innerHeight;
-      if (distance <= 0) return;
-      const progress = Math.min(1, Math.max(0, -track.getBoundingClientRect().top / distance));
-      showFrame(frameForProgress(progress));
-    };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll();
-
     const run = async () => {
-      // Warm the frame cache so each scroll step swaps without a blank frame.
       void preloadFrames(MARK_FRAMES);
 
       const { gsap } = await import('gsap');
@@ -140,108 +158,69 @@ export default function MarkClient({
       gsap.registerPlugin(ScrollTrigger);
 
       const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      const q = gsap.utils.selector(trackRef.current);
+      const root = trackRef.current;
+      const q = gsap.utils.selector(root);
 
-      const resetWordmark = () => {
+      const paintWordmark = (draw: number) => {
+        const offset = 800 * (1 - draw);
+        const fill = unitRange(draw, 0.72, 1);
         gsap.set(q('.wordmark-path'), {
-          attr: { 'stroke-dasharray': 800, 'stroke-dashoffset': 800 },
+          attr: { 'stroke-dasharray': 800, 'stroke-dashoffset': offset },
           strokeDasharray: 800,
-          strokeDashoffset: 800,
-          fill: 'rgba(255,255,255,0)',
+          strokeDashoffset: offset,
+          fill: `rgba(255,255,255,${fill})`,
         });
       };
 
-      const resetNameBeat = () => {
-        nameTl?.kill();
-        nameTl = null;
-        namePlayed = false;
-        gsap.set(q('.mark-visual-logo'), { opacity: 1, visibility: 'visible' });
-        gsap.set(q('.mark-copy-logo'), { opacity: 1, y: 0, visibility: 'visible' });
-        gsap.set(q('.mark-visual-name'), { opacity: 0, visibility: 'hidden' });
-        gsap.set(q('.mark-copy-name'), { opacity: 0, y: 10, visibility: 'hidden' });
-        resetWordmark();
+      const paintLayer = (selector: string, opacity: number) => {
+        gsap.set(q(selector), {
+          opacity,
+          visibility: opacity < 0.02 ? 'hidden' : 'visible',
+        });
       };
 
-      const playNameBeat = () => {
-        if (namePlayed) return;
-        namePlayed = true;
-        nameTl?.kill();
+      const paint = (progress: number) => {
+        const logoOp = 1 - unitRange(progress, BEAT.logoFade[0], BEAT.logoFade[1]);
+        const helmetIn = unitRange(progress, BEAT.logoFade[0], BEAT.logoFade[1]);
+        const helmetOut = unitRange(progress, BEAT.helmetHold, BEAT.nameFadeIn[1]);
+        const nameIn = unitRange(progress, BEAT.nameFadeIn[0], BEAT.nameFadeIn[1]);
+        const nameOut = unitRange(progress, BEAT.nameFadeOut[0], BEAT.nameFadeOut[1]);
+        const wordIn = unitRange(progress, BEAT.nameFadeOut[0], BEAT.nameFadeOut[1]);
 
-        gsap.to(q('.mark-visual-logo'), {
-          opacity: 0,
-          duration: 0.35,
-          ease: 'power1.in',
-          onComplete: () => {
-            gsap.set(q('.mark-visual-logo'), { visibility: 'hidden' });
-          },
-        });
-        gsap.to(q('.mark-copy-logo'), {
-          opacity: 0,
-          y: -8,
-          duration: 0.35,
-          ease: 'power1.in',
-        });
+        paintLayer('.mark-copy-logo', logoOp);
+        paintLayer('.mark-visual-logo', helmetIn * (1 - helmetOut));
+        paintLayer('.mark-copy-name', nameIn * (1 - nameOut));
+        paintLayer('.mark-visual-name', wordIn);
 
-        gsap.set(q('.mark-visual-name'), { visibility: 'visible' });
-        gsap.to(q('.mark-visual-name'), {
-          opacity: 1,
-          duration: 0.2,
-          ease: 'power2.out',
-        });
-
-        resetWordmark();
-        nameTl = gsap.timeline();
-        // Outline→fill play-once (not scrubbed). Attr + CSS for SVG reliability.
-        nameTl.fromTo(
-          q('.wordmark-path'),
-          {
-            attr: { 'stroke-dashoffset': 800 },
-            strokeDashoffset: 800,
-            fill: 'rgba(255,255,255,0)',
-          },
-          {
-            attr: { 'stroke-dashoffset': 0 },
-            strokeDashoffset: 0,
-            duration: 1.15,
-            ease: 'power2.inOut',
-          }
-        );
-        nameTl.to(
-          q('.wordmark-path'),
-          { fill: 'rgba(255,255,255,1)', duration: 0.4, ease: 'power1.out' },
-          '-=0.28'
-        );
-        nameTl.set(q('.mark-copy-name'), { visibility: 'visible' }, '-=0.35');
-        nameTl.to(
-          q('.mark-copy-name'),
-          { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' },
-          '-=0.3'
-        );
+        const scrub = unitRange(progress, BEAT.helmetScrub[0], BEAT.helmetScrub[1]);
+        showFrame(Math.round(scrub * (FRAME_COUNT - 1)));
+        paintWordmark(unitRange(progress, BEAT.wordmarkDraw[0], BEAT.wordmarkDraw[1]));
       };
 
       ctx = gsap.context(() => {
-        gsap.set(q('.mark-visual-logo'), { opacity: 1, visibility: 'visible' });
-        gsap.set(q('.mark-visual-name'), { opacity: 0, visibility: 'hidden' });
-        gsap.set(q('.mark-copy-logo'), { opacity: 1, y: 0, visibility: 'visible' });
-        gsap.set(q('.mark-copy-name'), { opacity: 0, y: 10, visibility: 'hidden' });
-        resetWordmark();
-
-        if (reduced) {
-          showFrame(FRAME_COUNT - 1);
-          gsap.set(q('.mark-visual-logo'), { opacity: 0, visibility: 'hidden' });
-          gsap.set(q('.mark-copy-logo'), { opacity: 0, visibility: 'hidden' });
-          gsap.set(q('.mark-visual-name'), { opacity: 1, visibility: 'visible' });
-          gsap.set(q('.mark-copy-name'), { opacity: 1, y: 0, visibility: 'visible' });
-          gsap.set(q('.wordmark-path'), {
-            attr: { 'stroke-dashoffset': 0 },
-            strokeDashoffset: 0,
-            fill: 'rgba(255,255,255,1)',
+        if (reduced && trackRef.current && stageRef.current) {
+          trackRef.current.style.height = 'auto';
+          stageRef.current.style.height = 'auto';
+          stageRef.current.style.display = 'flex';
+          stageRef.current.style.flexDirection = 'column';
+          stageRef.current.style.justifyContent = 'center';
+          stageRef.current.style.gap = '6rem';
+          stageRef.current.style.paddingTop = '8rem';
+          stageRef.current.style.paddingBottom = '8rem';
+          q('.mark-layer').forEach((node) => {
+            const el = node as HTMLElement;
+            el.style.position = 'relative';
+            el.style.inset = 'auto';
+            el.style.opacity = '1';
+            el.style.visibility = 'visible';
           });
+          showFrame(0);
+          paintWordmark(1);
           return;
         }
 
-        // Pin + map scroll→frames. Wordmark outline→fill is play-once (not
-        // scrubbed) so the stroke reads clearly — same as main AboutClient.
+        paint(0);
+
         ScrollTrigger.create({
           trigger: trackRef.current,
           start: 'top top',
@@ -249,30 +228,19 @@ export default function MarkClient({
           pin: stageRef.current,
           anticipatePin: 1,
           invalidateOnRefresh: true,
-          onUpdate: (self) => {
-            // Scrub frames with the scroll, then hold the last one until the name beat.
-            showFrame(frameForProgress(self.progress));
-
-            if (self.progress >= NAME_BEAT_AT) {
-              playNameBeat();
-            } else if (self.progress < NAME_BEAT_AT - 0.04 && namePlayed) {
-              resetNameBeat();
-            }
-          },
+          onUpdate: (self) => paint(self.progress),
         });
 
         requestAnimationFrame(() => {
           if (!cancelled) ScrollTrigger.refresh();
         });
-      }, trackRef);
+      }, root);
     };
 
     void run();
 
     return () => {
       cancelled = true;
-      window.removeEventListener('scroll', onScroll);
-      nameTl?.kill();
       ctx?.revert();
     };
   }, []);
@@ -289,89 +257,107 @@ export default function MarkClient({
         </Link>
       </p>
 
-      <div ref={trackRef} className="relative h-[360vh] w-full">
-        <div ref={stageRef} className="relative h-[100dvh] w-full overflow-hidden px-6">
-          <div className="pointer-events-none absolute inset-0">
-            {/* Vertically + horizontally centered visual slot */}
-            <div
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
-              style={{
-                width: 'min(440px, 72vw, calc(100dvh - 240px))',
-                height: 'min(440px, 72vw, calc(100dvh - 240px))',
-              }}
-            >
-              <img
-                ref={frameRef}
-                src={MARK_FRAMES[0]}
-                alt=""
-                className="mark-visual-logo absolute inset-0 h-full w-full object-contain"
-              />
-              <div
-                className="mark-visual-name absolute inset-0 z-[1] flex items-center justify-center opacity-0"
-                style={{ visibility: 'hidden' }}
-                role="img"
-                aria-label="Fjorr"
+      <div ref={trackRef} className="relative h-[680vh] w-full">
+        <div ref={stageRef} className="relative h-[100dvh] w-full overflow-hidden">
+          <div className="mark-layer mark-copy-logo absolute inset-0 flex items-center justify-center px-6">
+            <style>{`
+              @keyframes fjorr-apple-up {
+                from { opacity: 0; transform: translate3d(0, 0.55em, 0); }
+                to { opacity: 1; transform: translate3d(0, 0, 0); }
+              }
+              @media (prefers-reduced-motion: reduce) {
+                .mark-enter { animation: none !important; opacity: 1 !important; transform: none !important; }
+              }
+            `}</style>
+            <div className="w-full max-w-[44rem] text-center">
+              <h1
+                className={`${MARK_HEAD} mark-enter will-change-[transform,opacity]`}
+                style={{
+                  animation: 'fjorr-apple-up 0.9s cubic-bezier(0.25, 0.1, 0.25, 1) both',
+                }}
               >
-                <svg
-                  width="399"
-                  height="245"
-                  viewBox="0 0 399 245"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-auto max-w-none shrink-0 overflow-visible"
-                  style={{
-                    height: 'min(210px, 38vw, calc(50dvh - 80px))',
-                    aspectRatio: '399 / 245',
-                  }}
-                  aria-hidden
-                >
-                  <style>{`
-                    .wordmark-path {
-                      stroke: #ffffff;
-                      stroke-width: 1.5px;
-                      stroke-dasharray: 800;
-                      stroke-dashoffset: 800;
-                      fill: rgba(255, 255, 255, 0);
-                    }
-                  `}</style>
-                  {WORDMARK_PATHS.map((p) => (
-                    <path
-                      key={p.d.slice(0, 24)}
-                      className="wordmark-path"
-                      d={p.d}
-                      fillRule={p.fillRule}
-                      clipRule={p.clipRule}
-                      strokeDasharray={800}
-                      strokeDashoffset={800}
-                    />
-                  ))}
-                </svg>
-              </div>
+                <MarkHeadlineText text={logoTitle} />
+              </h1>
+              <p
+                className={`${MARK_SUB} mark-enter will-change-[transform,opacity]`}
+                style={{
+                  animation: 'fjorr-apple-up 0.9s cubic-bezier(0.25, 0.1, 0.25, 1) both',
+                  animationDelay: '100ms',
+                }}
+              >
+                {logoBody}
+              </p>
             </div>
+          </div>
 
-            {/* Copy anchored under the centered visual */}
-            <div
-              className="absolute left-1/2 w-full max-w-[28rem] -translate-x-1/2 px-6 text-center"
+          <div
+            className="mark-layer mark-visual-logo absolute inset-0 flex items-center justify-center opacity-0"
+            style={{ visibility: 'hidden' }}
+          >
+            <img
+              ref={frameRef}
+              src={MARK_FRAMES[0]}
+              alt=""
+              className="object-contain"
               style={{
-                top: 'calc(50% + min(220px, 36vw, calc(50dvh - 120px)) + 1.5rem)',
+                width: 'min(560px, 72vw, 68dvh)',
+                height: 'min(560px, 72vw, 68dvh)',
               }}
-            >
-              <div className="relative min-h-[4.75rem] w-full sm:min-h-[5rem]">
-                <div className="mark-copy-logo w-full">
-                  <p className="m-0 font-sans text-[14px] font-medium leading-snug tracking-tight text-white/50 sm:text-[15px] md:text-[16px]">
-                    {logoBody}
-                  </p>
-                </div>
-                <div
-                  className="mark-copy-name absolute inset-x-0 top-0 w-full opacity-0"
-                  style={{ visibility: 'hidden' }}
-                >
-                  <p className="m-0 font-sans text-[14px] font-medium leading-snug tracking-tight text-white/50 sm:text-[15px] md:text-[16px]">
-                    {nameBody}
-                  </p>
-                </div>
-              </div>
+            />
+          </div>
+
+          <div
+            className="mark-layer mark-copy-name absolute inset-0 flex items-center justify-center px-6 opacity-0"
+            style={{ visibility: 'hidden' }}
+          >
+            <div className="w-full max-w-[44rem] text-center">
+              <p className={MARK_HEAD}>
+                <MarkHeadlineText text={nameTitle} />
+              </p>
+              <p className={MARK_SUB}>{nameBody}</p>
             </div>
+          </div>
+
+          <div
+            className="mark-layer mark-visual-name absolute inset-0 flex items-center justify-center opacity-0"
+            style={{ visibility: 'hidden' }}
+            role="img"
+            aria-label="Fjorr"
+          >
+            <svg
+              width="399"
+              height="245"
+              viewBox="0 0 399 245"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-auto max-w-[88vw] shrink-0 overflow-visible"
+              style={{
+                height: 'min(420px, 52vw, 48dvh)',
+                aspectRatio: '399 / 245',
+              }}
+              aria-hidden
+            >
+              <style>{`
+                .wordmark-path {
+                  stroke: #ffffff;
+                  stroke-width: 1.5px;
+                  stroke-dasharray: 800;
+                  stroke-dashoffset: 800;
+                  fill: rgba(255, 255, 255, 0);
+                }
+              `}</style>
+              {WORDMARK_PATHS.map((p) => (
+                <path
+                  key={p.d.slice(0, 24)}
+                  className="wordmark-path"
+                  d={p.d}
+                  fillRule={p.fillRule}
+                  clipRule={p.clipRule}
+                  strokeDasharray={800}
+                  strokeDashoffset={800}
+                />
+              ))}
+            </svg>
           </div>
         </div>
       </div>

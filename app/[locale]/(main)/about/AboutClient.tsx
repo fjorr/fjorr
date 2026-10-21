@@ -32,13 +32,20 @@ export type AboutCopy = {
   scrollLabel: string;
   deckHintLead: string;
   deckHint: string;
+  readAsParagraph: string;
+  readAsSentences: string;
+  posterRead: string;
   contactHeadlineLines: string[];
   contactBlurb: string;
   posters: AboutPoster[];
 };
 
+/** Poster headlines — Avenir Next at a normal width, sentence case, not the condensed cut. */
+const POSTER_HEAD =
+  'm-0 text-balance font-[family-name:var(--font-display)] text-[34px] font-[640] leading-snug tracking-[-0.045em] text-white [font-stretch:90%] [font-variation-settings:"wght"_640,"wdth"_90]';
+
 const BEAT_TYPE =
-  'm-0 w-full max-w-[22rem] text-balance text-center font-interTight text-[30px] font-semibold leading-[1.25] tracking-tight text-[#f5f5f7] sm:max-w-[34rem] md:max-w-[40rem]';
+  'm-0 w-full max-w-[24rem] text-balance text-center font-[family-name:var(--font-circular)] text-[36px] font-[700] leading-[1.25] tracking-[-0.03em] text-[#f5f5f7] sm:max-w-[38rem] md:max-w-[44rem]';
 
 /** Apple-style: soft fade + rise. One motion for every beat. */
 function AppleBeat({ text }: { text: string }) {
@@ -76,7 +83,7 @@ function AppleBeat({ text }: { text: string }) {
       />
       <p
         className={BEAT_TYPE}
-        style={{ fontSize: 30 }}
+        style={{ fontSize: 36 }}
         aria-label={stacked ? lines.join(' ') : undefined}
       >
         {lines.map((line, i) => (
@@ -102,7 +109,41 @@ function AppleBeat({ text }: { text: string }) {
   );
 }
 
-function PosterFace({ poster }: { poster: AboutPoster }) {
+function PosterCopy({
+  poster,
+  readLabel,
+}: {
+  poster: AboutPoster;
+  readLabel: string;
+}) {
+  return (
+    <div className="flex flex-col items-center px-6 pt-8 text-center sm:px-8 sm:pt-10 md:pt-12">
+      <h2 className={POSTER_HEAD}>
+        {(poster.titleLines?.length ? poster.titleLines : [poster.title]).map(
+          (line) => (
+            <span key={line} className="block">
+              {line}
+            </span>
+          )
+        )}
+      </h2>
+      <p className="m-0 mt-1 max-w-[22rem] text-balance font-interTight text-[17px] font-semibold leading-[1.45] tracking-tight text-white/70 sm:mt-1.5 sm:text-[18px]">
+        {poster.tagline}
+      </p>
+      <span className="mt-6 inline-flex h-9 items-center rounded-full bg-white px-4 font-sans text-[14px] font-semibold tracking-tight text-[#0B0B0C]">
+        {readLabel}
+      </span>
+    </div>
+  );
+}
+
+function PosterFace({
+  poster,
+  readLabel,
+}: {
+  poster: AboutPoster;
+  readLabel: string;
+}) {
   const fit = poster.imageFit ?? 'cover';
   const rootRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -140,19 +181,17 @@ function PosterFace({ poster }: { poster: AboutPoster }) {
     return () => io.disconnect();
   }, [poster.video]);
 
+  const markInline = !hasVideo && poster.image && fit === 'contain';
+
   return (
-    <div ref={rootRef} className="absolute inset-0 bg-black">
-      {!hasVideo && poster.image ? (
+    <div ref={rootRef} className="relative flex min-h-[440px] w-full flex-1 flex-col bg-black sm:min-h-[480px]">
+      {!hasVideo && poster.image && fit !== 'contain' ? (
         <Image
           src={poster.image}
           alt=""
           fill
           sizes="(max-width: 768px) 100vw, 720px"
-          className={
-            fit === 'contain'
-              ? 'object-contain object-center p-[18%] sm:p-[20%]'
-              : 'object-cover object-center transition-transform duration-500 group-hover:scale-[1.03]'
-          }
+          className="object-cover object-center transition-transform duration-500 group-hover:scale-[1.03]"
         />
       ) : null}
       {!hasVideo && !poster.image ? (
@@ -186,35 +225,27 @@ function PosterFace({ poster }: { poster: AboutPoster }) {
         aria-hidden
         className={`pointer-events-none absolute inset-0 ${
           hasVideo
-            ? 'bg-gradient-to-t from-black/80 via-black/35 to-black/25'
-            : 'bg-gradient-to-t from-black/85 via-black/25 to-black/10'
+            ? 'bg-gradient-to-b from-black/80 via-black/25 to-transparent'
+            : ''
         }`}
       />
-      {hasVideo ? (
-        <div className="absolute inset-0 z-[1] flex flex-col items-center justify-center px-6 text-center sm:px-8">
-          <h2 className="m-0 text-balance font-futura text-[clamp(2.35rem,6.5vw,3.75rem)] leading-[0.88] tracking-tighter text-white">
-            {(poster.titleLines?.length
-              ? poster.titleLines
-              : [poster.title]
-            ).map((line) => (
-              <span key={line} className="block">
-                {line}
-              </span>
-            ))}
-          </h2>
-          <p className="m-0 mt-4 max-w-[22rem] text-balance font-interTight text-[14px] font-semibold leading-snug tracking-tight text-white/70 sm:mt-5 sm:text-[15px]">
-            {poster.tagline}
-          </p>
+      <div className="relative z-[1]">
+        <PosterCopy poster={poster} readLabel={readLabel} />
+      </div>
+      {markInline && poster.image ? (
+        <div className="relative z-[1] flex flex-1 items-center justify-center px-8 py-8">
+          <div className="relative aspect-square w-52 max-w-full shrink-0">
+            <Image
+              src={poster.image}
+              alt=""
+              fill
+              sizes="180px"
+              className="object-contain object-center"
+            />
+          </div>
         </div>
       ) : (
-        <div className="absolute inset-x-0 bottom-0 z-[1] p-5 text-left sm:p-7 md:p-8">
-          <h2 className="m-0 font-futura text-[clamp(1.35rem,3.2vw,1.85rem)] leading-[0.9] tracking-tighter text-white">
-            {poster.title}
-          </h2>
-          <p className="m-0 mt-1.5 max-w-[22rem] font-interTight text-[14px] font-semibold leading-snug tracking-tight text-white/65 sm:text-[15px]">
-            {poster.tagline}
-          </p>
-        </div>
+        <div className="relative z-[1] min-h-16 flex-1" />
       )}
     </div>
   );
@@ -272,10 +303,10 @@ function MakeEmFeelPoster({
       className="grid min-h-[420px] w-full grid-cols-1 overflow-hidden rounded-[8px] bg-black sm:min-h-[480px] md:min-h-[520px] md:grid-cols-2 lg:min-h-[560px]"
     >
       <div className="flex flex-col justify-center px-10 py-14 text-left sm:px-12 sm:py-16 md:px-14 md:py-16 lg:px-16 lg:py-20">
-        <h2 className="m-0 whitespace-pre-line font-futura text-[clamp(2.35rem,6.5vw,3.75rem)] leading-[0.88] tracking-tighter text-white">
-          {headlineLines.join('\n')}
+        <h2 className={`${POSTER_HEAD} whitespace-pre-line`}>
+          {headlineLines.join(' ')}
         </h2>
-        <p className="m-0 mt-5 max-w-[28rem] font-interTight text-[17px] font-semibold leading-[1.45] tracking-tight text-white/65 sm:mt-6 sm:text-[18px]">
+        <p className="m-0 mt-1.5 max-w-[28rem] font-interTight text-[17px] font-semibold leading-[1.45] tracking-tight text-white/65 sm:mt-2 sm:text-[18px]">
           {blurb}
         </p>
         <div
@@ -315,9 +346,21 @@ function MakeEmFeelPoster({
  * Dispatches `fjorr:about-hero` so MainChrome can flip nav at the seam.
  */
 export default function AboutClient({ copy }: { copy: AboutCopy }) {
-  const { manifestoBeats, scrollLabel, deckHintLead, deckHint } = copy;
+  const {
+    manifestoBeats,
+    scrollLabel,
+    deckHintLead,
+    deckHint,
+    readAsParagraph,
+    readAsSentences,
+  } = copy;
   const beats = manifestoBeats;
   const [index, setIndex] = useState(0);
+  const [asParagraph, setAsParagraph] = useState(false);
+  const paragraph = beats
+    .map((beat) => beat.text.trim())
+    .filter(Boolean)
+    .join(' ');
   const stageRef = useRef<HTMLElement>(null);
   const paperRef = useRef<HTMLElement>(null);
 
@@ -343,6 +386,14 @@ export default function AboutClient({ copy }: { copy: AboutCopy }) {
   const scrollToPaper = useCallback(() => {
     paperRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, []);
+
+  const onStageClick = (event: React.MouseEvent<HTMLElement>) => {
+    if (asParagraph) return;
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    if (target.closest('button, a, input, textarea, select')) return;
+    go(1);
+  };
   // Nav chrome: white over black frame, dark on paper.
   useEffect(() => {
     const stage = stageRef.current;
@@ -370,6 +421,7 @@ export default function AboutClient({ copy }: { copy: AboutCopy }) {
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
+      if (asParagraph) return;
       if (event.key === 'ArrowLeft') {
         event.preventDefault();
         go(-1);
@@ -380,33 +432,49 @@ export default function AboutClient({ copy }: { copy: AboutCopy }) {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [go]);
+  }, [asParagraph, go]);
 
   const swipe = useSwipeNav({
     onPrev: () => go(-1),
     onNext: () => go(1),
-    enabled: beats.length > 1,
+    enabled: beats.length > 1 && !asParagraph,
   });
 
   return (
     <div className="relative flex min-h-screen w-full flex-col overflow-x-clip bg-white text-[#0B0B0C] select-none">
       <section
         ref={stageRef}
-        className="relative -mt-[44px] flex h-[calc(100dvh+44px)] w-full touch-pan-y flex-col overflow-hidden bg-black px-6 text-white md:-mt-[60px] md:h-[calc(100dvh+60px)] lg:-mt-[100px] lg:h-[calc(100dvh+100px)]"
-        aria-roledescription="carousel"
+        className={`relative -mt-[44px] flex h-[calc(100dvh+44px)] w-full touch-pan-y flex-col overflow-hidden bg-black px-6 text-white md:-mt-[60px] md:h-[calc(100dvh+60px)] lg:-mt-[100px] lg:h-[calc(100dvh+100px)] ${
+          !asParagraph && canNext ? 'cursor-pointer' : ''
+        }`}
+        aria-roledescription={asParagraph ? undefined : 'carousel'}
         aria-label="About Fjorr"
+        onClick={onStageClick}
         {...swipe}
       >
         {/* Beat — stays centered; length doesn’t shove the controls */}
         <div className="relative flex min-h-0 flex-1 items-center justify-center px-2 pb-28 pt-16 md:pb-32">
-          <div key={safeIndex} className="relative z-0 flex w-full justify-center">
-            <AppleBeat text={currentText} />
-          </div>
+          {asParagraph ? (
+            <p className="m-0 max-w-[36rem] text-balance text-center font-[family-name:var(--font-circular)] text-[18px] font-[700] leading-[1.5] tracking-[-0.03em] text-[#f5f5f7] sm:max-w-[42rem] sm:text-[20px] md:text-[22px]">
+              {paragraph}
+            </p>
+          ) : (
+            <div key={safeIndex} className="relative z-0 flex w-full justify-center">
+              <AppleBeat text={currentText} />
+            </div>
+          )}
         </div>
 
         {/* Controls — pinned to bottom of the black stage */}
         <div className="absolute inset-x-0 bottom-0 z-[2] flex flex-col items-center gap-4 px-6 pb-16 pt-4 md:pb-20 lg:pb-24">
-          {atEnd ? (
+          <button
+            type="button"
+            onClick={() => setAsParagraph((open) => !open)}
+            className="cursor-pointer border-0 bg-transparent p-0 font-sans text-[13px] font-medium tracking-tight text-white/45 underline decoration-white/25 underline-offset-4 transition-colors hover:text-white/70"
+          >
+            {asParagraph ? readAsSentences : readAsParagraph}
+          </button>
+          {atEnd || asParagraph ? (
             <button
               type="button"
               onClick={scrollToPaper}
@@ -417,7 +485,7 @@ export default function AboutClient({ copy }: { copy: AboutCopy }) {
             </button>
           ) : null}
 
-          {beats.length > 1 ? (
+          {beats.length > 1 && !asParagraph ? (
             <div className="flex flex-col items-center gap-3">
               {!atEnd ? (
                 <p className="m-0 flex items-center justify-center gap-1.5 font-sans text-[13px] font-medium tracking-tight text-white/40">
@@ -481,9 +549,9 @@ export default function AboutClient({ copy }: { copy: AboutCopy }) {
               <Link
                 key={poster.href}
                 href={poster.href}
-                className="group relative block aspect-[5/4] w-full overflow-hidden rounded-[8px] bg-[#0c0c0c] sm:aspect-[4/3]"
+                className="group relative flex h-full w-full flex-col overflow-hidden rounded-[8px] bg-[#0c0c0c]"
               >
-                <PosterFace poster={poster} />
+                <PosterFace poster={poster} readLabel={copy.posterRead} />
               </Link>
             ))}
           </div>

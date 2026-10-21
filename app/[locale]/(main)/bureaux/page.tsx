@@ -6,7 +6,6 @@ import { marketingShareImages } from '@/lib/seo/og';
 import { redirect } from '@/i18n/navigation';
 import { createClient } from '@/lib/supabase/server';
 import BureauxCheckoutLazy from '@/components/BureauxCheckoutLazy';
-import BureauxJoinStage from '@/components/BureauxJoinStage';
 import BureauxJoinClaim from '@/components/BureauxJoinClaim';
 import BureauxJoinedRefresh from '@/components/BureauxJoinedRefresh';
 import HouseScrollFooter from '@/components/HouseScrollFooter';
@@ -56,6 +55,11 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+const HEAD =
+  "m-0 text-balance font-[family-name:var(--font-circular)] text-[clamp(2.25rem,5.5vw,3rem)] font-[700] leading-[1.05] tracking-[-0.03em] text-[#0B0B0C]";
+const LEAD =
+  'm-0 mt-4 max-w-[26rem] text-center font-sans text-[16px] font-medium leading-relaxed text-black/55 md:text-[17px]';
+
 function safeNextPath(raw?: string) {
   if (typeof raw === 'string' && raw.startsWith('/') && !raw.startsWith('//')) {
     return raw;
@@ -93,6 +97,7 @@ export default async function BureauxPage({
       ? joinedEmailRaw.trim().toLowerCase()
       : null;
   const ta = await getTranslations('Account');
+  const tb = await getTranslations('Bureaux');
   const price = formatAnnualPrice(getBureauxAnnualAmountCents(), locale);
 
   const supabase = await createClient();
@@ -124,10 +129,6 @@ export default async function BureauxPage({
   const claimMode = Boolean(
     preview === 'claim' || (justJoined && !user && joinedEmail)
   );
-  const startInCheckout = Boolean(
-    claimMode || justJoined || (joinedEmail && !user)
-  );
-
   const claimEmail =
     preview === 'claim'
       ? joinedEmail || 'you@fjorr.com'
@@ -141,48 +142,39 @@ export default async function BureauxPage({
         ? await getBureauxNumberForEmail(claimEmail)
         : null;
 
-  const checkout = claimMode ? (
-    <BureauxJoinClaim
-      email={claimEmail || 'you@fjorr.com'}
+  const checkout = (
+    <BureauxCheckoutLazy
+      signedIn={Boolean(user)}
+      accountEmail={user?.email || null}
+      price={price}
       nextPath={nextPath}
-      autoSend={preview !== 'claim'}
-      bureauxNumber={claimNumber}
+      autoStart
     />
-  ) : (
-    <div className="flex w-full flex-col items-stretch">
-      {justJoined && user ? (
-        <p className="mb-4 text-left font-sans text-[14px] leading-relaxed text-page-muted">
-          {ta('bureauxJoining')}
-        </p>
-      ) : null}
-      {justJoined && user && !active ? <BureauxJoinedRefresh /> : null}
-      <BureauxCheckoutLazy
-        signedIn={Boolean(user)}
-        accountEmail={user?.email || null}
-        price={price}
-        nextPath={nextPath}
-        autoStart
-      />
-    </div>
   );
 
+  const waitingOnWebhook = Boolean(justJoined && user && !active);
+
   return (
-    <div
-      className={`flex min-h-dvh w-full flex-col ${
-        claimMode ? 'text-white' : 'text-[#0B0B0C]'
-      }`}
-      style={{ backgroundColor: claimMode ? '#0B0B0C' : '#F5F5F7' }}
-    >
-      <BureauxJoinStage
-        price={price}
-        checkout={checkout}
-        startInCheckout={startInCheckout}
-        claimMode={claimMode}
-      />
-      <HouseScrollFooter
-        variant={claimMode ? 'light' : 'dark'}
-        surfaceClassName={claimMode ? 'bg-[#0B0B0C]' : 'bg-[#F5F5F7]'}
-      />
+    <div className="flex min-h-[calc(100dvh-56px)] w-full flex-col bg-white text-[#0B0B0C]">
+      <div className="flex w-full flex-1 items-center justify-center px-6 py-16">
+        {claimMode ? (
+          <BureauxJoinClaim
+            email={claimEmail || 'you@fjorr.com'}
+            nextPath={nextPath}
+            autoSend={preview !== 'claim'}
+            bureauxNumber={claimNumber}
+          />
+        ) : waitingOnWebhook ? (
+          <div className="flex w-full max-w-[22rem] flex-col items-center text-center">
+            <h1 className={HEAD}>{tb('alreadyIn')}</h1>
+            <p className={LEAD}>{ta('bureauxJoining')}</p>
+            <BureauxJoinedRefresh />
+          </div>
+        ) : (
+          checkout
+        )}
+      </div>
+      <HouseScrollFooter />
     </div>
   );
 }

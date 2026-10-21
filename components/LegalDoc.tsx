@@ -26,17 +26,17 @@ export default function LegalDoc({
   sections: LegalSection[];
 }) {
   return (
-    <div className="w-full bg-white px-5 pb-16 pt-10 text-[#0B0B0C] sm:px-8 md:px-[60px] md:pb-24 md:pt-14 lg:px-[100px]">
+    <div className="w-full bg-white px-6 pb-20 pt-16 text-[#0B0B0C] md:px-[54px] md:pb-28 md:pt-20">
       <article className="mx-auto w-full max-w-[40rem]">
-        <header className="mb-12 flex flex-col items-center gap-3 text-center md:mb-16">
-          <h1 className="m-0 text-balance font-interTight text-[clamp(1.75rem,4vw,2.5rem)] font-bold leading-[1.1] tracking-tight text-[#0B0B0C]">
+        <header className="mb-16 flex flex-col items-center text-center md:mb-20">
+          <h1 className="m-0 max-w-[36rem] text-balance font-futura text-[clamp(2.5rem,7vw,3.75rem)] leading-[1.05] text-[#0B0B0C]">
             {title}
           </h1>
-          <p className="m-0 font-sans text-[13px] font-medium tabular-nums text-black/35">
+          <p className="m-0 mt-5 font-sans text-[13px] font-medium tabular-nums text-black/35">
             {lastUpdatedLabel} · {date}
           </p>
           {lead ? (
-            <p className="m-0 max-w-[36rem] text-balance font-sans text-[17px] font-medium leading-[1.5] tracking-[-0.01em] text-[#0B0B0C]">
+            <p className="m-0 mt-5 max-w-[26rem] text-balance font-sans text-[16px] font-medium leading-relaxed text-black/55 md:text-[17px]">
               {lead}
             </p>
           ) : null}
@@ -46,11 +46,11 @@ export default function LegalDoc({
           {sections.map((section, i) => (
             <section
               key={section.title}
-              className={`flex flex-col gap-3 ${
-                i === 0 ? '' : 'mt-10 md:mt-12'
+              className={`flex flex-col gap-4 ${
+                i === 0 ? '' : 'mt-12 md:mt-14'
               }`}
             >
-              <h2 className="m-0 font-interTight text-[1.1rem] font-bold leading-[1.3] tracking-tight text-[#0B0B0C] sm:text-[1.2rem]">
+              <h2 className="m-0 font-sans text-[22px] font-bold leading-snug tracking-tight text-[#0B0B0C] md:text-[26px]">
                 {section.title}
               </h2>
               {section.paragraphs?.map((p) => (

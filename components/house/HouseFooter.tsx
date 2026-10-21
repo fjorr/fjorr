@@ -32,10 +32,8 @@ export default function HouseFooter({
   center,
   langOpen = false,
   shortcutsOpen = false,
-  legalOpen = false,
   onLanguage,
   onShortcuts,
-  onLegal,
   staticLanguage = false,
   variant = 'dark',
 }: Props) {
@@ -47,8 +45,14 @@ export default function HouseFooter({
   const overlay = useHouseOverlayOptional();
   const onSubscribe =
     pathname === '/subscribe' || pathname.startsWith('/subscribe/');
-  const subscribeActive =
-    onSubscribe && !langOpen && !shortcutsOpen && !legalOpen;
+  const subscribeActive = onSubscribe && !langOpen && !shortcutsOpen;
+  const onLegalPages =
+    pathname === '/legal' ||
+    pathname.startsWith('/legal/') ||
+    pathname === '/privacy' ||
+    pathname.startsWith('/privacy/') ||
+    pathname === '/terms' ||
+    pathname.startsWith('/terms/');
   const label = localeLabels[locale];
   const onDark = variant === 'light';
 
@@ -152,31 +156,12 @@ export default function HouseFooter({
             <Icon name="command" className="!h-3.5 !w-3.5" />
           </button>
         ) : null}
-        {staticLanguage ? (
-          <span
-            className={`flex h-6 w-6 items-center justify-center ${iconStatic}`}
-            aria-hidden
-          >
-            <Icon name="doc" className="h-4 w-4" />
-          </span>
-        ) : onLegal ? (
-          <button
-            type="button"
-            aria-label={tFooter('legalAria')}
-            aria-expanded={legalOpen}
-            onClick={onLegal}
-            className={iconBtn(legalOpen)}
-          >
-            <Icon name="doc" className="h-4 w-4" />
-          </button>
-        ) : null}
       </div>
       {languageControl}
     </div>
   );
 
   const year = new Date().getFullYear();
-  const whisper = onDark ? 'text-white/70' : 'text-black/65';
 
   return (
     <div className="relative z-50 w-full shrink-0">
@@ -192,12 +177,32 @@ export default function HouseFooter({
           ) : null}
           {utilities}
         </div>
-        <p
-          className={`relative z-[1] m-0 justify-self-end whitespace-nowrap font-sans text-[10px] font-medium tracking-tight ${whisper}`}
-          aria-hidden
-        >
-          © {year} Fjorr
-        </p>
+        <div className="relative z-[1] flex items-center justify-self-end gap-2.5 whitespace-nowrap">
+          {staticLanguage ? (
+            <span
+              className={`font-sans text-[10px] font-medium tracking-tight ${mutedStatic}`}
+              aria-hidden
+            >
+              {tFooter('legalAria')}
+            </span>
+          ) : (
+            <Link
+              href="/legal"
+              aria-current={onLegalPages ? 'page' : undefined}
+              className={`font-sans text-[10px] font-medium tracking-tight transition-colors ${idleText}`}
+            >
+              {tFooter('legalAria')}
+            </Link>
+          )}
+          <p
+            className={`m-0 font-sans text-[10px] font-medium tracking-tight ${
+              onDark ? 'text-white/40' : 'text-black/40'
+            }`}
+            aria-hidden
+          >
+            © {year} Fjorr
+          </p>
+        </div>
       </div>
     </div>
   );

@@ -29,7 +29,7 @@ export const ESSAY_FAILURE_DEK =
 export const ESSAY_FAILURE_BODY: EssayBlock[] = [
   {
     type: 'p',
-    text: 'Short film has never had a functional business model — just a hundred years of broken ones.',
+    text: 'Short film has never had a functional business model, just a hundred years of broken ones.',
   },
   {
     type: 'p',
@@ -42,7 +42,7 @@ export const ESSAY_FAILURE_BODY: EssayBlock[] = [
   {
     type: 'figure',
     src: 'https://media.fjorr.com/app-assets/fjorr-le-voyage-dans-la-lune.jpg',
-    alt: 'Le Voyage dans la Lune (1902) — Georges Méliès. The Man in the Moon with a capsule lodged in his eye.',
+    alt: 'Le Voyage dans la Lune (1902), Georges Méliès. The Man in the Moon with a capsule lodged in his eye.',
     width: 1000,
     height: 1330,
     caption: '*Le Voyage dans la Lune*, 1902. Directed by Georges Méliès.',
@@ -54,7 +54,7 @@ export const ESSAY_FAILURE_BODY: EssayBlock[] = [
   { type: 'h2', text: 'The Broken Mechanics of Cinema History' },
   {
     type: 'p',
-    text: 'Every attempt to monetize short cinema, from early Hollywood to Silicon Valley, tried to force the format into a transactional, ad-driven, or feature-centric box — and each one broke the same way.',
+    text: 'Every attempt to monetize short cinema, from early Hollywood to Silicon Valley, tried to force the format into a transactional, ad-driven, or feature-centric box, and each one broke the same way.',
   },
   {
     type: 'timeline',
@@ -62,7 +62,7 @@ export const ESSAY_FAILURE_BODY: EssayBlock[] = [
       {
         year: '1948',
         title: 'The Studio System Collapse',
-        text: 'In the 1930s and 40s, Hollywood forced theaters to buy shorts alongside feature films through "block booking." When the Supreme Court declared the practice illegal in the 1948 Paramount Decrees, the financial foundation for short departments was destroyed. Over the following decade, studios systematically dismantled their short units — MGM eventually closed its animation department in 1957, and Warner Bros. scaled back its iconic cartoon production into the 1960s.',
+        text: 'In the 1930s and 40s, Hollywood forced theaters to buy shorts alongside feature films through "block booking." When the Supreme Court declared the practice illegal in the 1948 Paramount Decrees, the financial foundation for short departments was destroyed. Over the following decade, studios systematically dismantled their short units, MGM eventually closed its animation department in 1957, and Warner Bros. scaled back its iconic cartoon production into the 1960s.',
       },
       {
         year: '1953',
@@ -83,7 +83,7 @@ export const ESSAY_FAILURE_BODY: EssayBlock[] = [
   },
   {
     type: 'p',
-    text: "Streaming apps and ad-driven feeds didn't fix this — they exacerbated it. Engagement algorithms favor infinite duration. A recommendation engine tuned to maximize screen time has zero financial incentive to surface a nine-minute masterpiece over a ninety-minute outrage-bait video.",
+    text: "Streaming apps and ad-driven feeds didn't fix this, they exacerbated it. Engagement algorithms favor infinite duration. A recommendation engine tuned to maximize screen time has zero financial incentive to surface a nine-minute masterpiece over a ninety-minute outrage-bait video.",
   },
   {
     type: 'p',
@@ -96,11 +96,11 @@ export const ESSAY_FAILURE_BODY: EssayBlock[] = [
   { type: 'h2', text: 'Filling a Cultural Void' },
   {
     type: 'p',
-    text: 'Modern media has an obvious void. Hollywood spends $200 million on comic book sequels. Silicon Valley algorithms serve endless, disposable feeds designed to capture idle attention. Nobody is building a gold-standard home for short cinema — making short films of the essential, pivotal stories that shaped what it means to be human.',
+    text: 'Modern media has an obvious void. Hollywood spends $200 million on comic book sequels. Silicon Valley algorithms serve endless, disposable feeds designed to capture idle attention. Nobody is building a gold-standard home for short cinema, making short films of the essential, pivotal stories that shaped what it means to be human.',
   },
   {
     type: 'p',
-    text: "Imagine a place built solely for short cinema. Stories that carry as much power as feature films, but with no feeds, no algorithms, and no disposable noise. Just the world's greatest stories as short films — from fallen kings to prizefighters to Prometheus stealing fire — given the scale, standard, organization, and permanent home they deserve.",
+    text: "Imagine a place built solely for short cinema. Stories that carry as much power as feature films, but with no feeds, no algorithms, and no disposable noise. Just the world's greatest stories as short films, from fallen kings to prizefighters to Prometheus stealing fire, given the scale, standard, organization, and permanent home they deserve.",
   },
   {
     type: 'p',
@@ -108,15 +108,15 @@ export const ESSAY_FAILURE_BODY: EssayBlock[] = [
   },
   {
     type: 'p',
-    text: "Fjorr's thesis is simple: the format didn't fail — the vehicle did.",
+    text: "Fjorr's thesis is simple: the format didn't fail, the vehicle did.",
   },
   {
     type: 'p',
-    text: 'Instead of treating short films as appetizers or tech gimmicks, Fjorr treats them as the main event. Instead of hiding them behind transactional paywalls or serving them alongside intrusive ads, Fjorr is funded directly by its patrons — the Bureaux. Together, they are building a permanent, ad-free archive of world-class short films under 20 minutes — free for anyone in the world to watch.',
+    text: 'Instead of treating short films as appetizers or tech gimmicks, Fjorr treats them as the main event. Instead of hiding them behind transactional paywalls or serving them alongside intrusive ads, Fjorr is funded directly by its patrons, the Bureaux. Together, they are building a permanent, ad-free archive of world-class short films under 20 minutes, free for anyone in the world to watch.',
   },
   {
     type: 'p',
-    text: 'Short was never a compromise. It just never had anywhere to live — and now it does.',
+    text: 'Short was never a compromise. It just never had anywhere to live, and now it does.',
   },
 ];
 

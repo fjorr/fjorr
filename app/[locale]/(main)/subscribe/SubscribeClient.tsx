@@ -8,6 +8,7 @@ import React, {
   useState,
 } from 'react';
 import { useTranslations } from 'next-intl';
+import { ArrowRight, Check, Copy, X } from 'lucide-react';
 import { subscribeToNewsletter, type FormState } from '@/components/intel';
 import SheetEnter from '@/components/house/SheetEnter';
 
@@ -89,108 +90,125 @@ export default function SubscribeClient({ feedUrl }: Props) {
     <div className="mx-auto flex w-full max-w-[920px] flex-col items-center px-6 md:px-[54px]">
       <SheetEnter className="flex w-full max-w-[600px] flex-col items-center text-center">
         <header className="flex w-full flex-col items-center text-center">
-          <h1 className="m-0 max-w-[36rem] text-balance font-futura text-[clamp(2.5rem,7vw,3.75rem)] leading-[0.92] tracking-tighter text-[#0B0B0C]">
-            {t('headline')}
+          <h1 className="m-0 max-w-[36rem] text-balance font-[family-name:var(--font-circular)] text-[clamp(2.25rem,5.5vw,3rem)] font-[700] leading-[1.05] tracking-[-0.045em] text-[#0B0B0C]">
+            {t('headline')
+              .split('\n')
+              .map((line) => (
+                <span key={line} className="block">
+                  {line}
+                </span>
+              ))}
           </h1>
-          <p className="m-0 mt-5 max-w-[600px] font-sans text-[16px] font-medium leading-relaxed text-black/55 md:text-[17px]">
+          <p className="m-0 mt-8 max-w-[26rem] whitespace-pre-line font-sans text-[16px] font-medium leading-relaxed text-black/55 md:text-[17px]">
             {t('lead')}
           </p>
         </header>
       </SheetEnter>
 
-      <div className="mt-12 grid w-full grid-cols-1 gap-4 md:mt-14 md:grid-cols-2 md:gap-5">
+      <div className="mt-12 flex w-full max-w-[22rem] flex-col gap-3">
         <SheetEnter delay={90}>
-          <section
-            className="flex h-full flex-col rounded-[16px] bg-[#F5F5F7] p-6 md:p-7"
-            aria-labelledby="subscribe-email-heading"
+          <form
+            ref={formRef}
+            action={formAction}
+            noValidate
+            className="w-full"
           >
-          <h2
-            id="subscribe-email-heading"
-            className="m-0 font-interTight text-[20px] font-bold tracking-tight text-[#0B0B0C]"
-          >
-            {t('emailEyebrow')}
-          </h2>
-          <p className="m-0 mt-3 font-sans text-[15px] font-medium leading-snug text-black/50">
-            {t('emailLead')}
-          </p>
-          <div className="mt-6 flex flex-1 flex-col justify-end">
-              <form
-                ref={formRef}
-                action={formAction}
-                noValidate
-                className="flex w-full flex-col gap-3"
-              >
-                <div className="pointer-events-none absolute z-[-10] h-0 w-0 overflow-hidden opacity-0">
-                  <input
-                    type="text"
-                    name="website_source_confirm"
-                    tabIndex={-1}
-                    autoComplete="off"
-                  />
-                </div>
-                <input
-                  type="email"
-                  name="email"
-                  value={email}
-                  autoComplete="email"
-                  aria-label={tFooter('emailPlaceholder')}
-                  placeholder={tFooter('emailPlaceholder')}
-                  disabled={isPending || emailDone}
-                  onChange={onEmailChange}
-                  className="h-12 w-full rounded-[10px] border-0 bg-white px-4 font-sans text-[15px] font-medium text-[#0B0B0C] placeholder:text-black/35 focus:outline-none focus-visible:ring-2 focus-visible:ring-black/15 disabled:opacity-50"
-                />
-                <button
-                  type="submit"
-                  disabled={isPending || emailDone}
-                  aria-live="polite"
-                  className={`inline-flex h-12 w-full items-center justify-center rounded-full px-6 font-sans text-[14px] font-bold text-white transition-[background-color,opacity] duration-200 hover:opacity-90 active:scale-[0.98] disabled:opacity-100 ${
-                    emailDone
-                      ? 'bg-[#0071E3] hover:opacity-100 active:scale-100'
-                      : showError
-                        ? 'bg-red-600'
-                        : 'bg-[#0B0B0C]'
-                  }`}
-                >
-                  {emailDone
-                    ? t('allSet')
-                    : isPending
-                      ? tFooter('subscribing')
-                      : showError
-                        ? displayMessage
-                        : tFooter('subscribe')}
-                </button>
-              </form>
-          </div>
-          </section>
-        </SheetEnter>
-
-        <SheetEnter delay={160}>
-          <section
-            className="flex h-full flex-col rounded-[16px] bg-[#F5F5F7] p-6 md:p-7"
-            aria-labelledby="subscribe-rss-heading"
-          >
-            <h2
-              id="subscribe-rss-heading"
-              className="m-0 font-interTight text-[20px] font-bold tracking-tight text-[#0B0B0C]"
+            <div className="pointer-events-none absolute z-[-10] h-0 w-0 overflow-hidden opacity-0">
+              <input
+                type="text"
+                name="website_source_confirm"
+                tabIndex={-1}
+                autoComplete="off"
+              />
+            </div>
+            <div
+              className={`relative flex h-12 items-center rounded-full pl-8 pr-1.5 ${
+                showError ? 'bg-red-600' : 'bg-[#F5F5F7]'
+              }`}
             >
-              {t('rssEyebrow')}
-            </h2>
-            <p className="m-0 mt-3 font-sans text-[15px] font-medium leading-snug text-black/50">
-              {t('rssLead')}
-            </p>
-            <div className="mt-6 flex flex-1 flex-col justify-end gap-3">
-              <p className="m-0 break-all rounded-[10px] bg-white px-4 py-3 font-mono text-[12px] font-medium leading-snug text-[#0B0B0C] md:text-[13px]">
-                {feedUrl}
-              </p>
+              <input
+                id="subscribe-email"
+                type="email"
+                name="email"
+                value={email}
+                autoComplete="email"
+                aria-label={t('emailEyebrow')}
+                aria-invalid={showError || undefined}
+                placeholder={showError ? '' : t('emailEyebrow')}
+                disabled={isPending || emailDone}
+                onChange={onEmailChange}
+                onFocus={() => setErrorDismissed(true)}
+                className={`min-w-0 flex-1 border-0 bg-transparent font-sans text-[16px] font-medium outline-none disabled:opacity-50 ${
+                  showError
+                    ? 'text-transparent caret-transparent'
+                    : 'text-[#0B0B0C] placeholder:text-black/35'
+                }`}
+              />
+              {showError ? (
+                <span className="pointer-events-none absolute inset-y-0 left-8 right-12 flex items-center truncate font-sans text-[16px] font-medium text-white">
+                  {displayMessage}
+                </span>
+              ) : null}
               <button
-                type="button"
-                onClick={handleCopy}
-                className="inline-flex h-12 w-full items-center justify-center rounded-full bg-[#0B0B0C] px-6 font-sans text-[14px] font-bold text-white transition-opacity hover:opacity-90 active:scale-[0.98]"
+                type="submit"
+                disabled={isPending || emailDone || showError}
+                aria-live="polite"
+                aria-label={
+                  showError
+                    ? displayMessage
+                    : emailDone
+                      ? t('allSet')
+                      : isPending
+                        ? tFooter('subscribing')
+                        : tFooter('subscribe')
+                }
+                className={`relative z-[1] inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white transition-opacity disabled:opacity-100 ${
+                  showError
+                    ? 'cursor-default bg-white/25 hover:opacity-100'
+                    : emailDone
+                      ? 'bg-[#0071E3] hover:opacity-90'
+                      : 'bg-[#0B0B0C] hover:opacity-90'
+                }`}
               >
-                {copied ? t('copied') : t('copy')}
+                {showError ? (
+                  <X className="h-3.5 w-3.5" strokeWidth={2.25} aria-hidden />
+                ) : emailDone ? (
+                  <Check className="h-3.5 w-3.5" strokeWidth={2.25} aria-hidden />
+                ) : (
+                  <ArrowRight
+                    className="h-3.5 w-3.5"
+                    strokeWidth={2.25}
+                    aria-hidden
+                  />
+                )}
               </button>
             </div>
-          </section>
+          </form>
+        </SheetEnter>
+
+        <SheetEnter delay={140}>
+          <div className="flex h-12 items-center gap-3 rounded-full bg-[#F5F5F7] pl-8 pr-1.5">
+            <p className="m-0 shrink-0 font-sans text-[16px] font-medium text-black/35">
+              {t('rssEyebrow')}
+            </p>
+            <p className="m-0 min-w-0 flex-1 truncate font-sans text-[16px] font-medium text-black/55">
+              {feedUrl.replace(/^https?:\/\//, '')}
+            </p>
+            <button
+              type="button"
+              onClick={handleCopy}
+              aria-label={copied ? t('copied') : `${t('copy')} ${feedUrl}`}
+              className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white transition-opacity hover:opacity-90 ${
+                copied ? 'bg-[#0071E3]' : 'bg-[#0B0B0C]'
+              }`}
+            >
+              {copied ? (
+                <Check className="h-3.5 w-3.5" strokeWidth={2.25} aria-hidden />
+              ) : (
+                <Copy className="h-3.5 w-3.5" strokeWidth={2.25} aria-hidden />
+              )}
+            </button>
+          </div>
         </SheetEnter>
       </div>
     </div>

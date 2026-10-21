@@ -30,6 +30,10 @@ type TimelineItem = {
   text: string;
 };
 
+/** Avenir section lines — same cut as the About poster headlines. */
+const ESSAY_TITLE =
+  "font-[family-name:var(--font-display)] text-[34px] font-[640] leading-snug tracking-[-0.045em] [font-stretch:90%] [font-variation-settings:'wght'_640,'wdth'_90]";
+
 /** Inline: `**bold**`, `*italic*` */
 function renderInline(text: string) {
   const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/);
@@ -191,7 +195,7 @@ function renderBody(blocks: EssayBlock[]) {
       return (
         <h2
           key={`h2-${i}`}
-          className="m-0 mb-4 mt-10 font-interTight text-[clamp(1.35rem,3.5vw,1.75rem)] font-bold leading-[1.2] tracking-tight text-[#0B0B0C] sm:mb-5 sm:mt-12"
+          className={`m-0 mb-4 mt-10 text-[#0B0B0C] sm:mb-5 sm:mt-12 ${ESSAY_TITLE}`}
         >
           {block.text}
         </h2>
@@ -232,7 +236,7 @@ function renderBody(blocks: EssayBlock[]) {
         key={`p-${i}`}
         className={
           isFirst
-            ? 'm-0 mb-8 font-interTight text-[21px] font-semibold leading-[1.45] tracking-tight text-[#0B0B0C] sm:mb-10'
+            ? `m-0 mb-8 text-[#0B0B0C] sm:mb-10 ${ESSAY_TITLE}`
             : 'm-0 mb-5 font-sans text-[16px] font-medium leading-[1.7] tracking-[-0.01em] text-black/70 sm:mb-6 sm:text-[17px]'
         }
       >
@@ -322,8 +326,8 @@ export default function EssayClient({
             aria-hidden
             className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-t from-black/55 via-black/25 to-black/35"
           />
-          <header className="relative z-[2] mx-auto flex max-w-[42rem] flex-col items-center px-5 text-center sm:px-8">
-            <h1 className="m-0 text-balance font-futura text-[clamp(2.75rem,9vw,5rem)] leading-[0.88] tracking-tighter text-white">
+          <header className="relative z-[2] mx-auto flex w-full flex-col items-center px-4 text-center">
+            <h1 className="m-0 whitespace-nowrap font-[family-name:var(--font-display)] text-[clamp(1.75rem,5.6vw,3.75rem)] font-[700] leading-[1.02] tracking-[-0.045em] text-white [font-stretch:90%] [font-variation-settings:'wght'_700,'wdth'_90]">
               {title}
             </h1>
             <p className="mx-auto mt-4 max-w-xl text-balance font-interTight text-[21px] font-semibold leading-normal tracking-tight text-white/70 sm:mt-5">

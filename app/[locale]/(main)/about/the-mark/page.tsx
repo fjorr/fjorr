@@ -37,7 +37,9 @@ export default async function AboutMarkPage() {
   return (
     <MarkClient
       backLabel={t('back')}
+      logoTitle={about('logoTitle')}
       logoBody={about('logoBody')}
+      nameTitle={about('nameTitle')}
       nameBody={about('nameBody')}
     />
   );

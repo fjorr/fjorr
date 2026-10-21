@@ -1,10 +1,16 @@
 'use client';
 
 import React, { useState } from 'react';
+import { ArrowRight, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { Provider } from '@supabase/supabase-js';
 import { Link } from '@/i18n/navigation';
 import { createClient } from '@/lib/supabase/client';
+
+const HEAD =
+  "m-0 text-balance font-[family-name:var(--font-circular)] text-[clamp(2.25rem,5.5vw,3rem)] font-[700] leading-[1.05] tracking-[-0.03em] text-[#0B0B0C]";
+const LEAD =
+  'm-0 mt-4 max-w-[26rem] font-sans text-[16px] font-medium leading-relaxed text-black/55 md:text-[17px]';
 
 function stashAuthNext(nextPath: string) {
   try {
@@ -136,13 +142,9 @@ export default function SignInForm({
 
   if (status === 'sent') {
     return (
-      <div className="w-full max-w-sm flex flex-col items-center gap-3 text-center">
-        <h1 className="m-0 font-interTight text-4xl sm:text-5xl font-extrabold tracking-tight text-page leading-[1.05]">
-          {t('checkEmailTitle')}
-        </h1>
-        <p className="m-0 font-sans text-[16px] text-page-muted leading-relaxed">
-          {t('checkEmailBody', { email })}
-        </p>
+      <div className="flex w-full max-w-[22rem] flex-col items-center text-center">
+        <h1 className={HEAD}>{t('checkEmailTitle')}</h1>
+        <p className={LEAD}>{t('checkEmailBody', { email })}</p>
         <button
           type="button"
           onClick={() => {
@@ -151,7 +153,7 @@ export default function SignInForm({
             setError(null);
             setErrorOn(null);
           }}
-          className="mt-1 font-sans text-[13px] font-semibold text-page-faint hover:text-page-muted transition-colors bg-transparent border-0 p-0 cursor-pointer"
+          className="mt-8 border-0 bg-transparent p-0 font-sans text-[15px] font-medium text-black/45 transition-colors hover:text-[#0B0B0C]"
         >
           {t('useDifferentEmail')}
         </button>
@@ -160,93 +162,91 @@ export default function SignInForm({
   }
 
   return (
-    <div className="w-full max-w-sm flex flex-col gap-5 text-center">
-      <div className="flex flex-col gap-2">
-        <h1 className="m-0 font-interTight text-4xl sm:text-5xl font-extrabold tracking-tight text-page leading-[1.05]">
-          {t('signInTitle')}
-        </h1>
-        <p className="m-0 font-sans text-[16px] text-page-muted leading-relaxed">
-          {t('signInBody')}
-        </p>
-      </div>
+    <div className="flex w-full max-w-[22rem] flex-col items-center text-center">
+      <h1 className={HEAD}>{t('signInTitle')}</h1>
+      <p className={LEAD}>{t('signInBody')}</p>
 
-      <form
-        onSubmit={handleSubmit}
-        noValidate
-        className="flex flex-col gap-4 text-left"
-      >
-        <input
-          type="email"
-          autoComplete="email"
-          autoFocus
-          aria-label={t('email')}
-          value={email}
-          onChange={(e) => {
-            setEmail(e.target.value);
-            if (errorOn === 'email') {
-              setError(null);
-              setErrorOn(null);
-              if (status === 'error') setStatus('idle');
-            }
-          }}
-          placeholder={t('emailPlaceholder')}
-          disabled={busy}
-          className="w-full rounded-xl px-5 py-4 bg-page-chip font-sans font-semibold text-[15px] text-page placeholder-page-muted border border-page-faint focus:outline-none focus:border-[color-mix(in_srgb,var(--page-fg)_35%,transparent)] disabled:opacity-40 transition-colors"
-        />
-
-        <button
-          type="submit"
-          disabled={busy}
-          aria-live="polite"
-          className={`w-full h-14 inline-flex items-center justify-center rounded-full font-sans text-[15px] font-bold tracking-tight shadow-2xl transition-all duration-150 disabled:opacity-40 disabled:pointer-events-none ${
-            emailError
-              ? 'bg-red-600 text-white hover:opacity-85'
-              : 'bg-[var(--page-fg)] text-[var(--page-bg)] hover:opacity-90 active:scale-95'
+      <form onSubmit={handleSubmit} noValidate className="mt-6 w-full">
+        <div
+          className={`relative flex h-12 items-center rounded-full pl-8 pr-1.5 ${
+            emailError ? 'bg-red-600' : 'bg-[#F5F5F7]'
           }`}
         >
-          {status === 'loading'
-            ? t('sending')
-            : emailError
-              ? emailError
-              : t('sendLink')}
-        </button>
+          <input
+            type="email"
+            autoComplete="email"
+            autoFocus
+            aria-label={t('email')}
+            aria-invalid={emailError ? true : undefined}
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              if (errorOn === 'email') {
+                setError(null);
+                setErrorOn(null);
+                if (status === 'error') setStatus('idle');
+              }
+            }}
+            onFocus={() => {
+              if (errorOn === 'email') {
+                setError(null);
+                setErrorOn(null);
+                if (status === 'error') setStatus('idle');
+              }
+            }}
+            placeholder={emailError ? '' : t('email')}
+            disabled={busy}
+            className={`min-w-0 flex-1 border-0 bg-transparent font-sans text-[16px] font-medium outline-none disabled:opacity-50 ${
+              emailError
+                ? 'text-transparent caret-transparent'
+                : 'text-[#0B0B0C] placeholder:text-black/35'
+            }`}
+          />
+          {emailError ? (
+            <span className="pointer-events-none absolute inset-y-0 left-8 right-12 flex items-center truncate font-sans text-[16px] font-medium text-white">
+              {emailError}
+            </span>
+          ) : null}
+          <button
+            type="submit"
+            disabled={busy || !email.trim() || Boolean(emailError)}
+            aria-label={
+              emailError
+                ? emailError
+                : status === 'loading'
+                  ? t('sending')
+                  : t('sendLink')
+            }
+            className={`relative z-[1] inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white ${
+              emailError
+                ? 'cursor-default bg-white/25'
+                : 'bg-[#0B0B0C] transition-opacity hover:opacity-90 disabled:opacity-40'
+            }`}
+          >
+            {emailError ? (
+              <X className="h-3.5 w-3.5" strokeWidth={2.25} aria-hidden />
+            ) : (
+              <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.25} aria-hidden />
+            )}
+          </button>
+        </div>
       </form>
 
-      <div className="flex flex-col gap-5">
-        <div className="flex items-center gap-3">
-          <div className="h-px flex-1 border-t border-page-faint" />
-          <span className="font-sans text-[12px] font-medium text-page-faint">
-            {t('orGoogle')}
-          </span>
-          <div className="h-px flex-1 border-t border-page-faint" />
-        </div>
-
+      <div className="mt-8 flex flex-col items-center gap-3">
         <button
           type="button"
           disabled={busy}
           onClick={() => handleOAuth('google')}
-          aria-live="polite"
-          className={`h-12 rounded-full font-sans text-[14px] font-semibold disabled:opacity-40 transition-all active:scale-[0.98] flex items-center justify-center gap-2.5 border-0 cursor-pointer ${
-            oauthError
-              ? 'bg-red-600 text-white hover:opacity-85'
-              : 'bg-page-chip hover:bg-page-chip-hover text-page'
-          }`}
+          className="inline-flex items-center gap-2 border-0 bg-transparent p-0 font-sans text-[15px] font-medium text-black/45 transition-colors hover:text-[#0B0B0C] disabled:opacity-40"
         >
-          {oauthError ? (
-            oauthError
-          ) : (
-            <>
-              <GoogleGlyph className="w-[18px] h-[18px]" />
-              {t('continueGoogle')}
-            </>
-          )}
+          <GoogleGlyph className="h-3.5 w-3.5" />
+          {oauthError || t('continueGoogle')}
         </button>
-
-        <p className="m-0 font-sans text-[13px] leading-snug text-page-faint">
+        <p className="m-0 font-sans text-[15px] font-medium text-black/45">
           {t('createViaBureaux')}{' '}
           <Link
             href="/bureaux"
-            className="font-semibold text-page-muted underline underline-offset-2 hover:text-page transition-colors"
+            className="text-[#0B0B0C] transition-opacity hover:opacity-70"
           >
             {t('createViaBureauxCta')}
           </Link>

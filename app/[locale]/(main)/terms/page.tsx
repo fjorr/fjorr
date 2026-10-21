@@ -34,8 +34,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function TermsPage() {
   const t = await getTranslations('Terms');
-
-  const title = `${t('titleLine1')} ${t('titleLine2')}`;
+  const title = t('titleLine1');
   const sections: LegalSection[] = [
     { title: t('s1Title'), paragraphs: [t('s1Body')] },
     { title: t('s2Title'), paragraphs: [t('s2Body')] },

@@ -54,7 +54,7 @@ export default function BureauxHero({ title }: { title: string }) {
         />
         <div className="absolute inset-0 flex items-center justify-center px-4 sm:px-6 md:px-8">
           <h1
-            className="m-0 w-full max-w-none text-center font-futura text-[clamp(4.5rem,22vw,14rem)] leading-[0.82] tracking-tighter text-white select-none will-change-[transform,opacity]"
+            className="m-0 w-full max-w-none text-center font-futura text-[clamp(4.5rem,22vw,14rem)] leading-[0.95] text-white select-none will-change-[transform,opacity]"
             style={
               reduced
                 ? undefined
