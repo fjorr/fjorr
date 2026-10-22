@@ -97,7 +97,7 @@ export default async function AccountBureauxPage({
           </p>
         ) : null}
 
-        <h1 className="m-0 select-none font-interTight text-3xl font-bold tracking-tight text-[#0B0B0C] sm:text-4xl">
+        <h1 className="m-0 select-none font-[family-name:var(--font-circular-black)] text-3xl font-[900] leading-[1.05] tracking-[-0.03em] text-[#0B0B0C] sm:text-4xl">
           {t('bureauxTitle')}
         </h1>
 

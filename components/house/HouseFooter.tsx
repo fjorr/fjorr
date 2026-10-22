@@ -165,11 +165,11 @@ export default function HouseFooter({
 
   return (
     <div className="relative z-50 w-full shrink-0">
-      <div className="relative grid h-[54px] w-full grid-cols-[1fr_auto_1fr] items-center gap-x-3 overflow-hidden px-6 md:px-[54px]">
+      <div className="relative grid h-[54px] w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 overflow-hidden px-6 md:grid-cols-[1fr_auto_1fr] md:px-[54px]">
         <div className="relative z-[1] min-w-0 justify-self-start">
           {left ?? <div />}
         </div>
-        <div className="relative z-[1] flex max-w-full items-center justify-center gap-3 justify-self-center overflow-hidden sm:gap-4">
+        <div className="relative z-[1] flex min-w-0 max-w-full items-center justify-start gap-3 justify-self-start overflow-hidden sm:gap-4 md:justify-center md:justify-self-center">
           {center ? (
             <div className="max-w-[40vw] overflow-hidden sm:max-w-none">
               {center}

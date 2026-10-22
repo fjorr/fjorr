@@ -113,18 +113,18 @@ export default function ArtifactSheet({
         {/* Masthead — one centered composition */}
         <header className="mx-auto max-w-[28rem] text-center md:max-w-[32rem]">
           <p
-            className={`font-sans text-[13px] font-medium tracking-normal ${inkMute}`}
+            className={`font-sans text-[13px] font-medium tracking-tight ${inkMute}`}
           >
             {t('label')}
           </p>
           <h1
-            className={`mt-3 font-interTight text-[clamp(2.5rem,7vw,3.75rem)] font-bold leading-[0.92] tracking-[-0.03em] text-balance ${ink}`}
+            className={`mt-3 font-[family-name:var(--font-circular-black)] text-[clamp(2.5rem,7vw,3.75rem)] font-[900] leading-[0.92] tracking-[-0.045em] text-balance ${ink}`}
           >
             {artifact.name}
           </h1>
           {meta ? (
             <p
-              className={`mt-3 font-sans text-[13px] font-medium tracking-[0.02em] ${inkSoft}`}
+              className={`mt-3 font-sans text-[13px] font-medium tracking-tight ${inkSoft}`}
             >
               {meta}
             </p>
@@ -135,7 +135,7 @@ export default function ArtifactSheet({
           <section className="mx-auto mt-8 max-w-[34rem] md:mt-10">
             {artifact.quote ? (
               <p
-                className={`text-center font-interTight text-[clamp(1.15rem,2.4vw,1.35rem)] font-semibold leading-[1.45] tracking-[-0.015em] text-balance ${ink}`}
+                className={`text-center font-interTight text-[clamp(1.15rem,2.4vw,1.35rem)] font-semibold leading-[1.45] tracking-tight text-balance ${ink}`}
               >
                 {artifact.quote}
               </p>
@@ -155,7 +155,7 @@ export default function ArtifactSheet({
         {artifact.filmConnections.length > 0 ? (
           <section className="mx-auto mt-8 w-full max-w-[34rem] md:mt-10">
             <h2
-              className={`mb-3 text-center font-sans text-[13px] font-medium tracking-normal ${inkMute}`}
+              className={`mb-3 text-center font-sans text-[13px] font-medium tracking-tight ${inkMute}`}
             >
               {t('relatedFilms')}
             </h2>

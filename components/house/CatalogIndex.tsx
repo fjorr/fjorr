@@ -283,7 +283,7 @@ export default function CatalogIndex({
 
       {viewMode === 'grid' ? (
         displayItems.length === 0 && showKindFilter ? (
-          <p className="mx-auto w-full max-w-[44rem] py-2.5 font-interTight text-[24px] font-bold leading-none tracking-tight text-[#0B0B0C] sm:text-[28px] md:text-[32px]">
+          <p className="mx-auto w-full max-w-[44rem] py-2.5 font-[family-name:var(--font-circular-black)] text-[24px] font-[900] leading-none tracking-[-0.03em] text-[#0B0B0C] sm:text-[28px] md:text-[32px]">
             {tSearch('nothingMatches')}
           </p>
         ) : (
@@ -321,7 +321,7 @@ export default function CatalogIndex({
               <li
                 className={
                   showKindFilter
-                    ? 'py-2.5 font-interTight text-[24px] font-bold leading-none tracking-tight text-[#0B0B0C] sm:text-[28px] md:text-[32px]'
+                    ? 'py-2.5 font-[family-name:var(--font-circular-black)] text-[24px] font-[900] leading-none tracking-[-0.03em] text-[#0B0B0C] sm:text-[28px] md:text-[32px]'
                     : 'py-1.5 font-sans text-[13px] text-black/40'
                 }
               >

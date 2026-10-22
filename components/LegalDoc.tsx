@@ -29,7 +29,7 @@ export default function LegalDoc({
     <div className="w-full bg-white px-6 pb-20 pt-16 text-[#0B0B0C] md:px-[54px] md:pb-28 md:pt-20">
       <article className="mx-auto w-full max-w-[40rem]">
         <header className="mb-16 flex flex-col items-center text-center md:mb-20">
-          <h1 className="m-0 max-w-[36rem] text-balance font-futura text-[clamp(2.5rem,7vw,3.75rem)] leading-[1.05] text-[#0B0B0C]">
+          <h1 className="m-0 max-w-[36rem] text-balance font-[family-name:var(--font-circular-black)] text-[clamp(2.5rem,7vw,3.75rem)] font-[900] leading-[1.05] tracking-[-0.04em] text-[#0B0B0C]">
             {title}
           </h1>
           <p className="m-0 mt-5 font-sans text-[13px] font-medium tabular-nums text-black/35">
@@ -50,7 +50,7 @@ export default function LegalDoc({
                 i === 0 ? '' : 'mt-12 md:mt-14'
               }`}
             >
-              <h2 className="m-0 font-sans text-[22px] font-bold leading-snug tracking-tight text-[#0B0B0C] md:text-[26px]">
+              <h2 className="m-0 font-[family-name:var(--font-circular-black)] text-[22px] font-[900] leading-[1.05] tracking-[-0.03em] text-[#0B0B0C] md:text-[26px]">
                 {section.title}
               </h2>
               {section.paragraphs?.map((p) => (

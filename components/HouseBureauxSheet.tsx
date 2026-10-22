@@ -51,7 +51,7 @@ export default function HouseBureauxSheet({
               aria-current={pathname === item.href ? 'page' : undefined}
               className="flex min-h-[220px] flex-col justify-between rounded-[24px] bg-[#F5F5F7] p-6 text-left transition-transform duration-200 ease-out hover:-translate-y-0.5 md:min-h-[260px] md:p-7"
             >
-              <span className="font-interTight text-[28px] font-bold leading-none tracking-tight text-[#0B0B0C] md:text-[32px]">
+              <span className="font-[family-name:var(--font-circular-black)] text-[28px] font-[900] leading-none tracking-[-0.03em] text-[#0B0B0C] md:text-[32px]">
                 {t(item.labelKey)}
               </span>
               <span className="font-sans text-[15px] font-medium leading-snug text-black/45 md:text-[16px]">

@@ -56,7 +56,7 @@ export default function HouseLegalSheet({
                 }
                 className="flex min-h-[160px] flex-col justify-between rounded-[20px] bg-[#F5F5F7] p-4 text-left transition-transform duration-200 ease-out hover:-translate-y-0.5 sm:min-h-[220px] sm:rounded-[24px] sm:p-6 md:min-h-[260px] md:p-7"
               >
-                <span className="font-interTight text-[22px] font-bold leading-none tracking-tight text-[#0B0B0C] sm:text-[28px] md:text-[32px]">
+                <span className="font-[family-name:var(--font-circular-black)] text-[22px] font-[900] leading-none tracking-[-0.03em] text-[#0B0B0C] sm:text-[28px] md:text-[32px]">
                   {t(item.labelKey)}
                 </span>
                 <span className="font-sans text-[13px] font-medium leading-snug text-black/45 sm:text-[15px] md:text-[16px]">

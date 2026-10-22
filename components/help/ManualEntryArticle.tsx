@@ -108,7 +108,7 @@ export function ManualEntryArticle({
         <p className="m-0 font-sans text-[13px] sm:text-[14px] font-semibold text-page-muted select-none">
           {entry.title}
         </p>
-        <h1 className="m-0 font-interTight font-extrabold tracking-tight text-[clamp(1.75rem,4.5vw,2.25rem)] print:text-[2rem] text-page leading-[1.08] select-none text-balance">
+        <h1 className="m-0 font-[family-name:var(--font-circular-black)] font-[900] tracking-[-0.03em] text-[clamp(1.75rem,4.5vw,2.25rem)] print:text-[2rem] text-page leading-[1.05] select-none text-balance">
           {entry.headline}
         </h1>
         {entry.updated ? (

@@ -40,12 +40,12 @@ export type AboutCopy = {
   posters: AboutPoster[];
 };
 
-/** Poster headlines — Avenir Next at a normal width, sentence case, not the condensed cut. */
+/** Poster headlines — Circular Black. */
 const POSTER_HEAD =
-  'm-0 text-balance font-[family-name:var(--font-display)] text-[34px] font-[640] leading-snug tracking-[-0.045em] text-white [font-stretch:90%] [font-variation-settings:"wght"_640,"wdth"_90]';
+  'm-0 text-balance font-[family-name:var(--font-circular-black)] text-[34px] font-[900] leading-[1.05] tracking-[-0.03em] text-white';
 
 const BEAT_TYPE =
-  'm-0 w-full max-w-[24rem] text-balance text-center font-[family-name:var(--font-circular)] text-[36px] font-[700] leading-[1.25] tracking-[-0.03em] text-[#f5f5f7] sm:max-w-[38rem] md:max-w-[44rem]';
+  'm-0 w-full max-w-[24rem] text-balance text-center font-[family-name:var(--font-circular)] text-[36px] font-[700] leading-[1.05] tracking-[-0.03em] text-[#f5f5f7] sm:max-w-[38rem] md:max-w-[44rem]';
 
 /** Apple-style: soft fade + rise. One motion for every beat. */
 function AppleBeat({ text }: { text: string }) {
@@ -127,7 +127,7 @@ function PosterCopy({
           )
         )}
       </h2>
-      <p className="m-0 mt-1 max-w-[22rem] text-balance font-interTight text-[17px] font-semibold leading-[1.45] tracking-tight text-white/70 sm:mt-1.5 sm:text-[18px]">
+      <p className="m-0 mt-1 max-w-[22rem] text-balance font-sans text-[17px] font-semibold leading-[1.45] tracking-tight text-white/70 sm:mt-1.5 sm:text-[18px]">
         {poster.tagline}
       </p>
       <span className="mt-6 inline-flex h-9 items-center rounded-full bg-white px-4 font-sans text-[14px] font-semibold tracking-tight text-[#0B0B0C]">
@@ -183,6 +183,33 @@ function PosterFace({
 
   const markInline = !hasVideo && poster.image && fit === 'contain';
 
+  if (markInline && poster.image) {
+    return (
+      <div
+        ref={rootRef}
+        className="relative flex min-h-[440px] w-full flex-1 bg-black sm:min-h-[480px]"
+      >
+        <div className="flex flex-1 items-center justify-center px-12 py-16">
+          <div className="relative aspect-square w-56 max-w-[70%]">
+            <Image
+              src={poster.image}
+              alt=""
+              fill
+              sizes="224px"
+              className="object-contain object-center"
+            />
+          </div>
+        </div>
+        <span
+          aria-hidden
+          className="pointer-events-none absolute bottom-5 right-5 z-[1] inline-flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#0B0B0C]"
+        >
+          <ArrowRight className="h-4 w-4" strokeWidth={2.25} />
+        </span>
+      </div>
+    );
+  }
+
   return (
     <div ref={rootRef} className="relative flex min-h-[440px] w-full flex-1 flex-col bg-black sm:min-h-[480px]">
       {!hasVideo && poster.image && fit !== 'contain' ? (
@@ -232,21 +259,7 @@ function PosterFace({
       <div className="relative z-[1]">
         <PosterCopy poster={poster} readLabel={readLabel} />
       </div>
-      {markInline && poster.image ? (
-        <div className="relative z-[1] flex flex-1 items-center justify-center px-8 py-8">
-          <div className="relative aspect-square w-52 max-w-full shrink-0">
-            <Image
-              src={poster.image}
-              alt=""
-              fill
-              sizes="180px"
-              className="object-contain object-center"
-            />
-          </div>
-        </div>
-      ) : (
-        <div className="relative z-[1] min-h-16 flex-1" />
-      )}
+      <div className="relative z-[1] min-h-16 flex-1" />
     </div>
   );
 }
@@ -306,7 +319,7 @@ function MakeEmFeelPoster({
         <h2 className={`${POSTER_HEAD} whitespace-pre-line`}>
           {headlineLines.join(' ')}
         </h2>
-        <p className="m-0 mt-1.5 max-w-[28rem] font-interTight text-[17px] font-semibold leading-[1.45] tracking-tight text-white/65 sm:mt-2 sm:text-[18px]">
+        <p className="m-0 mt-1.5 max-w-[28rem] font-sans text-[17px] font-semibold leading-[1.45] tracking-tight text-white/65 sm:mt-2 sm:text-[18px]">
           {blurb}
         </p>
         <div
@@ -318,7 +331,7 @@ function MakeEmFeelPoster({
             } as React.CSSProperties
           }
         >
-          <ContactPill className="!min-w-0 !justify-start" />
+          <ContactPill compact className="!min-w-0 !justify-start" />
         </div>
       </div>
 
@@ -549,6 +562,7 @@ export default function AboutClient({ copy }: { copy: AboutCopy }) {
               <Link
                 key={poster.href}
                 href={poster.href}
+                aria-label={poster.imageFit === 'contain' ? poster.title : undefined}
                 className="group relative flex h-full w-full flex-col overflow-hidden rounded-[8px] bg-[#0c0c0c]"
               >
                 <PosterFace poster={poster} readLabel={copy.posterRead} />

@@ -62,19 +62,6 @@ type Props = {
 const MARK_HEAD =
   "m-0 text-balance font-[family-name:var(--font-circular-black)] text-[clamp(2.25rem,5.5vw,3rem)] font-[900] leading-[1.05] tracking-[-0.03em] text-white";
 
-/** Trial Circular draws accented letters as the plain letter, so those marks stay in the UI face. */
-function MarkHeadlineText({ text }: { text: string }) {
-  return text.split(/([^\u0000-\u007F]+)/).map((part, i) =>
-    /[^\u0000-\u007F]/.test(part) ? (
-      <span key={i} className="font-sans font-extrabold">
-        {part}
-      </span>
-    ) : (
-      part
-    )
-  );
-}
-
 const MARK_SUB =
   'm-0 mx-auto mt-6 max-w-[34rem] text-balance font-interTight text-[20px] font-semibold leading-[1.45] tracking-tight text-white/70 sm:mt-8 sm:text-[22px]';
 
@@ -276,7 +263,7 @@ export default function MarkClient({
                   animation: 'fjorr-apple-up 0.9s cubic-bezier(0.25, 0.1, 0.25, 1) both',
                 }}
               >
-                <MarkHeadlineText text={logoTitle} />
+                {logoTitle}
               </h1>
               <p
                 className={`${MARK_SUB} mark-enter will-change-[transform,opacity]`}
@@ -311,9 +298,7 @@ export default function MarkClient({
             style={{ visibility: 'hidden' }}
           >
             <div className="w-full max-w-[44rem] text-center">
-              <p className={MARK_HEAD}>
-                <MarkHeadlineText text={nameTitle} />
-              </p>
+              <p className={MARK_HEAD}>{nameTitle}</p>
               <p className={MARK_SUB}>{nameBody}</p>
             </div>
           </div>

@@ -8,12 +8,15 @@ interface ContactPillProps {
   className?: string;
   /** Button label. Defaults to Nav.letsTalk. */
   label?: string;
+  /** Match the About poster buttons (36px). */
+  compact?: boolean;
 }
 
 export const ContactPill: React.FC<ContactPillProps> = ({
   email = 'control@fjorr.com',
   className = '',
   label,
+  compact = false,
 }) => {
   const t = useTranslations('Nav');
   const [copied, setCopied] = useState(false);
@@ -28,17 +31,21 @@ export const ContactPill: React.FC<ContactPillProps> = ({
     }
   };
 
+  const control = compact
+    ? 'h-9 px-4 font-sans text-[14px] font-semibold tracking-tight'
+    : 'h-12 px-6 py-2.5 text-[14px] font-semibold font-inter shadow-xl';
+
   return (
     <div className={`relative flex items-center justify-center min-w-[240px] select-none ${className}`}>
       {!copied ? (
         <button
           onClick={handleCopy}
-          className="h-12 px-6 py-2.5 bg-[var(--page-fg)] text-[var(--page-bg)] font-semibold text-[14px] rounded-full hover:opacity-90 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 shadow-xl font-inter"
+          className={`${control} bg-[var(--page-fg)] text-[var(--page-bg)] rounded-full hover:opacity-90 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200`}
         >
           {label || t('letsTalk')}
         </button>
       ) : (
-        <div className="relative h-12 px-7 rounded-full font-semibold text-[14px] flex items-center justify-center font-inter overflow-hidden animate-in zoom-in-95 fade-in duration-200 border border-[color-mix(in_srgb,var(--page-fg)_22%,transparent)]">
+        <div className={`relative ${compact ? 'h-9 px-4' : 'h-12 px-7'} rounded-full font-semibold text-[14px] flex items-center justify-center font-inter overflow-hidden animate-in zoom-in-95 fade-in duration-200 border border-[color-mix(in_srgb,var(--page-fg)_22%,transparent)]`}>
           <div
             className="absolute inset-0 pointer-events-none"
             style={{

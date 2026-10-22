@@ -90,7 +90,7 @@ export default function SubscribeClient({ feedUrl }: Props) {
     <div className="mx-auto flex w-full max-w-[920px] flex-col items-center px-6 md:px-[54px]">
       <SheetEnter className="flex w-full max-w-[600px] flex-col items-center text-center">
         <header className="flex w-full flex-col items-center text-center">
-          <h1 className="m-0 max-w-[36rem] text-balance font-[family-name:var(--font-circular)] text-[clamp(2.25rem,5.5vw,3rem)] font-[700] leading-[1.05] tracking-[-0.045em] text-[#0B0B0C]">
+          <h1 className="m-0 max-w-[36rem] text-balance font-[family-name:var(--font-circular-black)] text-[clamp(2.25rem,5.5vw,3rem)] font-[900] leading-[1.05] tracking-[-0.045em] text-[#0B0B0C]">
             {t('headline')
               .split('\n')
               .map((line) => (

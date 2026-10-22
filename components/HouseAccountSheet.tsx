@@ -21,7 +21,7 @@ const ITEMS: NavItem[] = [
 ];
 
 const ACCOUNT_HEAD =
-  "m-0 mb-8 text-center text-balance font-[family-name:var(--font-display)] text-[clamp(2.25rem,5.5vw,3rem)] font-[640] leading-[1.05] tracking-[-0.045em] text-[#0B0B0C] [font-stretch:90%] [font-variation-settings:'wght'_640,'wdth'_90]";
+  "m-0 mb-8 text-center text-balance font-[family-name:var(--font-circular-black)] text-[clamp(2.25rem,5.5vw,3rem)] font-[900] leading-[1.05] tracking-[-0.045em] text-[#0B0B0C]";
 
 /**
  * Account doorway — same centered white sheet as Languages and Shortcuts.

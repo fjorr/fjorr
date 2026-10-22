@@ -46,7 +46,7 @@ export default function ShortcutsPanel() {
     >
       <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-6">
         <SheetEnter className="flex w-full max-w-[22rem] flex-col items-center">
-          <h1 className="m-0 mb-8 text-center text-balance font-[family-name:var(--font-display)] text-[clamp(2.25rem,5.5vw,3rem)] font-[640] leading-[1.05] tracking-[-0.045em] text-[#0B0B0C] [font-stretch:90%] [font-variation-settings:'wght'_640,'wdth'_90]">
+          <h1 className="m-0 mb-8 text-center text-balance font-[family-name:var(--font-circular-black)] text-[clamp(2.25rem,5.5vw,3rem)] font-[900] leading-[1.05] tracking-[-0.045em] text-[#0B0B0C]">
             {t('keysTitle')}
           </h1>
           <ul className="m-0 grid w-full list-none grid-cols-2 grid-rows-3 gap-2.5 p-0">

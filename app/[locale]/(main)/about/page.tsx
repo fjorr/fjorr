@@ -58,7 +58,6 @@ function buildManifestoBeats(manifesto: string): { text: string }[] {
 
 export default async function AboutPage() {
   const t = await getTranslations('About');
-  const partner = await getTranslations('Partner');
   const copy: AboutCopy = {
     manifestoBeats: buildManifestoBeats(t('manifesto')),
     scrollLabel: t('scrollCue'),
@@ -67,7 +66,7 @@ export default async function AboutPage() {
     readAsParagraph: t('readAsParagraph'),
     readAsSentences: t('readAsSentences'),
     posterRead: t('posterRead'),
-    contactHeadlineLines: [partner('headlineLine1'), partner('headlineLine2')],
+    contactHeadlineLines: [t('partnershipsHeadline')],
     contactBlurb: t('contactBlurb'),
     posters: [
       {
@@ -80,7 +79,7 @@ export default async function AboutPage() {
       },
       {
         href: '/about/the-mark',
-        title: t('posterMarkTitle'),
+        title: t('markLink'),
         tagline: t('posterMarkTagline'),
         image: MARK_IMAGE,
         imageFit: 'contain',

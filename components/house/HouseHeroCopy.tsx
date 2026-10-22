@@ -185,7 +185,7 @@ export default function HouseHeroCopy({
           // Saved set: weight 800, width 75%, leading 0.85, tracking -0.05em, size clamp(2.5rem, 5.2vw, 3.75rem)
           <h2
             key={visible ? 'intro-in' : 'intro-out'}
-            className="m-0 mb-8 max-w-5xl font-[family-name:var(--font-circular)] text-[clamp(2rem,5.8vw,4.75rem)] font-[700] normal-case leading-[0.96] tracking-[-0.05em] text-[#f5f5f7] will-change-[transform,opacity] md:mb-10"
+            className="m-0 mb-8 max-w-5xl font-[family-name:var(--font-circular-black)] text-[clamp(2.5rem,5.8vw,4.75rem)] font-[900] normal-case leading-[0.96] tracking-[-0.05em] text-[#f5f5f7] will-change-[transform,opacity] md:mb-10"
             style={
               introMotion
                 ? {
@@ -223,7 +223,7 @@ export default function HouseHeroCopy({
             </div>
           </>
         ) : title ? (
-          <TitleTag className="mb-3 max-w-lg font-interTight text-[40px] font-bold leading-[0.95] tracking-tight text-white md:text-[52px]">
+          <TitleTag className="mb-3 max-w-lg font-[family-name:var(--font-circular-black)] text-[40px] font-[900] leading-[0.95] tracking-[-0.03em] text-white md:text-[52px]">
             {title}
           </TitleTag>
         ) : null}
@@ -303,9 +303,14 @@ export default function HouseHeroCopy({
                 tabIndex={visible ? 0 : -1}
                 className="inline-flex h-10 items-center rounded-full bg-white px-5 font-sans text-[14px] font-semibold tracking-tight text-[#0B0B0C] transition-opacity hover:opacity-90"
               >
-                {runtimeLabel(film.runtime)
-                  ? t('watch', { runtime: runtimeLabel(film.runtime) })
-                  : t('watchPlain')}
+                {runtimeLabel(film.runtime) ? (
+                  <>
+                    <span className="font-bold">{t('watchPlain')}</span>
+                    <span className="ml-1">{runtimeLabel(film.runtime)}</span>
+                  </>
+                ) : (
+                  <span className="font-bold">{t('watchPlain')}</span>
+                )}
               </button>
               {infoHref ? (
                 <Link

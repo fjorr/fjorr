@@ -76,7 +76,7 @@ export default async function AccountShell({
                 introWidth || centered ? 'mx-auto' : ''
               } ${centered ? 'items-center text-center' : 'text-left'}`}
             >
-              <h1 className="select-none font-interTight text-3xl font-bold tracking-tight text-[#0B0B0C] sm:text-4xl">
+              <h1 className="select-none font-[family-name:var(--font-circular-black)] text-3xl font-[900] leading-[1.05] tracking-[-0.03em] text-[#0B0B0C] sm:text-4xl">
                 {title}
               </h1>
               {description ? (

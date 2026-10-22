@@ -325,9 +325,9 @@ export default function ExhibitionSheet({
   /** Locked type scale — eyebrow / section / subhead / body / caption. */
   const type = {
     eyebrow:
-      'font-sans text-[13px] font-medium tracking-normal text-black/50',
+      'font-sans text-[13px] font-medium tracking-tight text-black/50',
     section:
-      'font-interTight text-[1.25rem] font-semibold leading-normal tracking-[-0.02em] text-[#0B0B0C]',
+      'font-[family-name:var(--font-circular-black)] text-[1.25rem] font-[900] leading-normal tracking-[-0.03em] text-[#0B0B0C]',
     body: 'font-sans text-[16px] font-normal leading-[1.65] tracking-[-0.005em] text-black/65',
     caption: 'font-sans text-[13px] font-medium leading-snug text-black/40',
     creditName:
@@ -386,12 +386,12 @@ export default function ExhibitionSheet({
       style={{ top: NAV_BAND_PX - 1 }}
       onScroll={(event) => emitInfoScroll(event.currentTarget)}
     >
-      <div className="pointer-events-none sticky top-0 z-10 flex justify-end bg-gradient-to-b from-white from-70% to-transparent px-5 pb-2 pt-5 md:px-8 md:pt-6">
+      <div className="pointer-events-none sticky top-0 z-10 flex justify-end bg-gradient-to-b from-white from-70% to-transparent px-5 pt-[15px] md:px-8 md:pt-[19px]">
         <button
           type="button"
           onClick={onClose}
           aria-label={t('keysClose')}
-          className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full bg-black/[0.04] text-black/45 transition-colors hover:bg-black/[0.08] hover:text-black"
+          className="pointer-events-auto flex h-9 w-9 items-center justify-center rounded-full bg-black/[0.04] text-black/45 transition-colors hover:bg-black/[0.08] hover:text-black"
         >
           <span className="text-[22px] leading-none" aria-hidden>
             ×
@@ -399,10 +399,10 @@ export default function ExhibitionSheet({
         </button>
       </div>
 
-      <div className="mx-auto w-full max-w-[720px] px-6 pt-4 md:px-10 md:pt-5">
+      <div className="mx-auto w-full max-w-[720px] px-6 md:px-10">
         <header className="mx-auto max-w-[28rem] text-center md:max-w-[32rem]">
           <p className={type.eyebrow}>{t('sheetLabel')}</p>
-          <h1 className="mt-3 text-balance font-interTight text-[clamp(2.5rem,7vw,3.75rem)] font-bold leading-[0.92] tracking-[-0.03em] text-[#0B0B0C]">
+          <h1 className="mt-3 text-balance font-[family-name:var(--font-circular-black)] text-[clamp(2.5rem,7vw,3.75rem)] font-[900] leading-[0.92] tracking-[-0.045em] text-[#0B0B0C]">
             {film.name}
           </h1>
           {metaNodes.length > 0 ? (

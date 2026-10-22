@@ -111,7 +111,7 @@ export default function ArtifactExhibit({
           {!infoOpen ? (
             <div className="flex w-full max-w-4xl shrink-0 flex-col items-center gap-3 px-1 text-center">
               <span
-                className={`max-w-full truncate font-interTight text-[15px] font-bold tracking-tight md:text-[16px] ${textClass}`}
+                className={`max-w-full truncate font-[family-name:var(--font-circular-black)] text-[15px] font-[900] tracking-[-0.03em] md:text-[16px] ${textClass}`}
               >
                 {name}
               </span>

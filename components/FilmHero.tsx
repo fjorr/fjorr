@@ -110,7 +110,7 @@ export default function FilmHero({
               </>
             ) : (
               film.name && (
-                <h1 className="text-[28px] md:text-[36px] font-futura leading-none text-white mb-3">
+                <h1 className="text-[28px] md:text-[36px] font-[family-name:var(--font-circular-black)] font-[900] leading-none tracking-[-0.03em] text-white mb-3">
                   {film.name}
                 </h1>
               )

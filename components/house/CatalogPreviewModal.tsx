@@ -88,7 +88,7 @@ export default function CatalogPreviewModal({
         </div>
 
         <div className="px-5 pb-5 pt-4 sm:px-6 sm:pb-6 sm:pt-5 lg:px-7 lg:pb-7">
-          <h2 className="m-0 font-interTight text-[20px] font-bold leading-tight tracking-tight sm:text-[22px] lg:text-[24px]">
+          <h2 className="m-0 font-[family-name:var(--font-circular-black)] text-[20px] font-[900] leading-tight tracking-[-0.03em] sm:text-[22px] lg:text-[24px]">
             {film.name}
           </h2>
           {meta ? (

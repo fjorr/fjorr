@@ -48,7 +48,7 @@ function formatLocation(
 }
 
 const LINK_CLASS =
-  'block w-full border-0 bg-transparent p-0 text-left font-sans text-[15px] font-semibold tracking-tight text-[#0B0B0C] no-underline transition-opacity hover:opacity-55';
+  'block w-full border-0 bg-transparent px-0 py-1 text-left font-sans text-[15px] font-semibold leading-none tracking-tight text-[#0B0B0C] no-underline transition-opacity hover:opacity-55';
 
 /**
  * Share sheet — language-card shell, identity header, text action list.
@@ -188,7 +188,7 @@ export default function FilmSendSheet({
         role="dialog"
         aria-modal="true"
         aria-label={t('send')}
-        className="relative flex w-[min(72vw,16.5rem)] flex-col rounded-[22px] px-6 pb-10 pt-10 duration-200 animate-in fade-in zoom-in-95 md:w-[18rem] md:rounded-[28px] md:px-7 md:pb-12 md:pt-12"
+        className="relative flex w-[min(72vw,16.5rem)] flex-col rounded-[22px] px-5 pb-5 pt-5 duration-200 animate-in fade-in zoom-in-95 md:w-[18rem] md:rounded-[24px] md:px-6 md:pb-5 md:pt-6"
         style={{ backgroundColor: '#FFFFFF' }}
         onClick={(event) => event.stopPropagation()}
       >
@@ -196,11 +196,11 @@ export default function FilmSendSheet({
           <p className="m-0 font-sans text-[13px] font-medium leading-none tracking-tight text-black/45">
             {t('send')}
           </p>
-          <p className="m-0 mt-2.5 font-interTight text-[22px] font-bold leading-none tracking-tight text-[#0B0B0C] md:text-[24px]">
+          <p className="m-0 mt-1.5 font-[family-name:var(--font-circular-black)] text-[22px] font-[900] leading-none tracking-[-0.03em] text-[#0B0B0C] md:text-[24px]">
             {film.name}
           </p>
           {metaLine || timeLabel ? (
-            <p className="m-0 mt-2 max-w-[14rem] font-sans text-[12px] font-medium leading-snug text-black/40">
+            <p className="m-0 mt-1 max-w-[14rem] font-sans text-[12px] font-medium leading-snug text-black/40">
               {timeLabel
                 ? [metaLine, t('sendMomentMeta', { time: timeLabel })]
                     .filter(Boolean)
@@ -214,7 +214,7 @@ export default function FilmSendSheet({
           <button
             type="button"
             onClick={() => handleCopy('moment', momentPayload)}
-            className={`${LINK_CLASS} mt-8`}
+            className={`${LINK_CLASS} mt-5`}
           >
             {copied === 'moment'
               ? t('sendCopied')
@@ -223,7 +223,7 @@ export default function FilmSendSheet({
         ) : null}
 
         <div
-          className={`flex flex-col items-start gap-4 ${momentPayload && timeLabel ? 'mt-4' : 'mt-8'}`}
+          className={`flex flex-col items-start gap-1 ${momentPayload && timeLabel ? 'mt-1' : 'mt-5'}`}
         >
           <button
             type="button"

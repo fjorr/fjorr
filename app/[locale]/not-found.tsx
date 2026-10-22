@@ -16,7 +16,7 @@ export default function NotFound() {
         <Navbar variant="dark" />
       </div>
       <main className="flex min-h-0 flex-1 flex-col items-center justify-center px-6 pb-8 pt-[56px]">
-        <h1 className="m-0 text-center font-interTight text-[40px] font-bold leading-none tracking-tight text-[#0B0B0C] sm:text-[52px] md:text-[64px]">
+        <h1 className="m-0 text-center font-[family-name:var(--font-circular-black)] text-[40px] font-[900] leading-none tracking-[-0.03em] text-[#0B0B0C] sm:text-[52px] md:text-[64px]">
           {t('title')}
         </h1>
         <Link

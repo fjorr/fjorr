@@ -56,7 +56,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 const HEAD =
-  "m-0 text-balance font-[family-name:var(--font-circular)] text-[clamp(2.25rem,5.5vw,3rem)] font-[700] leading-[1.05] tracking-[-0.03em] text-[#0B0B0C]";
+  "m-0 text-balance font-[family-name:var(--font-circular-black)] text-[clamp(2.25rem,5.5vw,3rem)] font-[900] leading-[1.05] tracking-[-0.03em] text-[#0B0B0C]";
 const LEAD =
   'm-0 mt-4 max-w-[26rem] text-center font-sans text-[16px] font-medium leading-relaxed text-black/55 md:text-[17px]';
 

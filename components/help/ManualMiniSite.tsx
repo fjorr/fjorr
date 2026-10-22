@@ -338,7 +338,7 @@ export default function ManualMiniSite({
 
   const homeBlurb = (
     <div className={`flex flex-col gap-6 ${PAD_X} pb-12 pt-8 sm:gap-7 sm:pb-14 sm:pt-10`}>
-      <h1 className="manual-doc-line manual-doc-line-1 m-0 max-w-[22rem] text-balance font-interTight text-[clamp(2.25rem,5.5vw,3rem)] font-extrabold leading-[1.05] tracking-tight text-page">
+      <h1 className="manual-doc-line manual-doc-line-1 m-0 max-w-[22rem] text-balance font-[family-name:var(--font-circular-black)] text-[clamp(2.25rem,5.5vw,3rem)] font-[900] leading-[1.05] tracking-[-0.03em] text-page">
         {t('homeHeadline')}
       </h1>
       <p className="manual-doc-line manual-doc-line-2 m-0 max-w-[22rem] whitespace-pre-line font-sans text-[16px] leading-relaxed text-page-muted sm:text-[17px]">

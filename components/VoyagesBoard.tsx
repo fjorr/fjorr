@@ -77,7 +77,7 @@ export default function VoyagesBoard({
 
   const pageHeader = (
     <header className="flex w-full flex-col items-center gap-3 text-center">
-      <h1 className="m-0 select-none font-interTight text-3xl font-bold tracking-tight text-[#0B0B0C] sm:text-4xl">
+      <h1 className="m-0 select-none font-[family-name:var(--font-circular-black)] text-3xl font-[900] leading-[1.05] tracking-[-0.03em] text-[#0B0B0C] sm:text-4xl">
         {title}
       </h1>
       <p className="m-0 max-w-[28rem] font-sans text-[16px] font-medium leading-relaxed text-black/45">

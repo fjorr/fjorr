@@ -30,9 +30,9 @@ type TimelineItem = {
   text: string;
 };
 
-/** Avenir section lines — same cut as the About poster headlines. */
+/** Section headlines — Circular Bold, same size as the About posters. */
 const ESSAY_TITLE =
-  "font-[family-name:var(--font-display)] text-[34px] font-[640] leading-snug tracking-[-0.045em] [font-stretch:90%] [font-variation-settings:'wght'_640,'wdth'_90]";
+  "font-[family-name:var(--font-circular-black)] text-[34px] font-[900] leading-[1.05] tracking-[-0.045em]";
 
 /** Inline: `**bold**`, `*italic*` */
 function renderInline(text: string) {
@@ -135,7 +135,7 @@ function EssayCaseRail({ items }: { items: TimelineItem[] }) {
             }}
           >
             <div className="h-full rounded-[8px] bg-[#F5F5F7] px-9 py-11 sm:px-12 sm:py-14">
-              <p className="m-0 mb-3 font-futura text-[clamp(2.25rem,7vw,3.25rem)] leading-[0.9] tracking-tighter text-[#0B0B0C]">
+              <p className="m-0 mb-3 font-[family-name:var(--font-circular-black)] text-[clamp(2.25rem,7vw,3.25rem)] font-[900] leading-[0.9] tracking-[-0.04em] text-[#0B0B0C]">
                 {item.year}
               </p>
               <h3 className="m-0 mb-3 font-interTight text-[16px] font-bold leading-snug tracking-tight text-[#0B0B0C] sm:text-[17px]">
@@ -327,7 +327,7 @@ export default function EssayClient({
             className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-t from-black/55 via-black/25 to-black/35"
           />
           <header className="relative z-[2] mx-auto flex w-full flex-col items-center px-4 text-center">
-            <h1 className="m-0 whitespace-nowrap font-[family-name:var(--font-display)] text-[clamp(1.75rem,5.6vw,3.75rem)] font-[700] leading-[1.02] tracking-[-0.045em] text-white [font-stretch:90%] [font-variation-settings:'wght'_700,'wdth'_90]">
+            <h1 className="m-0 whitespace-nowrap font-[family-name:var(--font-circular-black)] text-[clamp(1.75rem,5.6vw,3.75rem)] font-[900] leading-[1.02] tracking-[-0.045em] text-white">
               {title}
             </h1>
             <p className="mx-auto mt-4 max-w-xl text-balance font-interTight text-[21px] font-semibold leading-normal tracking-tight text-white/70 sm:mt-5">
