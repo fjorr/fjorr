@@ -34,12 +34,9 @@ const avenirNextVariable = localFont({
   display: "swap",
 });
 
-/**
- * Display seats that use Circular locally. The trial files cannot ship in the
- * public repo, so staging uses Fjorr Pro.
- */
+/** CircularXX Web Bold — licensed for fjorr.com. About sentences. */
 const circularXXBold = localFont({
-  src: "../public/fonts/fjorr-pro/FjorrPro-Bold.woff2",
+  src: "../public/fonts/CircularXXWeb-Bold.woff2",
   weight: "700",
   style: "normal",
   variable: "--font-circular",
@@ -47,9 +44,10 @@ const circularXXBold = localFont({
   preload: false,
 });
 
+/** CircularXX Web Black — licensed for fjorr.com. Headlines. */
 const circularXXBlack = localFont({
-  src: "../public/fonts/fjorr-pro/FjorrPro-ExtraBold.woff2",
-  weight: "800",
+  src: "../public/fonts/CircularXXWeb-Black.woff2",
+  weight: "900",
   style: "normal",
   variable: "--font-circular-black",
   display: "swap",
