@@ -327,7 +327,7 @@ export default function EssayClient({
             className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-t from-black/55 via-black/25 to-black/35"
           />
           <header className="relative z-[2] mx-auto flex w-full flex-col items-center px-4 text-center">
-            <h1 className="m-0 whitespace-nowrap font-[family-name:var(--font-circular-black)] text-[clamp(1.75rem,5.6vw,3.75rem)] font-[900] leading-[1.02] tracking-[-0.045em] text-white">
+            <h1 className="m-0 max-w-[12em] text-balance font-[family-name:var(--font-circular-black)] text-[clamp(3rem,7.2vw,5.75rem)] font-[900] leading-[0.96] tracking-[-0.045em] text-white">
               {title}
             </h1>
             <p className="mx-auto mt-4 max-w-xl text-balance font-interTight text-[21px] font-semibold leading-normal tracking-tight text-white/70 sm:mt-5">

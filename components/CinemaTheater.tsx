@@ -1311,8 +1311,8 @@ function CinemaTheater({
             <div className="flex max-w-lg flex-col items-center gap-3">
               {film?.last_line ? (
                 <p
-                  className={`font-sans text-lg font-semibold leading-relaxed ${
-                    isLight ? 'text-[#0B0B0C]/90' : 'text-[#F5F5F7]/90'
+                  className={`font-[family-name:var(--font-circular)] text-[clamp(1.375rem,2.8vw,1.75rem)] font-[700] leading-[1.3] tracking-[-0.03em] text-balance ${
+                    isLight ? 'text-[#0B0B0C]' : 'text-[#F5F5F7]'
                   }`}
                 >
                   {film.last_line}
@@ -1340,22 +1340,24 @@ function CinemaTheater({
             </div>
           )}
 
-          <div
-            className={`flex items-center justify-center gap-x-3.5 ${
-              isLight ? 'text-[#0B0B0C]/55' : 'text-[#F5F5F7]/55'
-            }`}
-          >
+          <div className="flex flex-wrap items-center justify-center gap-2.5">
             <button
               type="button"
               onClick={handleArtifacts}
-              className="font-mono text-[13px] font-medium tracking-[0.05em] uppercase bg-transparent border-0 outline-none cursor-pointer p-0 leading-none whitespace-nowrap opacity-90 hover:opacity-100 transition-opacity"
+              className={`inline-flex h-9 items-center rounded-full border px-4 font-sans text-[14px] font-semibold tracking-tight transition-colors ${
+                isLight
+                  ? 'border-black/15 bg-black/[0.04] text-[#0B0B0C]/80 hover:bg-black/10 hover:text-[#0B0B0C]'
+                  : 'border-white/25 bg-white/10 text-white/90 hover:bg-white/16 hover:text-white'
+              }`}
             >
               {t('artifacts')}
             </button>
             <button
               type="button"
               onClick={handleRewatch}
-              className="font-mono text-[13px] font-medium tracking-[0.05em] uppercase bg-transparent border-0 outline-none cursor-pointer p-0 leading-none whitespace-nowrap opacity-90 hover:opacity-100 transition-opacity"
+              className={`inline-flex h-9 items-center rounded-full px-4 font-sans text-[14px] font-semibold tracking-tight transition-opacity hover:opacity-90 ${
+                isLight ? 'bg-[#0B0B0C] text-white' : 'bg-white text-[#0B0B0C]'
+              }`}
             >
               {t('rewatch')}
             </button>

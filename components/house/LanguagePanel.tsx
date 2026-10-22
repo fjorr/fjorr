@@ -42,13 +42,13 @@ export default function LanguagePanel({
             </span>
           </p>
 
-          <ul className="m-0 mt-8 flex max-w-[26rem] list-none flex-wrap items-center justify-center gap-x-5 gap-y-3 p-0">
+          <ul className="m-0 mt-8 flex w-full max-w-[18rem] list-none flex-col items-center gap-1 p-0 md:max-w-[26rem] md:flex-row md:flex-wrap md:justify-center md:gap-x-5 md:gap-y-3">
             {others.map((code) => (
               <li key={code}>
                 <button
                   type="button"
                   onClick={() => onConfirm(code)}
-                  className="bg-transparent p-0 font-sans text-[15px] font-medium tracking-tight text-black/45 transition-colors hover:text-[#0B0B0C]"
+                  className="bg-transparent px-2 py-2 font-sans text-[15px] font-medium tracking-tight text-black/45 transition-colors hover:text-[#0B0B0C] md:px-0 md:py-0"
                 >
                   {localeLabels[code]}
                 </button>

@@ -135,7 +135,7 @@ export default function ArtifactSheet({
           <section className="mx-auto mt-8 max-w-[34rem] md:mt-10">
             {artifact.quote ? (
               <p
-                className={`text-center font-interTight text-[clamp(1.15rem,2.4vw,1.35rem)] font-semibold leading-[1.45] tracking-tight text-balance ${ink}`}
+                className={`text-center font-[family-name:var(--font-circular)] text-[clamp(1.25rem,2.6vw,1.5rem)] font-[700] leading-[1.35] tracking-[-0.03em] text-balance ${ink}`}
               >
                 {artifact.quote}
               </p>

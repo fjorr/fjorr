@@ -257,10 +257,10 @@ export default function HouseHeroCopy({
 
         <div
           key={isIntro && visible ? 'intro-cta-in' : 'intro-cta'}
-          className={`pointer-events-auto flex flex-wrap items-center gap-x-3.5 gap-y-2 will-change-[transform,opacity] ${
+          className={`pointer-events-auto flex will-change-[transform,opacity] ${
             isIntro
-              ? 'justify-center'
-              : 'justify-center md:justify-start'
+              ? 'flex-col items-center gap-2.5 sm:flex-row sm:gap-3.5'
+              : 'flex-wrap items-center justify-center gap-x-3.5 gap-y-2 md:justify-start'
           }`}
           style={
             introMotion
