@@ -45,6 +45,7 @@ export default function HouseFooter({
   const overlay = useHouseOverlayOptional();
   const onSubscribe =
     pathname === '/subscribe' || pathname.startsWith('/subscribe/');
+  const onAbout = pathname === '/about' || pathname.startsWith('/about/');
   const onNominate = pathname === '/nominate' || pathname.startsWith('/nominate/');
   const subscribeActive = onSubscribe && !langOpen && !shortcutsOpen;
   const onLegalPages =
@@ -111,19 +112,47 @@ export default function HouseFooter({
 
   const wordClass = `inline-flex shrink-0 items-center whitespace-nowrap font-sans text-[14px] font-medium leading-tight ${mutedStatic}`;
 
-  const words = (
-    <div className="flex shrink-0 items-center gap-2.5 sm:gap-3">
+  const paperIcon = <Icon name="doc" className="!h-3.5 !w-3.5" />;
+
+  const cluster = (
+    <div className="flex min-w-0 max-w-full items-center gap-2.5 overflow-hidden sm:gap-3">
       {staticLanguage ? (
         <>
           <span className={wordClass} aria-hidden>
-            {tNav('nominate')}
+            {tNav('about')}
           </span>
           <span className={wordClass} aria-hidden>
-            {tNav('about')}
+            {tNav('nominate')}
+          </span>
+          {languageControl}
+          <span
+            className={`flex h-6 w-6 items-center justify-center ${iconStatic}`}
+            aria-hidden
+          >
+            <Icon name="rss" className="!h-3.5 !w-3.5" />
+          </span>
+          <span
+            className={`flex h-6 w-6 items-center justify-center ${iconStatic}`}
+            aria-hidden
+          >
+            <Icon name="command" className="!h-3.5 !w-3.5" />
+          </span>
+          <span
+            className={`flex h-6 w-6 items-center justify-center ${iconStatic}`}
+            aria-hidden
+          >
+            {paperIcon}
           </span>
         </>
       ) : (
         <>
+          <Link
+            href="/about"
+            aria-current={onAbout ? 'page' : undefined}
+            className={textLinkClass(onAbout)}
+          >
+            {tNav('about')}
+          </Link>
           <Link
             href="/nominate"
             aria-current={onNominate ? 'page' : undefined}
@@ -131,25 +160,7 @@ export default function HouseFooter({
           >
             {tNav('nominate')}
           </Link>
-          <Link href="/about" className={textLinkClass(false)}>
-            {tNav('about')}
-          </Link>
-        </>
-      )}
-    </div>
-  );
-
-  const tools = (
-    <div className="flex shrink-0 items-center gap-2 md:gap-3">
-      <div className="flex shrink-0 items-center gap-1.5">
-        {staticLanguage ? (
-          <span
-            className={`flex h-6 w-6 items-center justify-center ${iconStatic}`}
-            aria-hidden
-          >
-            <Icon name="rss" className="!h-3.5 !w-3.5" />
-          </span>
-        ) : (
+          {languageControl}
           <Link
             href="/subscribe"
             aria-label={tFooter('subscribeAria')}
@@ -159,72 +170,43 @@ export default function HouseFooter({
           >
             <Icon name="rss" className="!h-3.5 !w-3.5" />
           </Link>
-        )}
-        {staticLanguage ? (
-          <span
-            className={`flex h-6 w-6 items-center justify-center ${iconStatic}`}
-            aria-hidden
+          {onShortcuts ? (
+            <button
+              type="button"
+              aria-label={tFilm('keysHint')}
+              aria-expanded={shortcutsOpen}
+              onClick={onShortcuts}
+              className={iconBtn(shortcutsOpen)}
+            >
+              <Icon name="command" className="!h-3.5 !w-3.5" />
+            </button>
+          ) : null}
+          <Link
+            href="/legal"
+            aria-label={tFooter('legalAria')}
+            aria-current={onLegalPages ? 'page' : undefined}
+            className={iconBtn(onLegalPages)}
           >
-            <Icon name="command" className="!h-3.5 !w-3.5" />
-          </span>
-        ) : onShortcuts ? (
-          <button
-            type="button"
-            aria-label={tFilm('keysHint')}
-            aria-expanded={shortcutsOpen}
-            onClick={onShortcuts}
-            className={iconBtn(shortcutsOpen)}
-          >
-            <Icon name="command" className="!h-3.5 !w-3.5" />
-          </button>
-        ) : null}
-      </div>
-      {languageControl}
+            {paperIcon}
+          </Link>
+        </>
+      )}
     </div>
   );
 
-  const year = new Date().getFullYear();
-
   return (
     <div className="relative z-50 w-full shrink-0">
-      <div className="relative flex h-[54px] w-full items-center justify-center gap-x-5 overflow-hidden px-6 md:grid md:grid-cols-[1fr_auto_1fr] md:gap-x-3 md:px-[54px]">
-        <div className="relative z-[1] flex min-w-0 items-center gap-3 md:justify-self-start">
-          {left}
-          {tools}
-        </div>
-        <div className="relative z-[1] flex min-w-0 max-w-full items-center gap-3 overflow-hidden sm:gap-4 md:justify-center md:justify-self-center">
-          {center ? (
-            <div className="max-w-[40vw] overflow-hidden sm:max-w-none">
-              {center}
-            </div>
-          ) : null}
-          {words}
-        </div>
-        <div className="relative z-[1] hidden items-center gap-2.5 whitespace-nowrap md:flex md:justify-self-end">
-          {staticLanguage ? (
-            <span
-              className={`font-sans text-[10px] font-medium tracking-tight ${mutedStatic}`}
-              aria-hidden
-            >
-              {tFooter('legalAria')}
-            </span>
-          ) : (
-            <Link
-              href="/legal"
-              aria-current={onLegalPages ? 'page' : undefined}
-              className={`font-sans text-[10px] font-medium tracking-tight transition-colors ${idleText}`}
-            >
-              {tFooter('legalAria')}
-            </Link>
-          )}
-          <p
-            className={`m-0 font-sans text-[10px] font-medium tracking-tight ${
-              onDark ? 'text-white/40' : 'text-black/40'
-            }`}
-            aria-hidden
-          >
-            © {year} Fjorr
-          </p>
+      <div className="relative flex h-[54px] w-full items-center justify-center gap-3 overflow-hidden px-6">
+        {left ? (
+          <div className="relative z-[1] flex min-w-0 items-center">{left}</div>
+        ) : null}
+        {center ? (
+          <div className="relative z-[1] max-w-[40vw] overflow-hidden sm:max-w-none">
+            {center}
+          </div>
+        ) : null}
+        <div className="relative z-[1] flex min-w-0 items-center justify-center">
+          {cluster}
         </div>
       </div>
     </div>
