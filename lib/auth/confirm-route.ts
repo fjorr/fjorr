@@ -53,7 +53,7 @@ export async function handleAuthConfirm(request: NextRequest) {
   const nextFromCookie = request.cookies.get('fjorr_auth_next')?.value ?? null;
   const requestedNext = safeInternalPath(
     nextFromQuery ?? nextFromCookie,
-    '/bureaux'
+    '/account/bureaux'
   );
 
   const cookiesToSet: CookieToSet[] = [];

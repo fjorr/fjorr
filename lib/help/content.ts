@@ -121,7 +121,7 @@ article({
     title: 'Join',
     headline: 'The Bureaux.',
     lead: [
-      'Annual membership that funds the films so watching stays ad-free. Pay once a year — the library stays free either way.',
+      'A monthly seat that funds the films so watching stays ad-free. $4 a month — the library stays free either way.',
       'With a seat you nominate, plus films, chase bounties, and earn Voyageur numbers. Start by [nominating a story](/manual/nominate).',
     ],
     actions: {
@@ -224,8 +224,8 @@ article({
       'Your Bureaux number and past Voyages stay on record. The library stays free either way.',
     ],
     actions: {
-      guest: [{ href: '/signin?next=/bureaux', label: 'Manage membership' }],
-      member: [{ href: '/bureaux', label: 'Manage membership' }],
+      guest: [{ href: '/signin?next=/account/bureaux', label: 'Manage membership' }],
+      member: [{ href: '/account/bureaux', label: 'Manage membership' }],
     },
   }),
 article({

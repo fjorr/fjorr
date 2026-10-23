@@ -3,6 +3,16 @@ import { createClient as createSupabaseJsClient } from '@supabase/supabase-js';
 import { createClient as createCookieClient } from '@/lib/supabase/server';
 import { isBureauxMembershipActive } from '@/lib/bureaux-status';
 import { parseViaMemberNumber } from '@/lib/voyage-via';
+import {
+  allowRate,
+  clientIp,
+  isAllowedSiteOrigin,
+  markSeen,
+  seenInWindow,
+} from '@/lib/abuse-guard';
+
+const TEN_MINUTES = 10 * 60 * 1000;
+const SIX_HOURS = 6 * 60 * 60 * 1000;
 
 function supabaseAnonKey() {
   return (
@@ -131,6 +141,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'filmId required' }, { status: 400 });
   }
 
+  if (!isAllowedSiteOrigin(request.headers.get('origin'))) {
+    return NextResponse.json({ error: 'rateLimited' }, { status: 403 });
+  }
+
+  const ip = clientIp((name) => request.headers.get(name));
+  const viewKey = `view:${ip}:${filmId}`;
+  if (
+    !allowRate(`view:ip:${ip}`, 40, TEN_MINUTES) ||
+    seenInWindow(viewKey)
+  ) {
+    return NextResponse.json({ error: 'rateLimited' }, { status: 429 });
+  }
+
   const rpcArgs: { p_film_id: string; p_referred_by_member_number?: number } = {
     p_film_id: filmId,
   };
@@ -201,6 +224,10 @@ export async function POST(request: Request) {
   const memberNumber = user
     ? await shareViaMemberNumberForUser(supabase as MembershipClient, user.id)
     : null;
+
+  if ((row as { recorded?: unknown }).recorded) {
+    markSeen(viewKey, SIX_HOURS);
+  }
 
   return NextResponse.json(
     mapResult(row as Record<string, unknown>, Boolean(user), memberNumber)

@@ -5,6 +5,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { defaultLocale, locales } from '@/i18n/config';
 import { createClient } from '@/lib/supabase/server';
 import {
   bureauxNominationLimits,
@@ -19,10 +20,27 @@ export type BountyKind = NominationKind | 'both';
 export type NominationStatus =
   | 'received'
   | 'in_review'
-  | 'shortlisted'
+  | 'saved_for_later'
+  | 'on_slate'
   | 'passed'
   | 'in_production'
   | 'released';
+
+function nominationStatus(raw: unknown): NominationStatus {
+  if (raw === 'shortlisted') return 'saved_for_later';
+  if (
+    raw === 'received' ||
+    raw === 'in_review' ||
+    raw === 'saved_for_later' ||
+    raw === 'on_slate' ||
+    raw === 'passed' ||
+    raw === 'in_production' ||
+    raw === 'released'
+  ) {
+    return raw;
+  }
+  return 'received';
+}
 
 export type BountyStatus = 'open' | 'claimed' | 'in_production' | 'closed';
 
@@ -85,7 +103,12 @@ function mapBounty(row: any): BountyRow {
     currency: String(row.currency || 'USD'),
     kind: (row.kind || 'true') as BountyKind,
     status: row.status as BountyStatus,
-    poster_image_url: row.poster_image_url ? String(row.poster_image_url) : null,
+    poster_image_url: row.poster_image_url
+      ? String(row.poster_image_url).replace(
+          'https://media.fjorr.com/assets/fjorr-nominate-poster-',
+          'https://media.fjorr.com/app-assets/fjorr-nominate-poster-'
+        )
+      : null,
     featured: Boolean(row.featured),
     sort_order:
       row.sort_order == null || Number.isNaN(Number(row.sort_order))
@@ -223,7 +246,7 @@ export async function getOwnNominations(
         ? String(row.proof_or_premise)
         : null,
       proof_url: row.proof_url ? String(row.proof_url) : null,
-      status: (row.status || 'received') as NominationStatus,
+      status: nominationStatus(row.status),
       status_reason: row.status_reason ? String(row.status_reason) : null,
       bounty_id: row.bounty_id ? String(row.bounty_id) : null,
       bounty_title: bounty?.title ? String(bounty.title) : null,
@@ -234,7 +257,8 @@ export async function getOwnNominations(
 const ACTIVE_NOMINATION_STATUSES = [
   'received',
   'in_review',
-  'shortlisted',
+  'saved_for_later',
+  'on_slate',
   'in_production',
 ] as const;
 
@@ -391,6 +415,10 @@ export async function submitNomination(
   }
 
   revalidatePath('/account/nominations');
+  for (const locale of locales) {
+    if (locale === defaultLocale) continue;
+    revalidatePath(`/${locale}/account/nominations`);
+  }
   revalidatePath('/admin');
 
   return { ok: true, id: String(data?.id) };

@@ -1,5 +1,12 @@
 import { NextResponse } from 'next/server';
 import { getBureauxNumberForEmail } from '@/lib/bureaux';
+import {
+  allowRate,
+  clientIp,
+  isAllowedSiteOrigin,
+} from '@/lib/abuse-guard';
+
+const HOUR = 60 * 60 * 1000;
 
 export const runtime = 'nodejs';
 
@@ -18,6 +25,15 @@ export async function POST(request: Request) {
 
   if (!email) {
     return NextResponse.json({ error: 'emailRequired' }, { status: 400 });
+  }
+
+  if (!isAllowedSiteOrigin(request.headers.get('origin'))) {
+    return NextResponse.json({ error: 'rateLimited' }, { status: 403 });
+  }
+
+  const ip = clientIp((name) => request.headers.get(name));
+  if (!allowRate(`join-number:ip:${ip}`, 12, HOUR)) {
+    return NextResponse.json({ error: 'rateLimited' }, { status: 429 });
   }
 
   const number = await getBureauxNumberForEmail(email);

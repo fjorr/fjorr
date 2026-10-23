@@ -71,10 +71,11 @@ const BOUNTY_STATUSES: BountyStatus[] = [
 const STATUSES: NominationStatus[] = [
   'received',
   'in_review',
-  'shortlisted',
-  'passed',
+  'saved_for_later',
+  'on_slate',
   'in_production',
   'released',
+  'passed',
 ];
 
 function normalizeSlug(raw: string) {
@@ -84,6 +85,22 @@ function normalizeSlug(raw: string) {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 64);
+}
+
+function nominationStatus(raw: unknown): NominationStatus {
+  if (raw === 'shortlisted') return 'saved_for_later';
+  if (
+    raw === 'received' ||
+    raw === 'in_review' ||
+    raw === 'saved_for_later' ||
+    raw === 'on_slate' ||
+    raw === 'passed' ||
+    raw === 'in_production' ||
+    raw === 'released'
+  ) {
+    return raw;
+  }
+  return 'received';
 }
 
 function mapNomination(row: any): AdminNomination {
@@ -97,7 +114,7 @@ function mapNomination(row: any): AdminNomination {
     setting: String(row.setting || ''),
     proof_or_premise: String(row.proof_or_premise || ''),
     proof_url: row.proof_url ? String(row.proof_url) : null,
-    status: (row.status || 'received') as NominationStatus,
+    status: nominationStatus(row.status),
     status_reason: row.status_reason ? String(row.status_reason) : null,
     contributor_email: String(row.contributor_email || ''),
     user_id: String(row.user_id || ''),
@@ -279,7 +296,7 @@ export async function updateNominationStatus(input: {
 }
 
 /**
- * Award: attach/confirm bounty, mark nomination shortlisted, claim the bounty.
+ * Award: attach the bounty, mark the nomination in production, claim the bounty.
  * Sets claimed_by / claimed_at / winning_nomination_id.
  */
 export async function awardNomination(input: {
@@ -322,7 +339,7 @@ export async function awardNomination(input: {
     .from('nominations')
     .update({
       bounty_id: bountyId,
-      status: 'shortlisted',
+      status: 'in_production',
       status_reason: null,
     })
     .eq('id', input.id);
@@ -349,7 +366,7 @@ export async function awardNomination(input: {
 
   await sendNominationStatusEmail({
     to: String(nom.contributor_email || ''),
-    status: 'shortlisted',
+    status: 'in_production',
     storyDetails: String(nom.story_details || ''),
     bountyTitle: bounty.title ? String(bounty.title) : null,
     awarded: true,

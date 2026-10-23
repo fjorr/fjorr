@@ -1,4 +1,6 @@
-# 🤖 Invite all Search, Social, and AI crawlers
+# Search engines and link previews may read public pages.
+# Training crawlers are asked to stay out. This file is a request, not a lock.
+
 User-agent: *
 Allow: /
 Disallow: /api/
@@ -9,6 +11,45 @@ Disallow: /embed/
 Disallow: /account/
 Disallow: /signin
 Disallow: /preview/
+
+User-agent: GPTBot
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: Amazonbot
+Disallow: /
+
+User-agent: Applebot-Extended
+Disallow: /
+
+User-agent: meta-externalagent
+Disallow: /
+
+User-agent: FacebookBot
+Disallow: /
+
+User-agent: cohere-ai
+Disallow: /
+
+User-agent: Diffbot
+Disallow: /
+
+User-agent: ImagesiftBot
+Disallow: /
 
 Sitemap: https://www.fjorr.com/sitemap.xml
 

@@ -45,6 +45,7 @@ export default function HouseFooter({
   const overlay = useHouseOverlayOptional();
   const onSubscribe =
     pathname === '/subscribe' || pathname.startsWith('/subscribe/');
+  const onSlate = pathname === '/slate' || pathname.startsWith('/slate/');
   const subscribeActive = onSubscribe && !langOpen && !shortcutsOpen;
   const onLegalPages =
     pathname === '/legal' ||
@@ -75,7 +76,10 @@ export default function HouseFooter({
   const iconActive = onDark ? 'text-white' : 'text-black';
   const iconStatic = onDark ? 'text-white/20' : 'text-black/20';
 
-  const textLinkClass = `inline-flex shrink-0 items-center bg-transparent p-0 font-sans text-[14px] font-medium leading-tight tracking-normal transition-colors ${idleText}`;
+  const textLinkClass = (active: boolean) =>
+    `inline-flex shrink-0 items-center bg-transparent p-0 font-sans text-[14px] font-medium leading-tight tracking-normal transition-colors ${
+      active ? activeText : idleText
+    }`;
 
   const languageClass = `inline-flex shrink-0 items-center bg-transparent p-0 font-sans text-[14px] font-medium leading-tight tracking-normal transition-colors ${
     langOpen ? activeText : idleText
@@ -108,16 +112,33 @@ export default function HouseFooter({
   const utilities = (
     <div className="flex shrink-0 items-center gap-2.5 sm:gap-3">
       {staticLanguage ? (
-        <span
-          className={`inline-flex shrink-0 items-center whitespace-nowrap font-sans text-[14px] font-medium leading-tight ${mutedStatic}`}
-          aria-hidden
-        >
-          {tNav('about')}
-        </span>
+        <>
+          <span
+            className={`inline-flex shrink-0 items-center whitespace-nowrap font-sans text-[14px] font-medium leading-tight ${mutedStatic}`}
+            aria-hidden
+          >
+            {tNav('slate')}
+          </span>
+          <span
+            className={`inline-flex shrink-0 items-center whitespace-nowrap font-sans text-[14px] font-medium leading-tight ${mutedStatic}`}
+            aria-hidden
+          >
+            {tNav('about')}
+          </span>
+        </>
       ) : (
-        <Link href="/about" className={textLinkClass}>
-          {tNav('about')}
-        </Link>
+        <>
+          <Link
+            href="/slate"
+            aria-current={onSlate ? 'page' : undefined}
+            className={textLinkClass(onSlate)}
+          >
+            {tNav('slate')}
+          </Link>
+          <Link href="/about" className={textLinkClass(false)}>
+            {tNav('about')}
+          </Link>
+        </>
       )}
       <div className="flex shrink-0 items-center gap-1.5">
         {staticLanguage ? (

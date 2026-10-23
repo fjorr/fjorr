@@ -87,7 +87,12 @@ export default function HouseHeroCopy({
   useEffect(() => {
     setVoyageurNumber(null);
     const filmId = film?.id ? String(film.id) : '';
-    if (!filmId || film?.kind === 'intro' || signedIn !== true || !showVoyageurChip)
+    if (
+      !filmId ||
+      film?.kind === 'intro' ||
+      signedIn !== true ||
+      !showVoyageurChip
+    )
       return;
 
     let cancelled = false;
@@ -162,7 +167,7 @@ export default function HouseHeroCopy({
       {!isIntro && voyageurNumber != null ? (
         <div
           aria-hidden={!visible}
-          className="pointer-events-none absolute left-8 top-4 z-10 rounded-[6px] bg-black/40 px-2.5 py-1 font-sans text-[12px] font-semibold tracking-normal text-white/85 backdrop-blur-sm md:left-12 md:top-5"
+          className="pointer-events-none absolute left-6 top-6 z-10 rounded-[6px] bg-black/40 px-2.5 py-1 font-sans text-[12px] font-semibold tracking-normal text-white/85 backdrop-blur-sm"
         >
           {t('voyageurBadgeTitle', { number: voyageurNumber })}
         </div>
@@ -283,6 +288,13 @@ export default function HouseHeroCopy({
               >
                 {tHome('introCta')}
               </button>
+              <Link
+                href="/slate"
+                tabIndex={visible ? 0 : -1}
+                className="inline-flex h-10 items-center rounded-full border border-white/25 bg-white/12 px-5 font-sans text-[14px] font-semibold tracking-tight text-white/90 backdrop-blur-md transition-colors hover:bg-white/18 hover:text-white"
+              >
+                {tHome('introVote')}
+              </Link>
               <Link
                 href="/about"
                 tabIndex={visible ? 0 : -1}

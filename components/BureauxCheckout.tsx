@@ -21,8 +21,7 @@ import {
 } from '@/lib/color-scheme';
 import { routing } from '@/i18n/routing';
 
-const BUREAUX_CARD =
-  'https://media.fjorr.com/app-assets/fjorr-home-bureaux-breakdancing.avif';
+const BUREAUX_CARD = '/fjorr-bureaux-breakdancing.avif';
 
 const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '';
 const DEFAULT_NEXT = '/account/bureaux';
@@ -237,9 +236,11 @@ function CheckoutForm({
 }
 
 const HEAD =
-  "m-0 text-balance font-[family-name:var(--font-circular-black)] text-[clamp(2.25rem,5.5vw,3rem)] font-[900] leading-[1.05] tracking-[-0.03em] text-[#0B0B0C]";
+  "m-0 text-balance font-[family-name:var(--font-circular-black)] text-[clamp(2.25rem,5.5vw,3rem)] font-[900] leading-[1.05] tracking-[-0.03em] text-[#0B0B0C] md:whitespace-nowrap md:text-[3rem]";
+const PRICE =
+  "m-0 mt-3 font-sans text-[15px] font-medium text-black/45";
 const LEAD =
-  'm-0 mt-4 max-w-[26rem] font-sans text-[16px] font-medium leading-relaxed text-black/55 md:text-[17px]';
+  'm-0 mt-4 max-w-[26.25rem] text-pretty font-sans text-[16px] font-medium leading-relaxed text-black/55 md:text-[17px]';
 
 export default function BureauxCheckout({
   signedIn = false,
@@ -252,13 +253,12 @@ export default function BureauxCheckout({
   /** Session present (unpaid member finishing join). */
   signedIn?: boolean;
   accountEmail?: string | null;
-  /** Formatted annual price, e.g. "$100". */
+  /** Formatted monthly price, e.g. "$4". */
   price: string;
   /** Post-auth destination after guest join claim. */
   nextPath?: string;
 }) {
   const t = useTranslations('Bureaux');
-  const tNav = useTranslations('Nav');
   const { isLight } = useColorScheme();
   const claimNext = safeNextPath(nextPath);
   const emailKnown = Boolean(signedIn && accountEmail);
@@ -271,6 +271,7 @@ export default function BureauxCheckout({
   const [checkoutEmail, setCheckoutEmail] = useState<string | null>(null);
   const [checkoutSignedIn, setCheckoutSignedIn] = useState(signedIn);
   const [error, setError] = useState<string | null>(null);
+  const [errorLabel, setErrorLabel] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const prefetchRef = useRef<{
     email: string;
@@ -306,6 +307,18 @@ export default function BureauxCheckout({
       });
     });
     window.setTimeout(() => inputRef.current?.focus(), 460);
+  };
+
+  const clearField = () => {
+    setError(null);
+    if (!(signedIn && accountEmail)) {
+      setEmail('');
+      blockedEmail.current = null;
+      prefetchRef.current = null;
+      setClientSecret(null);
+      setCheckoutEmail(null);
+    }
+    window.setTimeout(() => inputRef.current?.focus(), 0);
   };
 
   // Warm Stripe.js + DNS as soon as the join chrome mounts.
@@ -375,15 +388,18 @@ export default function BureauxCheckout({
       }
 
       if (!res.ok || !result.ok || !result.clientSecret) {
+        const rateLimited = result.error === 'rateLimited';
         const message =
           result.error === 'alreadyActive'
             ? t('checkoutAlready')
             : result.error === 'emailRequired'
               ? t('joinEmailRequired')
-              : result.error === 'config'
-                ? t('checkoutConfig')
-                : t('checkoutError');
-        blockedEmail.current = nextEmail;
+              : result.error === 'emailRejected'
+                ? t('joinEmailRejected')
+                : result.error === 'config'
+                  ? t('checkoutConfig')
+                  : t('checkoutError');
+        if (!rateLimited) blockedEmail.current = nextEmail;
         setError(message);
         setClientSecret(null);
         setCheckoutEmail(null);
@@ -427,7 +443,17 @@ export default function BureauxCheckout({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [email, accountEmail, signedIn, clientSecret, checkoutEmail]);
 
-  const emailInvalid = error === t('joinEmailRequired');
+  const fieldError =
+    error === t('joinEmailRequired') || error === t('checkoutAlready');
+
+  useEffect(() => {
+    if (fieldError && error) {
+      setErrorLabel(error);
+      return;
+    }
+    const id = window.setTimeout(() => setErrorLabel(null), 420);
+    return () => window.clearTimeout(id);
+  }, [fieldError, error]);
   const options: StripeElementsOptions | null =
     clientSecret && checkoutEmail
       ? { clientSecret, appearance: fjorrAppearance(isLight) }
@@ -442,27 +468,49 @@ export default function BureauxCheckout({
   }
 
   return (
-    <div className="flex w-full max-w-[22rem] flex-col items-center text-center">
+    <div className="flex w-full max-w-[40rem] flex-col items-center text-center">
       <SheetEnter>
         <h1 className={HEAD}>{t('joinHeadline')}</h1>
       </SheetEnter>
+      <SheetEnter delay={60}>
+        <p className={PRICE}>
+          <span className="text-[22px] font-bold leading-none text-[#0B0B0C]">
+            {t('joinPriceAside', { price })}
+          </span>
+          <span aria-hidden className="px-2 text-black/25">
+            ·
+          </span>
+          {t('cancelAnytime')}
+        </p>
+      </SheetEnter>
       <SheetEnter delay={100}>
-        <p className={LEAD}>{t('joinPayLead', { price })}</p>
+        <p className={LEAD}>
+          {t.rich('joinPayLead', {
+            mission: (chunks) => (
+              <Link
+                href="/about"
+                className="text-[#0B0B0C] underline decoration-[1px] underline-offset-[3px] transition-opacity hover:opacity-70"
+              >
+                {chunks}
+              </Link>
+            ),
+          })}
+        </p>
       </SheetEnter>
 
-      <SheetEnter delay={200} className="w-full">
+      <SheetEnter delay={200} className="w-full max-w-[22rem]">
       <div
         ref={shellRef}
         className={`relative mt-6 w-full overflow-hidden motion-reduce:transition-none ${
           fieldOpen
-            ? emailInvalid
+            ? fieldError
               ? 'h-12 rounded-full bg-red-600'
               : 'h-12 rounded-full bg-[#F5F5F7]'
-            : 'aspect-[3/4] rounded-[22px] bg-black'
+            : 'aspect-[4/3] rounded-[22px] bg-black'
         } ${
           reduced
             ? ''
-            : 'transition-[height,border-radius] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]'
+            : '[transition:height_700ms_cubic-bezier(0.22,1,0.36,1),border-radius_700ms_cubic-bezier(0.22,1,0.36,1),background-color_480ms_cubic-bezier(0.22,1,0.36,1)]'
         }`}
       >
         <button
@@ -470,7 +518,7 @@ export default function BureauxCheckout({
           onClick={openField}
           aria-label={t('joinEmailPlaceholder')}
           tabIndex={fieldOpen ? -1 : 0}
-          className={`absolute inset-0 border-0 p-0 transition-opacity duration-500 ${
+          className={`absolute inset-0 border-0 p-0 transition-opacity duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
             fieldOpen ? 'pointer-events-none opacity-0' : 'cursor-pointer opacity-100'
           }`}
         >
@@ -480,7 +528,7 @@ export default function BureauxCheckout({
             fill
             priority
             sizes="352px"
-            className="object-cover object-[center_30%]"
+            className="object-cover object-center"
           />
           <span
             aria-hidden
@@ -490,7 +538,7 @@ export default function BureauxCheckout({
           </span>
         </button>
       <form
-        className={`absolute inset-0 flex items-center pl-8 pr-1.5 transition-opacity duration-300 ${
+        className={`absolute inset-0 flex items-center pl-8 pr-1.5 transition-opacity duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
           fieldOpen ? 'opacity-100 delay-200' : 'pointer-events-none opacity-0'
         }`}
         noValidate
@@ -535,48 +583,61 @@ export default function BureauxCheckout({
               }
             }}
             onBlur={() => prefetchCheckout(email)}
-            placeholder={emailInvalid ? '' : t('joinEmailPlaceholder')}
+            placeholder={t('joinEmailPlaceholder')}
             disabled={signedIn && Boolean(accountEmail)}
-            aria-invalid={emailInvalid ? true : undefined}
-            className={`min-w-0 flex-1 border-0 bg-transparent font-sans text-[16px] font-medium outline-none disabled:opacity-60 ${
-              emailInvalid
-                ? 'text-transparent caret-transparent'
-                : 'text-[#0B0B0C] placeholder:text-black/35'
+            aria-invalid={fieldError ? true : undefined}
+            className={`min-w-0 flex-1 border-0 bg-transparent font-sans text-[16px] font-medium text-[#0B0B0C] outline-none transition-opacity duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] placeholder:text-black/35 motion-reduce:transition-none disabled:opacity-60 ${
+              fieldError ? 'opacity-0' : 'opacity-100'
             }`}
           />
-          {emailInvalid ? (
-            <span className="pointer-events-none absolute inset-y-0 left-8 right-12 flex items-center truncate font-sans text-[16px] font-medium text-white">
-              {error}
-            </span>
-          ) : null}
+          <span
+            aria-live="polite"
+            className={`pointer-events-none absolute inset-y-0 left-8 right-12 flex items-center truncate font-sans text-[16px] font-medium text-white transition-opacity duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
+              fieldError ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
+            {errorLabel}
+          </span>
           <button
-            type="submit"
-            disabled={loading || !email.trim() || emailInvalid}
+            type={fieldError ? 'button' : 'submit'}
+            onClick={fieldError ? clearField : undefined}
+            disabled={!fieldError && (loading || !email.trim())}
             aria-label={
-              emailInvalid
-                ? error || t('joinEmailRequired')
+              fieldError
+                ? t('clearEmail')
                 : loading
                   ? t('ctaPending')
                   : t('joinContinue')
             }
-            className={`relative z-[1] inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white ${
-              emailInvalid
-                ? 'cursor-default bg-white/25'
-                : 'bg-[#0B0B0C] transition-opacity hover:opacity-90 disabled:opacity-40'
+            className={`relative z-[1] inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white transition-[background-color,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none active:scale-95 ${
+              fieldError
+                ? 'bg-white/25'
+                : 'bg-[#0B0B0C] hover:opacity-90 disabled:opacity-40'
             }`}
           >
-            {emailInvalid ? (
-              <X className="h-3.5 w-3.5" strokeWidth={2.25} aria-hidden />
-            ) : (
-              <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.25} aria-hidden />
-            )}
+            <span className="grid h-3.5 w-3.5 place-items-center">
+              <X
+                className={`col-start-1 row-start-1 h-3.5 w-3.5 transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
+                  fieldError ? 'scale-100 opacity-100' : 'scale-75 opacity-0'
+                }`}
+                strokeWidth={2.25}
+                aria-hidden
+              />
+              <ArrowRight
+                className={`col-start-1 row-start-1 h-3.5 w-3.5 transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
+                  fieldError ? 'scale-75 opacity-0' : 'scale-100 opacity-100'
+                }`}
+                strokeWidth={2.25}
+                aria-hidden
+              />
+            </span>
           </button>
         </div>
       </form>
       </div>
       </SheetEnter>
 
-      {(options && checkoutEmail) || loading || (error && !emailInvalid) ? (
+      {(options && checkoutEmail) || loading || (error && !fieldError) ? (
       <div className="mt-4 flex w-full flex-col gap-4">
         {options && checkoutEmail ? (
           <div className="w-full text-left">
@@ -597,7 +658,7 @@ export default function BureauxCheckout({
           <p className="m-0 font-sans text-[15px] font-medium text-black/45">
             {t('ctaPending')}
           </p>
-        ) : error && !emailInvalid ? (
+        ) : error && !fieldError ? (
           <p className="m-0 font-sans text-[15px] font-medium text-red-600">
             {error}
           </p>
@@ -613,12 +674,6 @@ export default function BureauxCheckout({
             className="text-[#0B0B0C] transition-opacity hover:opacity-70"
           >
             {t('ctaSignIn')}
-          </Link>
-          <span aria-hidden className="px-2 text-black/25">
-            ·
-          </span>
-          <Link href="/about" className="text-[#0B0B0C] transition-opacity hover:opacity-70">
-            {tNav('about')}
           </Link>
         </p>
       </SheetEnter>

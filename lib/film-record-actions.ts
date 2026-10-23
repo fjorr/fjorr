@@ -6,7 +6,18 @@
 
 'use server';
 
+import { headers } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
+import {
+  allowRate,
+  clientIp,
+  isAllowedSiteOrigin,
+  markSeen,
+  seenInWindow,
+} from '@/lib/abuse-guard';
+
+const TEN_MINUTES = 10 * 60 * 1000;
+const SIX_HOURS = 6 * 60 * 60 * 1000;
 
 export type FilmViewRecord = {
   viewer_number: number;
@@ -123,6 +134,14 @@ export async function recordFilmView(
 ): Promise<FilmViewRecord | null> {
   if (!filmId) return null;
 
+  const headerList = await headers();
+  if (!isAllowedSiteOrigin(headerList.get('origin'))) return null;
+  const ip = clientIp((name) => headerList.get(name));
+  const viewKey = `view:${ip}:${filmId}`;
+  if (!allowRate(`view:ip:${ip}`, 40, TEN_MINUTES) || seenInWindow(viewKey)) {
+    return null;
+  }
+
   const supabase = await createClient();
   const args: { p_film_id: string; p_referred_by_member_number?: number } = {
     p_film_id: filmId,
@@ -141,6 +160,8 @@ export async function recordFilmView(
 
   const row = Array.isArray(data) ? data[0] : data;
   if (!row) return null;
+
+  if (row.recorded) markSeen(viewKey, SIX_HOURS);
 
   const version = Number(row.film_version);
   return {

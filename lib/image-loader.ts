@@ -34,6 +34,7 @@ export default function mediaImageLoader({
   const transformed = cloudflareImageUrl(src, width, quality);
   if (transformed) return transformed;
 
-  const separator = src.includes('?') ? '&' : '?';
-  return `${src}${separator}w=${width}`;
+  // The file is already AVIF. A fake ?w= made every width a different cache key
+  // for the same bytes, so the CDN never reused them.
+  return src;
 }

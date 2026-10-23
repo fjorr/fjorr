@@ -9,14 +9,29 @@ import { useAuthPresence } from '@/components/AuthPresenceProvider';
 import SheetEnter from '@/components/house/SheetEnter';
 
 type NavItem = {
-  href: '/account/voyages' | '/account/bureaux' | '/account/early';
-  labelKey: 'navLogs' | 'navBureaux' | 'navEarlyRelease';
+  href:
+    | '/account/voyages'
+    | '/account/bureaux'
+    | '/account/early'
+    | '/account/nominations'
+    | '/slate'
+    | '/account/voting';
+  labelKey:
+    | 'navLogs'
+    | 'navBureaux'
+    | 'navEarlyRelease'
+    | 'navNominations'
+    | 'navSlate'
+    | 'navVoting';
   membersOnly?: boolean;
 };
 
 const ITEMS: NavItem[] = [
   { href: '/account/voyages', labelKey: 'navLogs' },
   { href: '/account/early', labelKey: 'navEarlyRelease', membersOnly: true },
+  { href: '/account/nominations', labelKey: 'navNominations', membersOnly: true },
+  { href: '/slate', labelKey: 'navSlate' },
+  { href: '/account/voting', labelKey: 'navVoting', membersOnly: true },
   { href: '/account/bureaux', labelKey: 'navBureaux' },
 ];
 
@@ -86,7 +101,7 @@ export default function HouseAccountSheet({
           )}
 
           <nav aria-label={tNav('account')} className="mt-8">
-            <ul className="m-0 flex max-w-[26rem] list-none flex-wrap items-center justify-center gap-x-5 gap-y-3 p-0">
+            <ul className="m-0 flex list-none flex-col items-center gap-1.5 p-0">
               {visibleItems.map((item) => {
                 const active =
                   pathname === item.href || pathname.startsWith(`${item.href}/`);

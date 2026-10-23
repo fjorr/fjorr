@@ -9,6 +9,15 @@ import {
   isBureauxMembershipActive,
   type BureauxMembership,
 } from '@/lib/bureaux';
+import {
+  allowRate,
+  clientIp,
+  isAllowedSiteOrigin,
+  isDisposableEmail,
+  newsletterIdentity,
+} from '@/lib/abuse-guard';
+
+const HOUR = 60 * 60 * 1000;
 
 export const runtime = 'nodejs';
 
@@ -147,17 +156,46 @@ async function reuseIncompleteSecret(
  */
 export async function POST(req: Request) {
   try {
+    let body: { email?: string; website?: string; company?: string } = {};
+    try {
+      body = (await req.json()) as {
+        email?: string;
+        website?: string;
+        company?: string;
+      };
+    } catch {
+      body = {};
+    }
+
+    const trap = [body.website, body.company].find(
+      (value) => typeof value === 'string' && value.trim().length > 0
+    );
+    if (trap) {
+      return NextResponse.json(
+        { ok: false, error: 'emailRejected' },
+        { status: 400 }
+      );
+    }
+
+    if (!isAllowedSiteOrigin(req.headers.get('origin'))) {
+      return NextResponse.json(
+        { ok: false, error: 'emailRejected' },
+        { status: 403 }
+      );
+    }
+
+    const ip = clientIp((name) => req.headers.get(name));
+    if (!allowRate(`checkout:ip:${ip}`, 10, HOUR)) {
+      return NextResponse.json(
+        { ok: false, error: 'rateLimited' },
+        { status: 429 }
+      );
+    }
+
     const supabase = await createClient();
     const {
       data: { user: sessionUser },
     } = await supabase.auth.getUser();
-
-    let body: { email?: string } = {};
-    try {
-      body = (await req.json()) as { email?: string };
-    } catch {
-      body = {};
-    }
 
     let userId: string;
     let email: string | null;
@@ -171,12 +209,30 @@ export async function POST(req: Request) {
           { status: 400 }
         );
       }
+      if (!allowRate(`checkout:email:${newsletterIdentity(email)}`, 6, HOUR)) {
+        return NextResponse.json(
+          { ok: false, error: 'rateLimited' },
+          { status: 429 }
+        );
+      }
     } else {
       const guestEmail = normalizeEmail(body.email);
       if (!guestEmail) {
         return NextResponse.json(
           { ok: false, error: 'emailRequired' },
           { status: 400 }
+        );
+      }
+      if (isDisposableEmail(guestEmail)) {
+        return NextResponse.json(
+          { ok: false, error: 'emailRejected' },
+          { status: 400 }
+        );
+      }
+      if (!allowRate(`checkout:email:${newsletterIdentity(guestEmail)}`, 6, HOUR)) {
+        return NextResponse.json(
+          { ok: false, error: 'rateLimited' },
+          { status: 429 }
         );
       }
       const ensured = await ensureAuthUserByEmail(guestEmail);

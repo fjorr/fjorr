@@ -136,6 +136,12 @@ export function maybeRecordFilmView(
         }),
       });
 
+      if (res.status === 429) {
+        loggedIds.add(id);
+        anonDoneIds.add(id);
+        return;
+      }
+
       if (!res.ok) {
         const text = await res.text().catch(() => '');
         console.error('[fjorr] film-view HTTP', res.status, text);

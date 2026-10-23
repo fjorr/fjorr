@@ -4,9 +4,10 @@ import { absoluteUrl } from '@/lib/site';
 import { sendPostmarkEmail } from '@/lib/email/postmark';
 import type { NominationStatus } from '@/lib/nomination-actions';
 
-/** Statuses that trigger a member email. Skip received + in_review. */
+/** Statuses that trigger a member email. Skip received and in review. */
 export const EMAILABLE_NOMINATION_STATUSES: NominationStatus[] = [
-  'shortlisted',
+  'saved_for_later',
+  'on_slate',
   'passed',
   'in_production',
   'released',
@@ -55,19 +56,26 @@ function copyForStatus(input: {
         : 'Your nomination was awarded',
       headline: 'Awarded.',
       body: bounty
-        ? `Your pitch was shortlisted and filled the ${bounty} bounty. We’ll be in touch about next steps.`
-        : 'Your pitch was shortlisted and awarded. We’ll be in touch about next steps.',
+        ? `Your pitch filled the ${bounty} bounty. We’re making it.`
+        : 'Your pitch was awarded. We’re making it.',
       tag: 'nomination-awarded',
     };
   }
 
   switch (input.status) {
-    case 'shortlisted':
+    case 'saved_for_later':
       return {
-        subject: 'Your nomination is shortlisted',
-        headline: 'Shortlisted.',
-        body: 'Your pitch made the shortlist. We’re deciding what to make next.',
-        tag: 'nomination-shortlisted',
+        subject: 'Your nomination is saved for later',
+        headline: 'Saved for later.',
+        body: 'We like this one. It is not the story we’re making this round.',
+        tag: 'nomination-saved',
+      };
+    case 'on_slate':
+      return {
+        subject: 'Your nomination is on the slate',
+        headline: 'On the slate.',
+        body: 'Members are voting on this one.',
+        tag: 'nomination-on-slate',
       };
     case 'passed':
       return {
@@ -142,7 +150,7 @@ export type NominationMailPayload = {
   storyDetails: string;
   statusReason?: string | null;
   bountyTitle?: string | null;
-  /** Award path — shortlisted + bounty filled. */
+  /** Award path — bounty filled and the film is in production. */
   awarded?: boolean;
 };
 

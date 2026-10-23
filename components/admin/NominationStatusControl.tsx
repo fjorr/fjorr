@@ -8,10 +8,11 @@ import type { NominationStatus } from '@/lib/nomination-actions';
 const OPTIONS: { value: NominationStatus; label: string }[] = [
   { value: 'received', label: 'Received' },
   { value: 'in_review', label: 'In review' },
-  { value: 'shortlisted', label: 'Shortlisted' },
-  { value: 'passed', label: 'Passed' },
+  { value: 'saved_for_later', label: 'Saved for later' },
+  { value: 'on_slate', label: 'On the slate' },
   { value: 'in_production', label: 'In production' },
   { value: 'released', label: 'Released' },
+  { value: 'passed', label: 'Passed' },
 ];
 
 export default function NominationStatusControl({

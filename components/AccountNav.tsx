@@ -6,8 +6,20 @@ import { Link, usePathname, useRouter } from '@/i18n/navigation';
 import { createClient } from '@/lib/supabase/client';
 
 type NavItem = {
-  href: '/account/voyages' | '/account/bureaux' | '/account/early';
-  labelKey: 'navLogs' | 'navBureaux' | 'navEarlyRelease';
+  href:
+    | '/account/voyages'
+    | '/account/bureaux'
+    | '/account/early'
+    | '/account/nominations'
+    | '/slate'
+    | '/account/voting';
+  labelKey:
+    | 'navLogs'
+    | 'navBureaux'
+    | 'navEarlyRelease'
+    | 'navNominations'
+    | 'navSlate'
+    | 'navVoting';
 };
 
 function isActive(pathname: string, item: NavItem) {
@@ -18,6 +30,9 @@ function buildItems(): NavItem[] {
   return [
     { href: '/account/voyages', labelKey: 'navLogs' },
     { href: '/account/early', labelKey: 'navEarlyRelease' },
+    { href: '/account/nominations', labelKey: 'navNominations' },
+    { href: '/slate', labelKey: 'navSlate' },
+    { href: '/account/voting', labelKey: 'navVoting' },
     { href: '/account/bureaux', labelKey: 'navBureaux' },
   ];
 }

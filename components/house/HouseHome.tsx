@@ -56,7 +56,7 @@ export type HouseFilm = {
   title_art_scale?: number | null;
   rating?: string | null;
   theme?: string | null;
-  /** Synthetic house brand title card (always first on home). */
+  /** Synthetic house card. Intro is first on home. Slate sits among the films. */
   kind?: 'intro';
 };
 
@@ -177,7 +177,13 @@ export default function HouseHome({
   }, [goTo, stageFilms.length]);
 
   const openFilm = useCallback((target: HouseFilm) => {
-    if (!target.slug || isHouseIntroId(target.id) || target.kind === 'intro') return;
+    if (
+      !target.slug ||
+      isHouseIntroId(target.id) ||
+      target.kind === 'intro'
+    ) {
+      return;
+    }
     openTheaterFromFilm({
       film: {
         id: target.id,
@@ -441,7 +447,7 @@ export default function HouseHome({
           }
         />
         {cornerChip ? (
-          <div className="pointer-events-none absolute left-8 top-4 z-20 rounded-[6px] bg-black/40 px-2.5 py-1 font-sans text-[12px] font-semibold tracking-normal text-white/85 backdrop-blur-sm md:left-12 md:top-5">
+          <div className="pointer-events-none absolute left-6 top-6 z-20 rounded-[6px] bg-[#FF385C] px-2.5 py-1 font-sans text-[12px] font-semibold tracking-normal text-white">
             {cornerChip}
           </div>
         ) : null}

@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ArrowRight, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import type { Provider } from '@supabase/supabase-js';
 import { Link } from '@/i18n/navigation';
+import SheetEnter from '@/components/house/SheetEnter';
 import { createClient } from '@/lib/supabase/client';
 
 const HEAD =
@@ -29,31 +29,8 @@ function isValidEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
-function GoogleGlyph({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
-      <path
-        fill="#4285F4"
-        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-      />
-      <path
-        fill="#34A853"
-        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-      />
-      <path
-        fill="#FBBC05"
-        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-      />
-      <path
-        fill="#EA4335"
-        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-      />
-    </svg>
-  );
-}
-
 export default function SignInForm({
-  nextPath = '/bureaux',
+  nextPath = '/account/bureaux',
 }: {
   nextPath?: string;
   /** @deprecated Menu dropdown removed — prop kept for call-site compatibility. */
@@ -62,35 +39,47 @@ export default function SignInForm({
 }) {
   const t = useTranslations('Account');
   const [email, setEmail] = useState('');
-  const [status, setStatus] = useState<
-    'idle' | 'loading' | 'oauth' | 'sent' | 'error'
-  >('idle');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'sent' | 'error'>('idle');
+  const [resending, setResending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [errorOn, setErrorOn] = useState<'email' | 'oauth' | null>(null);
-  const busy = status === 'loading' || status === 'oauth';
+  const [errorLabel, setErrorLabel] = useState<string | null>(null);
+  const [errorOn, setErrorOn] = useState<'email' | null>(null);
+  const [fieldOpen, setFieldOpen] = useState(false);
+  const [reduced, setReduced] = useState(false);
+  const shellRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const busy = status === 'loading';
   const emailError = errorOn === 'email' && error ? error : null;
-  const oauthError = errorOn === 'oauth' && error ? error : null;
 
-  const handleOAuth = async (provider: Provider) => {
-    setStatus('oauth');
-    setError(null);
-    setErrorOn(null);
-    try {
-      stashAuthNext(nextPath);
-      const supabase = createClient();
-      const { error: oauthErrorResult } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: {
-          redirectTo: authRedirectTo(),
-        },
-      });
-      if (oauthErrorResult) throw oauthErrorResult;
-      // Browser navigates away to the provider.
-    } catch (err: unknown) {
-      setStatus('error');
-      setErrorOn('oauth');
-      setError(err instanceof Error ? err.message : t('errorGeneric'));
+  useEffect(() => {
+    if (emailError) {
+      setErrorLabel(emailError);
+      return;
     }
+    const id = window.setTimeout(() => setErrorLabel(null), 420);
+    return () => window.clearTimeout(id);
+  }, [emailError]);
+
+  const sendLink = async (address: string) => {
+    const supabase = createClient();
+    stashAuthNext(nextPath);
+    const { error: otpError } = await supabase.auth.signInWithOtp({
+      email: address,
+      options: {
+        shouldCreateUser: false,
+        emailRedirectTo: authRedirectTo(),
+      },
+    });
+    if (otpError) throw otpError;
+  };
+
+  const readSendError = (err: unknown) => {
+    const message = err instanceof Error ? err.message : t('errorGeneric');
+    if (/signups not allowed|user not found|unable to validate/i.test(message)) {
+      return t('noAccount');
+    }
+    return message;
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -115,45 +104,115 @@ export default function SignInForm({
     setErrorOn(null);
 
     try {
-      const supabase = createClient();
-      stashAuthNext(nextPath);
-      const { error: otpError } = await supabase.auth.signInWithOtp({
-        email: trimmed,
-        options: {
-          shouldCreateUser: false,
-          emailRedirectTo: authRedirectTo(),
-        },
-      });
-
-      if (otpError) throw otpError;
+      await sendLink(trimmed);
       setStatus('sent');
     } catch (err: unknown) {
       setStatus('error');
       setErrorOn('email');
-      const message = err instanceof Error ? err.message : t('errorGeneric');
-      // Unknown email / signups disabled — accounts come from paid Bureaux join.
-      if (/signups not allowed|user not found|unable to validate/i.test(message)) {
-        setError(t('noAccount'));
-      } else {
-        setError(message);
-      }
+      setError(readSendError(err));
+    }
+  };
+
+  useEffect(() => {
+    setReduced(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  }, []);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || fieldOpen) return;
+    if (reduced) {
+      video.pause();
+      return;
+    }
+    void video.play().catch(() => {});
+  }, [fieldOpen, reduced]);
+
+  const openField = () => {
+    if (fieldOpen) return;
+    videoRef.current?.pause();
+    const el = shellRef.current;
+    if (!el || reduced) {
+      setFieldOpen(true);
+      window.setTimeout(() => inputRef.current?.focus(), 0);
+      return;
+    }
+    el.style.height = `${el.getBoundingClientRect().height}px`;
+    setFieldOpen(true);
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        if (shellRef.current) shellRef.current.style.height = '48px';
+      });
+    });
+    window.setTimeout(() => inputRef.current?.focus(), 460);
+  };
+
+  const clearField = () => {
+    setEmail('');
+    setError(null);
+    setErrorOn(null);
+    if (status === 'error') setStatus('idle');
+    window.setTimeout(() => inputRef.current?.focus(), 0);
+  };
+
+  const resendLink = async () => {
+    const trimmed = email.trim();
+    if (!trimmed || resending) return;
+    setResending(true);
+    setError(null);
+    setErrorOn(null);
+    try {
+      await sendLink(trimmed);
+    } catch (err: unknown) {
+      setErrorOn('email');
+      setError(readSendError(err));
+    } finally {
+      setResending(false);
     }
   };
 
   if (status === 'sent') {
     return (
-      <div className="flex w-full max-w-[22rem] flex-col items-center text-center">
-        <h1 className={HEAD}>{t('checkEmailTitle')}</h1>
-        <p className={LEAD}>{t('checkEmailBody', { email })}</p>
+      <div className="flex w-full max-w-[40rem] flex-col items-center text-center">
+        <h1 className={`${HEAD} md:whitespace-nowrap md:text-[3rem]`}>
+          {t('checkEmailTitle')}
+        </h1>
+        <p className="m-0 mt-4 max-w-[28.75rem] text-pretty font-sans text-[16px] font-medium leading-relaxed text-black/55 md:text-[17px]">
+          {t.rich('checkEmailBody', {
+            email,
+            address: (chunks) => (
+              <span className="text-[#0B0B0C]">{chunks}</span>
+            ),
+          })}
+        </p>
+        <p className="m-0 mt-6 max-w-[26rem] font-sans text-[15px] font-medium leading-relaxed text-black/45">
+          {t.rich('checkEmailHint', {
+            again: (chunks) => (
+              <button
+                type="button"
+                onClick={resendLink}
+                disabled={resending}
+                className="text-[#0B0B0C] underline decoration-[1px] underline-offset-[3px] transition-opacity hover:opacity-70 disabled:opacity-40"
+              >
+                {resending ? t('sending') : chunks}
+              </button>
+            ),
+          })}
+        </p>
+        {error ? (
+          <p className="m-0 mt-3 font-sans text-[14px] font-medium text-black/45">
+            {error}
+          </p>
+        ) : null}
         <button
           type="button"
           onClick={() => {
             setStatus('idle');
+            setResending(false);
             setEmail('');
             setError(null);
             setErrorOn(null);
           }}
-          className="mt-8 border-0 bg-transparent p-0 font-sans text-[15px] font-medium text-black/45 transition-colors hover:text-[#0B0B0C]"
+          className="mt-4 border-0 bg-transparent p-0 font-sans text-[15px] font-medium text-black/45 transition-colors hover:text-[#0B0B0C]"
         >
           {t('useDifferentEmail')}
         </button>
@@ -163,19 +222,71 @@ export default function SignInForm({
 
   return (
     <div className="flex w-full max-w-[22rem] flex-col items-center text-center">
-      <h1 className={HEAD}>{t('signInTitle')}</h1>
-      <p className={LEAD}>{t('signInBody')}</p>
+      <div
+        className={`grid w-full transition-[grid-template-rows,opacity] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
+          fieldOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+        }`}
+      >
+        <div className="overflow-hidden">
+          <h1 className={HEAD}>{t('signInTitle')}</h1>
+          <p className={LEAD}>{t('signInBody')}</p>
+        </div>
+      </div>
 
-      <form onSubmit={handleSubmit} noValidate className="mt-6 w-full">
-        <div
-          className={`relative flex h-12 items-center rounded-full pl-8 pr-1.5 ${
-            emailError ? 'bg-red-600' : 'bg-[#F5F5F7]'
+      <SheetEnter className="w-full">
+      <div
+        ref={shellRef}
+        className={`relative w-full overflow-hidden motion-reduce:transition-none ${
+          fieldOpen ? 'mt-6' : ''
+        } ${
+          fieldOpen
+            ? emailError
+              ? 'h-12 rounded-full bg-red-600'
+              : 'h-12 rounded-full bg-[#F5F5F7]'
+            : 'aspect-[4/3] rounded-[22px] bg-black'
+        } ${
+          reduced
+            ? ''
+            : '[transition:height_700ms_cubic-bezier(0.22,1,0.36,1),border-radius_700ms_cubic-bezier(0.22,1,0.36,1),margin_700ms_cubic-bezier(0.22,1,0.36,1),background-color_480ms_cubic-bezier(0.22,1,0.36,1)]'
+        }`}
+      >
+        <button
+          type="button"
+          onClick={openField}
+          aria-label={t('email')}
+          tabIndex={fieldOpen ? -1 : 0}
+          className={`absolute inset-0 border-0 p-0 transition-opacity duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
+            fieldOpen ? 'pointer-events-none opacity-0' : 'cursor-pointer opacity-100'
+          }`}
+        >
+          <video
+            ref={videoRef}
+            src="/enter-holy-grail.mp4"
+            poster="/enter-holy-grail.jpg"
+            muted
+            loop
+            playsInline
+            preload="auto"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+          <span
+            aria-hidden
+            className="pointer-events-none absolute bottom-3.5 right-3.5 z-[1] inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-[#0B0B0C]"
+          >
+            <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.25} />
+          </span>
+        </button>
+        <form
+          onSubmit={handleSubmit}
+          noValidate
+          className={`absolute inset-0 flex items-center pl-8 pr-1.5 transition-opacity duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
+            fieldOpen ? 'opacity-100 delay-200' : 'pointer-events-none opacity-0'
           }`}
         >
           <input
+            ref={inputRef}
             type="email"
             autoComplete="email"
-            autoFocus
             aria-label={t('email')}
             aria-invalid={emailError ? true : undefined}
             value={email}
@@ -194,55 +305,70 @@ export default function SignInForm({
                 if (status === 'error') setStatus('idle');
               }
             }}
-            placeholder={emailError ? '' : t('email')}
+            placeholder={t('email')}
             disabled={busy}
-            className={`min-w-0 flex-1 border-0 bg-transparent font-sans text-[16px] font-medium outline-none disabled:opacity-50 ${
-              emailError
-                ? 'text-transparent caret-transparent'
-                : 'text-[#0B0B0C] placeholder:text-black/35'
+            tabIndex={fieldOpen ? 0 : -1}
+            className={`min-w-0 flex-1 border-0 bg-transparent font-sans text-[16px] font-medium text-[#0B0B0C] outline-none transition-opacity duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] placeholder:text-black/35 motion-reduce:transition-none disabled:opacity-50 ${
+              emailError ? 'opacity-0' : 'opacity-100'
             }`}
           />
-          {emailError ? (
-            <span className="pointer-events-none absolute inset-y-0 left-8 right-12 flex items-center truncate font-sans text-[16px] font-medium text-white">
-              {emailError}
-            </span>
-          ) : null}
+          <span
+            aria-live="polite"
+            className={`pointer-events-none absolute inset-y-0 left-8 right-12 flex items-center truncate font-sans text-[16px] font-medium text-white transition-opacity duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
+              emailError ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
+            {errorLabel}
+          </span>
           <button
-            type="submit"
-            disabled={busy || !email.trim() || Boolean(emailError)}
+            type={emailError ? 'button' : 'submit'}
+            onClick={emailError ? clearField : undefined}
+            disabled={!emailError && (busy || !email.trim())}
+            tabIndex={fieldOpen ? 0 : -1}
             aria-label={
               emailError
-                ? emailError
+                ? t('clearEmail')
                 : status === 'loading'
                   ? t('sending')
                   : t('sendLink')
             }
-            className={`relative z-[1] inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white ${
+            className={`relative z-[1] inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white transition-[background-color,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none active:scale-95 ${
               emailError
-                ? 'cursor-default bg-white/25'
-                : 'bg-[#0B0B0C] transition-opacity hover:opacity-90 disabled:opacity-40'
+                ? 'bg-white/25'
+                : 'bg-[#0B0B0C] hover:opacity-90 disabled:opacity-40'
             }`}
           >
-            {emailError ? (
-              <X className="h-3.5 w-3.5" strokeWidth={2.25} aria-hidden />
-            ) : (
-              <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.25} aria-hidden />
-            )}
+            <span className="grid h-3.5 w-3.5 place-items-center">
+              <X
+                className={`col-start-1 row-start-1 h-3.5 w-3.5 transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
+                  emailError ? 'scale-100 opacity-100' : 'scale-75 opacity-0'
+                }`}
+                strokeWidth={2.25}
+                aria-hidden
+              />
+              <ArrowRight
+                className={`col-start-1 row-start-1 h-3.5 w-3.5 transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
+                  emailError ? 'scale-75 opacity-0' : 'scale-100 opacity-100'
+                }`}
+                strokeWidth={2.25}
+                aria-hidden
+              />
+            </span>
           </button>
-        </div>
-      </form>
+        </form>
+      </div>
+      </SheetEnter>
 
-      <div className="mt-8 flex flex-col items-center gap-3">
-        <button
-          type="button"
-          disabled={busy}
-          onClick={() => handleOAuth('google')}
-          className="inline-flex items-center gap-2 border-0 bg-transparent p-0 font-sans text-[15px] font-medium text-black/45 transition-colors hover:text-[#0B0B0C] disabled:opacity-40"
-        >
-          <GoogleGlyph className="h-3.5 w-3.5" />
-          {oauthError || t('continueGoogle')}
-        </button>
-        <p className="m-0 font-sans text-[15px] font-medium text-black/45">
+      {fieldOpen ? (
+        <SheetEnter className="w-full">
+          <p className="m-0 mt-4 max-w-[22rem] text-pretty font-sans text-[13px] font-medium leading-relaxed text-black/40">
+            {t('enterClipCaption')}
+          </p>
+        </SheetEnter>
+      ) : null}
+
+      <SheetEnter delay={140}>
+        <p className={`m-0 font-sans text-[15px] font-medium text-black/45 ${fieldOpen ? 'mt-6' : 'mt-8'}`}>
           {t('createViaBureaux')}{' '}
           <Link
             href="/bureaux"
@@ -251,7 +377,7 @@ export default function SignInForm({
             {t('createViaBureauxCta')}
           </Link>
         </p>
-      </div>
+      </SheetEnter>
     </div>
   );
 }

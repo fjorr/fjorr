@@ -33,7 +33,7 @@ export default async function SignInPage({
   searchParams: Promise<{ next?: string }>;
 }) {
   const params = await searchParams;
-  const nextPath = safeInternalPath(params.next ?? null, '/bureaux');
+  const nextPath = safeInternalPath(params.next ?? null, '/account/bureaux');
 
   // Guests: skip Supabase round-trip (same short-circuit as middleware).
   const cookieStore = await cookies();

@@ -7,6 +7,7 @@ import CatalogPosterGrid, {
   catalogKindPillClass,
 } from '@/components/house/CatalogPosterGrid';
 import { parseStoryYear, storySettingDisplay } from '@/lib/story-year';
+import SearchEmpty from '@/components/house/SearchEmpty';
 
 export type CatalogIndexItem = {
   id: string;
@@ -115,7 +116,6 @@ export default function CatalogIndex({
   controlsHidden = false,
 }: Props) {
   const t = useTranslations('Film');
-  const tSearch = useTranslations('Search');
   const [sortKey, setSortKey] = useState<SortKey>('catalog');
   const [comingSoonOnly, setComingSoonOnly] = useState(false);
   const [kindFilter, setKindFilter] = useState<KindFilter>('all');
@@ -283,9 +283,7 @@ export default function CatalogIndex({
 
       {viewMode === 'grid' ? (
         displayItems.length === 0 && showKindFilter ? (
-          <p className="mx-auto w-full max-w-[44rem] py-2.5 font-[family-name:var(--font-circular-black)] text-[24px] font-[900] leading-none tracking-[-0.03em] text-[#0B0B0C] sm:text-[28px] md:text-[32px]">
-            {tSearch('nothingMatches')}
-          </p>
+          <SearchEmpty />
         ) : (
           <CatalogPosterGrid
             items={displayItems.map((item) => ({
@@ -318,14 +316,8 @@ export default function CatalogIndex({
         >
           <ul className="m-0 list-none p-0" aria-label={t('browseHeadline')}>
             {displayItems.length === 0 ? (
-              <li
-                className={
-                  showKindFilter
-                    ? 'py-2.5 font-[family-name:var(--font-circular-black)] text-[24px] font-[900] leading-none tracking-[-0.03em] text-[#0B0B0C] sm:text-[28px] md:text-[32px]'
-                    : 'py-1.5 font-sans text-[13px] text-black/40'
-                }
-              >
-                {showKindFilter ? tSearch('nothingMatches') : '—'}
+              <li className={showKindFilter ? '' : 'py-1.5 font-sans text-[13px] text-black/40'}>
+                {showKindFilter ? <SearchEmpty /> : '—'}
               </li>
             ) : (
               displayItems.map((item) => {

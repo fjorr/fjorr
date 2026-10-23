@@ -34,6 +34,8 @@ export default function SubscribeClient({ feedUrl }: Props) {
   const [emailDone, setEmailDone] = useState(false);
   const [errorDismissed, setErrorDismissed] = useState(false);
   const [email, setEmail] = useState('');
+  const [errorLabel, setErrorLabel] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const [state, formAction, isPending] = useActionState(
     subscribeToNewsletter,
     initialState
@@ -76,6 +78,21 @@ export default function SubscribeClient({ feedUrl }: Props) {
     state.message !== 'alreadyIn' &&
     Boolean(displayMessage);
 
+  useEffect(() => {
+    if (showError && displayMessage) {
+      setErrorLabel(displayMessage);
+      return;
+    }
+    const id = window.setTimeout(() => setErrorLabel(null), 420);
+    return () => window.clearTimeout(id);
+  }, [showError, displayMessage]);
+
+  const clearField = () => {
+    setEmail('');
+    setErrorDismissed(true);
+    window.setTimeout(() => inputRef.current?.focus(), 0);
+  };
+
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(feedUrl);
@@ -99,7 +116,7 @@ export default function SubscribeClient({ feedUrl }: Props) {
                 </span>
               ))}
           </h1>
-          <p className="m-0 mt-8 max-w-[26rem] whitespace-pre-line font-sans text-[16px] font-medium leading-relaxed text-black/55 md:text-[17px]">
+          <p className="m-0 mt-8 max-w-[27.5rem] text-pretty whitespace-pre-line font-sans text-[16px] font-medium leading-relaxed text-black/55 md:text-[17px]">
             {t('lead')}
           </p>
         </header>
@@ -122,11 +139,12 @@ export default function SubscribeClient({ feedUrl }: Props) {
               />
             </div>
             <div
-              className={`relative flex h-12 items-center rounded-full pl-8 pr-1.5 ${
+              className={`relative flex h-12 items-center rounded-full pl-8 pr-1.5 motion-reduce:transition-none [transition:background-color_480ms_cubic-bezier(0.22,1,0.36,1)] ${
                 showError ? 'bg-red-600' : 'bg-[#F5F5F7]'
               }`}
             >
               <input
+                ref={inputRef}
                 id="subscribe-email"
                 type="email"
                 name="email"
@@ -134,53 +152,71 @@ export default function SubscribeClient({ feedUrl }: Props) {
                 autoComplete="email"
                 aria-label={t('emailEyebrow')}
                 aria-invalid={showError || undefined}
-                placeholder={showError ? '' : t('emailEyebrow')}
+                placeholder={t('emailEyebrow')}
                 disabled={isPending || emailDone}
                 onChange={onEmailChange}
                 onFocus={() => setErrorDismissed(true)}
-                className={`min-w-0 flex-1 border-0 bg-transparent font-sans text-[16px] font-medium outline-none disabled:opacity-50 ${
-                  showError
-                    ? 'text-transparent caret-transparent'
-                    : 'text-[#0B0B0C] placeholder:text-black/35'
+                className={`min-w-0 flex-1 border-0 bg-transparent font-sans text-[16px] font-medium text-[#0B0B0C] outline-none transition-opacity duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] placeholder:text-black/35 motion-reduce:transition-none disabled:opacity-50 ${
+                  showError ? 'opacity-0' : 'opacity-100'
                 }`}
               />
-              {showError ? (
-                <span className="pointer-events-none absolute inset-y-0 left-8 right-12 flex items-center truncate font-sans text-[16px] font-medium text-white">
-                  {displayMessage}
-                </span>
-              ) : null}
+              <span
+                aria-live="polite"
+                className={`pointer-events-none absolute inset-y-0 left-8 right-12 flex items-center truncate font-sans text-[16px] font-medium text-white transition-opacity duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
+                  showError ? 'opacity-100' : 'opacity-0'
+                }`}
+              >
+                {errorLabel}
+              </span>
               <button
-                type="submit"
-                disabled={isPending || emailDone || showError}
+                type={showError ? 'button' : 'submit'}
+                onClick={showError ? clearField : undefined}
+                disabled={!showError && (isPending || emailDone)}
                 aria-live="polite"
                 aria-label={
                   showError
-                    ? displayMessage
+                    ? t('clearEmail')
                     : emailDone
                       ? t('allSet')
                       : isPending
                         ? tFooter('subscribing')
                         : tFooter('subscribe')
                 }
-                className={`relative z-[1] inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white transition-opacity disabled:opacity-100 ${
+                className={`relative z-[1] inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white transition-[background-color,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none active:scale-95 ${
                   showError
-                    ? 'cursor-default bg-white/25 hover:opacity-100'
+                    ? 'bg-white/25'
                     : emailDone
                       ? 'bg-[#0071E3] hover:opacity-90'
-                      : 'bg-[#0B0B0C] hover:opacity-90'
+                      : 'bg-[#0B0B0C] hover:opacity-90 disabled:opacity-40'
                 }`}
               >
-                {showError ? (
-                  <X className="h-3.5 w-3.5" strokeWidth={2.25} aria-hidden />
-                ) : emailDone ? (
-                  <Check className="h-3.5 w-3.5" strokeWidth={2.25} aria-hidden />
-                ) : (
-                  <ArrowRight
-                    className="h-3.5 w-3.5"
+                <span className="grid h-3.5 w-3.5 place-items-center">
+                  <X
+                    className={`col-start-1 row-start-1 h-3.5 w-3.5 transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
+                      showError ? 'scale-100 opacity-100' : 'scale-75 opacity-0'
+                    }`}
                     strokeWidth={2.25}
                     aria-hidden
                   />
-                )}
+                  <Check
+                    className={`col-start-1 row-start-1 h-3.5 w-3.5 transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
+                      emailDone && !showError
+                        ? 'scale-100 opacity-100'
+                        : 'scale-75 opacity-0'
+                    }`}
+                    strokeWidth={2.25}
+                    aria-hidden
+                  />
+                  <ArrowRight
+                    className={`col-start-1 row-start-1 h-3.5 w-3.5 transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
+                      !showError && !emailDone
+                        ? 'scale-100 opacity-100'
+                        : 'scale-75 opacity-0'
+                    }`}
+                    strokeWidth={2.25}
+                    aria-hidden
+                  />
+                </span>
               </button>
             </div>
           </form>

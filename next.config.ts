@@ -22,7 +22,19 @@ const nextConfig: NextConfig = {
   },
   async headers() {
     const year = "public, max-age=31536000, immutable";
+    const baseline = [
+      { key: "X-Content-Type-Options", value: "nosniff" },
+      { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+      {
+        key: "Permissions-Policy",
+        value: "camera=(), microphone=(), geolocation=(), browsing-topics=()",
+      },
+    ];
     return [
+      {
+        source: "/:path*",
+        headers: baseline,
+      },
       {
         // Allow partner sites to iframe /embed/* (omit X-Frame-Options; CSP controls this).
         source: "/embed/:path*",
@@ -82,10 +94,7 @@ const nextConfig: NextConfig = {
         permanent: false,
       },
       // Launch cut — archived / deleted surfaces
-      ...cut("/nominate", "/"),
       ...cut("/plus", "/"),
-      ...cut("/bounties", "/"),
-      ...cut("/bounties/:slug", "/"),
       ...cut("/cabinet", "/"),
       ...cut("/bureau", "/bureaux"),
       ...cut("/manual", "/about"),
@@ -97,7 +106,6 @@ const nextConfig: NextConfig = {
       ...cut("/help/principles", "/about"),
       ...cut("/account/plus", "/account/voyages"),
       ...cut("/account/cabinet", "/account/voyages"),
-      ...cut("/account/nominations", "/account/voyages"),
       ...cut("/account/profile", "/account/bureaux"),
       ...cut("/account/privacy", "/account/voyages"),
       ...cut("/account/logs", "/account/voyages"),

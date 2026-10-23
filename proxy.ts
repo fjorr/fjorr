@@ -4,6 +4,7 @@ import {
   isSocialCrawler,
   isValidGateToken,
 } from "@/lib/site-gate";
+import { withSecurityHeaders } from "@/lib/security-headers";
 import createMiddleware from "next-intl/middleware";
 import { NextResponse, type NextRequest } from "next/server";
 import { routing } from "@/i18n/routing";
@@ -21,7 +22,7 @@ function withGateNoIndex(response: NextResponse): NextResponse {
  * When enabled, SITE_PASSWORD must be set; cookie value is an HMAC, not a forgeable flag.
  * Search crawlers that reach HTML while gated always get X-Robots-Tag: noindex.
  */
-export async function proxy(request: NextRequest) {
+async function route(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const host = request.headers.get("host")?.split(":")[0]?.toLowerCase();
 
@@ -117,6 +118,18 @@ export async function proxy(request: NextRequest) {
 
   const response = handleI18nRouting(request);
   return await updateSession(request, response);
+}
+
+export async function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  const response = await route(request);
+  if (
+    pathname.startsWith("/_next/webpack-hmr") ||
+    pathname.startsWith("/__nextjs")
+  ) {
+    return response;
+  }
+  return withSecurityHeaders(request, response);
 }
 
 export const config = {

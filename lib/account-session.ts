@@ -7,7 +7,7 @@ import type { User } from '@supabase/supabase-js';
 
 /**
  * Account = paid Bureaux member.
- * Guests → sign-in (join flow uses next=/bureaux).
+ * Guests → sign-in, then back to the account page they asked for.
  * Signed-in but unpaid → /bureaux.
  */
 export async function requireOwnAccount(
@@ -19,13 +19,7 @@ export async function requireOwnAccount(
   } = await supabase.auth.getUser();
 
   if (!user) {
-    const signInNext =
-      nextPath.startsWith('/bureaux') || nextPath.startsWith('/account')
-        ? nextPath.startsWith('/bureaux')
-          ? nextPath
-          : '/bureaux'
-        : '/bureaux';
-    redirect(`/signin?next=${encodeURIComponent(signInNext)}`);
+    redirect(`/signin?next=${encodeURIComponent(nextPath)}`);
   }
 
   const profile = await ensureOwnProfile(user.id);

@@ -1,6 +1,17 @@
 'use server';
 
+import { headers } from 'next/headers';
 import { createPublicClient } from '@/lib/supabase/public';
+import {
+  allowRate,
+  clientIp,
+  isAllowedSiteOrigin,
+  isDisposableEmail,
+  newsletterIdentity,
+} from '@/lib/abuse-guard';
+
+const HOUR = 60 * 60 * 1000;
+const DAY = 24 * HOUR;
 
 export type FormState = {
   status: 'idle' | 'success' | 'error';
@@ -27,6 +38,23 @@ export async function subscribeToNewsletter(
   if (!emailRegex.test(email)) {
     return { status: 'error', message: 'emailInvalid' };
   }
+  if (isDisposableEmail(email)) {
+    return { status: 'error', message: 'emailInvalid' };
+  }
+
+  const headerList = await headers();
+  if (!isAllowedSiteOrigin(headerList.get('origin'))) {
+    return { status: 'error', message: 'somethingWrong' };
+  }
+
+  const ip = clientIp((name) => headerList.get(name));
+  const identity = newsletterIdentity(email);
+  if (
+    !allowRate(`newsletter:ip:${ip}`, 5, HOUR) ||
+    !allowRate(`newsletter:email:${identity}`, 3, DAY)
+  ) {
+    return { status: 'error', message: 'somethingWrong' };
+  }
 
   try {
     const supabase = createPublicClient();
@@ -34,7 +62,7 @@ export async function subscribeToNewsletter(
     const { data: existingEntry, error: fetchError } = await supabase
       .from('intel_list')
       .select('email')
-      .eq('email', email)
+      .eq('email', identity)
       .maybeSingle();
 
     if (fetchError) {
@@ -48,7 +76,7 @@ export async function subscribeToNewsletter(
 
     const { error: insertError } = await supabase.from('intel_list').insert([
       {
-        email: email,
+        email: identity,
         source: 'footer',
         status: 'subscribed',
       },

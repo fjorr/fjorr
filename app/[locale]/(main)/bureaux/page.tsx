@@ -10,14 +10,14 @@ import BureauxJoinClaim from '@/components/BureauxJoinClaim';
 import BureauxJoinedRefresh from '@/components/BureauxJoinedRefresh';
 import HouseScrollFooter from '@/components/HouseScrollFooter';
 import {
-  getBureauxAnnualAmountCents,
+  getBureauxMonthlyAmountCents,
   getBureauxNumberForEmail,
   getOwnBureauxMembership,
   isBureauxMembershipActive,
 } from '@/lib/bureaux';
 import { syncBureauxGiftFromCheckoutSession } from '@/lib/bureaux-gift';
 
-function formatAnnualPrice(cents: number, locale: string) {
+function formatPrice(cents: number, locale: string) {
   try {
     return new Intl.NumberFormat(locale, {
       style: 'currency',
@@ -98,7 +98,7 @@ export default async function BureauxPage({
       : null;
   const ta = await getTranslations('Account');
   const tb = await getTranslations('Bureaux');
-  const price = formatAnnualPrice(getBureauxAnnualAmountCents(), locale);
+  const price = formatPrice(getBureauxMonthlyAmountCents(), locale);
 
   const supabase = await createClient();
   const {

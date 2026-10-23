@@ -198,7 +198,7 @@ export async function startBureauxGiftCheckout(toEmail: string): Promise<
             unit_amount: amount,
             product_data: {
               name: 'Bureaux — one seat to pass on',
-              description: `Gift one year of The Bureaux to ${email}`,
+              description: `Gift one year of The Bureaux ($4 a month) to ${email}`,
             },
           },
         },
