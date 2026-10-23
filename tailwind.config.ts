@@ -17,10 +17,8 @@ export default {
         // Fjorr Pro Tight — opt-in for tighter UI / headlines: font-interTight
         interTight: ["var(--font-inter-tight)", "sans-serif"],
 
-        // Headlines: Avenir Next Variable (local). Class kept as font-futura.
-        futura: ["var(--font-display)", "sans-serif"],
-        // Adobe Typekit — Futura PT Condensed (medium mark / icon type).
-        futuraCondensed: ['"futura-pt-condensed"', "sans-serif"],
+        // Older headline utility. The face is Circular Black.
+        futura: ["var(--font-circular-black)", "sans-serif"],
       },
       colors: {
         dark: {

@@ -82,7 +82,6 @@ export function isHousePath(pathname?: string | null): boolean {
   if (path === '/subscribe' || path.startsWith('/subscribe/')) return true;
   if (path === '/slate' || path.startsWith('/slate/')) return true;
   if (path === '/nominate' || path.startsWith('/nominate/')) return true;
-  if (path === '/bounties' || path.startsWith('/bounties/')) return true;
   if (path === '/legal' || path.startsWith('/legal/')) return true;
   if (path === '/privacy' || path.startsWith('/privacy/')) return true;
   if (path === '/terms' || path.startsWith('/terms/')) return true;
@@ -107,7 +106,6 @@ export function hasHouseFooterChrome(pathname?: string | null): boolean {
   if (path === '/subscribe' || path.startsWith('/subscribe/')) return true;
   if (path === '/slate' || path.startsWith('/slate/')) return true;
   if (path === '/nominate' || path.startsWith('/nominate/')) return true;
-  if (path === '/bounties' || path.startsWith('/bounties/')) return true;
   if (path === '/signin' || path.startsWith('/signin/')) return true;
   if (path === '/search' || path.startsWith('/search/')) return true;
   if (isEssayFailurePath(path)) return true;

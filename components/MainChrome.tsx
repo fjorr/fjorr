@@ -38,7 +38,6 @@ export default function MainChrome({ children }: { children: React.ReactNode }) 
   const isSlatePage = path === '/slate' || path.startsWith('/slate/');
   const isSlateBoard = path === '/slate';
   const isNominatePage = path === '/nominate' || path.startsWith('/nominate/');
-  const isBountiesPage = path === '/bounties' || path.startsWith('/bounties/');
   const isBureauxPage = path === '/bureaux' || path.startsWith('/bureaux/');
   const isSearchPage = path === '/search' || path.startsWith('/search/');
   const isPartnerPage =
@@ -79,7 +78,6 @@ export default function MainChrome({ children }: { children: React.ReactNode }) 
     isSubscribePage ||
     (isSlatePage && !isSlateBoard) ||
     isNominatePage ||
-    isBountiesPage ||
     isSearchPage ||
     isPartnerPage ||
     (isAccountPage && !isEarlyReleasePage) ||

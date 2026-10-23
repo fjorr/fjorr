@@ -25,16 +25,6 @@ const jetbrainsMono = JetBrains_Mono({
   preload: false,
 });
 
-/** Avenir Next Variable — kept for font-futura. Headlines use Circular, so this stays off the first load. */
-const avenirNextVariable = localFont({
-  src: "../public/fonts/AvenirNextVariable-Roman.woff2",
-  weight: "250 900",
-  style: "normal",
-  variable: "--font-display",
-  display: "swap",
-  preload: false,
-});
-
 /** CircularXX Web Bold — licensed for fjorr.com. About sentences. */
 const circularXXBold = localFont({
   src: "../public/fonts/CircularXXWeb-Bold.woff2",
@@ -55,4 +45,4 @@ const circularXXBlack = localFont({
   preload: true,
 });
 
-export const fontVariables = `${inter.variable} ${interTight.variable} ${jetbrainsMono.variable} ${avenirNextVariable.variable} ${circularXXBold.variable} ${circularXXBlack.variable}`;
+export const fontVariables = `${inter.variable} ${interTight.variable} ${jetbrainsMono.variable} ${circularXXBold.variable} ${circularXXBlack.variable}`;
