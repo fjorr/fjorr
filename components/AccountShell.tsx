@@ -20,6 +20,7 @@ export default async function AccountShell({
   introNarrow = false,
   hideFooter = false,
   centered = false,
+  surface = 'white',
 }: {
   children: React.ReactNode;
   /** Kept for call-site compatibility — identity lives in the Account poster. */
@@ -41,6 +42,8 @@ export default async function AccountShell({
   hideFooter?: boolean;
   /** Center title + content column on the page. */
   centered?: boolean;
+  /** Page canvas. Grey matches the Voyages poster field. */
+  surface?: 'white' | 'grey';
 }) {
   const paneWidth = wide ? '' : narrow ? 'max-w-[560px]' : 'max-w-5xl';
   const introWidth = introNarrow
@@ -48,14 +51,16 @@ export default async function AccountShell({
     : wide
       ? 'max-w-[560px]'
       : '';
+  const canvas = surface === 'grey' ? '#F5F5F7' : '#ffffff';
 
   return (
     <div
-      className="flex min-h-[calc(100dvh-56px)] w-full flex-col bg-white text-[#0B0B0C]"
+      className="flex min-h-[calc(100dvh-56px)] w-full flex-col text-[#0B0B0C]"
       style={
         {
-          ['--page-bg' as string]: '#ffffff',
-          ['--page-bg-color' as string]: '#ffffff',
+          backgroundColor: canvas,
+          ['--page-bg' as string]: canvas,
+          ['--page-bg-color' as string]: canvas,
           ['--page-fg' as string]: '#0B0B0C',
           ['--page-muted' as string]: 'rgba(11, 11, 12, 0.55)',
           ['--page-faint' as string]: 'rgba(11, 11, 12, 0.35)',
@@ -111,7 +116,11 @@ export default async function AccountShell({
           <div className={centered ? 'w-full' : undefined}>{children}</div>
         </div>
       </main>
-      {hideFooter ? null : <HouseScrollFooter />}
+      {hideFooter ? null : (
+        <HouseScrollFooter
+          surfaceClassName={surface === 'grey' ? 'bg-[#F5F5F7]' : 'bg-white'}
+        />
+      )}
     </div>
   );
 }

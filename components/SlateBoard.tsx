@@ -182,7 +182,7 @@ export default function SlateBoard({
                     {t('aboutNote')}
                   </p>
                   <Link
-                    href="/slate/propose"
+                    href="/nominate"
                     className="mt-6 inline-flex h-9 items-center rounded-full bg-[#F2F2F2] px-4 font-sans text-[13px] font-semibold text-[#0B0B0C] transition-opacity hover:opacity-90"
                   >
                     {t('proposePill')}

@@ -45,6 +45,8 @@ export default function MainChrome({ children }: { children: React.ReactNode }) 
     path === '/partner' || path.startsWith('/partner/');
   const isAccountPage =
     path === '/account' || path.startsWith('/account/');
+  const isVoyagesPage =
+    path === '/account/voyages' || path.startsWith('/account/voyages/');
   const isEarlyReleasePage =
     path === '/account/early' || path.startsWith('/account/early/');
   const isEssayPage = isEssayFailurePath(pathname);
@@ -115,7 +117,11 @@ export default function MainChrome({ children }: { children: React.ReactNode }) 
       document.documentElement.style.setProperty('background-color', '#1d1d1d', 'important');
       document.body.style.setProperty('background-color', '#1d1d1d', 'important');
     } else if (paperPage) {
-      document.body.style.setProperty('background-color', '#ffffff', 'important');
+      document.body.style.setProperty(
+        'background-color',
+        isVoyagesPage ? '#F5F5F7' : '#ffffff',
+        'important'
+      );
     } else if (heroPaperPage) {
       document.body.style.setProperty(
         'background-color',
@@ -128,7 +134,7 @@ export default function MainChrome({ children }: { children: React.ReactNode }) 
     if (!isSlateBoard) {
       document.documentElement.style.removeProperty('background-color');
     }
-  }, [pathname, isArtifactPage, paperPage, isSlateBoard, heroPaperPage, overHero]);
+  }, [pathname, isArtifactPage, paperPage, isSlateBoard, heroPaperPage, overHero, isVoyagesPage]);
 
   return (
     <div
@@ -145,7 +151,7 @@ export default function MainChrome({ children }: { children: React.ReactNode }) 
               } as React.CSSProperties)
             : paperPage
               ? ({
-                  ['--page-bg-color' as string]: '#ffffff',
+                  ['--page-bg-color' as string]: isVoyagesPage ? '#F5F5F7' : '#ffffff',
                   ['--page-fg' as string]: '#0B0B0C',
                 } as React.CSSProperties)
               : heroPaperPage
@@ -162,7 +168,11 @@ export default function MainChrome({ children }: { children: React.ReactNode }) 
           ? 'bg-black'
           : isSlateBoard
             ? 'bg-[#1d1d1d] text-[#F5F5F7]'
-            : paperPage || heroPaperPage
+            : paperPage
+              ? isVoyagesPage
+                ? 'bg-[#F5F5F7] text-[#0B0B0C]'
+                : 'bg-white text-[#0B0B0C]'
+              : heroPaperPage
               ? 'bg-white text-[#0B0B0C]'
               : 'bg-[var(--page-bg)]'
       }`}

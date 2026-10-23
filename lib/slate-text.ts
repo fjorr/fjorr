@@ -8,10 +8,21 @@ export type SlateStory = {
   memberNumber: number | null;
 };
 
-/** Prompt text stored on the slate desk. Empty or over 280 is rejected. */
+export const TITLE_MAX = 50;
+export const PROMPT_MIN = 40;
+export const PROMPT_MAX = 500;
+
+/** Working title. Empty or over 50 characters is rejected. */
+export function normalizeTitle(input: string): string | null {
+  const title = input.trim().replace(/\s+/g, ' ');
+  if (!title || title.length > TITLE_MAX) return null;
+  return title;
+}
+
+/** Story. Under 40 characters, empty, or over 500 characters is rejected. */
 export function normalizePrompt(input: string): string | null {
   const body = input.trim().replace(/\s+/g, ' ');
-  if (!body || body.length > 280) return null;
+  if (body.length < PROMPT_MIN || body.length > PROMPT_MAX) return null;
   return body;
 }
 

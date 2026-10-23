@@ -5,7 +5,8 @@ import { headers } from 'next/headers';
 import { defaultLocale, locales } from '@/i18n/config';
 import { allowRate, clientIp } from '@/lib/abuse-guard';
 import { createClient } from '@/lib/supabase/server';
-import { normalizePrompt } from '@/lib/slate-text';
+import { unlimitedPrompts } from '@/lib/slate';
+import { normalizePrompt, normalizeTitle } from '@/lib/slate-text';
 
 const HOUR = 60 * 60 * 1000;
 
@@ -24,13 +25,15 @@ export type SlateActionResult =
 
 function revalidateSlate() {
   revalidatePath('/slate');
-  revalidatePath('/slate/propose');
+  revalidatePath('/nominate');
   revalidatePath('/account/voting');
+  revalidatePath('/account/nominations');
   for (const locale of locales) {
     if (locale === defaultLocale) continue;
     revalidatePath(`/${locale}/slate`);
-    revalidatePath(`/${locale}/slate/propose`);
+    revalidatePath(`/${locale}/nominate`);
     revalidatePath(`/${locale}/account/voting`);
+    revalidatePath(`/${locale}/account/nominations`);
   }
 }
 
@@ -42,6 +45,7 @@ async function rateKey(name: string): Promise<string | null> {
     data: { user },
   } = await supabase.auth.getUser();
   const who = user?.id ?? ip;
+  if (name === 'prompt' && unlimitedPrompts(user?.email)) return who;
   if (!allowRate(`slate:${name}:${who}`, name === 'vote' ? 30 : 8, HOUR)) {
     return null;
   }
@@ -95,13 +99,18 @@ export async function castSlateVote(storyId: string): Promise<SlateActionResult>
   return result;
 }
 
-export async function submitSlatePrompt(raw: string): Promise<SlateActionResult> {
-  const body = normalizePrompt(raw);
-  if (!body) return { ok: false, code: 'invalid' };
+export async function submitSlatePrompt(
+  rawTitle: string,
+  rawBody: string
+): Promise<SlateActionResult> {
+  const title = normalizeTitle(rawTitle);
+  const body = normalizePrompt(rawBody);
+  if (!title || !body) return { ok: false, code: 'invalid' };
   if (!(await rateKey('prompt'))) return { ok: false, code: 'rate' };
 
   const supabase = await createClient();
   const { data, error } = await supabase.rpc('slate_submit_prompt', {
+    p_title: title,
     p_body: body,
   });
   if (error) {

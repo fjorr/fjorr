@@ -20,6 +20,13 @@ export type SlateBoardData = {
 
 const PROMPTS_PER_CYCLE = 2;
 
+/** This account nominates without the two-per-cycle cap. */
+const UNLIMITED_PROMPT_EMAIL = 'thor@fjorr.com';
+
+export function unlimitedPrompts(email: string | null | undefined): boolean {
+  return (email ?? '').trim().toLowerCase() === UNLIMITED_PROMPT_EMAIL;
+}
+
 function mapStory(row: Record<string, unknown>): SlateStory {
   const source = row.source === 'member' ? 'member' : 'internal';
   const memberNumber =
@@ -97,7 +104,9 @@ export const loadSlate = cache(async (): Promise<SlateBoardData> => {
         .eq('user_id', user.id),
     ]);
     if (vote?.story_id) selectedId = String(vote.story_id);
-    promptsLeft = Math.max(0, PROMPTS_PER_CYCLE - (count ?? 0));
+    promptsLeft = unlimitedPrompts(user.email)
+      ? 1
+      : Math.max(0, PROMPTS_PER_CYCLE - (count ?? 0));
   }
 
   return {
@@ -191,6 +200,57 @@ export async function loadOwnSlateVotes(userId: string): Promise<OwnSlateVote[]>
           votedAt,
           edition: String(edition).padStart(2, '0'),
           open,
+        },
+      ];
+    });
+  } catch {
+    return [];
+  }
+}
+
+export type OwnSlatePrompt = {
+  id: string;
+  title: string;
+  body: string;
+  createdAt: string;
+  edition: string;
+};
+
+/** This member's slate ideas, newest first. */
+export async function loadOwnSlatePrompts(userId: string): Promise<OwnSlatePrompt[]> {
+  try {
+    const admin = createServiceClient();
+    const [{ data: prompts, error }, { data: cycles, error: cycleError }] =
+      await Promise.all([
+        admin
+          .from('slate_prompt')
+          .select('id, title, body, created_at, cycle_id')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false }),
+        admin
+          .from('slate_cycle')
+          .select('id, starts_at')
+          .order('starts_at', { ascending: true }),
+      ]);
+    if (error || cycleError || !prompts) return [];
+
+    const editionByCycle = new Map<string, number>();
+    for (const [index, cycle] of (cycles ?? []).entries()) {
+      editionByCycle.set(String(cycle.id), index + 1);
+    }
+
+    return prompts.flatMap((row) => {
+      const body = typeof row.body === 'string' ? row.body.trim() : '';
+      const title = typeof row.title === 'string' ? row.title.trim() : '';
+      if (!body && !title) return [];
+      const edition = editionByCycle.get(String(row.cycle_id)) ?? 1;
+      return [
+        {
+          id: String(row.id),
+          title: title || body,
+          body,
+          createdAt: typeof row.created_at === 'string' ? row.created_at : '',
+          edition: String(edition).padStart(2, '0'),
         },
       ];
     });

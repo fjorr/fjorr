@@ -69,7 +69,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/search',
     '/subscribe',
     '/slate',
-    '/slate/propose',
+    '/nominate',
     '/legal',
     '/terms',
     '/privacy',

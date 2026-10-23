@@ -26,30 +26,41 @@ function formatVoyageurNumber(n: number, locale: string) {
   }
 }
 
-function VoyagePill({ entry }: { entry: FilmLogEntry }) {
+function VoyagePoster({ entry }: { entry: FilmLogEntry }) {
   const locale = useLocale();
   const code = formatVoyageurNumber(entry.viewer_number, locale);
   const date = formatStampDate(entry.recorded_at, locale);
   const href = entry.film_slug ? `/film/${entry.film_slug}` : undefined;
 
   const className =
-    'flex h-16 w-full items-center gap-4 rounded-full bg-[#F5F5F7] pl-6 pr-2 text-[#0B0B0C] transition-opacity duration-200 hover:opacity-70 sm:pl-7 sm:pr-2.5';
+    'relative z-0 flex h-full flex-col overflow-hidden rounded-[18px] bg-white text-left text-[#0B0B0C] shadow-[3px_5px_30px_rgba(0,0,0,0.12)] transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:z-10 hover:scale-[1.03] motion-reduce:transition-none motion-reduce:hover:scale-100';
 
   const body = (
     <>
-      <span className="flex min-w-0 flex-1 items-baseline gap-2.5">
-        <span className="truncate text-left font-sans text-[15px] font-semibold tracking-tight text-[#0B0B0C] sm:text-[16px]">
+      <div className="flex flex-col gap-1 px-3.5 pt-3.5 pb-3">
+        <p className="m-0 font-interTight text-[26px] font-bold leading-none tabular-nums tracking-tight">
+          {code}
+        </p>
+        <p className="m-0 line-clamp-2 min-h-[2.75em] font-sans text-[15px] font-semibold leading-snug tracking-tight">
           {entry.film_name}
-        </span>
-        {date ? (
-          <span className="shrink-0 font-sans text-[13px] font-medium text-black/40 sm:text-[14px]">
-            {date}
-          </span>
+        </p>
+        <p className="m-0 font-sans text-[12px] font-medium text-black/40">
+          {date || '\u00a0'}
+        </p>
+      </div>
+      <div
+        className={`relative mt-auto aspect-square w-full ${
+          entry.voyage_poster ? 'bg-white' : 'bg-[#F5F5F7]'
+        }`}
+      >
+        {entry.voyage_poster ? (
+          <img
+            src={entry.voyage_poster}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover object-bottom"
+          />
         ) : null}
-      </span>
-      <span className="inline-flex h-11 shrink-0 items-center justify-center rounded-full bg-white px-4 font-interTight text-[17px] font-bold leading-none tabular-nums tracking-tight text-[#0B0B0C]">
-        {code}
-      </span>
+      </div>
     </>
   );
 
@@ -108,11 +119,14 @@ export default function VoyagesBoard({
   return (
     <div className="flex w-full flex-col items-center gap-8">
       {pageHeader}
-      <SheetEnter className="flex w-full max-w-[36rem] flex-col">
-        <ul className="m-0 flex list-none flex-col gap-2.5 p-0" aria-label={title}>
+      <SheetEnter className="w-full">
+        <ul
+          className="m-0 grid w-full list-none grid-cols-2 gap-3 p-0 md:grid-cols-4 md:gap-4 xl:grid-cols-6"
+          aria-label={title}
+        >
           {logs.map((entry) => (
-            <li key={`${entry.film_id}-${entry.viewer_number}`}>
-              <VoyagePill entry={entry} />
+            <li key={`${entry.film_id}-${entry.viewer_number}`} className="relative hover:z-10">
+              <VoyagePoster entry={entry} />
             </li>
           ))}
         </ul>

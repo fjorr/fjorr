@@ -94,6 +94,7 @@ const nextConfig: NextConfig = {
         permanent: false,
       },
       // Launch cut — archived / deleted surfaces
+      ...cut("/slate/propose", "/nominate", false),
       ...cut("/plus", "/"),
       ...cut("/cabinet", "/"),
       ...cut("/bureau", "/bureaux"),

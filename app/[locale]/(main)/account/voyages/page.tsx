@@ -82,6 +82,7 @@ function previewVoyageLogs(): FilmLogEntry[] {
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-|-$/g, ''),
     film_poster: null,
+    voyage_poster: null,
     film_runtime: 3600 + i * 240,
     film_release_date: null,
     film_theme: PREVIEW_THEMES[i] ?? null,
@@ -102,7 +103,7 @@ export default async function AccountVoyagesPage({
   const t = await getTranslations('Account');
 
   return (
-    <AccountShell profile={profile} centered>
+    <AccountShell profile={profile} wide surface="grey">
       <VoyagesBoard
         logs={logs}
         title={t('filmLogsTitle')}

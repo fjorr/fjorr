@@ -13,7 +13,7 @@ export default function SearchEmpty() {
         {t('nothingMatches')}
       </p>
       <Link
-        href="/slate/propose"
+        href="/nominate"
         className="mt-3 inline-block font-sans text-[15px] font-medium text-[#0B0B0C]"
       >
         {slate('proposePill')}

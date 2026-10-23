@@ -1,62 +1,54 @@
-import { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
-import NominateClient from './NominateClient';
-import { createClient } from '@/lib/supabase/server';
-import { isOwnBureauxActive } from '@/lib/bureaux';
-import { listActiveBounties } from '@/lib/nomination-actions';
+import type { Metadata } from 'next';
+import { getLocale, getTranslations } from 'next-intl/server';
+import type { AppLocale } from '@/i18n/config';
+import { buildAlternates } from '@/lib/seo/alternates';
+import { marketingShareImages } from '@/lib/seo/og';
+import HouseScrollFooter from '@/components/HouseScrollFooter';
+import SlatePropose from '@/components/SlatePropose';
+import { loadSlate } from '@/lib/slate';
+
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata(): Promise<Metadata> {
+  const locale = (await getLocale()) as AppLocale;
   const t = await getTranslations('Meta');
-  const title = t('nominateTitle');
-  const description = t('nominateDescription');
+  const title = t('slateProposeTitle');
+  const description = t('slateProposeDescription');
+  const { openGraphImages, twitterImages } = marketingShareImages(title);
   return {
     title,
     description,
-    alternates: { canonical: '/nominate' },
+    alternates: buildAlternates('/nominate', locale),
     openGraph: {
       title: `${title} | Fjorr`,
       description,
       url: 'https://www.fjorr.com/nominate',
       type: 'website',
+      images: openGraphImages,
     },
     twitter: {
+      card: 'summary_large_image',
       title: `${title} | Fjorr`,
       description,
+      images: twitterImages,
     },
   };
 }
 
-export default async function NominatePage({
-  searchParams,
-}: {
-  searchParams: Promise<{ bounty?: string }>;
-}) {
-  const params = await searchParams;
-
-  const membershipPromise = (async () => {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return false;
-    return isOwnBureauxActive(user.id);
-  })();
-
-  const [bureauxActive, bounties] = await Promise.all([
-    membershipPromise,
-    listActiveBounties(),
-  ]);
-
-  const bountyParam = (params.bounty || '').trim().toLowerCase();
-  const initialBountyId =
-    bounties.find((b) => b.slug === bountyParam || b.id === bountyParam)?.id ||
-    '';
+export default async function NominatePage() {
+  const slate = await loadSlate();
 
   return (
-    <NominateClient
-      bureauxActive={bureauxActive}
-      bounties={bounties}
-      initialBountyId={initialBountyId}
-    />
+    <div className="relative flex min-h-[calc(100dvh-56px)] w-full flex-col bg-white text-[#0B0B0C]">
+      <div className="flex w-full flex-1 flex-col px-6 py-16 md:px-10 md:py-12">
+        <SlatePropose
+          open={slate.open}
+          canVote={slate.canVote}
+          promptsLeft={slate.promptsLeft}
+          endsAt={slate.endsAt}
+        />
+      </div>
+      <HouseScrollFooter />
+    </div>
   );
 }

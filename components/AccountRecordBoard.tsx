@@ -1,6 +1,7 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
+import { Plus } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import SheetEnter from '@/components/house/SheetEnter';
 
@@ -8,30 +9,74 @@ export type AccountRecord = {
   id: string;
   title: string;
   meta: string;
-  stamp: string;
+  stamp?: string;
   href?: string;
+  body?: string;
 };
 
 function RecordPill({ record }: { record: AccountRecord }) {
-  const className =
-    'flex h-16 w-full items-center gap-4 rounded-full bg-[#F5F5F7] pl-6 pr-2 text-[#0B0B0C] sm:pl-7 sm:pr-2.5';
+  const [open, setOpen] = useState(false);
+  const story = record.body?.trim() ?? '';
+  const className = open
+    ? `flex w-full flex-col gap-4 rounded-[22px] bg-[#F5F5F7] py-5 pr-6 text-left text-[#0B0B0C] sm:pr-7 ${
+        story ? 'pl-9 sm:pl-10' : 'px-6 sm:px-7'
+      }`
+    : `flex h-16 w-full items-center rounded-full bg-[#F5F5F7] pr-2 text-left text-[#0B0B0C] sm:pr-2.5 ${
+        story ? 'pl-9 sm:pl-10' : 'pl-6 sm:pl-7'
+      }`;
+  const plus = story ? (
+    <span
+      aria-hidden
+      className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[#0B0B0C] text-[#0B0B0C]"
+    >
+      <Plus
+        className={`h-2.5 w-2.5 transition-transform duration-200 ease-out motion-reduce:transition-none ${
+          open ? 'rotate-45' : ''
+        }`}
+        strokeWidth={2}
+      />
+    </span>
+  ) : null;
   const body = (
     <>
-      <span className="flex min-w-0 flex-1 items-baseline gap-2.5">
-        <span className="truncate text-left font-sans text-[15px] font-semibold tracking-tight text-[#0B0B0C] sm:text-[16px]">
-          {record.title}
+      <span className="flex min-w-0 w-full items-center gap-3">
+        {plus}
+        <span className="flex min-w-0 flex-1 items-baseline gap-2.5">
+          <span className="truncate font-sans text-[15px] font-semibold tracking-tight text-[#0B0B0C] sm:text-[16px]">
+            {record.title}
+          </span>
+          {record.meta ? (
+            <span className="shrink-0 font-sans text-[13px] font-medium text-black/40 sm:text-[14px]">
+              {record.meta}
+            </span>
+          ) : null}
         </span>
-        {record.meta ? (
-          <span className="shrink-0 font-sans text-[13px] font-medium text-black/40 sm:text-[14px]">
-            {record.meta}
+        {record.stamp ? (
+          <span className="inline-flex h-11 shrink-0 items-center justify-center truncate rounded-full bg-white px-4 font-sans text-[13px] font-semibold leading-none text-[#0B0B0C]">
+            {record.stamp}
           </span>
         ) : null}
       </span>
-      <span className="inline-flex h-11 max-w-[46%] shrink-0 items-center justify-center truncate rounded-full bg-white px-4 font-sans text-[13px] font-semibold leading-none text-[#0B0B0C]">
-        {record.stamp}
-      </span>
+      {open && story ? (
+        <p className="m-0 whitespace-pre-wrap text-left font-sans text-[15px] font-medium leading-relaxed text-black/70">
+          {story}
+        </p>
+      ) : null}
     </>
   );
+
+  if (story) {
+    return (
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => setOpen((value) => !value)}
+        className={`${className} border-0 transition-opacity duration-200 hover:opacity-80`}
+      >
+        {body}
+      </button>
+    );
+  }
 
   if (!record.href) {
     return <div className={className}>{body}</div>;

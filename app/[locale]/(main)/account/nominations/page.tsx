@@ -3,10 +3,8 @@ import { getLocale, getTranslations } from 'next-intl/server';
 import AccountRecordBoard from '@/components/AccountRecordBoard';
 import AccountShell from '@/components/AccountShell';
 import { requireOwnAccount } from '@/lib/account-session';
-import {
-  getOwnNominations,
-  type NominationStatus,
-} from '@/lib/nomination-actions';
+import { getOwnNominations } from '@/lib/nomination-actions';
+import { loadOwnSlatePrompts } from '@/lib/slate';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('Meta');
@@ -28,25 +26,6 @@ function formatDate(iso: string, locale: string) {
   }
 }
 
-function statusKey(status: NominationStatus) {
-  switch (status) {
-    case 'in_review':
-      return 'statusInReview';
-    case 'saved_for_later':
-      return 'statusSaved';
-    case 'on_slate':
-      return 'statusOnSlate';
-    case 'passed':
-      return 'statusPassed';
-    case 'in_production':
-      return 'statusInProduction';
-    case 'released':
-      return 'statusReleased';
-    default:
-      return 'statusReceived';
-  }
-}
-
 function pitchLabel(story: string, setting: string | null) {
   const where = setting?.trim();
   if (where) return where;
@@ -57,7 +36,28 @@ export default async function AccountNominationsPage() {
   const { user, profile } = await requireOwnAccount('/account/nominations');
   const locale = await getLocale();
   const t = await getTranslations('Account');
-  const nominations = await getOwnNominations(user.id);
+  const [nominations, prompts] = await Promise.all([
+    getOwnNominations(user.id),
+    loadOwnSlatePrompts(user.id),
+  ]);
+
+  const records = [
+    ...prompts.map((row) => ({
+      id: row.id,
+      title: row.title,
+      meta: formatDate(row.createdAt, locale),
+      stamp: t('votingSlate', { edition: row.edition }),
+      body: row.body,
+      at: Date.parse(row.createdAt) || 0,
+    })),
+    ...nominations.map((row) => ({
+      id: row.id,
+      title: pitchLabel(row.story_details, row.setting),
+      meta: formatDate(row.created_at, locale),
+      body: row.story_details.trim(),
+      at: Date.parse(row.created_at) || 0,
+    })),
+  ].sort((a, b) => b.at - a.at);
 
   return (
     <AccountShell profile={profile} centered>
@@ -69,12 +69,7 @@ export default async function AccountNominationsPage() {
         emptyHref="/nominate"
         actionLabel={t('nominationsEmptyCta')}
         actionHref="/nominate"
-        records={nominations.map((row) => ({
-          id: row.id,
-          title: pitchLabel(row.story_details, row.setting),
-          meta: formatDate(row.created_at, locale),
-          stamp: t(statusKey(row.status)),
-        }))}
+        records={records}
       />
     </AccountShell>
   );

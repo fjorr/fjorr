@@ -45,6 +45,8 @@ export type FilmLogEntry = {
   film_name: string;
   film_slug: string;
   film_poster: string | null;
+  /** Square cutout for the Voyages poster. */
+  voyage_poster: string | null;
   /** Runtime in seconds (film table). */
   film_runtime: number | null;
   /** ISO date or null. */
@@ -80,13 +82,41 @@ function mapFilmLogRow(
     film_name: String(film?.name || 'Film'),
     film_slug: String(film?.slug || ''),
     film_poster: film?.blok_tall ? String(film.blok_tall) : null,
+    voyage_poster: film?.voyage_poster ? String(film.voyage_poster) : null,
     film_runtime: Number.isFinite(runtime) && runtime > 0 ? runtime : null,
     film_release_date: film?.release_date ? String(film.release_date) : null,
     film_theme: theme?.name ? String(theme.name) : null,
   };
 }
 
-/** Account Voyages UI — badge fields only. */
+async function loadFilmLogRows(
+  userId: string,
+  select: string,
+  limit: number
+) {
+  const supabase = await createClient();
+  const run = (columns: string) =>
+    supabase
+      .from('film_view_record')
+      .select(columns)
+      .eq('user_id', userId)
+      .order('recorded_at', { ascending: false })
+      .limit(limit);
+
+  const first = await run(select);
+  if (!first.error) return first.data || [];
+  if (!/voyage_poster/i.test(first.error.message)) {
+    console.error('film logs failed:', first.error.message);
+    return [];
+  }
+
+  const second = await run(select.replace(/,?\s*voyage_poster/g, ''));
+  if (second.error) {
+    console.error('film logs failed:', second.error.message);
+    return [];
+  }
+  return second.data || [];
+}
 const ACCOUNT_FILM_LOG_SELECT = `
   film_id,
   viewer_number,
@@ -97,7 +127,8 @@ const ACCOUNT_FILM_LOG_SELECT = `
   film:film_id (
     name,
     slug,
-    blok_tall
+    blok_tall,
+    voyage_poster
   )
 `;
 
@@ -118,6 +149,7 @@ const FILM_LOG_SELECT = `
     name,
     slug,
     blok_tall,
+    voyage_poster,
     runtime,
     release_date,
     theme ( name, slug )
@@ -260,19 +292,8 @@ export async function getOwnFilmLogs(
     uid = user.id;
   }
 
-  const { data, error } = await supabase
-    .from('film_view_record')
-    .select(ACCOUNT_FILM_LOG_SELECT)
-    .eq('user_id', uid)
-    .order('recorded_at', { ascending: false })
-    .limit(OWN_VOYAGE_LIMIT);
-
-  if (error) {
-    console.error('getOwnFilmLogs failed:', error.message);
-    return [];
-  }
-
-  return (data || []).map((row) => mapFilmLogRow(row));
+  const data = await loadFilmLogRows(uid, ACCOUNT_FILM_LOG_SELECT, OWN_VOYAGE_LIMIT);
+  return data.map((row) => mapFilmLogRow(row));
 }
 
 /** Public Voyages for a member (RLS requires profile.is_public). */
@@ -281,18 +302,10 @@ export async function getPublicFilmLogs(
 ): Promise<FilmLogEntry[]> {
   if (!userId) return [];
 
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from('film_view_record')
-    .select(FILM_LOG_SELECT)
-    .eq('user_id', userId)
-    .order('recorded_at', { ascending: false })
-    .limit(PUBLIC_VOYAGE_LIMIT);
-
-  if (error) {
-    console.error('getPublicFilmLogs failed:', error.message);
-    return [];
-  }
-
-  return (data || []).map((row) => mapFilmLogRow(row));
+  const data = await loadFilmLogRows(
+    userId,
+    FILM_LOG_SELECT,
+    PUBLIC_VOYAGE_LIMIT
+  );
+  return data.map((row) => mapFilmLogRow(row));
 }

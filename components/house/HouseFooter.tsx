@@ -46,6 +46,7 @@ export default function HouseFooter({
   const onSubscribe =
     pathname === '/subscribe' || pathname.startsWith('/subscribe/');
   const onSlate = pathname === '/slate' || pathname.startsWith('/slate/');
+  const onNominate = pathname === '/nominate' || pathname.startsWith('/nominate/');
   const subscribeActive = onSubscribe && !langOpen && !shortcutsOpen;
   const onLegalPages =
     pathname === '/legal' ||
@@ -109,20 +110,19 @@ export default function HouseFooter({
     </button>
   ) : null;
 
-  const utilities = (
+  const wordClass = `inline-flex shrink-0 items-center whitespace-nowrap font-sans text-[14px] font-medium leading-tight ${mutedStatic}`;
+
+  const words = (
     <div className="flex shrink-0 items-center gap-2.5 sm:gap-3">
       {staticLanguage ? (
         <>
-          <span
-            className={`inline-flex shrink-0 items-center whitespace-nowrap font-sans text-[14px] font-medium leading-tight ${mutedStatic}`}
-            aria-hidden
-          >
+          <span className={wordClass} aria-hidden>
             {tNav('slate')}
           </span>
-          <span
-            className={`inline-flex shrink-0 items-center whitespace-nowrap font-sans text-[14px] font-medium leading-tight ${mutedStatic}`}
-            aria-hidden
-          >
+          <span className={wordClass} aria-hidden>
+            {tNav('nominate')}
+          </span>
+          <span className={wordClass} aria-hidden>
             {tNav('about')}
           </span>
         </>
@@ -135,11 +135,23 @@ export default function HouseFooter({
           >
             {tNav('slate')}
           </Link>
+          <Link
+            href="/nominate"
+            aria-current={onNominate ? 'page' : undefined}
+            className={textLinkClass(onNominate)}
+          >
+            {tNav('nominate')}
+          </Link>
           <Link href="/about" className={textLinkClass(false)}>
             {tNav('about')}
           </Link>
         </>
       )}
+    </div>
+  );
+
+  const tools = (
+    <div className="flex shrink-0 items-center gap-2 md:gap-3">
       <div className="flex shrink-0 items-center gap-1.5">
         {staticLanguage ? (
           <span
@@ -186,9 +198,10 @@ export default function HouseFooter({
 
   return (
     <div className="relative z-50 w-full shrink-0">
-      <div className="relative grid h-[54px] w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 overflow-hidden px-6 md:grid-cols-[1fr_auto_1fr] md:px-[54px]">
-        <div className="relative z-[1] min-w-0 justify-self-start">
-          {left ?? <div />}
+      <div className="relative grid h-[54px] w-full grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3 overflow-hidden px-6 md:grid-cols-[1fr_auto_1fr] md:px-[54px]">
+        <div className="relative z-[1] flex min-w-0 items-center justify-self-start gap-3">
+          {left}
+          {tools}
         </div>
         <div className="relative z-[1] flex min-w-0 max-w-full items-center justify-start gap-3 justify-self-start overflow-hidden sm:gap-4 md:justify-center md:justify-self-center">
           {center ? (
@@ -196,9 +209,9 @@ export default function HouseFooter({
               {center}
             </div>
           ) : null}
-          {utilities}
+          {words}
         </div>
-        <div className="relative z-[1] flex items-center justify-self-end gap-2.5 whitespace-nowrap">
+        <div className="relative z-[1] hidden items-center justify-self-end gap-2.5 whitespace-nowrap md:flex">
           {staticLanguage ? (
             <span
               className={`font-sans text-[10px] font-medium tracking-tight ${mutedStatic}`}
