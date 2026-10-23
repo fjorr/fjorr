@@ -11,15 +11,12 @@ type NavItem = {
     | '/account/bureaux'
     | '/account/early'
     | '/account/nominations'
-    | '/slate'
-    | '/account/voting';
+    | '/account/bureaux';
   labelKey:
     | 'navLogs'
     | 'navBureaux'
     | 'navEarlyRelease'
-    | 'navNominations'
-    | 'navSlate'
-    | 'navVoting';
+    | 'navNominations';
 };
 
 function isActive(pathname: string, item: NavItem) {
@@ -31,8 +28,6 @@ function buildItems(): NavItem[] {
     { href: '/account/voyages', labelKey: 'navLogs' },
     { href: '/account/early', labelKey: 'navEarlyRelease' },
     { href: '/account/nominations', labelKey: 'navNominations' },
-    { href: '/slate', labelKey: 'navSlate' },
-    { href: '/account/voting', labelKey: 'navVoting' },
     { href: '/account/bureaux', labelKey: 'navBureaux' },
   ];
 }

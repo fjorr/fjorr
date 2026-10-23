@@ -37,11 +37,11 @@ function VoyagePoster({ entry }: { entry: FilmLogEntry }) {
 
   const body = (
     <>
-      <div className="flex flex-col gap-1 px-3.5 pt-3.5 pb-3">
+      <div className="flex flex-col gap-1 px-6 pt-5 pb-4">
         <p className="m-0 font-interTight text-[26px] font-bold leading-none tabular-nums tracking-tight">
           {code}
         </p>
-        <p className="m-0 line-clamp-2 min-h-[2.75em] font-sans text-[15px] font-semibold leading-snug tracking-tight">
+        <p className="m-0 line-clamp-2 font-sans text-[15px] font-semibold leading-snug tracking-tight">
           {entry.film_name}
         </p>
         <p className="m-0 font-sans text-[12px] font-medium text-black/40">

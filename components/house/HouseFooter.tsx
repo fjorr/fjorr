@@ -45,7 +45,6 @@ export default function HouseFooter({
   const overlay = useHouseOverlayOptional();
   const onSubscribe =
     pathname === '/subscribe' || pathname.startsWith('/subscribe/');
-  const onSlate = pathname === '/slate' || pathname.startsWith('/slate/');
   const onNominate = pathname === '/nominate' || pathname.startsWith('/nominate/');
   const subscribeActive = onSubscribe && !langOpen && !shortcutsOpen;
   const onLegalPages =
@@ -117,9 +116,6 @@ export default function HouseFooter({
       {staticLanguage ? (
         <>
           <span className={wordClass} aria-hidden>
-            {tNav('slate')}
-          </span>
-          <span className={wordClass} aria-hidden>
             {tNav('nominate')}
           </span>
           <span className={wordClass} aria-hidden>
@@ -128,13 +124,6 @@ export default function HouseFooter({
         </>
       ) : (
         <>
-          <Link
-            href="/slate"
-            aria-current={onSlate ? 'page' : undefined}
-            className={textLinkClass(onSlate)}
-          >
-            {tNav('slate')}
-          </Link>
           <Link
             href="/nominate"
             aria-current={onNominate ? 'page' : undefined}
@@ -198,12 +187,12 @@ export default function HouseFooter({
 
   return (
     <div className="relative z-50 w-full shrink-0">
-      <div className="relative grid h-[54px] w-full grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3 overflow-hidden px-6 md:grid-cols-[1fr_auto_1fr] md:px-[54px]">
-        <div className="relative z-[1] flex min-w-0 items-center justify-self-start gap-3">
+      <div className="relative flex h-[54px] w-full items-center justify-center gap-x-5 overflow-hidden px-6 md:grid md:grid-cols-[1fr_auto_1fr] md:gap-x-3 md:px-[54px]">
+        <div className="relative z-[1] flex min-w-0 items-center gap-3 md:justify-self-start">
           {left}
           {tools}
         </div>
-        <div className="relative z-[1] flex min-w-0 max-w-full items-center justify-start gap-3 justify-self-start overflow-hidden sm:gap-4 md:justify-center md:justify-self-center">
+        <div className="relative z-[1] flex min-w-0 max-w-full items-center gap-3 overflow-hidden sm:gap-4 md:justify-center md:justify-self-center">
           {center ? (
             <div className="max-w-[40vw] overflow-hidden sm:max-w-none">
               {center}
@@ -211,7 +200,7 @@ export default function HouseFooter({
           ) : null}
           {words}
         </div>
-        <div className="relative z-[1] hidden items-center justify-self-end gap-2.5 whitespace-nowrap md:flex">
+        <div className="relative z-[1] hidden items-center gap-2.5 whitespace-nowrap md:flex md:justify-self-end">
           {staticLanguage ? (
             <span
               className={`font-sans text-[10px] font-medium tracking-tight ${mutedStatic}`}

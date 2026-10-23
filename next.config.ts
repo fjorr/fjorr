@@ -95,6 +95,10 @@ const nextConfig: NextConfig = {
       },
       // Launch cut — archived / deleted surfaces
       ...cut("/slate/propose", "/nominate", false),
+      ...cut("/slate/:edition/:story", "/", false),
+      ...cut("/slate/:edition", "/", false),
+      ...cut("/slate", "/", false),
+      ...cut("/account/voting", "/account/voyages", false),
       ...cut("/bounties", "/nominate", false),
       ...cut("/bounties/:slug", "/nominate", false),
       ...cut("/plus", "/"),

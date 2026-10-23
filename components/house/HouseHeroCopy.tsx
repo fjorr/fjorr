@@ -289,13 +289,6 @@ export default function HouseHeroCopy({
                 {tHome('introCta')}
               </button>
               <Link
-                href="/slate"
-                tabIndex={visible ? 0 : -1}
-                className="inline-flex h-10 items-center rounded-full border border-white/25 bg-white/12 px-5 font-sans text-[14px] font-semibold tracking-tight text-white/90 backdrop-blur-md transition-colors hover:bg-white/18 hover:text-white"
-              >
-                {tHome('introVote')}
-              </Link>
-              <Link
                 href="/about"
                 tabIndex={visible ? 0 : -1}
                 className="inline-flex h-10 items-center rounded-full border border-white/25 bg-white/12 px-5 font-sans text-[14px] font-semibold tracking-tight text-white/90 backdrop-blur-md transition-colors hover:bg-white/18 hover:text-white"

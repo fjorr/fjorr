@@ -3,7 +3,7 @@ import { getLocale, getTranslations } from 'next-intl/server';
 import AccountRecordBoard from '@/components/AccountRecordBoard';
 import AccountShell from '@/components/AccountShell';
 import { requireOwnAccount } from '@/lib/account-session';
-import { loadOwnSlateVotes } from '@/lib/slate';
+import { loadOwnSlateVotes, slateMonthStamp } from '@/lib/slate';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('Meta');
@@ -44,8 +44,8 @@ export default async function AccountVotingPage() {
           id: `${vote.edition}-${vote.storyId}`,
           title: vote.title,
           meta: formatDate(vote.votedAt, locale),
-          stamp: t('votingSlate', { edition: vote.edition }),
-          href: vote.open ? '/slate' : undefined,
+          stamp: slateMonthStamp(t('votingSlate', { edition: vote.edition }), locale, vote.endsAt),
+          href: `/slate/${vote.edition}`,
         }))}
       />
     </AccountShell>

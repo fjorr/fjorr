@@ -14,15 +14,12 @@ type NavItem = {
     | '/account/bureaux'
     | '/account/early'
     | '/account/nominations'
-    | '/slate'
-    | '/account/voting';
+    | '/account/bureaux';
   labelKey:
     | 'navLogs'
     | 'navBureaux'
     | 'navEarlyRelease'
-    | 'navNominations'
-    | 'navSlate'
-    | 'navVoting';
+    | 'navNominations';
   membersOnly?: boolean;
 };
 
@@ -30,8 +27,6 @@ const ITEMS: NavItem[] = [
   { href: '/account/voyages', labelKey: 'navLogs' },
   { href: '/account/early', labelKey: 'navEarlyRelease', membersOnly: true },
   { href: '/account/nominations', labelKey: 'navNominations', membersOnly: true },
-  { href: '/slate', labelKey: 'navSlate' },
-  { href: '/account/voting', labelKey: 'navVoting', membersOnly: true },
   { href: '/account/bureaux', labelKey: 'navBureaux' },
 ];
 

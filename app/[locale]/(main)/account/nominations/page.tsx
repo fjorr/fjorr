@@ -46,7 +46,6 @@ export default async function AccountNominationsPage() {
       id: row.id,
       title: row.title,
       meta: formatDate(row.createdAt, locale),
-      stamp: t('votingSlate', { edition: row.edition }),
       body: row.body,
       at: Date.parse(row.createdAt) || 0,
     })),

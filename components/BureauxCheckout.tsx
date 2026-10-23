@@ -240,7 +240,7 @@ const HEAD =
 const PRICE =
   "m-0 mt-3 font-sans text-[15px] font-medium text-black/45";
 const LEAD =
-  'm-0 mt-4 max-w-[26.25rem] text-pretty font-sans text-[16px] font-medium leading-relaxed text-black/55 md:text-[17px]';
+  'm-0 mt-4 max-w-[32rem] text-pretty font-sans text-[16px] font-medium leading-relaxed text-black/55 md:text-[17px]';
 
 export default function BureauxCheckout({
   signedIn = false,

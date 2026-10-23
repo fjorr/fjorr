@@ -97,6 +97,11 @@ body {
   padding: 0;
 }
 
+/* Screenplay cover type on the slate. */
+.font-script {
+  font-family: var(--font-courier), "Courier New", Courier, monospace;
+}
+
 /* Older headline class. The face is Circular Black. */
 .font-futura {
   font-family: var(--font-circular-black), sans-serif !important;

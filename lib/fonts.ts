@@ -1,4 +1,4 @@
-import { Inter, Inter_Tight, JetBrains_Mono } from "next/font/google";
+import { Courier_Prime, Inter, Inter_Tight, JetBrains_Mono } from "next/font/google";
 import localFont from "next/font/local";
 
 const inter = Inter({
@@ -25,6 +25,16 @@ const jetbrainsMono = JetBrains_Mono({
   preload: false,
 });
 
+/** Courier Prime — screenplay cover type on the slate. */
+const courierPrime = Courier_Prime({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  variable: "--font-courier",
+  display: "swap",
+  preload: false,
+  fallback: ["Courier New", "Courier", "monospace"],
+});
+
 /** CircularXX Web Bold — licensed for fjorr.com. About sentences. */
 const circularXXBold = localFont({
   src: "../public/fonts/CircularXXWeb-Bold.woff2",
@@ -45,4 +55,4 @@ const circularXXBlack = localFont({
   preload: true,
 });
 
-export const fontVariables = `${inter.variable} ${interTight.variable} ${jetbrainsMono.variable} ${circularXXBold.variable} ${circularXXBlack.variable}`;
+export const fontVariables = `${inter.variable} ${interTight.variable} ${jetbrainsMono.variable} ${courierPrime.variable} ${circularXXBold.variable} ${circularXXBlack.variable}`;

@@ -122,6 +122,149 @@ export const loadSlate = cache(async (): Promise<SlateBoardData> => {
   };
 });
 
+export type SlateEditionSummary = {
+  edition: string;
+  endsAt: string | null;
+  open: boolean;
+  storyCount: number;
+  titles: string[];
+};
+
+type CycleRecord = {
+  id: string;
+  edition: number;
+  endsAt: string | null;
+  open: boolean;
+  storyCount: number;
+  titles: string[];
+};
+
+function cycleIsOpen(status: string, startsAt: string, endsAt: string, now: number) {
+  const starts = Date.parse(startsAt);
+  const ends = Date.parse(endsAt);
+  return status === 'open' && Number.isFinite(starts) && starts <= now && Number.isFinite(ends) && ends > now;
+}
+
+/** Every slate, oldest first. Edition 01 is the first cycle. */
+async function loadCycles(): Promise<CycleRecord[]> {
+  const admin = createServiceClient();
+  const { data, error } = await admin
+    .from('slate_cycle')
+    .select('id, starts_at, ends_at, status, slate_story(title, sort_order)')
+    .order('starts_at', { ascending: true });
+  if (error || !data) return [];
+  const now = Date.now();
+  return data.map((row, index) => {
+    const stories = (Array.isArray(row.slate_story) ? row.slate_story : [])
+      .map((story) => {
+        const record = story as { title?: unknown; sort_order?: unknown };
+        return {
+          title: typeof record.title === 'string' ? record.title.trim() : '',
+          sort: Number(record.sort_order) || 0,
+        };
+      })
+      .filter((story) => story.title)
+      .sort((a, b) => a.sort - b.sort);
+    const startsAt = typeof row.starts_at === 'string' ? row.starts_at : '';
+    const endsAt = typeof row.ends_at === 'string' ? row.ends_at : null;
+    return {
+      id: String(row.id),
+      edition: index + 1,
+      endsAt,
+      open: endsAt ? cycleIsOpen(String(row.status ?? ''), startsAt, endsAt, now) : false,
+      storyCount: stories.length,
+      titles: stories.slice(0, 4).map((story) => story.title),
+    };
+  });
+}
+
+export async function loadSlateIndex(): Promise<SlateEditionSummary[]> {
+  try {
+    const cycles = await loadCycles();
+    return cycles.map((cycle) => ({
+      edition: String(cycle.edition).padStart(2, '0'),
+      endsAt: cycle.endsAt,
+      open: cycle.open,
+      storyCount: cycle.storyCount,
+      titles: cycle.titles,
+    }));
+  } catch {
+    return [];
+  }
+}
+
+/** One edition, including a closed slate. Null when that edition does not exist. */
+export async function loadSlateEdition(edition: number): Promise<SlateBoardData | null> {
+  if (!Number.isInteger(edition) || edition < 1) return null;
+  try {
+    const cycles = await loadCycles();
+    const cycle = cycles[edition - 1];
+    if (!cycle) return null;
+
+    const admin = createServiceClient();
+    const { data: storyRows, error: storyError } = await admin
+      .from('slate_story')
+      .select('id, title, logline, treatment, image_url, source, member_number, sort_order')
+      .eq('cycle_id', cycle.id)
+      .order('sort_order', { ascending: true })
+      .order('created_at', { ascending: true });
+    const stories = (storyError ? [] : (storyRows ?? [])).map((row) =>
+      mapStory(row as Record<string, unknown>)
+    );
+
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    let canVote = false;
+    let selectedId: string | null = null;
+    if (user) {
+      if (cycle.open) canVote = await isOwnBureauxActive(user.id);
+      const { data: vote } = await supabase
+        .from('slate_vote')
+        .select('story_id')
+        .eq('cycle_id', cycle.id)
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (vote?.story_id) selectedId = String(vote.story_id);
+    }
+
+    return {
+      open: cycle.open,
+      endsAt: cycle.endsAt,
+      stories,
+      canVote,
+      selectedId,
+      promptsLeft: 0,
+      edition,
+    };
+  } catch {
+    return null;
+  }
+}
+
+export function formatSlateDate(locale: string, iso: string) {
+  const date = new Date(iso);
+  const month = new Intl.DateTimeFormat(locale, { month: 'short', timeZone: 'UTC' })
+    .format(date)
+    .replace(/\./g, '');
+  const day = String(date.getUTCDate()).padStart(2, '0');
+  return `${month} ${day}`;
+}
+
+export function formatSlateMonth(_locale: string, iso: string) {
+  const date = new Date(iso);
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const year = String(date.getUTCFullYear()).slice(-2);
+  return `${month}/${year}`;
+}
+
+export function slateMonthStamp(label: string, locale: string, endsAt: string) {
+  if (!endsAt) return label;
+  return `${label} · ${formatSlateMonth(locale, endsAt)}`;
+}
+
 /** 1-based place of this cycle among every slate, oldest first. */
 async function editionNumber(startsAt: string): Promise<number> {
   try {
@@ -142,6 +285,7 @@ export type OwnSlateVote = {
   title: string;
   votedAt: string;
   edition: string;
+  endsAt: string;
   open: boolean;
 };
 
@@ -199,6 +343,7 @@ export async function loadOwnSlateVotes(userId: string): Promise<OwnSlateVote[]>
           title,
           votedAt,
           edition: String(edition).padStart(2, '0'),
+          endsAt: typeof cycle?.ends_at === 'string' ? cycle.ends_at : '',
           open,
         },
       ];
@@ -214,6 +359,7 @@ export type OwnSlatePrompt = {
   body: string;
   createdAt: string;
   edition: string;
+  endsAt: string;
 };
 
 /** This member's slate ideas, newest first. */
@@ -229,14 +375,17 @@ export async function loadOwnSlatePrompts(userId: string): Promise<OwnSlatePromp
           .order('created_at', { ascending: false }),
         admin
           .from('slate_cycle')
-          .select('id, starts_at')
+          .select('id, starts_at, ends_at')
           .order('starts_at', { ascending: true }),
       ]);
     if (error || cycleError || !prompts) return [];
 
     const editionByCycle = new Map<string, number>();
+    const endsByCycle = new Map<string, string>();
     for (const [index, cycle] of (cycles ?? []).entries()) {
-      editionByCycle.set(String(cycle.id), index + 1);
+      const id = String(cycle.id);
+      editionByCycle.set(id, index + 1);
+      if (typeof cycle.ends_at === 'string') endsByCycle.set(id, cycle.ends_at);
     }
 
     return prompts.flatMap((row) => {
@@ -251,6 +400,7 @@ export async function loadOwnSlatePrompts(userId: string): Promise<OwnSlatePromp
           body,
           createdAt: typeof row.created_at === 'string' ? row.created_at : '',
           edition: String(edition).padStart(2, '0'),
+          endsAt: endsByCycle.get(String(row.cycle_id)) ?? '',
         },
       ];
     });

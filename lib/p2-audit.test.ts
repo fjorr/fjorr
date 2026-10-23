@@ -47,6 +47,7 @@ describe('P2 audit guards', () => {
       'app/[locale]/(main)/bureaux/page.tsx',
       'app/[locale]/(main)/subscribe/page.tsx',
       'app/[locale]/(main)/slate/page.tsx',
+      'app/[locale]/(main)/slate/[edition]/page.tsx',
       'app/[locale]/(main)/nominate/page.tsx',
       'app/[locale]/(main)/privacy/page.tsx',
       'app/[locale]/(main)/terms/page.tsx',

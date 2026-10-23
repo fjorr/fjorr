@@ -13,7 +13,7 @@ export default function VoyagesLoading() {
             {Array.from({ length: 8 }).map((_, i) => (
               <li key={i} aria-hidden>
                 <div className="overflow-hidden rounded-[18px] bg-white shadow-[3px_5px_30px_rgba(0,0,0,0.12)]">
-                  <div className="flex flex-col gap-2 px-3.5 pt-3.5 pb-3">
+                  <div className="flex flex-col gap-1 px-6 pt-5 pb-4">
                     <div className="h-5 w-10 rounded bg-black/[0.06]" />
                     <div className="h-8 w-full rounded bg-black/[0.05]" />
                     <div className="h-3 w-16 rounded bg-black/[0.05]" />

@@ -36,7 +36,7 @@ export default function MainChrome({ children }: { children: React.ReactNode }) 
   const isSubscribePage =
     path === '/subscribe' || path.startsWith('/subscribe/');
   const isSlatePage = path === '/slate' || path.startsWith('/slate/');
-  const isSlateBoard = path === '/slate';
+  const isSlateIndex = path === '/slate';
   const isNominatePage = path === '/nominate' || path.startsWith('/nominate/');
   const isBureauxPage = path === '/bureaux' || path.startsWith('/bureaux/');
   const isSearchPage = path === '/search' || path.startsWith('/search/');
@@ -76,21 +76,20 @@ export default function MainChrome({ children }: { children: React.ReactNode }) 
     isLegalPage ||
     isBureauxPage ||
     isSubscribePage ||
-    (isSlatePage && !isSlateBoard) ||
+    isSlatePage ||
     isNominatePage ||
     isSearchPage ||
     isPartnerPage ||
     (isAccountPage && !isEarlyReleasePage) ||
     isEssayPage;
+  const greyPaper = isVoyagesPage || isSlateIndex;
   const heroPaperPage = isAboutRoot;
   const overHero = isAboutRoot ? aboutOverHero : false;
   const navVariant = heroPaperPage
     ? overHero
       ? 'light'
       : 'dark'
-    : isSlateBoard
-      ? 'light'
-      : paperPage
+    : paperPage
         ? 'dark'
         : isLocked || !isLight
           ? 'light'
@@ -111,13 +110,10 @@ export default function MainChrome({ children }: { children: React.ReactNode }) 
           'important'
         );
       }
-    } else if (isSlateBoard) {
-      document.documentElement.style.setProperty('background-color', '#1d1d1d', 'important');
-      document.body.style.setProperty('background-color', '#1d1d1d', 'important');
     } else if (paperPage) {
       document.body.style.setProperty(
         'background-color',
-        isVoyagesPage ? '#F5F5F7' : '#ffffff',
+        greyPaper ? '#F5F5F7' : '#ffffff',
         'important'
       );
     } else if (heroPaperPage) {
@@ -129,10 +125,8 @@ export default function MainChrome({ children }: { children: React.ReactNode }) 
     } else {
       document.body.style.removeProperty('background-color');
     }
-    if (!isSlateBoard) {
-      document.documentElement.style.removeProperty('background-color');
-    }
-  }, [pathname, isArtifactPage, paperPage, isSlateBoard, heroPaperPage, overHero, isVoyagesPage]);
+    document.documentElement.style.removeProperty('background-color');
+  }, [pathname, isArtifactPage, paperPage, heroPaperPage, overHero, greyPaper]);
 
   return (
     <div
@@ -142,14 +136,9 @@ export default function MainChrome({ children }: { children: React.ReactNode }) 
               backgroundColor: 'var(--page-bg-color)',
               transition: 'background-color 500ms cubic-bezier(0.25, 1, 0.5, 1)',
             }
-          : isSlateBoard
-            ? ({
-                ['--page-bg-color' as string]: '#1d1d1d',
-                ['--page-fg' as string]: '#F5F5F7',
-              } as React.CSSProperties)
-            : paperPage
+          : paperPage
               ? ({
-                  ['--page-bg-color' as string]: isVoyagesPage ? '#F5F5F7' : '#ffffff',
+                  ['--page-bg-color' as string]: greyPaper ? '#F5F5F7' : '#ffffff',
                   ['--page-fg' as string]: '#0B0B0C',
                 } as React.CSSProperties)
               : heroPaperPage
@@ -164,10 +153,8 @@ export default function MainChrome({ children }: { children: React.ReactNode }) 
       className={`relative flex min-h-screen flex-col justify-between text-[var(--page-fg)] ${
         aboutBlackPage || (heroPaperPage && overHero)
           ? 'bg-black'
-          : isSlateBoard
-            ? 'bg-[#1d1d1d] text-[#F5F5F7]'
-            : paperPage
-              ? isVoyagesPage
+          : paperPage
+              ? greyPaper
                 ? 'bg-[#F5F5F7] text-[#0B0B0C]'
                 : 'bg-white text-[#0B0B0C]'
               : heroPaperPage
