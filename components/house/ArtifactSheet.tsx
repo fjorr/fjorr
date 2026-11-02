@@ -3,6 +3,8 @@
 import React from 'react';
 import { useTranslations } from 'next-intl';
 import { Link, useRouter } from '@/i18n/navigation';
+import { storySettingDisplay } from '@/lib/story-year';
+import RuntimeTag from '@/components/house/RuntimeTag';
 
 export type ArtifactSheetFilm = {
   id?: string | null;
@@ -46,9 +48,20 @@ function isFuture(value?: string | null) {
   return new Date(value).getTime() > Date.now();
 }
 
+/** Vertical titled poster — same art as Browse and More films. */
 function pickPoster(film: ArtifactSheetFilm): string | null {
-  // Titled landscape — keep display modest so blok_wide stays sharp.
-  return film.blok_wide?.trim() || film.blok_tall?.trim() || null;
+  return (
+    film.blok_tall?.trim() ||
+    film.hero_tall?.trim() ||
+    film.blok_wide?.trim() ||
+    null
+  );
+}
+
+function runtimeLabel(value: ArtifactSheetFilm['runtime']) {
+  const seconds = Number(value);
+  if (!Number.isFinite(seconds) || seconds <= 0) return null;
+  return `${Math.max(1, Math.ceil(seconds / 60))}m`;
 }
 
 function formatExternalUrl(url: string | null | undefined): string {
@@ -188,14 +201,12 @@ export default function ArtifactSheet({
         ) : null}
 
         {artifact.filmConnections.length > 0 ? (
-          <section className="mx-auto mt-8 w-full max-w-[34rem] md:mt-10">
-            <h2
-              className={`mb-3 text-center font-sans text-[13px] font-medium leading-tight tracking-tight ${inkMute}`}
-            >
+          <section className="mx-auto mt-12 w-full max-w-[34rem] md:mt-14">
+            <h2 className="mb-4 text-center font-[family-name:var(--font-circular-black)] text-[1.25rem] font-[900] leading-normal tracking-[-0.03em]">
               {t('relatedFilms')}
             </h2>
             <ul
-              className="mx-auto m-0 flex w-full max-w-[18rem] list-none flex-col gap-3 p-0 sm:max-w-[20rem]"
+              className="m-0 flex w-full list-none flex-wrap justify-center gap-3 p-0"
               aria-label={t('relatedFilms')}
             >
               {artifact.filmConnections.map((movie, idx) => {
@@ -209,10 +220,16 @@ export default function ArtifactSheet({
                   '';
                 const key =
                   movie.id || movie.slug || `${displayTitle}-${idx}`;
+                const year = storySettingDisplay(movie.story_date ?? movie.storyDate ?? null) || null;
+                const runtime = comingSoon ? null : runtimeLabel(movie.runtime);
+                const caption = [year, comingSoon ? tFilm('comingSoon') : runtime]
+                  .filter(Boolean)
+                  .join(' · ');
 
                 const card = (
+                  <span className="block">
                   <span
-                    className={`relative block aspect-[16/9] w-full overflow-hidden rounded-[8px] ${posterWell}`}
+                    className={`relative block aspect-[2/3] w-full overflow-hidden rounded-[8px] ${posterWell}`}
                   >
                     {thumb ? (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -229,20 +246,40 @@ export default function ArtifactSheet({
                         {displayTitle}
                       </span>
                     )}
-                    {comingSoon ? (
-                      <span className="absolute bottom-2 left-2 max-w-[calc(100%-1rem)] truncate rounded-[6px] bg-black/55 px-2 py-1 font-sans text-[10px] font-semibold tracking-tight text-white/90 backdrop-blur-md">
-                        {tFilm('comingSoon')}
-                      </span>
-                    ) : null}
+                  </span>
+                  {caption ? (
+                    <span
+                      className={`mt-2 flex min-w-0 items-center gap-1 text-left font-sans text-[12px] font-medium leading-snug tracking-tight ${inkSoft}`}
+                    >
+                      {year ? <span className="truncate">{year}</span> : null}
+                      {comingSoon ? (
+                        <span
+                          className={`ml-0.5 shrink-0 rounded-full border px-1.5 py-[3px] text-[10px] font-semibold leading-none ${
+                            isDarkBg ? 'border-white/25 text-white/70' : 'border-black/15 text-black/60'
+                          }`}
+                        >
+                          {tFilm('comingSoon')}
+                        </span>
+                      ) : runtime ? (
+                        <>
+                          {year ? <span aria-hidden>·</span> : null}
+                          <RuntimeTag runtime={runtime} />
+                        </>
+                      ) : null}
+                    </span>
+                  ) : null}
                   </span>
                 );
 
                 return (
-                  <li key={key}>
+                  <li
+                    key={key}
+                    className="w-[calc((min(34rem,100vw-3rem)-0.75rem)/2)] shrink-0"
+                  >
                     {internalSlug ? (
                       <Link
                         href={`/film/${internalSlug}`}
-                        aria-label={displayTitle}
+                        aria-label={caption ? `${displayTitle}, ${caption}` : displayTitle}
                         className="group block hover:opacity-90"
                         onClick={(event) => {
                           // Always land on the film stage — never carry #info.

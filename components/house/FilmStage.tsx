@@ -46,6 +46,7 @@ import {
 } from '@/components/house/house-stage-margins';
 import { useHouseStageBleed } from '@/components/house/use-house-stage-bleed';
 import { storySettingDisplay } from '@/lib/story-year';
+import RuntimeTag from '@/components/house/RuntimeTag';
 
 const CinemaTheater = dynamic(() => import('@/components/CinemaTheater'), {
   ssr: false,
@@ -214,14 +215,17 @@ function FilmEndRail({
                     ) : null}
                   </span>
                   {caption ? (
-                    <span className="mt-2 flex min-w-0 items-center gap-1.5 font-sans text-[12px] font-medium leading-snug tracking-tight text-black/45">
+                    <span className="mt-2 flex min-w-0 items-center gap-1 font-sans text-[12px] font-medium leading-snug tracking-tight text-black/45">
                       {year ? <span className="truncate">{year}</span> : null}
                       {comingSoon ? (
-                        <span className="shrink-0 rounded-full border border-black/15 px-1.5 py-[3px] text-[10px] font-semibold leading-none text-black/60">
+                        <span className="ml-0.5 shrink-0 rounded-full border border-black/15 px-1.5 py-[3px] text-[10px] font-semibold leading-none text-black/60">
                           {comingSoon}
                         </span>
                       ) : runtime ? (
-                        <span className="shrink-0">{year ? `· ${runtime}` : runtime}</span>
+                        <>
+                          {year ? <span aria-hidden>·</span> : null}
+                          <RuntimeTag runtime={runtime} />
+                        </>
                       ) : null}
                     </span>
                   ) : null}
@@ -405,7 +409,9 @@ export default function FilmStage({ id, slug, exhibition, rail: railProp }: Film
       setIndex(wrapped);
       const nextFilm = rail[wrapped];
       if (nextFilm?.slug) {
-        window.scrollTo(0, 0);
+        // Back to the poster only when reading below it (More films). A poster swipe
+        // drifts a few px vertically on phones; snapping then jolts the URL bar.
+        if (window.scrollY > window.innerHeight * 0.5) window.scrollTo(0, 0);
         syncUrl(nextFilm.slug);
       }
     },
@@ -694,7 +700,8 @@ export default function FilmStage({ id, slug, exhibition, rail: railProp }: Film
 
   return (
     <div className="bg-white text-[#0B0B0C]">
-      <div className="flex h-dvh flex-col">
+      {/* svh, not dvh: dvh resizes the stage as the mobile URL bar moves mid-swipe. */}
+      <div className="flex h-svh flex-col">
       <Navbar variant="dark" />
 
       <div className={`relative min-h-0 flex-1 ${HOUSE_STAGE_SIDE_CLASS} ${HOUSE_STAGE_VERTICAL_CLASS}`}>

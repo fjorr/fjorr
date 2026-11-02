@@ -148,6 +148,7 @@ export default function CatalogIndex({
           captionDetail: item.captionDetail ?? null,
           yearFirst: item.kind !== 'artifact',
           comingSoon: item.kind !== 'artifact' && item.comingSoon,
+          playable: item.kind !== 'artifact' && !item.comingSoon,
         }))}
         highlightYear={showControls && sortKey === 'year'}
         onPlay={onPlay}

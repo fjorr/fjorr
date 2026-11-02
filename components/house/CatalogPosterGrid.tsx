@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useTranslations } from 'next-intl';
+import RuntimeTag from '@/components/house/RuntimeTag';
 
 export type CatalogPosterItem = {
   id: string;
@@ -18,6 +19,8 @@ export type CatalogPosterItem = {
   yearFirst?: boolean;
   /** Shows captionDetail as a small outlined chip. */
   comingSoon?: boolean;
+  /** Released film: captionDetail is a runtime shown with a play mark. */
+  playable?: boolean;
 };
 
 /**
@@ -94,31 +97,38 @@ export default function CatalogPosterGrid({
                   </span>
                 )}
               </span>
-              {caption && item.comingSoon ? (
-                <span className="mt-2 flex min-w-0 items-center gap-1.5 font-sans text-[12px] font-medium leading-snug tracking-tight text-black/45">
-                  {year ? (
-                    <span
-                      className={`truncate ${highlightYear ? 'font-semibold text-[#0B0B0C]' : ''}`}
-                    >
-                      {year}
-                    </span>
-                  ) : null}
-                  {detail ? (
-                    <span className="shrink-0 rounded-full border border-black/15 px-1.5 py-[3px] text-[10px] font-semibold leading-none text-black/60">
-                      {detail}
-                    </span>
-                  ) : null}
-                </span>
-              ) : caption ? (
-                <span className="mt-2 block truncate font-sans text-[12px] font-medium leading-snug tracking-tight text-black/45">
-                  {highlightYear && year ? (
-                    <>
-                      <span className="font-semibold text-[#0B0B0C]">{year}</span>
-                      {detail ? ` · ${detail}` : null}
-                    </>
-                  ) : (
-                    caption
-                  )}
+              {caption ? (
+                <span className="mt-2 flex min-w-0 items-center gap-1 font-sans text-[12px] font-medium leading-snug tracking-tight text-black/45">
+                  {(yearLeads ? ['year', 'detail'] : ['detail', 'year']).map((part, i, order) => {
+                    const node =
+                      part === 'year' ? (
+                        year ? (
+                          <span
+                            className={`truncate ${highlightYear ? 'font-semibold text-[#0B0B0C]' : ''}`}
+                          >
+                            {year}
+                          </span>
+                        ) : null
+                      ) : !detail ? null : item.comingSoon ? (
+                        <span className="ml-0.5 shrink-0 rounded-full border border-black/15 px-1.5 py-[3px] text-[10px] font-semibold leading-none text-black/60">
+                          {detail}
+                        </span>
+                      ) : item.playable ? (
+                        <RuntimeTag runtime={detail} />
+                      ) : (
+                        <span className="truncate">{detail}</span>
+                      );
+                    if (!node) return null;
+                    const prev = order[i - 1];
+                    const prevShown = prev === 'year' ? Boolean(year) : prev === 'detail' ? Boolean(detail) : false;
+                    const dot = i > 0 && prevShown && !(part === 'detail' && item.comingSoon);
+                    return (
+                      <React.Fragment key={part}>
+                        {dot ? <span aria-hidden>·</span> : null}
+                        {node}
+                      </React.Fragment>
+                    );
+                  })}
                 </span>
               ) : null}
             </button>

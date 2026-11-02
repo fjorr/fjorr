@@ -36,11 +36,6 @@ export function houseStageVerticalPx(width: number): number {
  * artifact page (ArtifactSheet). The poster itself uses HOUSE_STAGE_SIDE_CLASS.
  */
 export const FILM_FRAME_CLASS = 'mx-auto w-full max-w-[calc(34rem+3rem)] px-6';
-/** Full-bleed rows: same left edge as the column, open to the right. */
-export const FILM_RAIL_PAD_CLASS =
-  'pl-[max(1.5rem,calc((100%-34rem)/2))] pr-6 md:pr-12';
-export const FILM_RAIL_SCROLL_PAD_CLASS =
-  'scroll-pl-[max(1.5rem,calc((100%-34rem)/2))]';
 
 /** Poster width inside the even viewport margins. */
 export function filmPosterWidthPx(width: number): number {

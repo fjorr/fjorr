@@ -402,7 +402,7 @@ export default function HouseHome({
           : 'fixed inset-0 z-40 flex flex-col overflow-clip bg-white text-[#0B0B0C]'
       }
     >
-      <div className={scrolls ? 'flex h-dvh flex-col' : 'contents'}>
+      <div className={scrolls ? 'flex h-svh flex-col' : 'contents'}>
       <Navbar variant="dark" />
 
       <div className={`relative min-h-0 flex-1 ${HOUSE_STAGE_SIDE_CLASS} ${HOUSE_STAGE_VERTICAL_CLASS}`}>

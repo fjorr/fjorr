@@ -912,13 +912,8 @@ export default function CommandLine({
       className="relative flex w-full flex-1 flex-col bg-white px-5 text-[#0B0B0C] md:px-10"
       aria-label="Search"
     >
-      <div
-        className={`mx-auto w-full max-w-[44rem] shrink-0 overflow-hidden px-0 transition-[max-height,opacity,padding] duration-200 ease-out ${
-          chromeHidden
-            ? 'pointer-events-none max-h-0 py-0 opacity-0'
-            : 'max-h-48 pt-2 opacity-100'
-        }`}
-      >
+      {/* Stays in flow: collapsing it on scroll shortened the page and made the grid jump / jitter. */}
+      <div className="mx-auto w-full max-w-[44rem] shrink-0 px-0 pt-2">
         <div
           className="mb-4 flex items-center justify-center gap-7 md:mb-5 md:gap-9"
           role="tablist"

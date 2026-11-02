@@ -11,8 +11,6 @@ import RatingBadge from '@/components/house/RatingBadge';
 import FilmCopy from '@/components/house/FilmCopy';
 import {
   FILM_FRAME_CLASS,
-  FILM_RAIL_PAD_CLASS,
-  FILM_RAIL_SCROLL_PAD_CLASS,
 } from '@/components/house/house-stage-margins';
 
 export type SheetCredit = {
@@ -79,63 +77,36 @@ function releaseYear(raw?: string | null): string | null {
   return Number.isFinite(year) ? String(year) : null;
 }
 
-/** Vertical titled posters, same size as the More artifacts row on artifact pages. */
+/** Vertical titled posters. Two fill the reading column (min(34rem, viewport − 3rem)) with a 12px gap. */
 const ARTIFACT_CARD_CLASS =
-  'w-[clamp(160px,17vw,220px)] shrink-0 snap-start text-left';
+  'w-[calc((min(34rem,100vw-3rem)-0.75rem)/2)] shrink-0 snap-center text-left';
 
 /**
- * Centered when every poster fits the reading column (like Related Films on
- * artifact pages); otherwise a rail from the column edge, open to the right.
+ * Always centered: a row that fits sits in the middle; a longer row opens
+ * scrolled to its middle so posters run off both edges (like More films).
  */
 export function FilmArtifactRail({ film }: { film: ExhibitionFilm }) {
-  const columnRef = useRef<HTMLDivElement>(null);
-  const rowRef = useRef<HTMLDivElement>(null);
-  const [fits, setFits] = useState(true);
+  const scrollerRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
-    const column = columnRef.current;
-    const row = rowRef.current;
-    if (!column || !row) return;
-    const measure = () => {
-      const cards = [...row.children] as HTMLElement[];
-      const gap = parseFloat(getComputedStyle(row).columnGap) || 0;
-      const needed =
-        cards.reduce((sum, card) => sum + card.getBoundingClientRect().width, 0) +
-        gap * Math.max(0, cards.length - 1);
-      setFits(needed <= column.clientWidth + 0.5);
-    };
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(column);
-    observer.observe(row);
-    window.addEventListener('resize', measure);
-    return () => {
-      observer.disconnect();
-      window.removeEventListener('resize', measure);
-    };
+    const scroller = scrollerRef.current;
+    if (!scroller) return;
+    scroller.scrollLeft = Math.max(0, (scroller.scrollWidth - scroller.clientWidth) / 2);
   }, [film.artifacts.length]);
 
   if (!film.artifacts.length) return null;
   return (
     <section id="film-info" className="scroll-mt-[54px] bg-white pt-10 text-[#0B0B0C] md:pt-12">
-      <div className={FILM_FRAME_CLASS}>
-        <div ref={columnRef}>
-          <h2
-            className={`mb-4 font-[family-name:var(--font-circular-black)] text-[1.25rem] font-[900] leading-normal tracking-[-0.03em] ${
-              fits ? 'text-center' : ''
-            }`}
-          >
-            Artifacts
-          </h2>
-        </div>
-      </div>
-      <div className={`${FILM_RAIL_SCROLL_PAD_CLASS} overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden`}>
-        <div
-          ref={rowRef}
-          className={`flex snap-x snap-mandatory gap-3 pb-1 ${
-            fits ? `mx-auto w-full max-w-[calc(34rem+3rem)] justify-center px-6` : `w-max ${FILM_RAIL_PAD_CLASS}`
-          }`}
-        >
+      <h2
+        className={`${FILM_FRAME_CLASS} mb-4 text-center font-[family-name:var(--font-circular-black)] text-[1.25rem] font-[900] leading-normal tracking-[-0.03em]`}
+      >
+        Artifacts
+      </h2>
+      <div
+        ref={scrollerRef}
+        className="snap-x snap-mandatory overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        <div className="mx-auto flex w-max gap-3 px-6 pb-1 md:px-12">
           {film.artifacts.map((artifact) => (
             <Link
               key={artifact.slug}
@@ -319,11 +290,18 @@ export default function ExhibitionSheet({
   }
 
   useEffect(() => {
+    // The sheet stays mounted while the rail changes films.
+    setTranscriptOpen(false);
+    setTranscriptQuery('');
+  }, [film.name]);
+
+  useEffect(() => {
     const parsed = parseVttCues(transcriptSource);
     if (parsed.length) {
       setCues(parsed);
       return;
     }
+    setCues([]);
     const track =
       film.tracks.find(
         (track) => track.code?.toLowerCase() === locale && track.vtt_url
