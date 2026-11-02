@@ -8,13 +8,17 @@ import type { Metadata } from 'next';
 import { absoluteUrl } from '@/lib/site';
 import { resolveSocialOgImage } from '@/lib/og';
 import {
+  artifactDateLabel,
   getArtifactColorTokens,
   getArtifactMetadata,
   getArtifactPageData,
   getArtifactSlugs,
+  getMoreArtifacts,
+  normalizeArtifactSources,
 } from '@/lib/content/artifact';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { parseLocale } from '@/i18n/config';
+import { NAV_BAND_PX } from '@/lib/house-chrome';
 
 /** Must be a literal — Next.js cannot analyze imported revalidate values. */
 export const revalidate = 300;
@@ -80,22 +84,26 @@ export default async function DynamicArtifactPage({ params }: ArtifactPageProps)
         backgroundColor: customBg,
         ['--page-bg-color' as string]: customBg,
       }}
-      className={`flex h-dvh max-h-dvh w-full flex-col overflow-hidden select-none transition-colors duration-500 ease-out ${textClass}`}
+      className={`flex min-h-dvh w-full flex-col transition-colors duration-500 ease-out ${textClass}`}
     >
       <Navbar variant={isDarkBg ? 'light' : 'dark'} />
 
       <Suspense
         fallback={
           <>
-            <main className="relative z-0 flex min-h-0 w-full flex-1 flex-col">
-              <div className="relative z-0 flex min-h-0 w-full flex-1 items-center justify-center p-6 md:p-10 lg:p-12">
-                <div className="relative w-full max-w-4xl max-h-full overflow-hidden">
-                  <div className="relative aspect-[1/1.618] w-full sm:aspect-[4/3] md:aspect-[16/10]">
+            <main className="relative z-0 w-full flex-1">
+              <div
+                className="flex w-full flex-col"
+                style={{ height: `calc(100dvh - ${NAV_BAND_PX}px)` }}
+              >
+                <div className="relative min-h-0 flex-1">
+                  <div className="absolute inset-0 mx-auto w-full max-w-4xl px-6 md:px-10 lg:px-12">
                     <ServerSafeSkeleton
                       variant="feature"
                       backgroundColor={customBg}
                       isDarkBg={isDarkBg}
                       dotOpacity={targetedDotOpacity}
+                      className="h-full"
                     />
                   </div>
                 </div>
@@ -109,7 +117,6 @@ export default async function DynamicArtifactPage({ params }: ArtifactPageProps)
           urlSlug={slug}
           customBg={customBg}
           isDarkBg={isDarkBg}
-          textClass={textClass}
         />
       </Suspense>
     </div>
@@ -120,22 +127,25 @@ async function DeferredArtifactContent({
   urlSlug,
   customBg,
   isDarkBg,
-  textClass,
 }: {
   urlSlug: string;
   customBg: string;
   isDarkBg: boolean;
-  textClass: string;
 }) {
   const locale = parseLocale(await getLocale());
-  const pageData = await getArtifactPageData(urlSlug, locale);
+  const [pageData, moreArtifacts] = await Promise.all([
+    getArtifactPageData(urlSlug, locale),
+    getMoreArtifacts(urlSlug, locale),
+  ]);
   if (!pageData) notFound();
 
   const { artifact, creatorName } = pageData;
-  const releaseYear = artifact.release_date
-    ? new Date(artifact.release_date).getUTCFullYear()
-    : null;
+  const dateLabel = artifactDateLabel(artifact);
   const filmConnections = artifact.film || [];
+  const quoteAttribution =
+    typeof artifact.quote_attribution === 'string'
+      ? artifact.quote_attribution.trim() || null
+      : null;
 
   return (
     <>
@@ -158,9 +168,11 @@ async function DeferredArtifactContent({
         name={artifact.name || urlSlug.replace(/-/g, ' ')}
         label={artifact.label}
         creatorName={creatorName}
-        releaseYear={releaseYear}
+        dateLabel={dateLabel}
         description={artifact.description || artifact.teaser}
         quote={artifact.quote}
+        quoteAttribution={quoteAttribution}
+        sources={normalizeArtifactSources(artifact.sources)}
         filmConnections={filmConnections}
         linkCta={artifact.link_cta}
         link={artifact.link}
@@ -168,7 +180,7 @@ async function DeferredArtifactContent({
         heroClsx={artifact.hero_clsx || null}
         isDarkBg={isDarkBg}
         customBg={customBg}
-        textClass={textClass}
+        moreArtifacts={moreArtifacts}
       />
     </>
   );

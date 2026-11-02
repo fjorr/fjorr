@@ -120,7 +120,7 @@ export default async function Home() {
       />
       <h1 className="sr-only">Fjorr — short films of the world&apos;s greatest stories</h1>
       <HomeFilmCrawlLinks films={crawlFilms} />
-      <HouseHome films={films} />
+      <HouseHome films={films} browse />
     </>
   );
 }

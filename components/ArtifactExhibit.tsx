@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React from 'react';
 import Image from 'next/image';
-import { useTranslations } from 'next-intl';
 import ArtifactHouseFooter from '@/components/ArtifactHouseFooter';
-import ArtifactSheet from '@/components/house/ArtifactSheet';
-import { useHouseOverlay } from '@/components/HouseOverlayProvider';
+import ArtifactSheet, { ArtifactMasthead } from '@/components/house/ArtifactSheet';
+import ArtifactMoreRail from '@/components/house/ArtifactMoreRail';
+import { NAV_BAND_PX } from '@/lib/house-chrome';
+import type { MoreArtifact } from '@/lib/content/artifact';
 
 type FilmItem = {
   id?: string | null;
@@ -29,9 +30,11 @@ type Props = {
   name: string;
   label: string | null;
   creatorName: string;
-  releaseYear: number | null;
+  dateLabel: string | null;
   description: string | null;
   quote: string | null;
+  quoteAttribution: string | null;
+  sources: { title: string; url: string | null }[];
   filmConnections: FilmItem[];
   linkCta: string | null;
   link: string | null;
@@ -39,17 +42,19 @@ type Props = {
   heroClsx: string | null;
   isDarkBg: boolean;
   customBg: string;
-  textClass: string;
+  moreArtifacts: MoreArtifact[];
 };
 
-/** Object-first artifact stage — details open as a ground-matched Info sheet. */
+/** Object at the top. The reading follows on the same scroll. */
 export default function ArtifactExhibit({
   name,
   label,
   creatorName,
-  releaseYear,
+  dateLabel,
   description,
   quote,
+  quoteAttribution,
+  sources,
   filmConnections,
   linkCta,
   link,
@@ -57,100 +62,76 @@ export default function ArtifactExhibit({
   heroClsx,
   isDarkBg,
   customBg,
-  textClass,
+  moreArtifacts,
 }: Props) {
-  const t = useTranslations('Artifact');
-  const { active, close } = useHouseOverlay();
-  const [infoOpen, setInfoOpen] = useState(false);
   const src = heroTall || heroClsx;
-
-  const openInfo = useCallback(() => {
-    close();
-    setInfoOpen(true);
-  }, [close]);
-
-  const closeInfo = useCallback(() => setInfoOpen(false), []);
-
-  useEffect(() => {
-    if (active != null) setInfoOpen(false);
-  }, [active]);
-
-  const infoPill =
-    isDarkBg
-      ? infoOpen
-        ? 'border-white/30 bg-white/20 text-white'
-        : 'border-white/25 bg-white/12 text-white/90 hover:bg-white/18 hover:text-white'
-      : infoOpen
-        ? 'border-black/20 bg-black/10 text-black'
-        : 'border-black/15 bg-black/[0.06] text-black/80 hover:bg-black/10 hover:text-black';
 
   return (
     <>
-      <main className="relative z-0 flex min-h-0 w-full flex-1 flex-col text-current">
-        <div className="relative z-0 flex min-h-0 w-full flex-1 flex-col items-center justify-center gap-5 p-6 md:gap-6 md:p-10 lg:p-12">
+      <main className="relative z-0 w-full text-current">
+        <div
+          className="flex flex-col"
+          style={{ height: `calc(100dvh - ${NAV_BAND_PX}px)` }}
+        >
           {src ? (
-            <picture className="flex min-h-0 w-full max-w-4xl flex-1 items-center justify-center">
-              {(heroClsx || heroTall) && (
-                <source
-                  media="(min-width: 768px)"
-                  srcSet={heroClsx || heroTall || ''}
-                />
-              )}
-              <Image
-                src={src}
-                alt={name || 'Fjorr Artifact Screen'}
-                width={1600}
-                height={2400}
-                priority
-                sizes="(max-width: 1024px) 100vw, 70vw"
-                className="mx-auto block h-auto max-h-full w-full object-contain"
-              />
-            </picture>
-          ) : null}
-
-          {!infoOpen ? (
-            <div className="flex w-full max-w-4xl shrink-0 flex-col items-center gap-3 px-1 text-center">
-              <span
-                className={`max-w-full truncate font-[family-name:var(--font-circular-black)] text-[15px] font-[900] tracking-[-0.03em] md:text-[16px] ${textClass}`}
-              >
-                {name}
-              </span>
-              <button
-                type="button"
-                aria-label={t('info')}
-                aria-expanded={false}
-                onClick={openInfo}
-                className={`inline-flex h-8 shrink-0 items-center rounded-full border px-3.5 font-sans text-[13px] font-semibold tracking-tight backdrop-blur-md transition-colors ${infoPill}`}
-              >
-                {t('info')}
-              </button>
+            <div className="flex min-h-0 flex-1 flex-col">
+              <div className="relative min-h-0 flex-1">
+                <div className="absolute inset-0 flex items-center justify-center px-6 md:px-10 lg:px-12">
+                  <picture className="flex h-full w-full max-w-4xl items-center justify-center">
+                    {(heroClsx || heroTall) && (
+                      <source
+                        media="(min-width: 768px)"
+                        srcSet={heroClsx || heroTall || ''}
+                      />
+                    )}
+                    <Image
+                      src={src}
+                      alt={name || 'Fjorr Artifact Screen'}
+                      width={1600}
+                      height={2400}
+                      priority
+                      sizes="(max-width: 1024px) 100vw, 70vw"
+                      className="block h-full w-full object-contain object-center"
+                    />
+                  </picture>
+                </div>
+              </div>
+              <div className="h-8 shrink-0 md:h-10" aria-hidden />
             </div>
-          ) : null}
+          ) : (
+            <div className="min-h-0 flex-1" />
+          )}
+
+          <ArtifactMasthead
+            name={name}
+            label={label}
+            creatorName={creatorName}
+            dateLabel={dateLabel}
+            isDarkBg={isDarkBg}
+          />
         </div>
-      </main>
 
-      {!infoOpen ? (
-        <ArtifactHouseFooter isDarkBg={isDarkBg} pageBg={customBg} />
-      ) : null}
-
-      {infoOpen ? (
         <ArtifactSheet
           artifact={{
             name,
             label,
             creatorName,
-            releaseYear,
+            dateLabel,
             description,
             quote,
+            quoteAttribution,
+            sources,
             filmConnections,
             linkCta,
             link,
           }}
-          pageBg={customBg}
           isDarkBg={isDarkBg}
-          onClose={closeInfo}
         />
-      ) : null}
+
+        <ArtifactMoreRail artifacts={moreArtifacts} isDarkBg={isDarkBg} />
+      </main>
+
+      <ArtifactHouseFooter isDarkBg={isDarkBg} pageBg={customBg} />
     </>
   );
 }

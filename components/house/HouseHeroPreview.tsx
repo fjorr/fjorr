@@ -273,7 +273,7 @@ export default function HouseHeroPreview({
   const eager = Boolean(priority && active);
 
   return (
-    <div className={`absolute inset-0 overflow-hidden bg-black ${className}`}>
+    <div className={`absolute inset-0 bg-black ${className}`}>
       {poster ? (
         <Image
           src={poster}
@@ -285,7 +285,7 @@ export default function HouseHeroPreview({
           loading={eager ? 'eager' : 'lazy'}
           decoding="async"
           draggable={false}
-          className="absolute inset-0 h-full w-full object-cover"
+          className="absolute inset-0 h-full w-full overflow-visible object-cover"
         />
       ) : null}
       <video
@@ -294,7 +294,7 @@ export default function HouseHeroPreview({
         playsInline
         preload="none"
         aria-hidden
-        className={`pointer-events-none absolute inset-0 h-full w-full object-cover transition-opacity ease-out ${
+        className={`pointer-events-none absolute inset-0 h-full w-full overflow-visible object-cover transition-opacity ease-out ${
           videoOn ? 'opacity-100' : 'opacity-0'
         }`}
         style={{ transitionDuration: `${FADE_MS}ms` }}

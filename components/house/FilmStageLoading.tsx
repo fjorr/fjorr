@@ -3,7 +3,10 @@
 import React from 'react';
 import ServerSafeSkeleton from '@/components/ServerSafeSkeleton';
 import HouseFooter from '@/components/house/HouseFooter';
-import { HOUSE_STAGE_SIDE_CLASS } from '@/components/house/house-stage-margins';
+import {
+  HOUSE_STAGE_SIDE_CLASS,
+  HOUSE_STAGE_VERTICAL_CLASS,
+} from '@/components/house/house-stage-margins';
 import Navbar from '@/components/Navbar';
 
 /**
@@ -15,7 +18,7 @@ export default function FilmStageLoading() {
     <div className="fixed inset-0 z-40 flex flex-col overflow-hidden bg-white text-[#0B0B0C]">
       <Navbar variant="dark" />
 
-      <div className={`relative min-h-0 flex-1 overflow-hidden ${HOUSE_STAGE_SIDE_CLASS}`}>
+      <div className={`relative min-h-0 flex-1 overflow-hidden ${HOUSE_STAGE_SIDE_CLASS} ${HOUSE_STAGE_VERTICAL_CLASS}`}>
         <ServerSafeSkeleton
           variant="feature"
           backgroundColor="#FFFFFF"

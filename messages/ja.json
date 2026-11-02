@@ -36,7 +36,7 @@
     "plus": "Plus",
     "cabinetShort": "Cabinet",
     "signedInCueAria": "Signed in",
-    "search": "Search",
+    "search": "Browse",
     "join": "Join",
     "enter": "Enter",
     "openCommand": "Open command",
@@ -271,7 +271,9 @@
     "untitled": "無題のつながり",
     "notFound": "遺物が見つかりません",
     "exploreMeta": "Fjorrでこの文化的遺物を探る。",
-    "info": "Info"
+    "info": "Info",
+    "sources": "出典",
+    "moreArtifacts": "ほかの遺物"
   },
   "MinimalList": {
     "filter": "設定",

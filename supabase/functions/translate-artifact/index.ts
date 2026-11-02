@@ -46,6 +46,7 @@ type ArtifactRow = {
   description: string | null;
   label: string | null;
   quote: string | null;
+  quote_attribution: string | null;
   link_cta: string | null;
 };
 
@@ -55,6 +56,7 @@ type ArtifactCopy = {
   description: string;
   label: string;
   quote: string;
+  quote_attribution: string;
   link_cta: string;
 };
 
@@ -64,6 +66,7 @@ const COPY_KEYS: (keyof ArtifactCopy)[] = [
   'description',
   'label',
   'quote',
+  'quote_attribution',
   'link_cta',
 ];
 
@@ -99,7 +102,7 @@ Deno.serve(async (req) => {
 
     const { data: artifact, error: artifactError } = await supabase
       .from('artifact')
-      .select('id, name, teaser, description, label, quote, link_cta')
+      .select('id, name, teaser, description, label, quote, quote_attribution, link_cta')
       .eq('id', artifactId)
       .maybeSingle();
 
@@ -209,6 +212,7 @@ function pickCopy(artifact: ArtifactRow): ArtifactCopy {
     description: artifact.description ?? '',
     label: artifact.label ?? '',
     quote: artifact.quote ?? '',
+    quote_attribution: artifact.quote_attribution ?? '',
     link_cta: artifact.link_cta ?? '',
   };
 }
@@ -224,7 +228,8 @@ async function translateCopy(
 
   const system = [
     `You translate Fjorr cultural-artifact metadata into ${LOCALE_LABEL[locale]} (${locale}).`,
-    'Return ONLY valid JSON with keys: name, teaser, description, label, quote, link_cta.',
+    'Return ONLY valid JSON with keys: name, teaser, description, label, quote, quote_attribution, link_cta.',
+    'quote_attribution is the short credit under the quote. Keep it short.',
     'Keep proper nouns (Fjorr, person names, place names, brand names) unchanged unless a well-known localized form exists.',
     'Do not add marketing fluff. Match tone: concise, editorial, cultural.',
     'In quote, keep straight double quotes ("). Do not use guillemets, German quotes, or corner brackets.',
@@ -262,6 +267,7 @@ async function translateCopy(
     description: String(parsed.description ?? source.description),
     label: String(parsed.label ?? source.label),
     quote: String(parsed.quote ?? source.quote),
+    quote_attribution: String(parsed.quote_attribution ?? source.quote_attribution),
     link_cta: String(parsed.link_cta ?? source.link_cta),
   };
 }

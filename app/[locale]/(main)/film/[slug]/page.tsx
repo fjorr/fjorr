@@ -4,9 +4,8 @@ import FilmStage, { type FilmStageRailItem } from '@/components/house/FilmStage'
 import FilmStageLoading from '@/components/house/FilmStageLoading';
 import FilmSeoCopy from '@/components/house/FilmSeoCopy';
 import type { Metadata } from 'next';
-import { absoluteUrl } from '@/lib/site';
 import { buildAlternates, absoluteLocalizedUrl } from '@/lib/seo/alternates';
-import { resolveSocialOgImage } from '@/lib/og';
+import { resolveSocialOgImage, socialOgImageUrl } from '@/lib/og';
 import {
   getFilmMetadata,
   getFilmPageData,
@@ -18,6 +17,7 @@ import { buildFilmVideoObject, muxThumbnailUrl } from '@/lib/seo/video';
 import { vttToPlainText } from '@/lib/vtt';
 import { getLocale } from 'next-intl/server';
 import { parseLocale } from '@/i18n/config';
+import { buildExhibitionFilm } from '@/lib/content/exhibition-film';
 
 /** Must be a literal — Next.js cannot analyze imported revalidate values. */
 export const revalidate = 60;
@@ -70,6 +70,7 @@ function toRailItem(film: any, comingSoonHint?: boolean): FilmStageRailItem | nu
     heroClsx: film.hero_clsx || film.heroClsx || null,
     heroTall: film.hero_tall || film.heroTall || null,
     blokTall: film.blok_tall || film.blokTall || null,
+    blokWide: film.blok_wide || film.blokWide || null,
     blokOgrf: film.blok_ogrf || film.blokOgrf || null,
     sponsor,
     rating: asText(film.rating),
@@ -156,52 +157,22 @@ async function DeferredPageContent({ urlSlug }: { urlSlug: string }) {
 
   const { filmData, relatedArtifacts, subtitleTracks, creatorRows, processImages } = pageData;
 
-  const [ogImageUrl, transcripts] = await Promise.all([
-    resolveSocialOgImage(filmData.blok_ogrf),
-    getFilmTranscripts(filmData.id),
-  ]);
-
   const isComingSoon = filmData.release_date
     ? new Date(filmData.release_date).getTime() > Date.now()
     : false;
 
-  const credits = (creatorRows || [])
-    .map((row: any) => ({
-      name: row?.creator?.name ? String(row.creator.name) : '',
-      role: row?.role ? String(row.role) : '',
-      slug: row?.creator?.slug ? String(row.creator.slug) : null,
-      image: row?.creator?.image ? String(row.creator.image) : null,
-    }))
-    .filter((row: { name: string }) => row.name);
-
-  const artifacts = (relatedArtifacts || [])
-    .map((row: any) => row?.artifact)
-    .filter(Boolean)
-    .map((artifact: any) => ({
-      slug: String(artifact.slug || ''),
-      name: artifact.name || 'Artifact',
-      image: artifact.blok_tall || artifact.hero_tall || null,
-    }))
-    .filter((artifact: { slug: string }) => artifact.slug);
-
   const currentSlug = String(filmData.slug);
-  const directorNote =
-    filmData.director_note ||
-    // Temporary placeholder until the CMS note is filled.
-    (currentSlug === 'moonshot'
-      ? 'Kennedy did not ask for a speech about the moon. He asked for a reason America should try. The film is that reason, cut short — a dare aimed at the horizon, still unfinished in the best way.'
-      : null);
+  const exhibition = buildExhibitionFilm({
+    filmData,
+    creatorRows,
+    relatedArtifacts,
+    processImages: processImages || [],
+    transcripts: [],
+    subtitleTracks,
+  });
+  const credits = exhibition.credits;
   const directorName =
     credits.find((c) => /director/i.test(c.role || ''))?.name || null;
-
-  const transcriptPlain = (() => {
-    const rows = transcripts || [];
-    const preferred =
-      rows.find((r: { language_code?: string | null }) =>
-        /^en/i.test(String(r.language_code || ''))
-      ) || rows[0];
-    return preferred?.content ? vttToPlainText(String(preferred.content)) : '';
-  })();
 
   const currentItem = toRailItem(filmData, isComingSoon);
   const rail: FilmStageRailItem[] = (() => {
@@ -223,7 +194,8 @@ async function DeferredPageContent({ urlSlug }: { urlSlug: string }) {
   })();
 
   const thumbnailUrl =
-    muxThumbnailUrl(filmData.mux_playback_id) || ogImageUrl;
+    muxThumbnailUrl(filmData.mux_playback_id) ||
+    socialOgImageUrl(filmData.blok_ogrf);
 
   return (
     <>
@@ -249,36 +221,39 @@ async function DeferredPageContent({ urlSlug }: { urlSlug: string }) {
         name={filmData.name || 'Untitled'}
         teaser={filmData.teaser || null}
         description={filmData.description || null}
-        directorNote={directorNote}
+        directorNote={exhibition.directorNote}
         directorName={directorName}
-        transcriptText={transcriptPlain || null}
       />
+
+      <Suspense fallback={null}>
+        <FilmTranscriptSeo filmId={String(filmData.id)} name={filmData.name || 'Untitled'} />
+      </Suspense>
 
       <FilmStage
         id={String(filmData.id)}
         slug={currentSlug}
         rail={rail}
-        exhibition={{
-          name: filmData.name || 'Untitled',
-          teaser: filmData.teaser || null,
-          description: filmData.description || null,
-          directorNote,
-          storyDate:
-            asText(filmData.story_date) ||
-            (typeof filmData.story_date === 'string' ? filmData.story_date : null),
-          rating: asText(filmData.rating),
-          runtime: filmData.runtime ?? null,
-          theme: asText(filmData.theme),
-          location: formatLocationForPage(filmData.location),
-          releaseDate: filmData.release_date || null,
-          audioLanguages: ['English'],
-          credits,
-          artifacts,
-          processImages: processImages || [],
-          transcripts,
-          tracks: subtitleTracks,
-        }}
+        exhibition={exhibition}
       />
     </>
+  );
+}
+
+/** Search-engine transcript. Streams after the poster and essay. */
+async function FilmTranscriptSeo({ filmId, name }: { filmId: string; name: string }) {
+  const transcripts = await getFilmTranscripts(filmId);
+  const preferred =
+    (transcripts || []).find((row: { language_code?: string | null }) =>
+      /^en/i.test(String(row.language_code || ''))
+    ) || transcripts?.[0];
+  const transcriptText = preferred?.content
+    ? vttToPlainText(String(preferred.content))
+    : '';
+  if (!transcriptText.trim()) return null;
+  return (
+    <section className="sr-only" aria-label={`${name} transcript`}>
+      <h2>Transcript</h2>
+      <pre>{transcriptText}</pre>
+    </section>
   );
 }

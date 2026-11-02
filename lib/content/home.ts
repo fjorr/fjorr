@@ -33,6 +33,7 @@ export const getFeaturedFilms = unstable_cache(
         hero_clsx,
         hero_tall,
         blok_tall,
+        blok_wide,
         blok_ogrf,
         title_art_code,
         title_art_hex,
@@ -66,7 +67,7 @@ export const getFeaturedFilms = unstable_cache(
 
     return localizeFilmsWithThemes(supabase, films, locale);
   },
-  ['home-featured-i18n-v5'],
+  ['home-featured-i18n-v6'],
   { revalidate: HOME_FILM_REVALIDATE_SECONDS, tags: ['film', 'home'] }
 );
 
@@ -82,6 +83,7 @@ const HOUSE_FILM_SELECT = `
   hero_clsx,
   hero_tall,
   blok_tall,
+  blok_wide,
   blok_ogrf,
   title_art_code,
   title_art_hex,
@@ -166,7 +168,7 @@ export const getHouseCarouselFilms = unstable_cache(
     take(released, films);
     return films.slice(0, CAROUSEL_SIZE);
   },
-  ['house-carousel-i18n-v1'],
+  ['house-carousel-i18n-v2'],
   { revalidate: HOME_FILM_REVALIDATE_SECONDS, tags: ['film', 'home'] }
 );
 

@@ -36,7 +36,7 @@
     "plus": "Plus",
     "cabinetShort": "Cabinet",
     "signedInCueAria": "Signed in",
-    "search": "Search",
+    "search": "Browse",
     "join": "Join",
     "enter": "Enter",
     "openCommand": "Open command",
@@ -271,7 +271,9 @@
     "untitled": "Connexion sans titre",
     "notFound": "Artefact introuvable",
     "exploreMeta": "Explorez cet artefact culturel sur Fjorr.",
-    "info": "Info"
+    "info": "Info",
+    "sources": "Sources",
+    "moreArtifacts": "Autres artefacts"
   },
   "MinimalList": {
     "filter": "Dial",

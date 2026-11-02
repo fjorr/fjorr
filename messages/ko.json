@@ -36,7 +36,7 @@
     "plus": "Plus",
     "cabinetShort": "Cabinet",
     "signedInCueAria": "Signed in",
-    "search": "Search",
+    "search": "Browse",
     "join": "Join",
     "enter": "Enter",
     "openCommand": "Open command",
@@ -271,7 +271,9 @@
     "untitled": "제목 없는 연결",
     "notFound": "유물을 찾을 수 없습니다",
     "exploreMeta": "Fjorr에서 이 문화 유물을 살펴보세요.",
-    "info": "Info"
+    "info": "Info",
+    "sources": "출처",
+    "moreArtifacts": "더 많은 유물"
   },
   "MinimalList": {
     "filter": "설정",

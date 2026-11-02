@@ -1,13 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { houseStageSidePx } from '@/components/house/house-stage-margins';
 
-/** Desktop slide distance. Mobile matches the stage inset so the frame cannot widen the phone. */
+/** Desktop slide distance. Phones keep 24 so the frame cannot widen the page. */
 const DESKTOP_BLEED_PX = 72;
 
 function bleedForWidth(width: number): number {
-  return houseStageSidePx(width) === 24 ? 24 : DESKTOP_BLEED_PX;
+  return width < 768 ? 24 : DESKTOP_BLEED_PX;
 }
 
 export function useHouseStageBleed(): number {

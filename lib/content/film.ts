@@ -44,6 +44,7 @@ const FILM_PAGE_SELECT = `
   title_art_hex,
   title_art_scale,
   blok_tall,
+  blok_wide,
   blok_ogrf,
   runtime,
   release_date,
@@ -95,7 +96,9 @@ export const getFilmPageData = unstable_cache(
       await Promise.all([
         supabase
           .from('film_artifact')
-          .select('sort_order, artifact:artifact_id (id, slug, name, blok_tall)')
+          .select(
+            'sort_order, artifact:artifact_id (id, slug, name, label, release_label, release_date, hero_clsx, hero_tall, blok_tall)'
+          )
           .eq('film_id', filmData.id)
           .order('sort_order', { ascending: true }),
         supabase
@@ -246,7 +249,7 @@ export const getFilmPageData = unstable_cache(
       })),
     };
   },
-  ['film-page-i18n'],
+  ['film-page-i18n-v3'],
   { revalidate: FILM_REVALIDATE_SECONDS, tags: ['film'] }
 );
 

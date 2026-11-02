@@ -36,7 +36,7 @@
     "plus": "Plus",
     "bureaux": "The Bureaux",
     "signedInCueAria": "Signed in",
-    "search": "Search",
+    "search": "Browse",
     "join": "Join",
     "enter": "Enter",
     "openCommand": "Open command",
@@ -271,7 +271,9 @@
     "untitled": "Untitled Connection",
     "notFound": "Artifact Not Found",
     "exploreMeta": "Explore this cultural artifact on Fjorr.",
-    "info": "Info"
+    "info": "Info",
+    "sources": "Sources",
+    "moreArtifacts": "More artifacts"
   },
   "MinimalList": {
     "filter": "Dials",

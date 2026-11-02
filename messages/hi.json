@@ -36,7 +36,7 @@
     "plus": "Plus",
     "cabinetShort": "Cabinet",
     "signedInCueAria": "Signed in",
-    "search": "Search",
+    "search": "Browse",
     "join": "Join",
     "enter": "Enter",
     "openCommand": "Open command",
@@ -271,7 +271,9 @@
     "untitled": "अनाम संबंध",
     "notFound": "कलावस्तु नहीं मिली",
     "exploreMeta": "Fjorr पर इस सांस्कृतिक कलावस्तु को देखें।",
-    "info": "Info"
+    "info": "Info",
+    "sources": "स्रोत",
+    "moreArtifacts": "और कलावस्तुएँ"
   },
   "MinimalList": {
     "filter": "डायल",

@@ -36,7 +36,7 @@
     "plus": "Plus",
     "cabinetShort": "Cabinet",
     "signedInCueAria": "Signed in",
-    "search": "Search",
+    "search": "Browse",
     "join": "Join",
     "enter": "Enter",
     "openCommand": "Open command",
@@ -271,7 +271,9 @@
     "untitled": "未命名的連結",
     "notFound": "找不到文物",
     "exploreMeta": "在 Fjorr 上探索這件文化文物。",
-    "info": "Info"
+    "info": "Info",
+    "sources": "出處",
+    "moreArtifacts": "更多文物"
   },
   "MinimalList": {
     "filter": "調整",

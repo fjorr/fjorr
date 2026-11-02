@@ -5,13 +5,15 @@ import { useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { parseLocale } from '@/i18n/config';
 import { parseVttCues, type VttCue } from '@/lib/vtt';
-import ProcessLightbox, {
-  type ProcessImage,
-} from '@/components/house/ProcessLightbox';
+import type { ProcessImage } from '@/components/house/ProcessLightbox';
 import { storySettingDisplay } from '@/lib/story-year';
 import RatingBadge from '@/components/house/RatingBadge';
-import { NAV_BAND_PX } from '@/lib/house-chrome';
 import FilmCopy from '@/components/house/FilmCopy';
+import {
+  FILM_FRAME_CLASS,
+  FILM_RAIL_PAD_CLASS,
+  FILM_RAIL_SCROLL_PAD_CLASS,
+} from '@/components/house/house-stage-margins';
 
 export type SheetCredit = {
   name: string;
@@ -19,7 +21,12 @@ export type SheetCredit = {
   slug?: string | null;
   image?: string | null;
 };
-export type SheetArtifact = { slug: string; name: string; image: string | null };
+export type SheetArtifact = {
+  slug: string;
+  name: string;
+  image: string | null;
+  meta: string | null;
+};
 export type SheetTranscript = { language_code: string; content: string };
 export type SheetTrack = { code: string; name: string; vtt_url?: string };
 
@@ -70,6 +77,93 @@ function releaseYear(raw?: string | null): string | null {
   if (!raw) return null;
   const year = new Date(raw).getFullYear();
   return Number.isFinite(year) ? String(year) : null;
+}
+
+/** Vertical titled posters, same size as the More artifacts row on artifact pages. */
+const ARTIFACT_CARD_CLASS =
+  'w-[clamp(160px,17vw,220px)] shrink-0 snap-start text-left';
+
+/**
+ * Centered when every poster fits the reading column (like Related Films on
+ * artifact pages); otherwise a rail from the column edge, open to the right.
+ */
+export function FilmArtifactRail({ film }: { film: ExhibitionFilm }) {
+  const columnRef = useRef<HTMLDivElement>(null);
+  const rowRef = useRef<HTMLDivElement>(null);
+  const [fits, setFits] = useState(true);
+
+  useLayoutEffect(() => {
+    const column = columnRef.current;
+    const row = rowRef.current;
+    if (!column || !row) return;
+    const measure = () => {
+      const cards = [...row.children] as HTMLElement[];
+      const gap = parseFloat(getComputedStyle(row).columnGap) || 0;
+      const needed =
+        cards.reduce((sum, card) => sum + card.getBoundingClientRect().width, 0) +
+        gap * Math.max(0, cards.length - 1);
+      setFits(needed <= column.clientWidth + 0.5);
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(column);
+    observer.observe(row);
+    window.addEventListener('resize', measure);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', measure);
+    };
+  }, [film.artifacts.length]);
+
+  if (!film.artifacts.length) return null;
+  return (
+    <section id="film-info" className="scroll-mt-[54px] bg-white pt-10 text-[#0B0B0C] md:pt-12">
+      <div className={FILM_FRAME_CLASS}>
+        <div ref={columnRef}>
+          <h2
+            className={`mb-4 font-[family-name:var(--font-circular-black)] text-[1.25rem] font-[900] leading-normal tracking-[-0.03em] ${
+              fits ? 'text-center' : ''
+            }`}
+          >
+            Artifacts
+          </h2>
+        </div>
+      </div>
+      <div className={`${FILM_RAIL_SCROLL_PAD_CLASS} overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden`}>
+        <div
+          ref={rowRef}
+          className={`flex snap-x snap-mandatory gap-3 pb-1 ${
+            fits ? `mx-auto w-full max-w-[calc(34rem+3rem)] justify-center px-6` : `w-max ${FILM_RAIL_PAD_CLASS}`
+          }`}
+        >
+          {film.artifacts.map((artifact) => (
+            <Link
+              key={artifact.slug}
+              href={`/artifact/${artifact.slug}`}
+              aria-label={artifact.meta ? `${artifact.name}, ${artifact.meta}` : artifact.name}
+              className={`group ${ARTIFACT_CARD_CLASS}`}
+            >
+              <div className="aspect-[2/3] w-full overflow-hidden rounded-[8px] bg-[#F3F3F4]">
+                {artifact.image ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={artifact.image}
+                    alt=""
+                    className="h-full w-full object-cover transition-opacity duration-300 group-hover:opacity-90"
+                  />
+                ) : null}
+              </div>
+              {artifact.meta ? (
+                <p className="mt-2 truncate font-sans text-[12px] font-medium leading-snug tracking-tight text-black/45">
+                  {artifact.meta}
+                </p>
+              ) : null}
+            </Link>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
 }
 
 /** Cabinet / craft leads first — recognition hierarchy. */
@@ -175,33 +269,23 @@ function CreditPortrait({
 
 export default function ExhibitionSheet({
   film,
-  onClose,
   onSeek,
 }: {
   film: ExhibitionFilm;
-  onClose: () => void;
   onSeek: (seconds: number) => void;
 }) {
   const t = useTranslations('Film');
   const locale = parseLocale(useLocale());
   const scrollRef = useRef<HTMLDivElement>(null);
-  const artifactTitleRef = useRef<HTMLHeadingElement>(null);
-  const artifactRailRef = useRef<HTMLDivElement>(null);
   const [cues, setCues] = useState<VttCue[]>([]);
   const [transcriptQuery, setTranscriptQuery] = useState('');
-  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [transcriptOpen, setTranscriptOpen] = useState(false);
   const creditCards = useMemo(
     () => buildCreditCards(film.credits),
     [film.credits]
   );
   /** Overview = long copy; teaser fills in when description is empty. */
   const overview = film.description?.trim() || film.teaser?.trim() || '';
-  const directorNote = film.directorNote?.trim() || '';
-  const directorCredit = film.credits.find((credit) =>
-    /director/i.test(credit.role || '')
-  );
-  const processImages = film.processImages || [];
-  const hasProcess = Boolean(directorNote) || processImages.length > 0;
 
   const transcriptSource = useMemo(() => {
     const rows = film.transcripts || [];
@@ -257,67 +341,6 @@ export default function ExhibitionSheet({
     };
   }, [film.tracks, locale, transcriptSource]);
 
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && lightboxIndex == null) onClose();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [lightboxIndex, onClose]);
-
-  const emitInfoScroll = (el: HTMLElement) => {
-    window.dispatchEvent(
-      new CustomEvent('fjorr_info_scroll', {
-        detail: {
-          scrollTop: el.scrollTop,
-          canScroll: el.scrollHeight > el.clientHeight + 40,
-        },
-      })
-    );
-  };
-
-  useEffect(() => {
-    const root = scrollRef.current;
-    if (root) emitInfoScroll(root);
-    return () => {
-      window.dispatchEvent(
-        new CustomEvent('fjorr_info_scroll', {
-          detail: { scrollTop: 0, canScroll: false },
-        })
-      );
-    };
-  }, []);
-
-  /** Artifacts rail starts under the heading and runs to the right edge of the sheet. */
-  useLayoutEffect(() => {
-    const syncArtifactRail = () => {
-      const title = artifactTitleRef.current;
-      const rail = artifactRailRef.current;
-      const sheet = scrollRef.current;
-      const parent = rail?.parentElement;
-      if (!title || !rail || !sheet || !parent) return;
-      const titleBox = title.getBoundingClientRect();
-      const sheetBox = sheet.getBoundingClientRect();
-      const parentBox = parent.getBoundingClientRect();
-      const marginLeft = Math.max(0, Math.round(titleBox.left - parentBox.left));
-      const width = Math.max(
-        0,
-        Math.floor(sheet.clientWidth - (titleBox.left - sheetBox.left))
-      );
-      rail.style.marginLeft = `${marginLeft}px`;
-      rail.style.width = `${width}px`;
-    };
-
-    syncArtifactRail();
-    window.addEventListener('resize', syncArtifactRail);
-    const observer = new ResizeObserver(syncArtifactRail);
-    if (scrollRef.current) observer.observe(scrollRef.current);
-    return () => {
-      window.removeEventListener('resize', syncArtifactRail);
-      observer.disconnect();
-    };
-  }, [film.artifacts.length]);
-
   const setting = storySettingDisplay(film.storyDate);
   const duration = runtimeLabel(film.runtime);
   const place = formatLocation(film.location);
@@ -331,13 +354,11 @@ export default function ExhibitionSheet({
     body: 'font-sans text-[16px] font-normal leading-[1.65] tracking-[-0.005em] text-black/65',
     caption: 'font-sans text-[13px] font-medium leading-snug text-black/40',
     creditName:
-      'font-interTight text-[16px] font-semibold leading-normal tracking-tight text-[#0B0B0C]',
+      'font-sans text-[14px] font-semibold leading-snug tracking-[-0.01em] text-[#0B0B0C]',
     creditRole:
       'font-sans text-[12px] font-medium leading-snug text-black/40',
   };
-  const sectionGap = 'mt-10 md:mt-12';
-  const bandPad = 'py-12 md:py-14';
-  const col = 'mx-auto w-full max-w-[34rem]';
+  const sectionGap = 'mt-8 md:mt-10';
 
   const metaNodes: React.ReactNode[] = [];
   if (setting) {
@@ -359,13 +380,6 @@ export default function ExhibitionSheet({
       <RatingBadge key="rating" rating={film.rating} tone="onLight" />
     );
   }
-  if (duration) {
-    metaNodes.push(
-      <span key="runtime" className={type.eyebrow}>
-        {duration}
-      </span>
-    );
-  }
 
   const audio = (film.audioLanguages || []).filter(Boolean);
   const subtitles = [
@@ -376,279 +390,180 @@ export default function ExhibitionSheet({
   if (audio.length) specRows.push({ label: t('audioLabel'), value: audio.join(' · ') });
   if (subtitles.length)
     specRows.push({ label: t('subtitlesLabel'), value: subtitles.join(' · ') });
-  if (film.theme) specRows.push({ label: t('tagsLabel') === 'Tags' ? 'Theme' : 'Theme', value: film.theme });
+  if (duration) specRows.push({ label: t('runtimeLabel'), value: duration });
   if (year) specRows.push({ label: t('releasedLabel'), value: year });
+  if (film.theme) specRows.push({ label: 'Theme', value: film.theme });
+
+  const dossierAnchor = film.artifacts.length > 0 ? undefined : 'film-info';
+  const hasCredits = creditCards.length > 0;
+  const hasOverview = Boolean(overview);
 
   return (
     <div
       ref={scrollRef}
-      className="fixed inset-x-0 bottom-0 z-20 animate-[sheetIn_280ms_ease-out] overflow-x-hidden overflow-y-auto bg-white text-[#0B0B0C]"
-      style={{ top: NAV_BAND_PX - 1 }}
-      onScroll={(event) => emitInfoScroll(event.currentTarget)}
+      id={dossierAnchor}
+      className="scroll-mt-[54px] bg-white pt-12 text-[#0B0B0C] md:pt-16"
     >
-      <div className="pointer-events-none sticky top-0 z-10 flex justify-end bg-gradient-to-b from-white from-70% to-transparent px-5 pt-[15px] md:px-8 md:pt-[19px]">
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label={t('keysClose')}
-          className="pointer-events-auto flex h-9 w-9 items-center justify-center rounded-full bg-black/[0.04] text-black/45 transition-colors hover:bg-black/[0.08] hover:text-black"
-        >
-          <span className="text-[22px] leading-none" aria-hidden>
-            ×
-          </span>
-        </button>
-      </div>
-
-      <div className="mx-auto w-full max-w-[720px] px-6 md:px-10">
-        <header className="mx-auto max-w-[28rem] text-center md:max-w-[32rem]">
-          <p className={type.eyebrow}>{t('sheetLabel')}</p>
-          <h1 className="mt-3 text-balance font-[family-name:var(--font-circular-black)] text-[clamp(2.5rem,7vw,3.75rem)] font-[900] leading-[0.92] tracking-[-0.045em] text-[#0B0B0C]">
-            {film.name}
-          </h1>
-          {metaNodes.length > 0 ? (
-            <div className="mt-3 flex flex-wrap items-center justify-center gap-x-2 gap-y-1.5">
-              {metaNodes.map((node, index) => (
-                <React.Fragment key={index}>
-                  {index > 0 ? (
-                    <span
-                      className="select-none text-[13px] font-medium text-black/25"
-                      aria-hidden
-                    >
-                      ·
-                    </span>
-                  ) : null}
-                  {node}
-                </React.Fragment>
-              ))}
-            </div>
-          ) : null}
-        </header>
-
-        {film.description?.trim() ? (
-          <section className={`${col} ${sectionGap}`}>
-            <FilmCopy text={film.description} className={type.body} />
-          </section>
-        ) : overview ? (
-          <section className={`${col} ${sectionGap}`}>
-            <p className={type.body}>{overview}</p>
-          </section>
-        ) : null}
-
-        {film.artifacts.length > 0 ? (
-          <section className={sectionGap}>
-            <h2 ref={artifactTitleRef} className={`mb-5 ${col} ${type.section}`}>
-              Artifacts
-            </h2>
-            <div
-              ref={artifactRailRef}
-              className="flex justify-start gap-4 overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] md:gap-5 [&::-webkit-scrollbar]:hidden"
-            >
-              {film.artifacts.map((artifact) => (
-                <Link
-                  key={artifact.slug}
-                  href={`/artifact/${artifact.slug}`}
-                  aria-label={artifact.name}
-                  className="group w-[160px] shrink-0 sm:w-[172px] md:w-[188px]"
+      <div className={`${FILM_FRAME_CLASS} pb-16 md:pb-20`}>
+        {hasCredits ? (
+          <section aria-label={t('creditsLabel')}>
+            <h2 className={`mb-5 text-center ${type.section}`}>{t('creditsLabel')}</h2>
+            <div className="flex flex-wrap justify-center gap-x-4 gap-y-6 md:gap-x-5">
+              {creditCards.map((person) => (
+                <figure
+                  key={person.name}
+                  className="m-0 w-[104px] shrink-0 text-center sm:w-[112px]"
                 >
-                  <div className="flex aspect-[2/3] w-full items-center justify-center overflow-hidden rounded-[8px] bg-[#F3F3F4]">
-                    {artifact.image ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={artifact.image}
-                        alt=""
-                        className="max-h-full max-w-full object-contain transition-opacity duration-300 group-hover:opacity-90"
-                      />
-                    ) : null}
-                  </div>
-                </Link>
+                  <CreditPortrait image={person.image} />
+                  <figcaption className="mt-3 text-center">
+                    <p className={`m-0 ${type.creditName}`}>{person.name}</p>
+                    <p className={`mt-1 ${type.creditRole}`}>
+                      {person.roleLabel}
+                    </p>
+                  </figcaption>
+                </figure>
               ))}
-              <div className="w-6 shrink-0 md:w-10" aria-hidden />
             </div>
           </section>
         ) : null}
-      </div>
 
-      {hasProcess || creditCards.length > 0 ? (
-        <div className={`${sectionGap} w-full`}>
-          <div
-            className={`mx-auto w-full max-w-[720px] px-6 md:px-10 ${bandPad}`}
-          >
-            {creditCards.length > 0 ? (
-              <section className={col} aria-label={t('creditsLabel')}>
-                <h2 className={`mb-5 ${type.section}`}>{t('creditsLabel')}</h2>
-                <div className="-mx-6 flex w-[calc(100%+3rem)] justify-start gap-4 overflow-x-auto px-6 pb-1 md:-mx-10 md:w-[calc(100%+5rem)] md:gap-5 md:px-10">
-                  {creditCards.map((person) => (
-                    <figure
-                      key={person.name}
-                      className="m-0 w-[152px] shrink-0 text-left sm:w-[160px] md:w-[168px]"
-                    >
-                      <CreditPortrait image={person.image} />
-                      <figcaption className="mt-3 text-left">
-                        <p className={`m-0 ${type.creditName}`}>{person.name}</p>
-                        <p className={`mt-1 ${type.creditRole}`}>
-                          {person.roleLabel}
-                        </p>
-                      </figcaption>
-                    </figure>
-                  ))}
-                </div>
-              </section>
-            ) : null}
-
-            {hasProcess ? (
-              <section
-                className={`${col} ${creditCards.length > 0 ? sectionGap : ''}`}
-                aria-label={t('process')}
-              >
-                <h2 className={`mb-5 ${type.section}`}>{t('process')}</h2>
-                {processImages.length > 0 ? (
-                  <div
-                    className={`grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-2.5 ${
-                      directorNote ? 'mb-6 md:mb-8' : ''
-                    }`}
-                  >
-                    {processImages.map((image, index) => (
-                      <button
-                        key={image.id}
-                        type="button"
-                        onClick={() => setLightboxIndex(index)}
-                        className="group relative aspect-square overflow-hidden rounded-[6px] bg-white/70 text-left"
-                        aria-label={
-                          image.caption || `Open process image ${index + 1}`
-                        }
+        {hasOverview ? (
+          <section className={`max-w-[34rem] ${hasCredits ? sectionGap : ''}`}>
+            <h2 className={`mb-4 ${type.section}`}>Overview</h2>
+            <FilmCopy text={overview} className={type.body} />
+            {metaNodes.length > 0 ? (
+              <div className="mt-3 flex flex-wrap items-center justify-start gap-x-2 gap-y-1.5">
+                {metaNodes.map((node, index) => (
+                  <React.Fragment key={index}>
+                    {index > 0 ? (
+                      <span
+                        className="select-none text-[13px] font-medium text-black/25"
+                        aria-hidden
                       >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={image.thumbUrl || image.url}
-                          alt={image.caption || ''}
-                          className="h-full w-full object-cover transition-opacity duration-300 group-hover:opacity-90"
-                        />
-                      </button>
-                    ))}
-                  </div>
-                ) : null}
-                {directorNote ? (
-                  <div>
-                    <h3 className={`mb-3 ${type.eyebrow}`}>{t('directorNote')}</h3>
-                    <FilmCopy text={directorNote} className={type.body} />
-                    {directorCredit?.name ? (
-                      <p className={`mt-3 ${type.caption}`}>
-                        {t('directorNoteAttribution', {
-                          name: directorCredit.name,
-                          role: directorCredit.role || t('directorRole'),
-                        })}
-                      </p>
+                        ·
+                      </span>
                     ) : null}
-                  </div>
-                ) : null}
-              </section>
+                    {node}
+                  </React.Fragment>
+                ))}
+              </div>
             ) : null}
-          </div>
-        </div>
-      ) : null}
+          </section>
+        ) : null}
 
-      {cues.length > 0 ? (
-        <section className={`${sectionGap} w-full bg-white`} aria-label={t('transcript')}>
-          <div
-            className={`mx-auto w-full max-w-[720px] px-6 md:px-10 ${bandPad}`}
-          >
-            <h2 className={`${col} mb-5 ${type.section}`}>{t('transcript')}</h2>
-            <div className={`relative mb-5 ${col}`}>
-              <svg
-                className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-black/35"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
+        {cues.length > 0 ? (
+          <div className={`max-w-[34rem] ${hasCredits || hasOverview ? sectionGap : ''}`}>
+            <button
+              type="button"
+              aria-expanded={transcriptOpen}
+              onClick={() => setTranscriptOpen((open) => !open)}
+              className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 font-sans text-[14px] font-semibold leading-none tracking-tight transition-colors ${
+                transcriptOpen
+                  ? 'border-[#0B0B0C] bg-[#0B0B0C] text-white'
+                  : 'border-black/15 bg-transparent text-[#0B0B0C] hover:border-black/30'
+              }`}
+            >
+              <span>{t('transcript')}</span>
+              <span
+                className={`text-[16px] font-normal leading-none ${transcriptOpen ? 'text-white/70' : 'text-black/40'}`}
                 aria-hidden
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
-              <input
-                type="search"
-                value={transcriptQuery}
-                onChange={(event) => setTranscriptQuery(event.target.value)}
-                placeholder={t('transcriptSearch')}
-                className="transcript-search h-10 w-full rounded-[10px] border-0 bg-[#F5F5F7] pl-11 pr-11 font-sans text-[14px] font-medium text-[#0B0B0C] outline-none placeholder:text-black/35 focus:ring-2 focus:ring-black/10"
-              />
-              {transcriptQuery.trim() ? (
-                <button
-                  type="button"
-                  onClick={() => setTranscriptQuery('')}
-                  aria-label={t('transcriptClose')}
-                  className="absolute right-2.5 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-black/35 transition-colors hover:bg-black/[0.06] hover:text-black/55"
-                >
-                  <span className="text-[18px] leading-none" aria-hidden>
-                    ×
-                  </span>
-                </button>
-              ) : null}
-            </div>
-            <div className={`flex flex-col ${col}`}>
-              {filteredCues.length > 0 ? (
-                filteredCues.map((cue) => (
-                  <button
-                    key={`${cue.startSeconds}-${cue.dialogue}`}
-                    type="button"
-                    onClick={() => onSeek(cue.startSeconds)}
-                    className="group -mx-3 flex w-[calc(100%+1.5rem)] gap-4 rounded-[6px] px-3 py-1 text-left transition-colors hover:bg-black/[0.03] sm:gap-5"
+                {transcriptOpen ? '–' : '+'}
+              </span>
+            </button>
+            {transcriptOpen ? (
+              <div className="mt-4">
+                <div className="relative mb-4">
+                  <svg
+                    className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-black/35"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                    aria-hidden
                   >
-                    <span className="w-11 shrink-0 pt-0.5 font-mono text-[11px] tabular-nums text-black/30 transition-colors group-hover:text-black/55">
-                      {clock(cue.startSeconds)}
-                    </span>
-                    <span className="font-sans text-[15px] font-normal leading-[1.5] text-black/65 transition-colors group-hover:text-[#0B0B0C] sm:text-[16px]">
-                      {highlightMatch(cue.dialogue, transcriptQuery)}
-                    </span>
-                  </button>
-                ))
-              ) : (
-                <p className={`py-6 text-center ${type.caption}`}>
-                  {t('transcriptNoMatches')}
-                </p>
-              )}
-            </div>
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                  </svg>
+                  <input
+                    type="search"
+                    value={transcriptQuery}
+                    onChange={(event) => setTranscriptQuery(event.target.value)}
+                    placeholder={t('transcriptSearch')}
+                    className="transcript-search h-10 w-full rounded-[10px] border-0 bg-[#F5F5F7] pl-11 pr-11 font-sans text-[14px] font-medium text-[#0B0B0C] outline-none placeholder:text-black/35 focus:ring-2 focus:ring-black/10"
+                  />
+                  {transcriptQuery.trim() ? (
+                    <button
+                      type="button"
+                      onClick={() => setTranscriptQuery('')}
+                      aria-label={t('transcriptClose')}
+                      className="absolute right-2.5 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-black/35 transition-colors hover:bg-black/[0.06] hover:text-black/55"
+                    >
+                      <span className="text-[18px] leading-none" aria-hidden>
+                        ×
+                      </span>
+                    </button>
+                  ) : null}
+                </div>
+                <div className="flex flex-col">
+                  {filteredCues.length > 0 ? (
+                    filteredCues.map((cue) => (
+                      <button
+                        key={`${cue.startSeconds}-${cue.dialogue}`}
+                        type="button"
+                        onClick={() => onSeek(cue.startSeconds)}
+                        className="group -mx-3 flex w-[calc(100%+1.5rem)] gap-4 rounded-[6px] px-3 py-1 text-left transition-colors hover:bg-black/[0.03] sm:gap-5"
+                      >
+                        <span className="w-11 shrink-0 pt-0.5 font-mono text-[11px] tabular-nums text-black/30 transition-colors group-hover:text-black/55">
+                          {clock(cue.startSeconds)}
+                        </span>
+                        <span className="font-sans text-[15px] font-normal leading-[1.5] text-black/65 transition-colors group-hover:text-[#0B0B0C] sm:text-[16px]">
+                          {highlightMatch(cue.dialogue, transcriptQuery)}
+                        </span>
+                      </button>
+                    ))
+                  ) : (
+                    <p className={`py-6 text-center ${type.caption}`}>
+                      {t('transcriptNoMatches')}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ) : null}
           </div>
-        </section>
-      ) : null}
+        ) : null}
 
-      {specRows.length > 0 ? (
-        <div className="mx-auto w-full max-w-[720px] px-6 pb-14 md:px-10 md:pb-16">
+        {specRows.length > 0 ? (
           <section
-            className={`${col} ${sectionGap}`}
+            className={`max-w-[34rem] border-t border-black/10 pt-5 ${
+              hasCredits || hasOverview || cues.length > 0 ? 'mt-14 md:mt-16' : ''
+            }`}
             aria-label={t('specs')}
           >
-            <h2 className={`mb-5 ${type.section}`}>{t('specs')}</h2>
-            <ul className="m-0 list-none space-y-2 p-0">
+            <h2 className="mb-2 font-sans text-[12px] font-medium tracking-tight text-black/40">
+              {t('specs')}
+            </h2>
+            <ul className="m-0 list-none space-y-1 p-0">
               {specRows.map((row) => (
                 <li
                   key={row.label}
-                  className="text-left font-sans text-[15px] leading-snug"
+                  className="text-left font-sans text-[12px] leading-snug"
                 >
-                  <span className="font-medium text-black/40">{row.label}</span>
-                  <span className="font-medium text-black/70">
-                    {' '}
-                    {row.value}
-                  </span>
+                  <span className="font-medium text-black/35">{row.label}</span>
+                  <span className="font-medium text-black/55"> {row.value}</span>
                 </li>
               ))}
             </ul>
           </section>
-        </div>
-      ) : (
-        <div className="pb-14 md:pb-16" />
-      )}
+        ) : null}
+      </div>
 
       <style
         dangerouslySetInnerHTML={{
           __html: `
-            @keyframes sheetIn {
-              from { opacity: 0; transform: translateY(8px); }
-              to { opacity: 1; transform: translateY(0); }
-            }
             .transcript-search::-webkit-search-cancel-button,
             .transcript-search::-webkit-search-decoration {
               -webkit-appearance: none;
@@ -658,14 +573,6 @@ export default function ExhibitionSheet({
         }}
       />
 
-      {lightboxIndex != null ? (
-        <ProcessLightbox
-          images={processImages}
-          index={lightboxIndex}
-          onClose={() => setLightboxIndex(null)}
-          onIndexChange={setLightboxIndex}
-        />
-      ) : null}
     </div>
   );
 }

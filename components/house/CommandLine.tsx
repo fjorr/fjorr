@@ -11,7 +11,7 @@ import { storySettingDisplay } from '@/lib/story-year';
 import { setSearchReturn } from '@/lib/house-search-return';
 import { pathWithSearchQuery } from '@/lib/house-search-query';
 import { hitSnippet, scoreSearchFields } from '@/lib/search-match';
-import CatalogIndex from '@/components/house/CatalogIndex';
+import CatalogIndex, { type CatalogKind } from '@/components/house/CatalogIndex';
 import SearchEmpty from '@/components/house/SearchEmpty';
 
 type SeedFilm = {
@@ -50,6 +50,8 @@ export type CommandFilm = {
   rating: string | null;
   comingSoon: boolean;
   kind: 'film' | 'artifact';
+  /** Artifact type, e.g. "Book". */
+  label: string | null;
   /** Landscape / frame for preview modal. */
   poster: string | null;
   /** Portrait poster for grid view. */
@@ -82,7 +84,7 @@ const catalogCache = new Map<string, CatalogBundle>();
 const searchCache = new Map<string, SearchBundle>();
 const CATALOG_CACHE_TTL_MS = 2 * 60 * 1000;
 /** Bump when catalog thumb shape changes so warm cache doesn’t keep wrong art. */
-const CATALOG_CACHE_VERSION = 3;
+const CATALOG_CACHE_VERSION = 4;
 
 function catalogCacheKey(locale: string) {
   return `${CATALOG_CACHE_VERSION}:${locale}`;
@@ -116,7 +118,7 @@ function isFuture(value?: string | null) {
 
 function releaseYearLabel(value?: string | null): string | null {
   if (!value) return null;
-  const year = new Date(value).getFullYear();
+  const year = new Date(value).getUTCFullYear();
   return Number.isFinite(year) ? String(year) : null;
 }
 
@@ -200,6 +202,7 @@ function toFilm(row: {
     rating: row.rating?.trim() || null,
     comingSoon: kind === 'film' && (Boolean(row.comingSoon) || isFuture(row.release_date)),
     kind,
+    label: kind === 'artifact' ? row.label?.trim() || null : null,
     poster: pickPreviewPoster(row),
     thumb: pickPoster(row),
     playbackId: row.playbackId || row.mux_playback_id || null,
@@ -301,14 +304,22 @@ export default function CommandLine({
   films,
   onPlay,
   initialQuery = '',
+  embedded = false,
 }: {
   films: SeedFilm[];
   onPlay: (hit: CommandFilm) => void;
   /** Restore query when landing with `?q=` or returning from watch. */
   initialQuery?: string;
+  /**
+   * Below another page (home). Don't steal focus, don't write `?q=`,
+   * don't hide the field on page scroll, and only take arrow keys
+   * while the field is focused.
+   */
+  embedded?: boolean;
 }) {
   const locale = parseLocale(useLocale());
   const t = useTranslations('Search');
+  const tFilm = useTranslations('Film');
   const pathname = usePathname() || '/';
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -343,6 +354,7 @@ export default function CommandLine({
   );
   const [remotePending, setRemotePending] = useState(false);
   const [active, setActive] = useState(0);
+  const [pickedKind, setPickedKind] = useState<CatalogKind | null>(null);
   const lastRemoteText = useRef('');
   const [chromeHidden, setChromeHidden] = useState(false);
   const chromeHiddenRef = useRef(false);
@@ -370,14 +382,16 @@ export default function CommandLine({
   }, [query]);
 
   useEffect(() => {
+    if (embedded) return;
     const onScroll = () => onResultsScroll(window.scrollY);
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
-  }, []);
+  }, [embedded]);
 
   /** Keep `?q=` in sync so results are shareable / reloadable. */
   useEffect(() => {
+    if (embedded) return;
     const trimmed = query.trim();
     const current = (searchParams.get('q') || '').trim();
     if (trimmed === current) return;
@@ -386,14 +400,15 @@ export default function CommandLine({
       router.replace(href, { scroll: false });
     }, 180);
     return () => window.clearTimeout(timer);
-  }, [query, pathname, router, searchParams]);
+  }, [embedded, query, pathname, router, searchParams]);
 
   useEffect(() => {
+    if (embedded) return;
     inputRef.current?.focus();
     const onOpen = () => inputRef.current?.focus();
     window.addEventListener('fjorr_command_open', onOpen);
     return () => window.removeEventListener('fjorr_command_open', onOpen);
-  }, []);
+  }, [embedded]);
 
   const searching = query.trim().length > 0;
   const localHits = useMemo(() => {
@@ -410,20 +425,40 @@ export default function CommandLine({
   const hits = useMemo(() => {
     const intent = parseIntent(query, catalog);
     const text = intent.text;
-    const base = (remoteHits && remoteHits.length ? remoteHits : localHits).slice(
-      0,
-      FILM_LIMIT
-    );
+    const base = remoteHits && remoteHits.length ? remoteHits : localHits;
     return base.map((film) => {
       const why = text ? whyForHit(film, text) : null;
       return { ...film, why };
     });
   }, [remoteHits, localHits, query, catalog]);
-  const rowCount = searching ? hits.length : 0;
+  const kind: CatalogKind = pickedKind ?? (searching ? 'all' : 'film');
+  const visibleHits = useMemo(
+    () =>
+      hits
+        .filter((item) =>
+          kind === 'all'
+            ? true
+            : kind === 'artifact'
+              ? item.kind === 'artifact'
+              : item.kind !== 'artifact'
+        )
+        .slice(0, FILM_LIMIT),
+    [hits, kind]
+  );
+  const browseItems = useMemo(
+    () =>
+      kind === 'all'
+        ? [...catalog, ...artifacts]
+        : kind === 'artifact'
+          ? artifacts
+          : catalog,
+    [artifacts, catalog, kind]
+  );
+  const rowCount = searching ? visibleHits.length : 0;
 
   useEffect(() => {
     setActive(0);
-  }, [query, hits.length, catalog.length]);
+  }, [query, kind, visibleHits.length, catalog.length]);
 
   useEffect(() => {
     let cancelled = false;
@@ -496,7 +531,7 @@ export default function CommandLine({
           ? supabase
               .from('artifact')
               .select(
-                'id, slug, primary_color, is_dark_bg, blok_tall, hero_clsx, hero_tall, blok_ogrf, release_date'
+                'id, slug, label, release_label, primary_color, is_dark_bg, blok_tall, hero_clsx, hero_tall, blok_ogrf, release_date'
               )
               .in('id', artifactIds)
           : Promise.resolve({ data: null }),
@@ -610,6 +645,8 @@ export default function CommandLine({
           (artResult.data || []) as Array<{
             id?: string;
             slug?: string;
+            label?: string | null;
+            release_label?: string | null;
             primary_color?: string | null;
             is_dark_bg?: boolean | null;
             blok_tall?: string | null;
@@ -633,9 +670,12 @@ export default function CommandLine({
             raw.hero_clsx ||
             item.poster;
           const releaseYear =
-            item.year || releaseYearLabel(raw.release_date);
+            raw.release_label?.trim() ||
+            item.year ||
+            releaseYearLabel(raw.release_date);
           return {
             ...item,
+            label: item.label || raw.label?.trim() || null,
             poster:
               raw.hero_clsx || raw.hero_tall || raw.blok_ogrf || item.poster,
             thumb,
@@ -682,12 +722,14 @@ export default function CommandLine({
             const { data: fallbackArt } = await supabase
               .from('artifact')
               .select(
-                'id, slug, primary_color, is_dark_bg, blok_tall, hero_clsx, hero_tall, blok_ogrf, release_date'
+                'id, slug, label, release_label, primary_color, is_dark_bg, blok_tall, hero_clsx, hero_tall, blok_ogrf, release_date'
               )
               .in('id', fallbackIds);
             for (const row of (fallbackArt || []) as Array<{
               id?: string;
               slug?: string;
+              label?: string | null;
+              release_label?: string | null;
               primary_color?: string | null;
               is_dark_bg?: boolean | null;
               blok_tall?: string | null;
@@ -800,17 +842,19 @@ export default function CommandLine({
 
   const choose = (index: number) => {
     if (!searching) return;
-    const hit = hits[index];
+    const hit = visibleHits[index];
     if (!hit) return;
     leaveToPlay(hit);
   };
 
   const leaveToPlay = (film: CommandFilm) => {
     const trimmed = query.trim();
-    setSearchReturn({
-      path: pathWithSearchQuery('/search', '', trimmed || null),
-      query: trimmed,
-    });
+    if (!embedded) {
+      setSearchReturn({
+        path: pathWithSearchQuery('/search', '', trimmed || null),
+        query: trimmed,
+      });
+    }
     onPlay(film);
   };
 
@@ -823,7 +867,16 @@ export default function CommandLine({
     leaveToPlay(film);
   };
 
+  /** Non-year half of the caption: artifact type, or runtime / Coming Soon. */
+  const captionDetail = (film: CommandFilm) => {
+    if (film.kind === 'artifact') return film.label || tFilm('browseArtifact');
+    if (film.comingSoon) return tFilm('comingSoon');
+    return film.runtime ? `${Math.max(1, Math.ceil(film.runtime / 60))}m` : null;
+  };
+
   const toIndexItem = (film: CommandFilm) => ({
+    captionYear: film.year || null,
+    captionDetail: captionDetail(film),
     id: film.id,
     slug: film.slug,
     name: film.name,
@@ -841,6 +894,7 @@ export default function CommandLine({
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
+      if (embedded && document.activeElement !== inputRef.current) return;
       if (event.key === 'ArrowDown') {
         event.preventDefault();
         setActive((current) => (rowCount === 0 ? 0 : (current + 1) % rowCount));
@@ -851,7 +905,7 @@ export default function CommandLine({
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [rowCount]);
+  }, [embedded, rowCount]);
 
   return (
     <div
@@ -862,9 +916,44 @@ export default function CommandLine({
         className={`mx-auto w-full max-w-[44rem] shrink-0 overflow-hidden px-0 transition-[max-height,opacity,padding] duration-200 ease-out ${
           chromeHidden
             ? 'pointer-events-none max-h-0 py-0 opacity-0'
-            : 'max-h-24 pt-2 opacity-100'
+            : 'max-h-48 pt-2 opacity-100'
         }`}
       >
+        <div
+          className="mb-4 flex items-center justify-center gap-7 md:mb-5 md:gap-9"
+          role="tablist"
+          aria-label={tFilm('browseHeadline')}
+        >
+          {(
+            [
+              ['all', tFilm('browseFilterAll')],
+              ['film', tFilm('browseFilterFilm')],
+              ['artifact', tFilm('browseFilterArtifact')],
+            ] as const
+          ).map(([value, label]) => {
+            const selected = kind === value;
+            return (
+              <button
+                key={value}
+                type="button"
+                role="tab"
+                aria-selected={selected}
+                onClick={() => setPickedKind(value)}
+                className={`relative border-0 bg-transparent px-0 pb-2 pt-1 font-sans text-[15px] font-semibold tracking-tight transition-colors md:text-[16px] ${
+                  selected ? 'text-[#0B0B0C]' : 'text-black/40 hover:text-black/70'
+                }`}
+              >
+                {label}
+                <span
+                  aria-hidden
+                  className={`absolute inset-x-0 bottom-0 h-[2px] rounded-full bg-[#0B0B0C] transition-opacity ${
+                    selected ? 'opacity-100' : 'opacity-0'
+                  }`}
+                />
+              </button>
+            );
+          })}
+        </div>
         <form
           role="search"
           onSubmit={(event) => {
@@ -928,7 +1017,7 @@ export default function CommandLine({
                   inputRef.current?.focus();
                 }}
                 aria-label="Clear search"
-                className="inline-flex size-7 shrink-0 items-center justify-center border-0 bg-transparent p-0 text-black/35 transition-colors hover:text-[#0B0B0C]"
+                className="-my-0.5 inline-flex size-7 shrink-0 items-center justify-center border-0 bg-transparent p-0 text-black/35 transition-colors hover:text-[#0B0B0C]"
               >
                 <X className="size-[18px]" strokeWidth={2} aria-hidden />
               </button>
@@ -937,29 +1026,30 @@ export default function CommandLine({
         </form>
       </div>
 
-      <div className="mx-auto w-full max-w-[90rem] flex-1 pt-3 pb-4">
+      <div
+        className={`mx-auto w-full max-w-[90rem] flex-1 pt-4 pb-4 ${
+          // Under the home hero, fewer results would shorten the page and yank the scroll.
+          embedded && searching ? 'min-h-[100svh]' : ''
+        }`}
+      >
         {searching ? (
-          hits.length === 0 ? (
-            catalogReady && !remotePending ? (
-              <SearchEmpty />
-            ) : null
+          visibleHits.length === 0 ? (
+            <>
+              <div className="mb-5 h-[27px]" aria-hidden />
+              {catalogReady && !remotePending ? <SearchEmpty /> : null}
+            </>
           ) : (
             <CatalogIndex
-              items={hits.map(toIndexItem)}
+              items={visibleHits.map(toIndexItem)}
               showControls={false}
-              showKindFilter
               scrollable={false}
               controlsHidden={chromeHidden}
               onPlay={playFromCatalog}
-              onHover={(slug) => {
-                const index = hits.findIndex((row) => row.slug === slug);
-                if (index >= 0) setActive(index);
-              }}
             />
           )
         ) : (
           <CatalogIndex
-            items={catalog.map(toIndexItem)}
+            items={browseItems.map(toIndexItem)}
             scrollable={false}
             controlsHidden={chromeHidden}
             onPlay={playFromCatalog}

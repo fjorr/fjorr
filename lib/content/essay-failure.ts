@@ -29,15 +29,11 @@ export const ESSAY_FAILURE_DEK =
 export const ESSAY_FAILURE_BODY: EssayBlock[] = [
   {
     type: 'p',
-    text: 'Short film has never had a functional business model, just a hundred years of broken ones.',
+    text: 'Short film hasn’t had a business model that worked in a century.',
   },
   {
     type: 'p',
-    text: "For a century, the short film was almost never something you bought a ticket to see. It was what played while people found their seats. A warm-up act, a newsreel filler, a bonus feature tacked onto a DVD menu, or a loss-leader to test new animation software. That wasn't an artistic choice; it became the category's entire structural identity: something free, attached to something else, and never the reason anyone showed up.",
-  },
-  {
-    type: 'p',
-    text: 'The market problem was never a lack of human interest. It was a failure of the monetization vehicle.',
+    text: 'It began as the main event. On December 28, 1895, the Lumière brothers charged admission in the basement of a Paris café and showed ten short films. Georges Méliès was in the audience. He asked to buy the machine and was turned down. Seven years later, he fired a capsule into the eye of the Moon.',
   },
   {
     type: 'figure',
@@ -49,74 +45,74 @@ export const ESSAY_FAILURE_BODY: EssayBlock[] = [
   },
   {
     type: 'p',
-    text: 'Short film is exactly as old as cinema itself. Méliès sent a rocket into the eye of the moon in 1902, in one of the first narrative films ever made. The format has had over a century to find a working business model. It never has.',
+    text: 'Then features took over. The short became what played while people found their seats: a warm-up act, newsreel filler, a bonus on a DVD menu. That wasn’t an artistic choice. It became the format’s whole identity: free, attached to something else, and never the reason anyone showed up.',
   },
-  { type: 'h2', text: 'The Broken Mechanics of Cinema History' },
   {
     type: 'p',
-    text: 'Every attempt to monetize short cinema, from early Hollywood to Silicon Valley, tried to force the format into a transactional, ad-driven, or feature-centric box, and each one broke the same way.',
+    text: 'The problem was never a lack of interest. It was the business around the format.',
+  },
+  { type: 'h2', text: 'Every attempt to fix it broke the same way' },
+  {
+    type: 'p',
+    text: 'Each one tried to squeeze short film into a ticket, an ad, or a feature.',
   },
   {
     type: 'timeline',
     items: [
       {
         year: '1948',
-        title: 'The Studio System Collapse',
-        text: 'In the 1930s and 40s, Hollywood forced theaters to buy shorts alongside feature films through "block booking." When the Supreme Court declared the practice illegal in the 1948 Paramount Decrees, the financial foundation for short departments was destroyed. Over the following decade, studios systematically dismantled their short units, MGM eventually closed its animation department in 1957, and Warner Bros. scaled back its iconic cartoon production into the 1960s.',
+        title: 'The studios lose their grip.',
+        text: 'For years, studios forced theaters to take shorts bundled with their features. In 1948 the Supreme Court ruled against the studios. The settlements that followed ended the practice and broke up their theater chains, and television pulled audiences away. Over the next decade, studios closed their short units. MGM shut its cartoon studio in 1957, and Warner Bros. wound its cartoons down into the late 1960s.',
       },
       {
-        year: '1953',
-        title: 'The Disney Pivot',
-        text: "By 1953, Walt Disney shut down his studio's dedicated short cartoon department. Production costs for hand-drawn animation had surged, but theaters paid only a flat, negligible rental fee. Disney realized shorts lost money on every single release, forcing a complete pivot toward feature-length films and advertiser-funded television.",
+        year: 'The 1950s',
+        title: 'Disney steps back.',
+        text: 'In the decade after 1953, Disney wound down its theatrical shorts and moved its weight to features and television.',
       },
       {
-        year: '1995–Present',
-        title: 'The Pixar Paradox',
-        text: "Even modern animation's greatest champion treats short films as an R&D tax write-off and a talent sandbox. Pixar shorts do not generate standalone revenue; they are subsidized entirely by the multi-hundred-million-dollar box office of the feature film that follows them.",
+        year: 'Today',
+        title: 'The Pixar paradox.',
+        text: 'Pixar, the best-known champion of shorts, uses them as a talent lab. They play before features and are largely paid for by what the features earn.',
       },
       {
         year: '2020',
-        title: 'The Silicon Valley Misfire (Quibi)',
-        text: 'When tech finally attempted a short-form platform, it made the ultimate miscalculation. Quibi raised $1.75 billion to sell short, chopped-up television episodes as mobile "quick bites" for commuters. It treated short video as a smartphone tech constraint rather than a high-craft art form, fighting TikTok for idle distraction time behind a hard subscription paywall. It folded in six months.',
+        title: 'Quibi.',
+        text: 'Quibi raised $1.75 billion to sell episodes in ten-minute bites for people on the go, behind a subscription, up against free apps like TikTok. It shut down six months after launch. It bet on the phone, not on the films.',
       },
     ],
   },
   {
     type: 'p',
-    text: "Streaming apps and ad-driven feeds didn't fix this, they exacerbated it. Engagement algorithms favor infinite duration. A recommendation engine tuned to maximize screen time has zero financial incentive to surface a nine-minute masterpiece over a ninety-minute outrage-bait video.",
+    text: 'Streaming didn’t fix this. It made it worse. Feeds tuned for screen time have little reason to show you a nine-minute masterpiece over a ninety-minute outrage video.',
   },
   {
     type: 'p',
-    text: 'For one hundred years, short film was treated as a calling card, a tech gimmick, or a launchpad to "real" cinema. Rarely the destination.',
+    text: 'For a hundred years, the short was a calling card, a tech experiment, or a launchpad to “real” cinema, and rarely the destination. Even the best online curators mostly serve filmmakers on their way to something else.',
+  },
+  { type: 'h2', text: 'What’s missing' },
+  {
+    type: 'p',
+    text: 'Hollywood spends $200 million or more on comic book sequels. Feeds serve an endless stream built to hold idle attention. Short film has no home built for the stories themselves, the pivotal ones that shaped what it means to be human.',
   },
   {
     type: 'p',
-    text: 'That is not a flaw in the format. It is a structural failure of every model built around it.',
-  },
-  { type: 'h2', text: 'Filling a Cultural Void' },
-  {
-    type: 'p',
-    text: 'Modern media has an obvious void. Hollywood spends $200 million on comic book sequels. Silicon Valley algorithms serve endless, disposable feeds designed to capture idle attention. Nobody is building a gold-standard home for short cinema, making short films of the essential, pivotal stories that shaped what it means to be human.',
+    text: 'Imagine a place built for short cinema alone. Stories with the power of feature films, with no feeds, no algorithms and no disposable noise. The world’s greatest stories as short films, from fallen kings to prizefighters to Prometheus stealing fire, with the scale, standard and permanent home they deserve.',
   },
   {
     type: 'p',
-    text: "Imagine a place built solely for short cinema. Stories that carry as much power as feature films, but with no feeds, no algorithms, and no disposable noise. Just the world's greatest stories as short films, from fallen kings to prizefighters to Prometheus stealing fire, given the scale, standard, organization, and permanent home they deserve.",
+    text: 'Short cinema doesn’t have to compete with TikTok for idle phone time, squeeze into a 1950s ticket model, or become a tech experiment. It needs a home.',
   },
   {
     type: 'p',
-    text: "This is what was missing. Short cinema doesn't need to compete with TikTok for idle phone time, nor does it need to squeeze into a 1950s theatrical ticket model or a Silicon Valley tech gimmick. It needs the right vehicle.",
+    text: 'Fjorr’s thesis is simple: the format didn’t fail. It lost its home.',
   },
   {
     type: 'p',
-    text: "Fjorr's thesis is simple: the format didn't fail, the vehicle did.",
+    text: 'Fjorr treats short films as the main event, not appetizers or gimmicks. There are no paywalls and no ads. Fjorr is funded by its patrons, the Bureaux, and by partners. It’s building a permanent archive of world-class short films, always 20 minutes or less, free for anyone in the world to watch.',
   },
   {
     type: 'p',
-    text: 'Instead of treating short films as appetizers or tech gimmicks, Fjorr treats them as the main event. Instead of hiding them behind transactional paywalls or serving them alongside intrusive ads, Fjorr is funded directly by its patrons, the Bureaux. Together, they are building a permanent, ad-free archive of world-class short films under 20 minutes, free for anyone in the world to watch.',
-  },
-  {
-    type: 'p',
-    text: 'Short was never a compromise. It just never had anywhere to live, and now it does.',
+    text: 'Short was never a compromise. It just lost its home, and now it has one.',
   },
 ];
 

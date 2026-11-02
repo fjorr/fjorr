@@ -10,10 +10,13 @@ export type ArtifactTranslationRow = {
   description: string | null;
   label: string | null;
   quote: string | null;
+  quote_attribution: string | null;
   link_cta: string | null;
 };
 
 const ARTIFACT_TRANSLATION_SELECT =
+  'artifact_id, name, teaser, description, label, quote, quote_attribution, link_cta';
+const ARTIFACT_TRANSLATION_SELECT_LEGACY =
   'artifact_id, name, teaser, description, label, quote, link_cta';
 
 function nonempty(value: string | null | undefined): string | null {
@@ -43,6 +46,7 @@ export function mergeArtifactTranslation<T extends Record<string, unknown>>(
   if (typeof next.quote === 'string') {
     next.quote = houseQuotes(next.quote);
   }
+  assign('quote_attribution');
   assign('link_cta');
 
   return next as T;
@@ -60,11 +64,22 @@ export async function fetchArtifactTranslations(
   const chunkSize = 100;
   for (let i = 0; i < unique.length; i += chunkSize) {
     const chunk = unique.slice(i, i + chunkSize);
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from('artifact_translation')
       .select(ARTIFACT_TRANSLATION_SELECT)
       .eq('locale', locale)
       .in('artifact_id', chunk);
+
+    if (error && /quote_attribution|schema cache/i.test(error.message)) {
+      const retry = await supabase
+        .from('artifact_translation')
+        .select(ARTIFACT_TRANSLATION_SELECT_LEGACY)
+        .eq('locale', locale)
+        .in('artifact_id', chunk);
+      // Legacy rows lack quote_attribution; mergeArtifactTranslation skips missing fields.
+      data = retry.data as typeof data;
+      error = retry.error;
+    }
 
     if (error) {
       console.error('artifact_translation fetch failed:', error.message);

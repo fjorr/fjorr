@@ -53,9 +53,6 @@ type Props = {
   visible: boolean;
   titleAs?: 'h1' | 'h2';
   onWatch: () => void;
-  /** Film stage: button opens sheet. Home: omit and pass infoHref. */
-  onInfo?: () => void;
-  infoHref?: string;
   /** Hide returning-viewer Voyageur chip (e.g. early release owns that corner). */
   showVoyageurChip?: boolean;
   /** Share / send CTA — off for early release (not public yet). */
@@ -68,8 +65,6 @@ export default function HouseHeroCopy({
   visible,
   titleAs = 'h2',
   onWatch,
-  onInfo,
-  infoHref,
   showVoyageurChip = true,
   showSend = true,
 }: Props) {
@@ -317,24 +312,6 @@ export default function HouseHeroCopy({
                   <span className="font-bold">{t('watchPlain')}</span>
                 )}
               </button>
-              {infoHref ? (
-                <Link
-                  href={infoHref}
-                  tabIndex={visible ? 0 : -1}
-                  className="inline-flex h-10 items-center rounded-full border border-white/25 bg-white/12 px-5 font-sans text-[14px] font-semibold tracking-tight text-white/90 backdrop-blur-md transition-colors hover:bg-white/18 hover:text-white"
-                >
-                  {t('info')}
-                </Link>
-              ) : onInfo ? (
-                <button
-                  type="button"
-                  onClick={onInfo}
-                  tabIndex={visible ? 0 : -1}
-                  className="inline-flex h-10 items-center rounded-full border border-white/25 bg-white/12 px-5 font-sans text-[14px] font-semibold tracking-tight text-white/90 backdrop-blur-md transition-colors hover:bg-white/18 hover:text-white"
-                >
-                  {t('info')}
-                </button>
-              ) : null}
               {showSend ? (
                 <button
                   type="button"

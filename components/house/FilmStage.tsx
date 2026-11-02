@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { getPathname, useRouter } from '@/i18n/navigation';
 import { type AppLocale } from '@/i18n/config';
 import TheaterOpenShell from '@/components/TheaterOpenShell';
@@ -12,6 +12,7 @@ import {
   finishWatchProgress,
   trackWatchProgress,
 } from '@/lib/watch-progress';
+import { Icon } from '@/components/ui/Icons';
 import HouseFooter from '@/components/house/HouseFooter';
 import { type ShortcutAction } from '@/components/house/ShortcutsPanel';
 import HouseFrameNav from '@/components/house/HouseFrameNav';
@@ -20,13 +21,31 @@ import HousePosterDots from '@/components/house/HousePosterDots';
 import HouseHeroPreview from '@/components/house/HouseHeroPreview';
 import HouseHeroCopy from '@/components/house/HouseHeroCopy';
 import { useHeroCopyFade } from '@/components/house/useHeroCopyFade';
-import ExhibitionSheet, { type ExhibitionFilm } from '@/components/house/ExhibitionSheet';
+import ExhibitionSheet, {
+  FilmArtifactRail,
+  type ExhibitionFilm,
+} from '@/components/house/ExhibitionSheet';
+
+function scrollToFilmInfo() {
+  const el = document.getElementById('film-info');
+  if (!el) return;
+  const top = el.getBoundingClientRect().top;
+  if (top < 80 && window.scrollY > 40) {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
 import { useHouseOverlay } from '@/components/HouseOverlayProvider';
 import {
+  FILM_FRAME_CLASS,
   HOUSE_STAGE_SIDE_CLASS,
-  houseStageSidePx,
+  HOUSE_STAGE_VERTICAL_CLASS,
+  filmPosterWidthPx,
+  houseStageVerticalPx,
 } from '@/components/house/house-stage-margins';
 import { useHouseStageBleed } from '@/components/house/use-house-stage-bleed';
+import { storySettingDisplay } from '@/lib/story-year';
 
 const CinemaTheater = dynamic(() => import('@/components/CinemaTheater'), {
   ssr: false,
@@ -46,6 +65,7 @@ export type FilmStageRailItem = {
   heroClsx: string | null;
   heroTall: string | null;
   blokTall: string | null;
+  blokWide: string | null;
   blokOgrf: string | null;
   sponsor: string | null;
   rating: string | null;
@@ -66,6 +86,173 @@ export type FilmStageProps = {
 
 type HeroFrame = 'wide' | 'clsx' | 'tall';
 
+/** Vertical titled poster — same art as Browse. */
+function tallPoster(item: FilmStageRailItem) {
+  return item.blokTall || item.heroTall || item.heroClsx || item.blokWide || item.heroWide;
+}
+
+/** Same rule as the Browse cards: story year, then runtime. */
+function railYear(item: FilmStageRailItem) {
+  return storySettingDisplay(item.storyDate) || null;
+}
+
+function railRuntime(item: FilmStageRailItem) {
+  return item.runtime ? `${Math.max(1, Math.ceil(item.runtime / 60))}m` : null;
+}
+
+function shuffleRail(items: FilmStageRailItem[]) {
+  const next = [...items];
+  for (let i = next.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const swap = next[i]!;
+    next[i] = next[j]!;
+    next[j] = swap;
+  }
+  return next;
+}
+
+function FilmEndRail({
+  rail,
+  index,
+  onSelect,
+}: {
+  rail: FilmStageRailItem[];
+  index: number;
+  onSelect: (next: number) => void;
+}) {
+  const t = useTranslations('Film');
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const signature = rail.map((item) => item.slug).join('\0');
+  const [order, setOrder] = useState<FilmStageRailItem[] | null>(null);
+  const [edges, setEdges] = useState({ start: true, end: true });
+  const currentSlug = rail[index]?.slug;
+
+  useLayoutEffect(() => {
+    setOrder(shuffleRail(rail));
+    // Shuffle once per film set. `rail` is read from this render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [signature]);
+
+  useLayoutEffect(() => {
+    const scroller = scrollerRef.current;
+    if (!scroller || !order) return;
+    const sync = () => {
+      setEdges({
+        start: scroller.scrollLeft <= 2,
+        end: scroller.scrollLeft + scroller.clientWidth >= scroller.scrollWidth - 2,
+      });
+    };
+    // Open on the middle of the row so posters bleed off both edges.
+    scroller.scrollLeft = Math.max(0, (scroller.scrollWidth - scroller.clientWidth) / 2);
+    sync();
+    window.addEventListener('resize', sync);
+    return () => window.removeEventListener('resize', sync);
+  }, [order, currentSlug]);
+
+  const shown = (order || []).filter((item) => item.slug !== currentSlug);
+  if (!shown.length) return null;
+
+  const slideBy = (dir: -1 | 1) => {
+    const scroller = scrollerRef.current;
+    if (!scroller) return;
+    const card = scroller.querySelector('button');
+    const step = card
+      ? card.getBoundingClientRect().width + 12
+      : Math.round(scroller.clientWidth * 0.7);
+    scroller.scrollBy({ left: dir * step, behavior: 'smooth' });
+  };
+
+  return (
+    <section className="w-full pb-6 pt-10 md:pt-12" aria-label="More films">
+      <h2 className={`${FILM_FRAME_CLASS} mb-4 text-center font-[family-name:var(--font-circular-black)] text-[1.25rem] font-[900] leading-normal tracking-[-0.03em] text-[#0B0B0C]`}>
+        More films
+      </h2>
+      <div className="relative">
+        <div
+          ref={scrollerRef}
+          onScroll={() => {
+            const scroller = scrollerRef.current;
+            if (!scroller) return;
+            const start = scroller.scrollLeft <= 2;
+            const end =
+              scroller.scrollLeft + scroller.clientWidth >=
+              scroller.scrollWidth - 2;
+            setEdges((prev) =>
+              prev.start === start && prev.end === end ? prev : { start, end }
+            );
+          }}
+          className="overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
+          <div className="flex w-max gap-3 px-6 pb-1 md:px-12">
+            {shown.map((item) => {
+              const src = tallPoster(item);
+              const original = rail.findIndex((entry) => entry.slug === item.slug);
+              const year = railYear(item);
+              const runtime = item.comingSoon ? null : railRuntime(item);
+              const comingSoon = item.comingSoon ? t('comingSoon') : null;
+              const caption = [year, comingSoon || runtime].filter(Boolean).join(' · ');
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  aria-label={caption ? `${item.name}, ${caption}` : item.name}
+                  onClick={() => {
+                    if (original < 0) return;
+                    onSelect(original);
+                  }}
+                  className="w-[clamp(160px,17vw,220px)] shrink-0 text-left"
+                >
+                  <span className="block aspect-[2/3] overflow-hidden rounded-[8px] bg-[#F3F3F4]">
+                    {src ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={src}
+                        alt=""
+                        className="h-full w-full object-cover"
+                        draggable={false}
+                      />
+                    ) : null}
+                  </span>
+                  {caption ? (
+                    <span className="mt-2 flex min-w-0 items-center gap-1.5 font-sans text-[12px] font-medium leading-snug tracking-tight text-black/45">
+                      {year ? <span className="truncate">{year}</span> : null}
+                      {comingSoon ? (
+                        <span className="shrink-0 rounded-full border border-black/15 px-1.5 py-[3px] text-[10px] font-semibold leading-none text-black/60">
+                          {comingSoon}
+                        </span>
+                      ) : runtime ? (
+                        <span className="shrink-0">{year ? `· ${runtime}` : runtime}</span>
+                      ) : null}
+                    </span>
+                  ) : null}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        <button
+          type="button"
+          aria-label={t('previousFilm')}
+          disabled={edges.start}
+          onClick={() => slideBy(-1)}
+          className="absolute left-3 top-[calc(clamp(160px,17vw,220px)*0.75)] z-10 hidden -translate-y-1/2 md:block disabled:pointer-events-none disabled:opacity-30"
+        >
+          <Icon name="circleNavBack" className="!h-9 !w-9" aria-hidden />
+        </button>
+        <button
+          type="button"
+          aria-label={t('nextFilm')}
+          disabled={edges.end}
+          onClick={() => slideBy(1)}
+          className="absolute right-3 top-[calc(clamp(160px,17vw,220px)*0.75)] z-10 hidden -translate-y-1/2 md:block disabled:pointer-events-none disabled:opacity-30"
+        >
+          <Icon name="circleNavForward" className="!h-9 !w-9" aria-hidden />
+        </button>
+      </div>
+    </section>
+  );
+}
+
 function heroSrc(item: FilmStageRailItem, frame: HeroFrame) {
   if (frame === 'wide') return item.heroWide || item.heroClsx || item.heroTall;
   if (frame === 'clsx') return item.heroClsx || item.heroWide || item.heroTall;
@@ -76,11 +263,9 @@ function useHeroFrame(): HeroFrame {
   const [frame, setFrame] = useState<HeroFrame>('wide');
   useEffect(() => {
     const apply = () => {
-      const side = houseStageSidePx(window.innerWidth);
-      const chrome = 54;
-      const aspect =
-        (window.innerWidth - side * 2) /
-        Math.max(window.innerHeight - chrome * 2, 1);
+      const width = filmPosterWidthPx(window.innerWidth);
+      const vertical = houseStageVerticalPx(window.innerWidth);
+      const aspect = width / Math.max(window.innerHeight - vertical * 2, 1);
       setFrame(aspect >= 1.5 ? 'wide' : aspect >= 0.75 ? 'clsx' : 'tall');
     };
     apply();
@@ -116,13 +301,18 @@ export default function FilmStage({ id, slug, exhibition, rail: railProp }: Film
   const leavingRef = useRef<number | null>(null);
   const softNavRef = useRef(false);
 
-  const [infoOpen, setInfoOpen] = useState(false);
   const [showTheater, setShowTheater] = useState(false);
   const [selectedFilm, setSelectedFilm] = useState<any>(null);
   const [startAt, setStartAt] = useState<number | undefined>(undefined);
   const [seekKey, setSeekKey] = useState(0);
   const current = rail[index] ?? rail[0];
-  const previewPaused = sheetOpen || infoOpen || showTheater;
+  const [posterOff, setPosterOff] = useState(false);
+  const posterFooterRef = useRef<HTMLDivElement>(null);
+  const posterScrollCleanup = useRef<(() => void) | null>(null);
+  const [exhibitionBySlug, setExhibitionBySlug] = useState<
+    Record<string, ExhibitionFilm>
+  >({});
+  const previewPaused = sheetOpen || showTheater || posterOff;
   const { displayIndex: copyIndex, visible: copyVisible } = useHeroCopyFade(
     phase,
     index
@@ -131,32 +321,69 @@ export default function FilmStage({ id, slug, exhibition, rail: railProp }: Film
 
   const entrySlug = slug;
 
-  /** Info only when URL says so — always clear on bare `/film/[slug]` landings. */
-  useLayoutEffect(() => {
-    setInfoOpen(window.location.hash === '#info');
+  useEffect(() => {
+    const apply = () => {
+      const y = window.scrollY;
+      setPosterOff(y > window.innerHeight * 0.55);
+      const footer = posterFooterRef.current;
+      if (!footer) return;
+      if (pinFooter) {
+        footer.style.opacity = '1';
+        return;
+      }
+      footer.style.opacity = y > 16 ? '0' : '1';
+    };
+    apply();
+    window.addEventListener('scroll', apply, { passive: true });
+    return () => window.removeEventListener('scroll', apply);
+  }, [pinFooter]);
+
+  const bindPosterScroll = useCallback((node: HTMLDivElement | null) => {
+    const previous = posterScrollCleanup.current;
+    if (previous) {
+      previous();
+      posterScrollCleanup.current = null;
+    }
+    if (!node) return;
+    const onWheel = (event: WheelEvent) => {
+      if (event.ctrlKey || !node.contains(event.target as Node)) return;
+      let dy = event.deltaY;
+      if (event.deltaMode === 1) dy *= 16;
+      else if (event.deltaMode === 2) dy *= window.innerHeight;
+      if (!dy || Math.abs(event.deltaX) > Math.abs(dy) * 1.5) return;
+      if (event.cancelable) event.preventDefault();
+      const scroller = document.scrollingElement;
+      if (!scroller) return;
+      scroller.scrollTop += dy;
+    };
+    node.addEventListener('wheel', onWheel, { capture: true, passive: false });
+    posterScrollCleanup.current = () => {
+      node.removeEventListener('wheel', onWheel, { capture: true });
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => posterScrollCleanup.current?.();
+  }, []);
+
+  useEffect(() => {
+    if (window.location.hash !== '#info') return;
+    const timer = window.setTimeout(() => {
+      document.getElementById('film-info')?.scrollIntoView({ block: 'start' });
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [slug]);
-
-  useEffect(() => {
-    const syncInfoFromHash = () => {
-      setInfoOpen(window.location.hash === '#info');
-    };
-    window.addEventListener('hashchange', syncInfoFromHash);
-    return () => window.removeEventListener('hashchange', syncInfoFromHash);
-  }, []);
-
-  useEffect(() => {
-    const onCommandOpen = () => {
-      setInfoOpen(false);
-    };
-    window.addEventListener('fjorr_command_open', onCommandOpen);
-    return () => window.removeEventListener('fjorr_command_open', onCommandOpen);
-  }, []);
 
   const syncUrl = useCallback(
     (nextSlug: string, hash = '') => {
       const path = filmHref(nextSlug, locale);
       softNavRef.current = true;
-      window.history.pushState({ filmSlug: nextSlug }, '', `${path}${hash}`);
+      const prev = window.history.state;
+      const state =
+        prev && typeof prev === 'object' && (prev.__NA || prev._N)
+          ? { ...prev, filmSlug: nextSlug }
+          : { filmSlug: nextSlug };
+      window.history.pushState(state, '', `${path}${hash}`);
       const label = rail.find((item) => item.slug === nextSlug)?.name;
       if (label) document.title = `${label} | Fjorr`;
       router.prefetch(`/film/${nextSlug}`);
@@ -178,7 +405,7 @@ export default function FilmStage({ id, slug, exhibition, rail: railProp }: Film
       setIndex(wrapped);
       const nextFilm = rail[wrapped];
       if (nextFilm?.slug) {
-        setInfoOpen(false);
+        window.scrollTo(0, 0);
         syncUrl(nextFilm.slug);
       }
     },
@@ -190,7 +417,7 @@ export default function FilmStage({ id, slug, exhibition, rail: railProp }: Film
   const swipe = useSwipeNav({
     onPrev: () => goRail(-1),
     onNext: () => goRail(1),
-    enabled: rail.length > 1 && !sheetOpen && !infoOpen && !showTheater,
+    enabled: rail.length > 1 && !sheetOpen && !showTheater,
   });
 
   useEffect(() => {
@@ -240,44 +467,81 @@ export default function FilmStage({ id, slug, exhibition, rail: railProp }: Film
       setDir(i > index ? 1 : -1);
       setPhase('from');
       setIndex(i);
-      setInfoOpen(window.location.hash === '#info');
+      if (window.location.hash === '#info') {
+        window.setTimeout(() => {
+          document.getElementById('film-info')?.scrollIntoView({ block: 'start' });
+        }, 0);
+      } else {
+        window.scrollTo(0, 0);
+      }
     };
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
   }, [index, rail]);
 
-  const openInfo = useCallback(() => {
-    if (!current) return;
-    // Exhibition payload is SSR for the entry film only — hard-nav for others.
-    if (current.slug !== entrySlug) {
-      router.push(`/film/${current.slug}#info`);
-      return;
-    }
-    setInfoOpen(true);
-    if (window.location.hash !== '#info') {
-      window.history.replaceState(
-        { filmSlug: current.slug },
-        '',
-        `${filmHref(current.slug, locale)}#info`
-      );
-    }
-  }, [current, entrySlug, locale, router]);
-
-  const closeInfo = useCallback(() => {
-    setInfoOpen(false);
-    if (current && window.location.hash === '#info') {
-      window.history.replaceState(
-        { filmSlug: current.slug },
-        '',
-        filmHref(current.slug, locale)
-      );
-    }
-  }, [current, locale]);
-
   useEffect(() => {
-    // Keep in sync when soft-nav lands on this entry without #info.
-    setInfoOpen(window.location.hash === '#info' && current?.slug === entrySlug);
-  }, [current?.slug, entrySlug, slug]);
+    const nextSlug = current?.slug;
+    if (!nextSlug || nextSlug === entrySlug || exhibitionBySlug[nextSlug]) return;
+    const controller = new AbortController();
+    fetch(
+      `/api/film-exhibition?slug=${encodeURIComponent(nextSlug)}&locale=${encodeURIComponent(locale)}`,
+      { signal: controller.signal }
+    )
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data: ExhibitionFilm | null) => {
+        if (!data?.name) return;
+        setExhibitionBySlug((prev) =>
+          prev[nextSlug] ? prev : { ...prev, [nextSlug]: data }
+        );
+      })
+      .catch(() => {});
+    return () => controller.abort();
+  }, [current?.slug, entrySlug, exhibitionBySlug, locale]);
+
+  const railKey = rail.map((item) => item.slug).join('\0');
+  useEffect(() => {
+    const start = Math.max(0, rail.findIndex((item) => item.slug === entrySlug));
+    const queue: string[] = [];
+    const seen = new Set<string>();
+    for (let step = 1; step < rail.length; step += 1) {
+      const ahead = rail[(start + step) % rail.length]?.slug;
+      const behind = rail[(start - step + rail.length) % rail.length]?.slug;
+      for (const nextSlug of [ahead, behind]) {
+        if (!nextSlug || nextSlug === entrySlug || seen.has(nextSlug)) continue;
+        seen.add(nextSlug);
+        queue.push(nextSlug);
+      }
+    }
+    if (!queue.length) return;
+    const controller = new AbortController();
+    let cursor = 0;
+    const pump = async () => {
+      while (cursor < queue.length) {
+        const batch = queue.slice(cursor, cursor + 2);
+        cursor += batch.length;
+        await Promise.all(
+          batch.map(async (nextSlug) => {
+            try {
+              const response = await fetch(
+                `/api/film-exhibition?slug=${encodeURIComponent(nextSlug)}&locale=${encodeURIComponent(locale)}`,
+                { signal: controller.signal }
+              );
+              if (!response.ok) return;
+              const data = (await response.json()) as ExhibitionFilm | null;
+              if (!data?.name) return;
+              setExhibitionBySlug((prev) =>
+                prev[nextSlug] ? prev : { ...prev, [nextSlug]: data }
+              );
+            } catch {
+              /* Leave the swipe fetch to try again. */
+            }
+          })
+        );
+      }
+    };
+    void pump();
+    return () => controller.abort();
+  }, [railKey, entrySlug, locale, rail]);
 
   const play = useCallback(
     (item: FilmStageRailItem, at?: number) => {
@@ -309,11 +573,12 @@ export default function FilmStage({ id, slug, exhibition, rail: railProp }: Film
       if (window.location.hash !== '#play') return;
       if (!current || current.comingSoon) return;
       play(current);
-      window.history.replaceState(
-        { filmSlug: current.slug },
-        '',
-        filmHref(current.slug, locale)
-      );
+      const prev = window.history.state;
+      const state =
+        prev && typeof prev === 'object' && (prev.__NA || prev._N)
+          ? { ...prev, filmSlug: current.slug }
+          : { filmSlug: current.slug };
+      window.history.replaceState(state, '', filmHref(current.slug, locale));
     };
     consumePlayHash();
     window.addEventListener('hashchange', consumePlayHash);
@@ -328,34 +593,33 @@ export default function FilmStage({ id, slug, exhibition, rail: railProp }: Film
         target?.tagName === 'TEXTAREA' ||
         target?.isContentEditable;
       if (event.key === 'Escape') {
-        if (showTheater) return;
-        if (infoOpen) {
-          closeInfo();
-          return;
+        if (showTheater || sheetOpen) return;
+        if (window.scrollY > 40) {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
         }
         return;
       }
       if (
         typing ||
         sheetOpen ||
-        infoOpen ||
         showTheater ||
         document.body.dataset.fjorrOverlay
       )
         return;
-      if (event.key === 'ArrowLeft') {
+      const onPoster = window.scrollY < 80;
+      if (event.key === 'ArrowLeft' && onPoster) {
         event.preventDefault();
         goRail(-1);
-      } else if (event.key === 'ArrowRight') {
+      } else if (event.key === 'ArrowRight' && onPoster) {
         event.preventDefault();
         goRail(1);
-      } else if (event.key === ' ' || event.code === 'Space') {
+      } else if ((event.key === ' ' || event.code === 'Space') && onPoster) {
         event.preventDefault();
         if (current) play(current);
       } else if (event.key.toLowerCase() === 'i') {
         event.preventDefault();
-        openInfo();
-      } else if (event.key.toLowerCase() === 's') {
+        scrollToFilmInfo();
+      } else if (event.key.toLowerCase() === 's' && onPoster) {
         event.preventDefault();
         if (rail.length < 2 || !current) return;
         let next = Math.floor(Math.random() * rail.length);
@@ -366,12 +630,9 @@ export default function FilmStage({ id, slug, exhibition, rail: railProp }: Film
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [
-    closeInfo,
     current,
     goRail,
     goTo,
-    infoOpen,
-    openInfo,
     play,
     rail,
     sheetOpen,
@@ -396,10 +657,10 @@ export default function FilmStage({ id, slug, exhibition, rail: railProp }: Film
         return;
       }
       if (action === 'info') {
-        openInfo();
+        scrollToFilmInfo();
       }
     },
-    [current, goRail, goTo, openInfo, play, rail]
+    [current, goRail, goTo, play, rail]
   );
 
   useEffect(() => {
@@ -409,24 +670,47 @@ export default function FilmStage({ id, slug, exhibition, rail: railProp }: Film
 
   if (!current) return null;
 
-  return (
-    <div className="fixed inset-0 z-40 flex flex-col overflow-clip bg-white text-[#0B0B0C]">
-      <Navbar variant="dark" surfaceScroll={infoOpen} />
+  const activeExhibition =
+    current.slug === entrySlug
+      ? exhibition
+      : exhibitionBySlug[current.slug] || null;
 
-      <div className={`relative min-h-0 flex-1 ${HOUSE_STAGE_SIDE_CLASS}`}>
+  const stageFooter = () => (
+    <HouseFooter
+      langOpen={isOpen('language')}
+      shortcutsOpen={isOpen('shortcuts')}
+      legalOpen={isOpen('legal')}
+      onLanguage={() => {
+        toggle('language');
+      }}
+      onShortcuts={() => {
+        toggle('shortcuts');
+      }}
+      onLegal={() => {
+        toggle('legal');
+      }}
+    />
+  );
+
+  return (
+    <div className="bg-white text-[#0B0B0C]">
+      <div className="flex h-dvh flex-col">
+      <Navbar variant="dark" />
+
+      <div className={`relative min-h-0 flex-1 ${HOUSE_STAGE_SIDE_CLASS} ${HOUSE_STAGE_VERTICAL_CLASS}`}>
         <div
-          className="relative h-full w-full touch-pan-y overflow-clip rounded-[8px]"
+          ref={bindPosterScroll}
+          data-film-poster=""
+          className="relative h-full w-full touch-pan-y rounded-[8px] [clip-path:inset(0_round_8px)]"
           {...swipe}
         >
         <HouseFrameNav
           onPrev={() => goRail(-1)}
           onNext={() => goRail(1)}
           enabled={rail.length > 1}
-          visible={
-            !sheetOpen && !infoOpen && !showTheater
-          }
+          visible={!sheetOpen && !showTheater}
         />
-        <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute inset-0">
         {rail.map((item, slide) => {
           const active = slide === index;
           const leaving = leavingRef.current === slide && !active;
@@ -457,7 +741,7 @@ export default function FilmStage({ id, slug, exhibition, rail: railProp }: Film
                 left: -stageBleed,
                 right: -stageBleed,
                 opacity: visible ? 1 : 0,
-                transform: `translateX(${x}px)`,
+                transform: x ? `translateX(${x}px)` : undefined,
                 zIndex: active ? 10 : leaving ? 9 : 0,
               }}
               aria-hidden={!active}
@@ -500,16 +784,15 @@ export default function FilmStage({ id, slug, exhibition, rail: railProp }: Film
                 }
               : null
           }
-          visible={copyVisible && !infoOpen}
+          visible={copyVisible}
           titleAs="h2"
           onWatch={() => {
             if (copyFilm && !copyFilm.comingSoon) play(copyFilm);
           }}
-          onInfo={openInfo}
         />
 
 
-        {rail.length > 1 && !sheetOpen && !infoOpen ? (
+        {rail.length > 1 && !sheetOpen ? (
           <div className="pointer-events-none absolute inset-x-0 bottom-4 z-30 flex justify-center md:inset-x-auto md:bottom-5 md:right-5 md:justify-end">
             <HousePosterDots
               index={index}
@@ -523,43 +806,37 @@ export default function FilmStage({ id, slug, exhibition, rail: railProp }: Film
         </div>
       </div>
 
-      {!infoOpen ? (
-        <>
-          {pinFooter ? (
-            <div className="h-[54px] w-full shrink-0" aria-hidden />
-          ) : null}
-          <div
-            className={
-              pinFooter
-                ? 'fixed inset-x-0 bottom-0 z-[60] bg-white'
-                : 'relative z-50 w-full bg-white'
-            }
-          >
-            <HouseFooter
-              langOpen={isOpen('language')}
-              shortcutsOpen={isOpen('shortcuts')}
-              legalOpen={isOpen('legal')}
-              onLanguage={() => {
-                toggle('language');
-              }}
-              onShortcuts={() => {
-                toggle('shortcuts');
-              }}
-              onLegal={() => {
-                toggle('legal');
-              }}
-            />
-          </div>
-        </>
+      {pinFooter ? (
+        <div className="h-[54px] w-full shrink-0" aria-hidden />
+      ) : null}
+      <div
+        ref={posterFooterRef}
+        className={
+          pinFooter
+            ? 'fixed inset-x-0 bottom-0 z-[60] bg-white'
+            : 'relative z-50 w-full shrink-0 bg-white transition-opacity duration-200'
+        }
+      >
+        {stageFooter()}
+      </div>
+      </div>
+
+      {activeExhibition?.artifacts.length ? (
+        <FilmArtifactRail film={activeExhibition} />
       ) : null}
 
-      {infoOpen && current.slug === entrySlug ? (
+      <FilmEndRail rail={rail} index={index} onSelect={goTo} />
+
+      {activeExhibition ? (
         <ExhibitionSheet
-          film={exhibition}
-          onClose={closeInfo}
+          film={activeExhibition}
           onSeek={(seconds) => play(current, seconds)}
         />
-      ) : null}
+      ) : (
+        <div id="film-info" className="scroll-mt-[54px]" />
+      )}
+
+      <div className="relative z-50 w-full bg-white">{stageFooter()}</div>
 
       {showTheater && selectedFilm ? (
         <CinemaTheater

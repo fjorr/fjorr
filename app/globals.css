@@ -3,6 +3,16 @@
 @tailwind utilities;
 
 :root {
+  /*
+   * House poster side margin. Straight lines between:
+   * ≤390 → 24 · 768 → 54 · 1100 → 54 · 1260 → 60 · ≥2000 → 100.
+   * Mirrored in components/house/house-stage-margins.ts (houseStageSidePx).
+   */
+  --house-stage-side: calc(
+    clamp(24px, 24px + (100vw - 390px) * 30 / 378, 54px) +
+      clamp(0px, (100vw - 1100px) * 6 / 160, 6px) +
+      clamp(0px, (100vw - 1260px) * 40 / 740, 40px)
+  );
   --dark-01: #1F1F1F;
   --dark-02: #1F1F1FA6;
   --dark-03: #1F1F1F66;

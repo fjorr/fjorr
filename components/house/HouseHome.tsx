@@ -10,6 +10,7 @@ import { useSwipeNav } from '@/lib/use-swipe-nav';
 import HousePosterDots from '@/components/house/HousePosterDots';
 import HouseHeroPreview from '@/components/house/HouseHeroPreview';
 import HouseHeroCopy from '@/components/house/HouseHeroCopy';
+import HomeBrowse from '@/components/house/HomeBrowse';
 import { useHeroCopyFade } from '@/components/house/useHeroCopyFade';
 import TheaterOpenShell from '@/components/TheaterOpenShell';
 import Navbar from '@/components/Navbar';
@@ -25,7 +26,9 @@ import {
 } from '@/lib/watch-progress';
 import {
   HOUSE_STAGE_SIDE_CLASS,
+  HOUSE_STAGE_VERTICAL_CLASS,
   houseStageSidePx,
+  houseStageVerticalPx,
 } from '@/components/house/house-stage-margins';
 import { useHouseStageBleed } from '@/components/house/use-house-stage-bleed';
 
@@ -74,14 +77,11 @@ const HOUSE_INTRO_FILM: HouseFilm = {
   comingSoon: false,
 };
 
-/** Stage chrome: fixed 54px nav + footer; side gutters match paper pages. */
-const HOUSE_CHROME_PX = 54;
-
 function marginsForViewport(width: number) {
   return {
-    top: HOUSE_CHROME_PX,
+    top: houseStageVerticalPx(width),
     side: houseStageSidePx(width),
-    bottom: HOUSE_CHROME_PX,
+    bottom: houseStageVerticalPx(width),
   };
 }
 
@@ -114,11 +114,17 @@ function heroSrc(item: HouseFilm, frame: HeroFrame) {
 
 export default function HouseHome({
   films,
+  browse = false,
   cornerChip = null,
   includeIntro = true,
   emptyMessage = null,
 }: {
   films: HouseFilm[];
+  /**
+   * Browse under the hero (home). The hero becomes the first screen of a
+   * scrolling page instead of a fixed stage.
+   */
+  browse?: boolean;
   /** Quiet label upper-left on the poster (e.g. early release). */
   cornerChip?: string | null;
   /** Home keeps the brand intro card; other stages can omit it. */
@@ -139,11 +145,57 @@ export default function HouseHome({
   const [selectedFilm, setSelectedFilm] = useState<TheaterFilmPayload | null>(null);
   const [startAt, setStartAt] = useState<number | undefined>(undefined);
   const leavingRef = useRef<number | null>(null);
+  const posterScrollCleanup = useRef<(() => void) | null>(null);
+  const posterFooterRef = useRef<HTMLDivElement>(null);
+  const [posterOff, setPosterOff] = useState(false);
   const frame = useHeroFrame();
+  const scrolls = browse;
   /** Permanent brand title card while the library grows. */
   const stageFilms = includeIntro ? [HOUSE_INTRO_FILM, ...films] : films;
   const isEmptyStage = stageFilms.length === 0;
-  const previewPaused = sheetOpen || showTheater;
+  const previewPaused = sheetOpen || showTheater || posterOff;
+
+  useEffect(() => {
+    if (!scrolls) return;
+    const apply = () => {
+      const y = window.scrollY;
+      setPosterOff(y > window.innerHeight * 0.55);
+      const footer = posterFooterRef.current;
+      if (!footer) return;
+      footer.style.opacity = pinFooter || y <= 16 ? '1' : '0';
+    };
+    apply();
+    window.addEventListener('scroll', apply, { passive: true });
+    return () => window.removeEventListener('scroll', apply);
+  }, [pinFooter, scrolls]);
+
+  const bindPosterScroll = useCallback(
+    (node: HTMLDivElement | null) => {
+      posterScrollCleanup.current?.();
+      posterScrollCleanup.current = null;
+      if (!node || !scrolls) return;
+      const onWheel = (event: WheelEvent) => {
+        if (event.ctrlKey || !node.contains(event.target as Node)) return;
+        let dy = event.deltaY;
+        if (event.deltaMode === 1) dy *= 16;
+        else if (event.deltaMode === 2) dy *= window.innerHeight;
+        if (!dy || Math.abs(event.deltaX) > Math.abs(dy) * 1.5) return;
+        if (event.cancelable) event.preventDefault();
+        const scroller = document.scrollingElement;
+        if (!scroller) return;
+        scroller.scrollTop += dy;
+      };
+      node.addEventListener('wheel', onWheel, { capture: true, passive: false });
+      posterScrollCleanup.current = () => {
+        node.removeEventListener('wheel', onWheel, { capture: true });
+      };
+    },
+    [scrolls]
+  );
+
+  useEffect(() => {
+    return () => posterScrollCleanup.current?.();
+  }, []);
   const { displayIndex: copyIndex, visible: copyVisible } = useHeroCopyFade(
     phase,
     index
@@ -325,12 +377,37 @@ export default function HouseHome({
     [selectedFilm]
   );
 
+  const footer = (
+    <HouseFooter
+      langOpen={isOpen('language')}
+      shortcutsOpen={isOpen('shortcuts')}
+      legalOpen={isOpen('legal')}
+      onLanguage={() => {
+        toggle('language');
+      }}
+      onShortcuts={() => {
+        toggle('shortcuts');
+      }}
+      onLegal={() => {
+        toggle('legal');
+      }}
+    />
+  );
+
   return (
-    <div className="fixed inset-0 z-40 flex flex-col overflow-clip bg-white text-[#0B0B0C]">
+    <div
+      className={
+        scrolls
+          ? 'bg-white text-[#0B0B0C]'
+          : 'fixed inset-0 z-40 flex flex-col overflow-clip bg-white text-[#0B0B0C]'
+      }
+    >
+      <div className={scrolls ? 'flex h-dvh flex-col' : 'contents'}>
       <Navbar variant="dark" />
 
-      <div className={`relative min-h-0 flex-1 ${HOUSE_STAGE_SIDE_CLASS}`}>
+      <div className={`relative min-h-0 flex-1 ${HOUSE_STAGE_SIDE_CLASS} ${HOUSE_STAGE_VERTICAL_CLASS}`}>
         <div
+          ref={bindPosterScroll}
           className="relative h-full w-full touch-pan-y overflow-clip rounded-[8px]"
           {...swipe}
         >
@@ -440,11 +517,6 @@ export default function HouseHome({
             }
             if (!copyFilm.comingSoon) openFilm(copyFilm);
           }}
-          infoHref={
-            copyFilm?.kind === 'intro' || !copyFilm?.slug
-              ? undefined
-              : `/film/${copyFilm.slug}#info`
-          }
         />
         {cornerChip ? (
           <div className="pointer-events-none absolute left-6 top-6 z-20 rounded-[6px] bg-[#FF385C] px-2.5 py-1 font-sans text-[12px] font-semibold tracking-normal text-white">
@@ -470,27 +542,21 @@ export default function HouseHome({
         <div className="h-[54px] w-full shrink-0" aria-hidden />
       ) : null}
       <div
+        ref={posterFooterRef}
         className={
           pinFooter
             ? 'fixed inset-x-0 bottom-0 z-[60] bg-white'
-            : 'relative z-50 w-full bg-white'
+            : 'relative z-50 w-full shrink-0 bg-white transition-opacity duration-200'
         }
       >
-        <HouseFooter
-          langOpen={isOpen('language')}
-          shortcutsOpen={isOpen('shortcuts')}
-          legalOpen={isOpen('legal')}
-          onLanguage={() => {
-            toggle('language');
-          }}
-          onShortcuts={() => {
-            toggle('shortcuts');
-          }}
-          onLegal={() => {
-            toggle('legal');
-          }}
-        />
+        {footer}
       </div>
+      </div>
+
+      {scrolls ? <HomeBrowse /> : null}
+      {scrolls ? (
+        <div className="relative z-50 w-full bg-white">{footer}</div>
+      ) : null}
 
       {showTheater && selectedFilm ? (
         <CinemaTheater
